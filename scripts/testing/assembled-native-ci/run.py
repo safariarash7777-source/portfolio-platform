@@ -514,7 +514,7 @@ def m1_allocate(module,store,recipe,deadline):
 
 
 M1_PHASES=frozenset({'controller_binding','allocation','initial_roles','bootstrap','backup','restore_copy','restore_third','prewrite_inverse','apply_history','result','cleanup'})
-M1_FAILURE_CODES=frozenset({'m1_controller_binding_changed','m1_deadline','m1_create_unknown_no_replay','m1_start_unknown_no_replay','m1_database_not_ready','m1_image_provenance_changed','m1_initial_roles_changed','m1_db_role_settings_unsupported','m1_source_not_empty','m1_restore_target_not_empty','m1_result_not_accepted','m1_full_restore_mismatch','owned_query_failed','m1_image_inspect_failed','m1_cleanup_unknown','m1_cleanup_not_confirmed','m1_cleanup_unconfirmed','m1_execution_not_confirmed'})
+M1_FAILURE_CODES=frozenset({'m1_controller_binding_changed','m1_deadline','m1_create_unknown_no_replay','m1_start_unknown_no_replay','m1_database_not_ready','m1_image_provenance_changed','m1_initial_roles_changed','m1_db_role_settings_unsupported','m1_source_not_empty','m1_restore_target_not_empty','m1_result_not_accepted','m1_public_evidence_unconfirmed','m1_full_restore_mismatch','owned_query_failed','m1_image_inspect_failed','m1_cleanup_unknown','m1_cleanup_not_confirmed','m1_cleanup_unconfirmed','m1_execution_not_confirmed'})
 
 
 def m1_failure_projection(phase,error):
@@ -582,6 +582,43 @@ def m1_execute(binding):
     finally:store.close()
 
 
+
+def m1_public_evidence(store,binding,execution):
+    """Project verified hashes and fixed outcomes; no journal bodies or actors."""
+    need(execution.get('binding')==binding,'m1_public_evidence_unconfirmed')
+    backup=store.read('m1-backup-readback.json');history=store.read('m1-history-readback.json')
+    install=backup.get('binding')
+    need(isinstance(install,dict) and install==history.get('binding')
+         and install.get('purpose')==OWNED_START_A and install.get('sourceCommit')==M1_BASE
+         and install.get('allocationId')==binding['executionAllocationId'] and install.get('runId')==binding['runId']
+         and install.get('payloadSha256')=='c53de46a216a57b90afaff760c0474cb5d95911f56ff022832fd1536affae8a8','m1_public_evidence_unconfirmed')
+    need(backup.get('state')=='BASELINE_ARCHIVED' and execution.get('result')==history
+         and history.get('state')=='PASS_M1_SQL_COPY_ONLY' and history.get('historyRows')==3
+         and history.get('partialNotDoneRetained') is True and history.get('sqlRollbackState')=='PT409'
+         and history.get('fullConsumer')=='NOT_WIRED' and history.get('authAcceptance') is False
+         and history.get('readerAcceptance') is False,'m1_public_evidence_unconfirmed')
+    archive=store.read_blob('m1-baseline.dump',64*1024*1024)
+    need(archive.startswith(b'PGDMP') and sha(archive)==backup.get('archiveSha256'),'m1_public_evidence_unconfirmed')
+    snapshot=backup.get('before');need(isinstance(snapshot,dict),'m1_public_evidence_unconfirmed')
+    snapshot_sha=sha(json.dumps(snapshot,sort_keys=True).encode())
+    for role in ('copy','restore'):
+        receipt=store.read('m1-'+role+'-restore-readback.json')
+        need(receipt.get('binding')==install and receipt.get('state')=='FULL_OWNED_BASELINE_RESTORE_MATCHED'
+             and receipt.get('role')==role and receipt.get('archiveSha256')==sha(archive)
+             and receipt.get('snapshotSha256')==snapshot_sha,'m1_public_evidence_unconfirmed')
+    inverse=store.read('m1-third-readback.json')
+    need(inverse.get('binding')==install and inverse.get('state')=='PREWRITE_SQL_INVERSE_MATCHED'
+         and inverse.get('role')=='restore' and inverse.get('afterNewHistory') is False,'m1_public_evidence_unconfirmed')
+    need(snapshot.get('rolesAndDatabase',{}).get('dbRoleSettings')==[]
+         and snapshot.get('tables',{}).get('public.member_debt_positions',{}).get('count',0)>0,'m1_public_evidence_unconfirmed')
+    return {'sourceCommit':M1_BASE,'adapterSha256':M1_ADAPTER_SHA,
+            'payloadSha256':install['payloadSha256'],'archiveSha256':sha(archive),'archiveBytes':len(archive),
+            'restoredSnapshotSha256':snapshot_sha,'restoredCopies':2,'prewriteInverseMatched':True,
+            'historyRows':3,'partialNotDoneRetained':True,'posthistorySqlRollback':'PT409',
+            'unsupportedDatabaseRoleSettings':'OBSERVED_EMPTY',
+            'scope':'quiescent synthetic SQL copy only; no concurrent or primary backup claim'}
+
+
 def m1_finalize(binding):
     workspace,_,private,app=paths();module,_=m1_module(app);store=module.OwnedPrivateStore(private)
     report={'schemaVersion':'owned-start-a-copy.v1','binding':binding,'status':'FAIL_M1_NOT_ACCEPTED','targetInstall':'NOT_APPLIED','fullConsumer':'NOT_WIRED','authBrowserAcceptance':False,'automaticReplay':False,'cleanup':'UNCONFIRMED','failurePhase':None,'failureCode':None}
@@ -615,6 +652,7 @@ def m1_finalize(binding):
         execution=store.read('m1-execution-result.json')
         need(execution['binding']==binding and execution['deadlineMet'] is True and execution['result']['state']=='PASS_M1_SQL_COPY_ONLY','m1_execution_not_confirmed')
         need(failure is None,'m1_prior_failure_record_present')
+        report['evidence']=m1_public_evidence(store,binding,execution)
         report['status']='PASS_M1_SQL_COPY_ONLY'
     except Exception as error:
         if failure is None:failure=m1_failure_projection(phase,error)

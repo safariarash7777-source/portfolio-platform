@@ -1431,5 +1431,30 @@ class M1SourceContracts(unittest.TestCase):
         self.assertEqual(public.call_args.args[1]['cleanupFailedRoles'],['source'])
 
 
+
+class M1PublicProof(unittest.TestCase):
+    def test_proof_projects_only_bound_archive_restore_inverse_and_history_outcomes(self):
+        binding={'runId':'123','executionAllocationId':'allocation'}
+        install={'purpose':runner.OWNED_START_A,'sourceCommit':runner.M1_BASE,'allocationId':'allocation','runId':'123','payloadSha256':'c53de46a216a57b90afaff760c0474cb5d95911f56ff022832fd1536affae8a8'}
+        archive=b'PGDMPsynthetic-owned-archive';digest=hashlib.sha256(archive).hexdigest()
+        snapshot={'rolesAndDatabase':{'dbRoleSettings':[]},'tables':{'public.member_debt_positions':{'count':1}},'private':'PRIVATE_DO_NOT_PROJECT'}
+        snapshot_sha=hashlib.sha256(json.dumps(snapshot,sort_keys=True).encode()).hexdigest()
+        history={'binding':install,'state':'PASS_M1_SQL_COPY_ONLY','historyRows':3,'partialNotDoneRetained':True,'sqlRollbackState':'PT409','fullConsumer':'NOT_WIRED','authAcceptance':False,'readerAcceptance':False}
+        records={'m1-backup-readback.json':{'binding':install,'state':'BASELINE_ARCHIVED','archiveSha256':digest,'before':snapshot},'m1-history-readback.json':history,'m1-third-readback.json':{'binding':install,'state':'PREWRITE_SQL_INVERSE_MATCHED','role':'restore','afterNewHistory':False}}
+        for role in ('copy','restore'):records['m1-'+role+'-restore-readback.json']={'binding':install,'state':'FULL_OWNED_BASELINE_RESTORE_MATCHED','role':role,'archiveSha256':digest,'snapshotSha256':snapshot_sha}
+        store=SimpleNamespace(read=lambda name:records[name],read_blob=lambda *args:archive)
+        execution={'binding':binding,'result':history}
+        proof=runner.m1_public_evidence(store,binding,execution)
+        self.assertEqual(proof['restoredCopies'],2);self.assertEqual(proof['archiveSha256'],digest)
+        self.assertEqual(proof['restoredSnapshotSha256'],snapshot_sha)
+        self.assertNotIn('PRIVATE',json.dumps(proof));self.assertNotIn('binding',proof)
+        for field,value in [('binding',{}),('archiveSha256','0'*64),('snapshotSha256','0'*64)]:
+            old=records['m1-copy-restore-readback.json'][field]
+            records['m1-copy-restore-readback.json'][field]=value
+            with self.assertRaisesRegex(ValueError,'m1_public_evidence_unconfirmed'):runner.m1_public_evidence(store,binding,execution)
+            records['m1-copy-restore-readback.json'][field]=old
+        store.read_blob=lambda *args:b'PGDMPchanged'
+        with self.assertRaisesRegex(ValueError,'m1_public_evidence_unconfirmed'):runner.m1_public_evidence(store,binding,execution)
+
 if __name__ == '__main__':
     unittest.main()
