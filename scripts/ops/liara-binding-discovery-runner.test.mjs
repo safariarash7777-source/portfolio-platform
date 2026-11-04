@@ -19,7 +19,7 @@ test('independent control/source identity, event, attempt and byte pins are requ
   for(const mutate of mutations){const f=fixture();mutate(f);assert.deepEqual(verifySourceIdentity(f),{state:'source_identity_rejected'});}
 });
 function offlineCaller(protocol) {
-  const text=readFileSync(new URL('./liara-binding-discovery-runner.mjs',import.meta.url),'utf8').split('// No import-time transport')[0].replace(/^import .*;\n/gm,'').replaceAll('export ','').replace('const CALLER_ADOPTED = false','const CALLER_ADOPTED = true');
+  const text=readFileSync(new URL('./liara-binding-discovery-runner.mjs',import.meta.url),'utf8').split('// No import-time transport')[0].replace(/^import .*;\r?\n/gm,'').replaceAll('export ','').replace('const CALLER_ADOPTED = false','const CALLER_ADOPTED = true');
   const context=vm.createContext({Buffer,createHash,randomBytes:n=>{assert.equal(n,16);return Buffer.alloc(n,5);},discoverBinding:protocol,createDiscoveryConnect});
   vm.runInContext(text,context);return vm.runInContext('runDiscovery',context);
 }
@@ -62,7 +62,7 @@ test('candidate-only success exit is strict; unresolved and protocol failures re
   for(const value of [{state:'unresolved'},{state:'protocol_rejected'},{...valid,remoteHalt:'stopped'},{...valid,receipt:{...valid.receipt,extra:secret}},{...valid,receipt:{...valid.receipt,count:2}}])assert.equal(receiptExitCode(value),1);
 });
 test('bounded source reader rejects symlink, oversized/nonregular and drifting files before acceptance',()=>{
-  const text=readFileSync(new URL('./liara-binding-discovery-runner.mjs',import.meta.url),'utf8').split('// No import-time transport')[0].replace(/^import .*;\n/gm,'').replaceAll('export ','');
+  const text=readFileSync(new URL('./liara-binding-discovery-runner.mjs',import.meta.url),'utf8').split('// No import-time transport')[0].replace(/^import .*;\r?\n/gm,'').replaceAll('export ','');
   for(const mode of ['ok','symlink','large','fifo','drift']){
     let reads=0,closed=0,stats=0;
     const ctx=vm.createContext({Buffer,resolve:x=>x,constants:{O_RDONLY:0,O_NOFOLLOW:1,O_NONBLOCK:2},lstatSync:()=>({isDirectory:()=>true,isSymbolicLink:()=>mode==='symlink'}),openSync:(p,flags)=>{assert.equal(flags,3);return 1;},fstatSync:()=>({isFile:()=>mode!=='fifo',size:mode==='large'?1000:2,ino:1,mtimeMs:mode==='drift'?stats++:1,ctimeMs:1}),readSync:(fd,b)=>{reads++;b.write('ok');return 2;},closeSync:()=>{closed++;}});
