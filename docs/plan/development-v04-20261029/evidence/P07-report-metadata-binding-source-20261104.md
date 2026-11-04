@@ -29,4 +29,28 @@ readN10ReportMetadata دریافت شبکه، اجرای JavaScript یا نوش�
 
 اسکریپت بازرسی قبلی ابتدا هش فایل کاری CRLF را با Git LF مقایسه کرده و شکست خورده بود؛ اصلاح verifier تنها تبدیل line ending برای source محلی را انجام داد. spanهای HTML همیشه از raw UTF-8 بدون newline normalization استخراج شده‌اند. این سابقه مربوط به ابزار خروجی است، نه تغییر parser یا داده.
 
+### خطای واقعی بارگذار آزمون و نتیجه اصلاح
+
+در نسخه کدی `99a6d1e4a8a328ea92e0bf63ffeee38fc690da12` این بخش از سابقه هنوز در **همین سند** نوشته نشده بود؛ تنها سابقه CRLF بالا موجود بود. ادعای قبلی درباره ثبت loader failure در این سند تصحیح می‌شود. لاگ خام تلاش ناموفق واقعاً محفوظ است و برای ساخت شاهد دوباره تولید نشده است.
+
+مسیر دقیق فایل، نسبت به ریشه workspace یعنی پوشه والد checkout، `outputs/p07-metadata-binding-implementation-20261104/legacy-codal.log` است؛ معادل آن از ریشه checkout، `../outputs/p07-metadata-binding-implementation-20261104/legacy-codal.log` است. SHA-256 فایل اصلی `93cd4ccb24fa6bf72075c36be1e6f3bc27f8a0c4d93ea22c5bbb7b38c0517a3a` است. این artifact خارج Git نگهداری می‌شود و لینک دانلود عمومی ندارد. excerpt واقعی آن:
+
+```text
+actual-codal-offline.mjs:5
+import { readN10ReportMetadata } from "./codal-report-metadata.mjs";
+^^^^^^
+
+SyntaxError: Cannot use import statement outside a module
+```
+
+این تلاش با exit=1 روی Node v24.22.1 شکست خورد. علت، باقی‌ماندن import تازه در بدنه‌ای بود که loader آزمون با `vm.runInThisContext` اجرا می‌کرد. اصلاح موجود در همان نسخه کدی، import را مثل سایر importهای شناخته‌شده حذف و **خود تابع واقعی** `readN10ReportMetadata` را به wrapper تزریق کرد؛ تابع جعلی جای آن قرار نگرفت. لاگ اجرای موفق بعدی `outputs/p07-metadata-binding-implementation-20261104/legacy-codal-final.log`، SHA-256 `b96dbd5a550159a987b78fa674eb14aee39f0981aac86e4b8e9191078a93b10b` است؛ suite مشترک ۹ آزمون producer با fail=0 و guard شبکه/childProcess=0 ثبت شده است. اصلاح مستندات کنونی هیچ‌کدام از این آزمون‌ها یا خطا را دوباره اجرا نکرده است.
+
+### شمارش و نسخه دقیق CI
+
+برای نسخه کدی `99a6d1e4a8a328ea92e0bf63ffeee38fc690da12`، **۱۲۱ آزمون admission و ۱۴ آزمون quarterly، هرکدام یک‌بار** گزارش می‌شوند. اجراهای تکراری همان آزمون در Core/Calc یا اجرای مستقل suite مشترک producer، تعداد سناریوهای تازه محسوب نمی‌شوند. این اعداد ادعای تعداد کل آزمون‌های مخزن نیستند.
+
+[CI 41769978743](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41769978743) روی Node22.23.4 هر پنج job الزامی را پاس کرد. checkout واقعی آن merge ref با SHA `f6b236391568acad87f6076413686ed2add96827` بود؛ tree آن `dc524568fec78d6d7aad604cd529ff94c5857bda` دقیقاً با tree نسخه کدی 99a6 برابر بود. base همان `5b5974405a952fe782419a23ca03134c7247cd7e` است. job اختیاری native اجرا نشد و پذیرش واقعی محسوب نمی‌شود. رسید جزئیات: `outputs/p07-metadata-binding-implementation-20261104/CI-PASS.json` نسبت به ریشه workspace.
+
+این نتیجه متعلق به نسخه کدی 99a6 است؛ commit تکمیلی حاضر فقط همین سند را تغییر می‌دهد. SHA جدید مستندات و وضعیت CI احتمالی آن جداگانه در بدنه PR406 ثبت می‌شوند و با نتیجه CI بالا یکسان فرض نمی‌شوند.
+
 پاس‌شدن آزمون‌ها/CI مجوز merge یا فعال‌سازی نیست. این برش هیچ DB، relay، Production، محیط یا داده‌ای را تغییر نمی‌دهد. اتصال عملیاتی منبع، کنترل مدت C و سرمایه و بازبینی مصرف‌کننده گیت‌های بازند.
