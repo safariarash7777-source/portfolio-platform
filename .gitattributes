@@ -3,3 +3,6 @@ scripts/testing/assembled-native-ci/pure-node-guard.cjs -text
 scripts/testing/assembled-native-ci/pure-node-guard.test.mjs -text
 scripts/testing/assembled-native-ci/fixtures/validator-e0-source.json -text
 scripts/testing/assembled-native-ci/canonical-validator.test.cjs -text
+
+/scripts/testing/assembled-native-ci/summary-await.test.cjs -text -whitespace
+/scripts/testing/assembled-native-ci/fixtures/summary-await/* -text -whitespace

@@ -1081,5 +1081,38 @@ class CanonicalNegativePrepare(unittest.TestCase):
                 self.assertEqual(result.returncode,0,output)
                 self.assertTrue(valid_guarded_pure_output(output,count),output)
 
+
+class SummaryPreparationAwait(unittest.TestCase):
+    def test_actual_async_e0_receipt_is_awaited_and_rejection_stops_link_and_rpc(self):
+        fixed=HERE/'fixtures/summary-await'
+        expected={
+            'summary-await.test.cjs':'264797a312a3343d9dc135bf94a531b0093d73ec331564eea4c5f214f1e14162',
+            'fixtures/summary-await/canonical-validator-fixture.json':'deb5aab9f73c7ecdec81beb12bea1a51df435df985762434a262e88247d1528a',
+            'fixtures/summary-await/capsule-manifest.json':'4e9f29a20ef0512dac57ae5f295d0950551bd477456348f251ab147922db119a',
+            'fixtures/summary-await/base-capsule54.tar':'54d35e1aa4b48962e48085140af0c214547bd139870ea1b9e08e644ac5c8d255',
+            'pure-node-guard.cjs':'4f572d05be71696339860f301d4891f6dbe0e4ab3a7f70570052ce69eb9bb028',
+            'pure-node-guard.test.mjs':'a6bc1a6c3e54ae71b853674761415b03761555a8e3e3bd33f473ecfe25158d72',
+        }
+        for name,digest in expected.items():
+            self.assertEqual(hashlib.sha256((HERE/name).read_bytes()).hexdigest(),digest,name)
+        with tempfile.TemporaryDirectory(prefix='p03-summary-await-pure-') as folder:
+            local=Path(folder)
+            for source,name in [
+                (HERE/'summary-await.test.cjs','await-regression.test.cjs'),
+                (fixed/'capsule-manifest.json','capsule-manifest.json'),
+                (fixed/'canonical-validator-fixture.json','canonical-validator-fixture.json'),
+                (fixed/'base-capsule54.tar','base-capsule54.tar'),
+                (HERE/'sealed-p03-composition-e0-v1.tar','sealed-p03-composition-e0-await-v1.tar'),
+                (HERE/'pure-node-guard.cjs','pure-node-guard.cjs'),
+                (HERE/'pure-node-guard.test.mjs','pure-node-guard.test.mjs'),
+            ]:
+                (local/name).write_bytes(source.read_bytes())
+            env={k:v for k,v in os.environ.items() if k.upper() in ['PATH','SYSTEMROOT','TEMP','TMP']}
+            compiler=HERE.parents[2]/'node_modules/typescript/lib/typescript.js'
+            result=subprocess.run([shutil.which('node'),'--test-reporter=tap','--require',str(local/'pure-node-guard.cjs'),'--import',(local/'pure-node-guard.test.mjs').as_uri(),str(local/'await-regression.test.cjs'),'--typescript-module='+str(compiler)],env=env,capture_output=True,timeout=60)
+            output=result.stdout.decode('utf8')+result.stderr.decode('utf8')
+            self.assertEqual(result.returncode,0,output)
+            self.assertTrue(valid_guarded_pure_output(output,8),output)
+
 if __name__ == '__main__':
     unittest.main()
