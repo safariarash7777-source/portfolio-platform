@@ -583,15 +583,38 @@ def m1_execute(binding):
 
 
 
-def m1_public_evidence(store,binding,execution):
+def m1_public_evidence(store,binding,execution,module):
     """Project verified hashes and fixed outcomes; no journal bodies or actors."""
     need(execution.get('binding')==binding,'m1_public_evidence_unconfirmed')
+    # Derive authority from the reviewed caller recipe and independently issued
+    # actual allocation, rather than trusting matching downstream receipts.
+    recipe=m1_recipe(binding,module)
+    recipe_sha=sha(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode())
+    need(store.read('m1-recipe.json')==recipe and store.read('m1-controller-binding.json')=={
+        'binding':binding,'recipeSha256':recipe_sha,'adapterSha256':M1_ADAPTER_SHA,'stage':'PREPARED'},'m1_public_evidence_unconfirmed')
+    allocation=store.read('m1-actual-allocation.json')
+    fields=('purpose','contractVersion','runId','attempt','controllerCommit','sourceCommit','allocationId','databaseMarker')
+    need(isinstance(allocation,dict) and set(allocation)==set(fields)|{'source','copy','restore'}
+         and all(allocation.get(k)==recipe[k] for k in fields),'m1_public_evidence_unconfirmed')
+    ids=[]
+    for role in ('source','copy','restore'):
+        actual=allocation[role];planned=recipe['resources'][role]
+        need(isinstance(actual,dict) and set(actual)==set(planned)|{'id'}
+             and all(actual.get(k)==v for k,v in planned.items())
+             and isinstance(actual.get('id'),str) and re.fullmatch(r'[a-f0-9]{64}',actual['id'])
+             and store.read('m1-'+role+'-identity.json')=={
+                 'role':role,'actual':actual,'recipeSha256':recipe_sha},'m1_public_evidence_unconfirmed')
+        ids.append(actual['id'])
+    allocation_sha=sha(json.dumps(allocation,sort_keys=True,separators=(',',':')).encode())
+    need(len(set(ids))==3 and store.read('m1-actual-binding.json')=={
+        'allocationSha256':allocation_sha,'recipeSha256':recipe_sha},'m1_public_evidence_unconfirmed')
+    expected_install={'profile':'GHA-owned-copy.v1','purpose':OWNED_START_A,
+        'allocationId':binding['executionAllocationId'],'runId':binding['runId'],
+        'attempt':recipe['attempt'],'sourceCommit':M1_BASE,'allocationSha256':allocation_sha,
+        'payloadSha256':'c53de46a216a57b90afaff760c0474cb5d95911f56ff022832fd1536affae8a8'}
     backup=store.read('m1-backup-readback.json');history=store.read('m1-history-readback.json')
     install=backup.get('binding')
-    need(isinstance(install,dict) and install==history.get('binding')
-         and install.get('purpose')==OWNED_START_A and install.get('sourceCommit')==M1_BASE
-         and install.get('allocationId')==binding['executionAllocationId'] and install.get('runId')==binding['runId']
-         and install.get('payloadSha256')=='c53de46a216a57b90afaff760c0474cb5d95911f56ff022832fd1536affae8a8','m1_public_evidence_unconfirmed')
+    need(install==expected_install and history.get('binding')==expected_install,'m1_public_evidence_unconfirmed')
     need(backup.get('state')=='BASELINE_ARCHIVED' and execution.get('result')==history
          and history.get('state')=='PASS_M1_SQL_COPY_ONLY' and history.get('historyRows')==3
          and history.get('partialNotDoneRetained') is True and history.get('sqlRollbackState')=='PT409'
@@ -652,7 +675,8 @@ def m1_finalize(binding):
         execution=store.read('m1-execution-result.json')
         need(execution['binding']==binding and execution['deadlineMet'] is True and execution['result']['state']=='PASS_M1_SQL_COPY_ONLY','m1_execution_not_confirmed')
         need(failure is None,'m1_prior_failure_record_present')
-        report['evidence']=m1_public_evidence(store,binding,execution)
+        with store.lock_exclusive():
+            report['evidence']=m1_public_evidence(store,binding,execution,module)
         report['status']='PASS_M1_SQL_COPY_ONLY'
     except Exception as error:
         if failure is None:failure=m1_failure_projection(phase,error)

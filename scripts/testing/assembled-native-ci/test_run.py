@@ -1433,28 +1433,57 @@ class M1SourceContracts(unittest.TestCase):
 
 
 class M1PublicProof(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        path=HERE.parents[2]/'scripts/testing/consultation-feedback/install-feedback.py'
+        spec=importlib.util.spec_from_file_location('m1_public_proof_adapter',path)
+        cls.adapter=importlib.util.module_from_spec(spec);spec.loader.exec_module(cls.adapter)
+
     def test_proof_projects_only_bound_archive_restore_inverse_and_history_outcomes(self):
-        binding={'runId':'123','executionAllocationId':'allocation'}
-        install={'purpose':runner.OWNED_START_A,'sourceCommit':runner.M1_BASE,'allocationId':'allocation','runId':'123','payloadSha256':'c53de46a216a57b90afaff760c0474cb5d95911f56ff022832fd1536affae8a8'}
+        binding={'runId':'123','executionAllocationId':'00000000-0000-4000-8000-000000000001','workflowCommit':'a'*40}
+        recipe=runner.m1_recipe(binding,self.adapter)
+        recipe_sha=hashlib.sha256(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+        allocation={k:recipe[k] for k in ('purpose','contractVersion','runId','attempt','controllerCommit','sourceCommit','allocationId','databaseMarker')}
+        for i,role in enumerate(('source','copy','restore'),1):allocation[role]={**recipe['resources'][role],'id':str(i)*64}
+        allocation_sha=hashlib.sha256(json.dumps(allocation,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+        install={'profile':'GHA-owned-copy.v1','purpose':runner.OWNED_START_A,'sourceCommit':runner.M1_BASE,'attempt':'1','allocationId':binding['executionAllocationId'],'runId':'123','allocationSha256':allocation_sha,'payloadSha256':'c53de46a216a57b90afaff760c0474cb5d95911f56ff022832fd1536affae8a8'}
         archive=b'PGDMPsynthetic-owned-archive';digest=hashlib.sha256(archive).hexdigest()
         snapshot={'rolesAndDatabase':{'dbRoleSettings':[]},'tables':{'public.member_debt_positions':{'count':1}},'private':'PRIVATE_DO_NOT_PROJECT'}
         snapshot_sha=hashlib.sha256(json.dumps(snapshot,sort_keys=True).encode()).hexdigest()
         history={'binding':install,'state':'PASS_M1_SQL_COPY_ONLY','historyRows':3,'partialNotDoneRetained':True,'sqlRollbackState':'PT409','fullConsumer':'NOT_WIRED','authAcceptance':False,'readerAcceptance':False}
         records={'m1-backup-readback.json':{'binding':install,'state':'BASELINE_ARCHIVED','archiveSha256':digest,'before':snapshot},'m1-history-readback.json':history,'m1-third-readback.json':{'binding':install,'state':'PREWRITE_SQL_INVERSE_MATCHED','role':'restore','afterNewHistory':False}}
+        records.update({'m1-recipe.json':recipe,'m1-controller-binding.json':{'binding':binding,'recipeSha256':recipe_sha,'adapterSha256':runner.M1_ADAPTER_SHA,'stage':'PREPARED'},'m1-actual-allocation.json':allocation,'m1-actual-binding.json':{'allocationSha256':allocation_sha,'recipeSha256':recipe_sha}})
+        for role in ('source','copy','restore'):records['m1-'+role+'-identity.json']={'role':role,'actual':allocation[role],'recipeSha256':recipe_sha}
         for role in ('copy','restore'):records['m1-'+role+'-restore-readback.json']={'binding':install,'state':'FULL_OWNED_BASELINE_RESTORE_MATCHED','role':role,'archiveSha256':digest,'snapshotSha256':snapshot_sha}
         store=SimpleNamespace(read=lambda name:records[name],read_blob=lambda *args:archive)
         execution={'binding':binding,'result':history}
-        proof=runner.m1_public_evidence(store,binding,execution)
+        proof=runner.m1_public_evidence(store,binding,execution,self.adapter)
         self.assertEqual(proof['restoredCopies'],2);self.assertEqual(proof['archiveSha256'],digest)
         self.assertEqual(proof['restoredSnapshotSha256'],snapshot_sha)
         self.assertNotIn('PRIVATE',json.dumps(proof));self.assertNotIn('binding',proof)
         for field,value in [('binding',{}),('archiveSha256','0'*64),('snapshotSha256','0'*64)]:
             old=records['m1-copy-restore-readback.json'][field]
             records['m1-copy-restore-readback.json'][field]=value
-            with self.assertRaisesRegex(ValueError,'m1_public_evidence_unconfirmed'):runner.m1_public_evidence(store,binding,execution)
+            with self.assertRaisesRegex(ValueError,'m1_public_evidence_unconfirmed'):runner.m1_public_evidence(store,binding,execution,self.adapter)
             records['m1-copy-restore-readback.json'][field]=old
+        # All downstream receipts share this same object: coordinated corruption
+        # must fail against caller-issued allocation evidence, despite agreement.
+        for field,value in [('profile','legacy'),('attempt','2'),('allocationSha256','0'*64)]:
+            old=install[field];install[field]=value
+            with self.assertRaisesRegex(ValueError,'m1_public_evidence_unconfirmed'):runner.m1_public_evidence(store,binding,execution,self.adapter)
+            install[field]=old
+        for field in ('profile','attempt','allocationSha256'):
+            old=install.pop(field)
+            with self.assertRaisesRegex(ValueError,'m1_public_evidence_unconfirmed'):runner.m1_public_evidence(store,binding,execution,self.adapter)
+            install[field]=old
+        records['m1-actual-binding.json']['allocationSha256']='0'*64
+        with self.assertRaisesRegex(ValueError,'m1_public_evidence_unconfirmed'):runner.m1_public_evidence(store,binding,execution,self.adapter)
+        records['m1-actual-binding.json']['allocationSha256']=allocation_sha
+        old=allocation['copy']['id'];allocation['copy']['id']='f'*64
+        with self.assertRaisesRegex(ValueError,'m1_public_evidence_unconfirmed'):runner.m1_public_evidence(store,binding,execution,self.adapter)
+        allocation['copy']['id']=old
         store.read_blob=lambda *args:b'PGDMPchanged'
-        with self.assertRaisesRegex(ValueError,'m1_public_evidence_unconfirmed'):runner.m1_public_evidence(store,binding,execution)
+        with self.assertRaisesRegex(ValueError,'m1_public_evidence_unconfirmed'):runner.m1_public_evidence(store,binding,execution,self.adapter)
 
 if __name__ == '__main__':
     unittest.main()
