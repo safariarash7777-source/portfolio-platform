@@ -1,0 +1,38 @@
+{
+  "verifiedAtUtc": "2026-11-04 03:23:32 UTC",
+  "pr": 404,
+  "head": "e749235c2bc042f970947f181fec07ec67985635",
+  "mergeCommit": "06e7f0c7746c57645235854d160f267fdc41e0c7",
+  "mergeTree": "fcff0c46dd40a2a123787e2eb042a7bc9812550d",
+  "parents": [
+    "c8e35c89881257268884a4e99d6bf283c23abaec",
+    "e749235c2bc042f970947f181fec07ec67985635"
+  ],
+  "exactReviewedCiTree": true,
+  "independentSourceReview": {
+    "status": "SOURCE_PASS_LIMITED",
+    "p1": 0,
+    "p2": 0,
+    "sourceSha256": "9a5ee4434b267cf89fa2047cb18128bf5f859b38c49bc1fbc9f335b93d8aa704",
+    "testSha256": "6baa2f90ae61476ac24f1d07012e3fcf7fc4db316bfba8dafd8514b1ceb066ee"
+  },
+  "deployment": {
+    "id": "dpl_FS13324xEvtuSdnhAeR9Tf569wnL",
+    "url": "portfolio-platform-ifuehzsvl-safariarash7777-4463s-projects.vercel.app",
+    "state": "READY",
+    "target": "production",
+    "projectId": "prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp",
+    "alias": "https://portfolio-platform-fawn.vercel.app",
+    "aliasBeforeAndAfterSameDeployment": true
+  },
+  "runtimeFailureLogQuery": {
+    "deploymentId": "dpl_FS13324xEvtuSdnhAeR9Tf569wnL",
+    "query": "funds_read_failure",
+    "since": "5m",
+    "observed": "No matching logs",
+    "noFailureProven": false
+  },
+  "productionFailureRootCause": null,
+  "productionFailureResolved": false,
+  "authenticatedFlowAccepted": false
+}

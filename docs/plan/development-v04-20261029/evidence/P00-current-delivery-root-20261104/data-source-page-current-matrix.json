@@ -1,0 +1,79 @@
+{
+  "schema": "existing-data-source-page-matrix.v1",
+  "recordedAtUtc": "2026-11-04T03:24:17.014719+00:00",
+  "reviewedBy": "existing C and agent_runtime_audit; no new live requests",
+  "allFamiliesLastFullSuccessfulCycle": null,
+  "sources": [
+    "codal-fiveids.json",
+    "codal-last-stored-observation.json",
+    "funds-db-metadata-and-resources.json",
+    "funds-production-reader-failure.json",
+    "funds-production-single-page-read.json"
+  ],
+  "families": [
+    {
+      "family": "monthly-sales",
+      "lastIndependentAttempt": {
+        "symbol": "فملی",
+        "feedId": 22948,
+        "atUtc": "2026-11-04T01:10:14Z",
+        "httpStatus": 500
+      },
+      "collectorLastAttempt": null,
+      "collectorLastSuccess": null,
+      "newOfficialReportStored": false,
+      "nextOwner": "A/root",
+      "nextAction": "valid same official response, unit/period contract and readback"
+    },
+    {
+      "family": "financial-statements",
+      "lastIndependentResult": {
+        "symbol": "فولاد",
+        "feedId": 19270,
+        "httpStatus": 200,
+        "admission": "scope_unknown",
+        "blankCellsRemainNull": 4,
+        "scopeOwnership": null,
+        "periodBinding": null
+      },
+      "newOfficialReportStored": false,
+      "nextOwner": "A/root",
+      "nextAction": "prove publisher table/period binding without provenance override"
+    },
+    {
+      "family": "stocks",
+      "observedAtUtc": "2026-11-04T02:47:04.498316+00:00",
+      "dbRows": 777,
+      "snapshotFetchedAt": 1793760412042,
+      "quoteClock": null,
+      "validatedCoverage": null,
+      "productionDbBinding": null,
+      "nextOwner": "C/root",
+      "nextAction": "readonly effective binding and source clock"
+    },
+    {
+      "family": "funds",
+      "dbRows": 345,
+      "positiveNumericPrices": 345,
+      "quoteClock": null,
+      "frontendRowValidity": null,
+      "productionDbBinding": null,
+      "earlierPage": "read-error observed by A",
+      "latestPage": "single GET200; prior error text not reproduced; not durable acceptance",
+      "rootCause": null,
+      "nextOwner": "A/root",
+      "nextAction": "limited failure observations from existing traffic, then repair exact cause"
+    },
+    {
+      "family": "nav",
+      "lastAttempt": null,
+      "lastSuccess": null,
+      "sourceClock": null,
+      "navType": null,
+      "validatedCoverage": null,
+      "positiveFundPricesDoNotProveNav": true,
+      "nextOwner": "C/A/root",
+      "nextAction": "existing NAV definition, source clock and separate coverage"
+    }
+  ]
+}
