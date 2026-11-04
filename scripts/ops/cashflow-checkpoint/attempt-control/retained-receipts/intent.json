@@ -1,0 +1,15 @@
+{
+  "atUtc": "2026-10-31T08:24:29.927071+00:00",
+  "action": "READONLY_PREFLIGHT_THEN_EXISTING_ENCRYPTED_CAPTURE",
+  "source": "d9043e7f0db91d2686af233e74b2749aea33b234",
+  "checkedSourceFiles": 18,
+  "profile": "CorrectedAcl19FailedV2R2",
+  "checkpoint": "20261030T215307Z",
+  "existingDestinationAbsent": true,
+  "localFreeBytes": 78795915264,
+  "sqlWrites": false,
+  "serviceRestart": false,
+  "installation": false,
+  "modelCall": false,
+  "automaticRetry": false
+}

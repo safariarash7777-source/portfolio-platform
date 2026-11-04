@@ -246,7 +246,7 @@ function Invoke-V2([string]$Mode) {
   }
 }
 try{
-  if(-not $IsWindows -or $Action -cnotin @('Capture','Verify','ReviewCorrectedCheckpoint') -or $CheckpointId -cnotmatch '^\d{8}T\d{6}Z$' -or $ReviewedHelperSha256 -cne $approvedHelper -or $Profile -cnotin @('LegacyV1','CorrectedAcl19V2','CorrectedAcl19FailedV2R2')){throw 'parameters'}
+  if(-not $IsWindows -or $Action -cnotin @('Capture','Verify','ReviewCorrectedCheckpoint') -or $CheckpointId -cnotmatch '^\d{8}T\d{6}Z$' -or $ReviewedHelperSha256 -cne $approvedHelper -or $Profile -cnotin @('LegacyV1','CorrectedAcl19V2','CorrectedAcl19FailedV2R2','CorrectedCorePrivateV3')){throw 'parameters'}
   $parsed=[datetime]::MinValue
   if(-not [datetime]::TryParseExact($CheckpointId,'yyyyMMddTHHmmssZ',[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::None,[ref]$parsed)){throw 'date'}
   if($Action -ceq 'ReviewCorrectedCheckpoint'){
@@ -289,6 +289,11 @@ print(json.dumps(module.review('backup-checkpoint.review-corrected.v1',json.load
   Add-Type -AssemblyName System.Security
   Add-Type -Path (Join-Path $PSScriptRoot 'CheckpointCrypto.cs')
   $failureTypesLoaded=$true
+  if($Profile -ceq 'CorrectedCorePrivateV3'){
+    . (Join-Path $PSScriptRoot 'checkpoint-profile-v3.ps1')
+    Invoke-V3
+    return
+  }
   if($Profile -ceq 'CorrectedAcl19FailedV2R2'){
     . (Join-Path $PSScriptRoot 'checkpoint-profile-v2.ps1')
     . (Join-Path $PSScriptRoot 'checkpoint-profile-v2r2.ps1')

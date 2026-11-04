@@ -233,3 +233,49 @@ Offline checks: `pwsh -NoProfile -File ./offline-tests.ps1`. Fixture mode is res
 The three reviewed checkpoints `20261017T122931Z`, `20261023T123955Z` and `20261023T154032Z` now preserve their exact dump bytes as gzip; the redundant raw representations were removed only after full decode/hash and real tmpfs `pg_restore --list` checks. Historical receipts remain unchanged. See [current evidence and capacity](../../../docs/plan/development-v04-20261029/evidence/P15-three-promotions-root-20261104.json) and COMMAND-CENTER; this is not a fresh database backup or restore.
 
 LegacyV1 and `pg_restore` do not read gzip automatically. Before using the old raw path, a separately authorized operator must verify the checkpoint's prepared/tool/gzip pins, use its fixed `materialize` command from `RESTORE-RAW-PATH-20261104.json`, and independently verify the recreated raw byte count/hash and retained gzip. Only helper SHA256 `496e287c429ef1cb29b0cd9570e0392e0f3bd5ce0b45d2a2779999b7441d556d` is reviewed for this route. Pin the prepared receipt externally; the helper's materialize branch does not do that external comparison itself. Reserve at least 10 GiB + exact raw bytes + 32 MiB before materializing. A marker, an old failed read-only call or a presence-only readback grants no write authority and proves no recovery. On an unknown result inspect the same intent; never replay or remove its partial file. Actual raw-missing materialization and database restore have not been performed by this compaction delivery.
+
+## Corrected core/private V3: attempt-bound source, no native delivery
+
+`CorrectedCorePrivateV3` preserves the corrected SQL checkpoint
+`20261103T222239Z`. The provider lives beside this wrapper; the existing caller,
+adapter and attempt engine live in [attempt-control](attempt-control/).
+Its `v3/` directory is the byte-pinned reviewed provider snapshot and `frozen/`
+retains the exact Oct30/R2 sources. These are executable source snapshots, not
+private controller state or backup archives. The three retained runner receipts
+are sanitized historical failure metadata; they issue no authority.
+
+**ACTUAL: NO NATIVE V3 Capture/Verify, provisioning, authorization issuance or
+installation has been performed by this source delivery.** Expected schema is
+23 present remote roles, one explicit absent role and two pinned memory roles:
+26 records / 25 streams. Actual native archive counts remain `null`. Capturing
+or verifying the Nov3 dump would preserve that historical checkpoint; it would
+not create a current database backup. Storage binaries, rollback, fresh sustained
+capacity and current migration compatibility remain separate unverified gates.
+
+Use the same `attempt-control/native-caller.ps1` and its existing actions only
+after root separately reviews the source pins, provisions the exact Nov3
+controller namespace and issues an attempt authorization. The V3 branch requires
+explicit `Profile=CorrectedCorePrivateV3`, `ReviewedProfileSha256` matching the
+sibling policy, a specific `AttemptId` and the exact reviewed authorization hash.
+There is no inferred latest attempt, automatic authority issuance or fallback
+to Oct30 permissions. The old default R2 branch and its entropy/path namespace
+remain unchanged. Direct native V3 wrapper execution is rejected unless the
+same authenticated controller attempt holds both locks and owns the signed
+start event. No standalone V3 command grants permission to capture.
+
+The lifecycle remains authorization, signed capture start, bound capture,
+signed verify start and external verified event. An unknown outcome or partial
+archive requires authoritative `Readback`; it never permits automatic replay,
+deletion or a replacement attempt. Native Verify preserves archive inventory.
+Headers, manifest and DPAPI entropy bind the new attempt's authorization/nonce;
+successful verification means backup-only and does not unlock legacy Apply or
+the separate consultation-next migration consumer.
+
+Keep all runtime keys, signed authority, attempts and archives outside Git in
+the existing private per-checkpoint locations. `.gitattributes` lists exact
+additional raw-byte paths; do not normalize pinned JSON, Python or snapshots.
+The source-only packet was checked offline with mocked I/O/provider boundaries;
+those results do not establish a working native controller or product delivery.
+Current operational status and acceptance remain in
+[COMMAND-CENTER](../../../docs/COMMAND-CENTER.md); the original checkpoint failure
+is retained in [the existing evidence](../../../docs/plan/development-v04-20261029/evidence/P15-fresh-backup-not-accepted-root-20261104.json).

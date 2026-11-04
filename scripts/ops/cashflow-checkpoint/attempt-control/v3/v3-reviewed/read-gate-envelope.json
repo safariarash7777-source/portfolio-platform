@@ -1,0 +1,50 @@
+{
+  "launchId": "fdfda0e91ea346e3a794b7518c4f3e16",
+  "at": "2026-11-03T23:49:06.536613+00:00",
+  "pid": 2137073,
+  "startTicks": "65635414",
+  "consumerSha256": "a90996ce371a97701c50d5937fa11f866911f9387cbf9f4a1b130e4563c1fc3a",
+  "bindingSha256": "390fc73da29c3b53e267c4566eb538ebb0142c6426a032b41e27e969eaa5ac27",
+  "serverFilesWritten": false,
+  "sqlCalls": 0,
+  "startStopCalls": 0,
+  "receipt": {
+    "at": "2026-11-03T23:49:15.296341+00:00",
+    "status": "PASS_PINNED_SQL_RESTORE_READ_GATE",
+    "checkpoint": "20261103T222239Z",
+    "originalStatus": "failed",
+    "correctionStatus": "PASS_OWNED_COPY_PRIVATE2_RECONCILIATION",
+    "originalReceiptSha256": "695848a3f26da875b859c6589952eb9154ed0fae36f365b254b20e881cc793d6",
+    "correctionReceiptSha256": "fda8610f0b849a799cf1c3d593d41ab918d687f5f5bf89a9d53a2e392897e106",
+    "bindingSha256": "390fc73da29c3b53e267c4566eb538ebb0142c6426a032b41e27e969eaa5ac27",
+    "sourceId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+    "targetId": "458c668152b9bab455512c440889229452e0f3b23297bda236936fb2d1f8a065",
+    "dumpSha256": "7bd80f0749d0c898def87091584fa6fd0cb0e50f08196dfd76c9f051ce0adfea",
+    "dumpBytes": 2415654600,
+    "proofStopped": true,
+    "proofNetwork": "none",
+    "proofPortsPublished": false,
+    "sourceHealthy": true,
+    "sqlExecuted": false,
+    "backupRetried": false,
+    "filesTransferred": false,
+    "captureConsumerIntegrated": false,
+    "installerConsumerIntegrated": false,
+    "releaseAuthorized": false,
+    "limits": [
+      "SQL restore attestation only",
+      "No Storage binary backup",
+      "Supplementary private catalog and globals do not share the exported core snapshot",
+      "Capture/installer must explicitly adopt this versioned attestation before use"
+    ]
+  },
+  "status": "READ_GATE_RETURNED",
+  "localIntent": {
+    "launchId": "fdfda0e91ea346e3a794b7518c4f3e16",
+    "at": "2026-11-03T23:49:03.213852+00:00",
+    "payloadSha256": "5962a692e51f05764780b5fb8417fdaee14ab8956ded3fe4fe23267e64c1aa14",
+    "localLauncherSha256": "e9760efc140197f2bfcfb6a2e277a5d80bbae31ed1c3519d60cd31d2e2e20a6f",
+    "noAutomaticRetry": true,
+    "operation": "read-only-pinned-gate"
+  }
+}

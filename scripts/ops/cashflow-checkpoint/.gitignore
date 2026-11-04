@@ -2,3 +2,11 @@ test-output/
 offline-receipt-*.json
 !offline-receipt-20261020.json
 !offline-receipt-20261023.json
+
+# Runtime authority and encrypted artifacts never belong in source control.
+attempt-control/authority/
+attempt-control/attempts/
+attempt-control/test-output/
+attempt-control/*.dpapi
+attempt-control/*.enc
+attempt-control/*.partial
