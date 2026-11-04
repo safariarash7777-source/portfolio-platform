@@ -22,7 +22,8 @@ function validQuote(q: CachedQuote | null | undefined, symbol: string): q is Cac
   if (typeof q.sourceDateRaw !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(q.sourceDateRaw)
     || typeof q.sourceTimeRaw !== "string" || !/^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/.test(q.sourceTimeRaw)) return false;
   const day = new Date(q.sourceDateRaw + "T00:00:00Z");
-  if (!Number.isFinite(day.getTime()) || day.toISOString().slice(0, 10) !== q.sourceDateRaw) return false;
+  if (!Number.isFinite(day.getTime()) || day.toISOString().slice(0, 10) !== q.sourceDateRaw
+    || day.getTime() > Date.now() + 86_400_000) return false;
   return [q.lastRial, q.closeRial].every(value => value === null || (typeof value === "number" && Number.isFinite(value) && value > 0))
     && ((typeof q.lastRial === "number" && q.lastRial > 0) || (typeof q.closeRial === "number" && q.closeRial > 0));
 }

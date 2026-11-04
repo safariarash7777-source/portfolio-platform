@@ -11,11 +11,12 @@ function validDay(value){
  if(!/^\d{4}-\d{2}-\d{2}$/.test(value??''))return false;
  const date=new Date(value+'T00:00:00Z');return Number.isFinite(date.getTime())&&date.toISOString().slice(0,10)===value;
 }
-export function validMcpQuote(q){
+export function validMcpQuote(q,now=Date.now()){
  return object(q)&&q.symbol===SYMBOL&&q.instrumentCode===CODE&&q.unit==='rial'
   &&q.server==='tsetmc-mcp'&&q.tool==='ts_get_quote'&&q.sourceAtUtc===null
   &&q.freshness==='unknown'&&q.sourceDateCalendar==='gregorian'
-  &&validDay(q.sourceDateRaw)&&/^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/.test(q.sourceTimeRaw??'')
+  &&validDay(q.sourceDateRaw)&&Date.parse(q.sourceDateRaw+'T00:00:00Z')<=now+86400000
+  &&/^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$/.test(q.sourceTimeRaw??'')
   &&((typeof q.lastRial==='number'&&q.lastRial>0)||(typeof q.closeRial==='number'&&q.closeRial>0))
   &&[q.lastRial,q.closeRial].every(value=>value===null||(typeof value==='number'&&value>0))
   &&['lastRial','closeRial','lastToman','closeToman','volume','valueRial','trades','lastChangePct','closeChangePct']
@@ -23,7 +24,8 @@ export function validMcpQuote(q){
   &&(q.lastRial===null?q.lastToman===null:q.lastToman===q.lastRial/10)
   &&(q.closeRial===null?q.closeToman===null:q.closeToman===q.closeRial/10);
 }
-const rank=q=>validMcpQuote(q)?q.sourceDateRaw+'T'+q.sourceTimeRaw:null;
+// Only canonical/candidate quotes validated against the injected clock reach rank.
+const rank=q=>q.sourceDateRaw+'T'+q.sourceTimeRaw;
 const stable=value=>JSON.stringify(value&&typeof value==='object'&&!Array.isArray(value)
  ?Object.fromEntries(Object.keys(value).sort().map(key=>[key,JSON.parse(stable(value[key]))])):value);
 export async function runtimeHeaders(env){
@@ -100,7 +102,7 @@ export function createMcpQuoteBridge({env=process.env,fetchImpl=globalThis.fetch
   if(!rows.length)return null;
   const payload=rows[0]?.payload;
   if(payload?.schema!=='mcpfarsi-quotes.v1'||!object(payload.quotes)||Object.keys(payload.quotes).some(key=>key!==SYMBOL))throw Error();
-  const q=payload.quotes[SYMBOL];if(!validMcpQuote(q))throw Error();return q;
+  const q=payload.quotes[SYMBOL];if(!validMcpQuote(q,now()))throw Error();return q;
  }
  async function work(){
   nextAt=now()+TTL;
@@ -116,7 +118,7 @@ export function createMcpQuoteBridge({env=process.env,fetchImpl=globalThis.fetch
    if(Number.isFinite(received)&&received<=now()&&now()-received<TTL){publication='confirmed';lastError=null;return;}
    requests++;
    const candidate=normalizeQuote(await get(AbortSignal.timeout(20000)),new Date(now()).toISOString(),SYMBOL);
-   if(!validMcpQuote(candidate))throw Error();
+   if(!validMcpQuote(candidate,now()))throw Error();
    if(cached&&rank(candidate)<=rank(cached)){lastError=null;return;}
    // Re-read, then use an insert-if-absent or a source-clock compare-and-swap.
    // This protects against concurrent publishers after this read as well.

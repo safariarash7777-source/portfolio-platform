@@ -74,8 +74,11 @@ export async function activate({ token, apiKey, expectedRelease = DEFAULT_RELEAS
     const rechecked = variables(await request(PROJECT));
     receipt.concurrentEnvChangeDetected = !equal(before, rechecked);
     if (receipt.concurrentEnvChangeDetected) reject();
-    if (equal(before, wanted)) return { ...receipt, state: 'already_configured_no_write', desiredConfigurationObserved: true,
-      existingValuesAndOrderPreserved: true, afterBackendMatched: true, afterReleaseMatched: true };
+    if (equal(before, wanted)) {
+      release(await request(RELEASES), expectedRelease);
+      return { ...receipt, state: 'already_configured_no_write', desiredConfigurationObserved: true,
+        existingValuesAndOrderPreserved: true, afterBackendMatched: true, afterReleaseMatched: true };
+    }
     if (mode === 'readback') return { ...receipt, state: 'readback_only_configuration_not_confirmed', desiredConfigurationObserved: false };
   } catch { return receipt; }
   // Exactly one update attempt. No exception text or request/response body escapes.

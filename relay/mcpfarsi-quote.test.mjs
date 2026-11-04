@@ -34,6 +34,17 @@ test('enabled actual bridge publishes observed dated FMLI quote into existing sn
  assert.equal(q.freshness,'unknown');assert.equal(x.bridge.peek('فملی').live,false);
  assert.equal(x.bridge.peek('فولاد'),null);assert.equal(x.bridge.status().publication,'confirmed');
 });
+
+test('a future-dated provider quote cannot poison subsequent valid publications',async()=>{
+ const future=structuredClone(raw);
+ const body=JSON.parse(future.data.result.content[0].text);body.date='2099-01-01';
+ future.data.result.content[0].text=JSON.stringify(body);
+ const options={quote:future};const x=setup(options);
+ await x.bridge.refresh();assert.equal(x.posts(),0);assert.equal(x.bridge.peek('فملی'),null);
+ options.quote=raw;x.advance(15*60_000);await x.bridge.refresh();
+ assert.equal(x.posts(),1);assert.equal(x.bridge.status().publication,'confirmed');
+ assert.equal(x.bridge.peek('فملی').quote.sourceDateRaw,'2026-11-04');
+});
 test('default-off and missing secure configuration perform zero calls',async()=>{
  for(const cfg of [{MCPFARSI_QUOTE_ENABLED:'0'},{MCPFARSI_HEADERS_FILE:''}]){
   const x=setup({env:cfg});await x.bridge.refresh();assert.equal(x.requests.length,0);assert.equal(x.mcp(),0);

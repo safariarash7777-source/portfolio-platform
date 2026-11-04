@@ -38,6 +38,19 @@ function fixture(options = {}) {
 const posts = f => f.calls.filter(call => call.method === 'POST');
 const run = f => activate({ token, apiKey, fetchImpl: f.fetchImpl });
 
+test('already-configured readback rechecks release before claiming a match',async()=>{
+ const envs=initial().map(e=>e.key===BRIDGE_FLAG?{...e,value:'1'}:e);
+ envs.push({key:'MCP_FARSI_API_KEY',value:apiKey});
+ const f=fixture({envs});let releases=0;
+ const fetchImpl=async(url,init)=>{
+  if(url===releasesURL&&++releases===2)return Response.json({currentRelease:'changed',releases:[]});
+  return f.fetchImpl(url,init);
+ };
+ const r=await activate({token,apiKey,mode:'readback',fetchImpl});
+ assert.equal(releases,2);assert.equal(posts(f).length,0);
+ assert.equal(r.state,'preflight_rejected');assert.notEqual(r.afterReleaseMatched,true);
+});
+
 test('single POST preserves every unrelated value and original order, adds only the approved key', async () => {
   const f = fixture(), before = initial(), r = await run(f);
   assert.equal(posts(f).length, 1); assert.equal(r.state, 'configuration_confirmed_restart_unproven');
@@ -73,7 +86,7 @@ test('already desired configuration performs only GETs and does not restart', as
   const envs = initial().map(e => e.key === BRIDGE_FLAG ? { key: e.key, value: '1' } : e);
   envs.push({ key: 'MCP_FARSI_API_KEY', value: apiKey });
   const f = fixture({ envs }), r = await run(f); assert.equal(r.state, 'already_configured_no_write');
-  assert.equal(posts(f).length, 0); assert.equal(f.calls.length, 3);
+  assert.equal(posts(f).length, 0); assert.equal(f.calls.length, 4);
 });
 test('explicit readback mode cannot POST even when configuration is not desired', async () => {
   const f = fixture(), r = await activate({ token, apiKey, mode: 'readback', fetchImpl: f.fetchImpl });
