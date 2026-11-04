@@ -14,9 +14,13 @@ import { buildMonthlySales } from "../core/monthlyReport";
 const DB = "codal_reinterpretation_isolated_test";
 // Omit inherited libpq settings entirely: an empty PGSERVICEFILE is still a
 // filename to libpq. Keep only the explicit disposable-runner connection below.
-const ENV = { ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !/^PG/i.test(key))),
+const ENV: NodeJS.ProcessEnv = { ...process.env };
+for (const key of Object.keys(ENV)) {
+  if (/^PG/i.test(key)) delete ENV[key];
+}
+Object.assign(ENV, {
   PGHOST: "127.0.0.1", PGHOSTADDR: "127.0.0.1", PGPORT: "5433", PGUSER: "postgres",
-  PGPASSWORD: "postgres", PGOPTIONS: "-c statement_timeout=5000" };
+  PGPASSWORD: "postgres", PGOPTIONS: "-c statement_timeout=5000" });
 const lit = (value: unknown) => `'${JSON.stringify(value).replaceAll("'", "''")}'::jsonb`;
 function sql(query: string, db = DB): string {
   return execFileSync("psql", ["-X", "-qAt", "-v", "ON_ERROR_STOP=1", "-d", db, "-c", query],
@@ -41,9 +45,9 @@ before(() => {
   // No DROP of an existing DB: a collision means stop, never reuse unknown state.
   sql(`CREATE DATABASE ${DB}`, "postgres");
   sql(`DO $$ BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN CREATE ROLE anon NOLOGIN; END IF;
-    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN CREATE ROLE authenticated NOLOGIN; END IF;
-    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='service_role') THEN CREATE ROLE service_role NOLOGIN BYPASSRLS; END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='anon') THEN CREATE ROLE anon NOLOGIN NOINHERIT; END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='authenticated') THEN CREATE ROLE authenticated NOLOGIN NOINHERIT; END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='service_role') THEN CREATE ROLE service_role NOLOGIN NOINHERIT BYPASSRLS; END IF;
   END $$;`);
   const original = readFileSync(join(process.cwd(), "sql/terminal_t0.sql"), "utf8");
   const table = original.match(/create table public\.codal_reports \([\s\S]*?\n\);/i)?.[0];
@@ -60,6 +64,7 @@ before(() => {
 });
 
 test("SQL candidate is invoker with narrow lock helper; no public execute or mutation grants", () => {
+  assert.equal(sql("SELECT count(*) FROM pg_roles WHERE rolname IN ('anon','authenticated','service_role') AND NOT rolinherit"), "3");
   assert.equal(sql("SELECT prosecdef FROM pg_proc WHERE oid='public.codal_reinterpret_one(jsonb,bigint,jsonb)'::regprocedure"), "f");
   assert.equal(sql("SELECT has_function_privilege('anon','public.codal_reinterpret_one(jsonb,bigint,jsonb)','EXECUTE')"), "f");
   assert.equal(sql("SELECT has_function_privilege('authenticated','codal_private.reinterpret_lock()','EXECUTE')"), "f");
