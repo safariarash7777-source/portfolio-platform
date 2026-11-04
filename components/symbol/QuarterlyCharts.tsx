@@ -18,6 +18,8 @@ import {
   YAxis,
 } from "recharts";
 import MeasuredResponsiveContainer from "./MeasuredResponsiveContainer";
+import SourceChartFrame from "./MonthlySourceChartFrame";
+import { QuarterSourceLabel, TtmPointSources } from "./QuarterlyPointSources";
 import type { DerivedQuarter, TtmPoint } from "@/lib/core/quarterly";
 import { useEffect, useState } from "react";
 import { toPersianDigits } from "@/lib/format";
@@ -98,6 +100,7 @@ export default function QuarterlyCharts({
     name: faQ(q.label),
     درآمد: q.revenue != null ? q.revenue / 10_000 : null,
     "سود خالص": q.netProfit != null ? q.netProfit / 10_000 : null,
+    ...(previewControls ? { sourceQuarter: q } : {}),
   }));
 
   const marginData = last12.map((q) => ({
@@ -105,6 +108,7 @@ export default function QuarterlyCharts({
     ناخالص: q.grossMargin,
     عملیاتی: q.operatingMargin,
     خالص: q.netMargin,
+    ...(previewControls ? { sourceQuarter: q } : {}),
   }));
 
   const peData = peSeries.map((p) => ({ name: faQ(p.label), pe: p.pe }));
@@ -153,13 +157,17 @@ export default function QuarterlyCharts({
             .filter(Boolean)
             .join(" ")}
         >
-          <div style={{ width: "100%", height: 250 }} dir="ltr">
+          <SourceChartFrame enabled={previewControls} height={250} width="100%">{(trigger, portal) => (
             <MeasuredResponsiveContainer>
               <BarChart data={revData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
                 <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-35} height={50} textAnchor="end" />
                 <YAxis tick={{ fontSize: 10 }} width={54} tickFormatter={(value: number) => toPersianDigits(String(value))} />
                 <Tooltip
+                  trigger={trigger}
+                  portal={portal}
+                  wrapperStyle={previewControls ? { pointerEvents: "auto", maxWidth: "min(280px, 75vw)", overflowWrap: "anywhere" } : undefined}
+                  labelFormatter={previewControls ? (label, payload) => <QuarterSourceLabel label={label} payload={payload} /> : undefined}
                   formatter={(v: unknown, name: unknown) => [v == null ? "—" : `${nf1.format(Number(v))} میلیارد تومان`, String(name)]}
                   contentStyle={tooltipStyle}
                 />
@@ -168,7 +176,7 @@ export default function QuarterlyCharts({
                 <Bar dataKey="سود خالص" fill="var(--gold)" radius={[3, 3, 0, 0]} />
               </BarChart>
             </MeasuredResponsiveContainer>
-          </div>
+          )}</SourceChartFrame>
         </Card>
 
         <Card
@@ -176,13 +184,17 @@ export default function QuarterlyCharts({
           question="کیفیت سودآوری (حاشیهٔ ناخالص، عملیاتی، خالص) رو به بهبود است یا افت؟"
           note="حاشیه = نسبت به درآمد همان فصل (٪)؛ فصل بدون درآمد مثبت نقطه ندارد."
         >
-          <div style={{ width: "100%", height: 250 }} dir="ltr">
+          <SourceChartFrame enabled={previewControls} height={250} width="100%">{(trigger, portal) => (
             <MeasuredResponsiveContainer>
               <LineChart data={marginData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
                 <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-35} height={50} textAnchor="end" />
                 <YAxis tick={{ fontSize: 10 }} width={38} tickFormatter={(value: number) => toPersianDigits(String(value))} />
                 <Tooltip
+                  trigger={trigger}
+                  portal={portal}
+                  wrapperStyle={previewControls ? { pointerEvents: "auto", maxWidth: "min(280px, 75vw)", overflowWrap: "anywhere" } : undefined}
+                  labelFormatter={previewControls ? (label, payload) => <QuarterSourceLabel label={label} payload={payload} margins /> : undefined}
                   formatter={(v: unknown, name: unknown) => [v == null ? "—" : `٪${nf1.format(Number(v))}`, String(name)]}
                   contentStyle={tooltipStyle}
                 />
@@ -192,11 +204,19 @@ export default function QuarterlyCharts({
                 <Line type="monotone" dataKey="خالص" stroke="var(--success)" dot={{ r: 2 }} connectNulls={false} />
               </LineChart>
             </MeasuredResponsiveContainer>
-          </div>
+          )}</SourceChartFrame>
         </Card>
       </div>
 
       <div className="mt-4">
+        {previewControls && ttm.length > 0 ? <details className="mb-4 rounded-lg border border-border p-3" dir="rtl">
+          <summary className="cursor-pointer text-sm font-semibold">منابع سود هر سهم دوازده‌ماهه</summary>
+          <p className="mt-2 text-xs leading-6">برای هر بازه، گزارش‌های چهار فصل و گزارش سرمایه را جداگانه ببینید.</p>
+          {ttm.map((point, index) => <details key={`${point.periodEnd}-${index}`} className="mt-3 rounded-lg border border-border p-3">
+            <summary className="cursor-pointer text-sm">دوازده‌ماهه منتهی به {faDigits(point.periodEnd)}</summary>
+            <TtmPointSources point={point} />
+          </details>)}
+        </details> : null}
         {peData.filter((p) => p.pe != null).length >= 2 ? (
           <Card
             title="P/E دوازده‌ماهه (TTM)"
