@@ -1,0 +1,45 @@
+Browser tab: 4, Title: "دیده‌بان صندوق‌ها · آرش صفری", URL: "https://portfolio-platform-fawn.vercel.app/market/funds?compare=%5B%22%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D9%85%D9%88%D8%AC%22%2C%22%D9%86%D8%A7%D8%B1%D9%86%D8%AC+%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D8%AA%D9%88%D8%A7%D9%86%22%2C%22%D8%AC%D9%87%D8%B4%22%5D".
+The following is a diff from the previous accessibility tree with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 2034-2129, 2138-2143, 2145-2148, 2198-2233, 2252-2287, 2306-2395, 2414-2467, 2486-2521, 2540-2647, 2666-2719, 2738-3115, 3134-3259, 3261-3262
+~					1874 link Description: نارنج اهرم, Value: portfolio-platform-fawn.vercel.app/symbol/%D9%86%D8%A7%D8%B1%D9%86%D8%AC%20%D8%A7%D9%87%D8%B1%D9%85
+~		2031 text نتیجهٔ فیلتر ۹ از ۳۴۵ صندوق ارزش بازار نمادها ۱۶۰٫۰ همت از ۹ صندوق از ۹ میانگین بازده روز ▲ ٪۳٫۹ از ۹ صندوقِ دارای بازده نسبت مثبت ٪۱۰۰ از ۹ صندوقِ دارای بازده میانگین حباب — از ۰ صندوقِ دارای NAV معتبر
+~		2032 image ۱۰۰ درصد صندوق‌ها مثبت
+~		2033 text مثبت ٪ ۱۰۰ منفی ٪ ۰
+~		2135 text field (settable) جست‌وجوی صندوق, Value: اهرم
+~			2137 checkbox همه۹, Value: 1
+~		2149 text ۹ نتیجه از ۳۴۵ صندوق
+~					2290 link Description: نارنج اهرم, Help: صفحهٔ نماد نارنج اهرم, Value: portfolio-platform-fawn.vercel.app/symbol/%D9%86%D8%A7%D8%B1%D9%86%D8%AC%20%D8%A7%D9%87%D8%B1%D9%85
+~					2305 link Description: بررسی, Value: portfolio-platform-fawn.vercel.app/symbol/%D9%86%D8%A7%D8%B1%D9%86%D8%AC%20%D8%A7%D9%87%D8%B1%D9%85
+~					2524 link Description: بیدار, Help: صفحهٔ نماد بیدار, Value: portfolio-platform-fawn.vercel.app/symbol/%D8%A8%DB%8C%D8%AF%D8%A7%D8%B1
+~					2539 link Description: بررسی, Value: portfolio-platform-fawn.vercel.app/symbol/%D8%A8%DB%8C%D8%AF%D8%A7%D8%B1
+~					2650 link Description: شتاب, Help: صفحهٔ نماد شتاب, Value: portfolio-platform-fawn.vercel.app/symbol/%D8%B4%D8%AA%D8%A7%D8%A8
+~					2665 link Description: بررسی, Value: portfolio-platform-fawn.vercel.app/symbol/%D8%B4%D8%AA%D8%A7%D8%A8
+~					2722 link Description: دوایکس, Help: صفحهٔ نماد دوایکس, Value: portfolio-platform-fawn.vercel.app/symbol/%D8%AF%D9%88%D8%A7%DB%8C%DA%A9%D8%B3
+~					2737 link Description: بررسی, Value: portfolio-platform-fawn.vercel.app/symbol/%D8%AF%D9%88%D8%A7%DB%8C%DA%A9%D8%B3
+~					3118 link Description: پیشران, Help: صفحهٔ نماد پیشران, Value: portfolio-platform-fawn.vercel.app/symbol/%D9%BE%DB%8C%D8%B4%D8%B1%D8%A7%D9%86
+~					3133 link Description: بررسی, Value: portfolio-platform-fawn.vercel.app/symbol/%D9%BE%DB%8C%D8%B4%D8%B1%D8%A7%D9%86
+~		3260 text نمایشِ ۹ از ۹ نتیجه  · کلِ صندوق‌ها: ۳۴۵ پوشش تاریخی برای محاسبهٔ بازده کافی نیست. تا رسیدن دادهٔ معتبر، عددی نمایش داده نمی‌شود. داده از فید رسمی بازار سرمایه دریافت می‌شود و برای شناخت بازار است؛ به‌تنهایی مبنای تصمیم شخصی نیست. حباب = (قیمت − NAV ابطال) ÷ NAV ابطال؛ NAV ابطال از سامانهٔ رسمی بازار (به‌روزرسانی حدوداً ساعتی) و ممکن است چند دقیقه با قیمت جاری فاصله داشته باشد.
+~			3266 link Description: برگشت به میز بازار, Value: portfolio-platform-fawn.vercel.app/market
+~			3267 link Description: داشبورد من, Value: portfolio-platform-fawn.vercel.app/dashboard
+~		3271 link Description: تلگرام, Value: t.me/arashsafariiiiiiii
+~		3272 link Description: اینستاگرام, Value: instagram.com/arash_safariiiiiii/
+~			3276 link Description: رصد بازار, Value: portfolio-platform-fawn.vercel.app/market
+~			3277 link Description: نقشهٔ بازار, Value: portfolio-platform-fawn.vercel.app/market/map
+~			3278 link Description: صندوق‌ها, Value: portfolio-platform-fawn.vercel.app/market/funds
+~			3279 link Description: تابلوی سهام, Value: portfolio-platform-fawn.vercel.app/market/stocks
+~			3280 link Description: اختیار معامله, Value: portfolio-platform-fawn.vercel.app/market/options
+~			3281 link Description: کدال, Value: portfolio-platform-fawn.vercel.app/codal
+~			3282 link Description: بانک داده, Value: portfolio-platform-fawn.vercel.app/data
+~			3286 link Description: کارنامه, Value: portfolio-platform-fawn.vercel.app/analyses
+~			3287 link Description: یادداشت روزانه, Value: portfolio-platform-fawn.vercel.app/notes
+~			3288 link Description: تحلیل‌های اجتماعی, Value: portfolio-platform-fawn.vercel.app/insights
+~			3289 link Description: واژه‌نامهٔ مالی, Value: portfolio-platform-fawn.vercel.app/learn/glossary
+~			3290 link Description: سناریوی سبد, Value: portfolio-platform-fawn.vercel.app/tools/portfolio-scenario
+~			3294 link Description: وبینار, Value: portfolio-platform-fawn.vercel.app/webinars
+~			3295 link Description: مشاورهٔ اختصاصی, Value: portfolio-platform-fawn.vercel.app/
+~			3299 link Description: دربارهٔ آرش صفری, Value: portfolio-platform-fawn.vercel.app/about
+~			3300 link Description: راهنمای استفاده از سایت, Value: portfolio-platform-fawn.vercel.app/help
+~			3301 link Description: حریم خصوصی, Value: portfolio-platform-fawn.vercel.app/legal/privacy
+~			3302 link Description: شرایط استفاده, Value: portfolio-platform-fawn.vercel.app/legal/terms
+~			3303 link Description: سلب مسئولیت, Value: portfolio-platform-fawn.vercel.app/legal/disclaimer
+The focused UI element is 2135 text field (settable) جست‌وجوی صندوق, Value: اهرم

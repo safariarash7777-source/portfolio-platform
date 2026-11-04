@@ -1,0 +1,62 @@
+{
+  "schema": "funds-browser-root-association.v1",
+  "rawReceiptsPreserved": true,
+  "rawHashes": {
+    "capacity-062807.json": "08b0920098e77d2b00bd7d2956587c943d0d0fdd0eb7e34caa72019619a25d55",
+    "liara-run-417856-receipt.json": "2d8774fbc4dd866041b225c7a5a78f3c0c3ce1db8d78731e24c8b15a29305100",
+    "liara-run-417856-independent-readback.json": "68802ee6a5f66fcf3f83abdeea653ac678fdada5c4b7ccbcd06cbc9fb2834723",
+    "funds-064239-receipt.json": "cb4ae49b80ebd87cd5d68a50a8321ab48125025d5e899412f334781ed604d3ab",
+    "funds-064239-production-mobile-reload.png": "fc132dc6593b3bf5bc26788a33dfed2ed0807d0363d8d7bcec2919dd83e7d7e3",
+    "funds-064239-production-selected.ax.txt": "c86be6f453e7c21314dc31a3d3d3a00adcb190da9f3af4c0b0611a1ae1ae9a05",
+    "funds-064239-production-reload.ax.txt": "a94a70bbcf2d2c404ca394013b79e8fe54ba5574e5c0af18c59b680009cc59ab",
+    "funds-064239-preview.ax.txt": "db4c01dcec522a334a402bc5ea855b0cb45e79ad8139909fa211dec6eda184c9",
+    "funds-064239-preview-mobile.png": "66fa4e35551fc5ea904901be29e51d1626dc14ee67fa815e4baf93aca1ba0c7f",
+    "funds-064239-search-audit.fa.md": "fa2150c7b0d4880f657fc5b077f430f7eb9a971fc4f08b6e01cf850eba8b96a0",
+    "funds-065403-receipt.json": "70eb680700a8be1a0e9119bd5ee23f23d72d6ccdc14e806fedbad3b89676388c",
+    "funds-065403-before.ax.txt": "225ba35c3e418525a54c428c9517f3856886a6a008c0cc37bfc9bea54383151f",
+    "funds-065403-failure.ax.txt": "f86593611870b13afe2216e3cd2df3e508ada115f914dcd3d547dee306a50837",
+    "funds-065403-failure.png": "c0682d5b9ee6de2f635839abb248e9701a99d01a9ee9e22bdc49f820fb24f472",
+    "p15-harness-411d-adoption.json": "92cb5d60634ed4e153064854628fb427524e5e4cdf0d507c9f733da25d0ef73b",
+    "p15-harness-independent-source-review.json": "98041a1d06b3a77577761b1ba1a164f31602e9918d536470e2003c0f579ca8fe"
+  },
+  "productionMetadataBeforeAfter": {
+    "sha": "636d38e7778fd58d8caf844c810d3d2bef2b1001",
+    "deployment": "dpl_CGBbCVsm9fpKZTRRsuGhG5PRg5bE",
+    "state": "READY",
+    "method": "metadata window association; no per-response build header captured"
+  },
+  "preview": {
+    "sha": "19ccd969158db6610e7fd4a5ba9fd92a2b00d9f9",
+    "deployment": "dpl_Fv1ZdqWmK4oSznhPwTZQdKFxeSgR"
+  },
+  "browser": {
+    "fundsDisplayed": 345,
+    "selectionsReloaded": 5,
+    "actualViewportCssPx": 375,
+    "requestedViewportCssPx": 390,
+    "physicalPhoneAcceptance": false,
+    "localQuery": "اهرم",
+    "localResults": 9,
+    "urlQueryWithin2Seconds": "NOT_OBSERVED",
+    "conditionalReloadExecuted": false,
+    "consoleErrorsObserved": 0,
+    "networkRecording": "UNAVAILABLE",
+    "explicitWriteActions": 0
+  },
+  "quality": {
+    "priceDate": null,
+    "unitClass": null,
+    "navDate": "1405-08-13",
+    "navTime": "09:15..09:16",
+    "premiumAndPeriodReturns": "unavailable with reasons; no guessed zeros"
+  },
+  "sourceFix": {
+    "pr": 409,
+    "sha": "e29599bcceabc53c405530f95979cb8a66648c94",
+    "ciRun": 41790730518,
+    "ci": "IN_PROGRESS_AT_RECORD",
+    "preview": "PENDING_ACCEPTANCE",
+    "productionChanged": false
+  },
+  "intermittentReaderFailureRootCause": null
+}

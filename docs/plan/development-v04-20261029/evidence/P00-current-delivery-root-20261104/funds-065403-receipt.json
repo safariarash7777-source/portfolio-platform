@@ -1,0 +1,60 @@
+{
+  "startedAtUtc": "2026-11-04T06:54:03.056Z",
+  "endedAtUtc": "2026-11-04T06:54:39.698Z",
+  "navigations": 1,
+  "reloadExecuted": false,
+  "status": "Q_NOT_OBSERVED_WITHIN_2_SECONDS",
+  "followNavError": "Error: Timed out waiting for tab 4 to navigate to https://portfolio-platform-fawn.vercel.app/market/funds?compare=%5B%22%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D9%85%D9%88%D8%AC%22%2C%22%D9%86%D8%A7%D8%B1%D9%86%D8%AC+%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D8%AA%D9%88%D8%A7%D9%86%22%2C%22%D8%AC%D9%87%D8%B4%22%5D.",
+  "beforeFollow": {
+    "compare": [
+      "اهرم",
+      "موج",
+      "نارنج اهرم",
+      "توان",
+      "جهش"
+    ],
+    "input": "",
+    "url": "https://portfolio-platform-fawn.vercel.app/market/funds?compare=%5B%22%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D9%85%D9%88%D8%AC%22%2C%22%D9%86%D8%A7%D8%B1%D9%86%D8%AC+%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D8%AA%D9%88%D8%A7%D9%86%22%2C%22%D8%AC%D9%87%D8%B4%22%5D"
+  },
+  "afterFill": {
+    "input": "اهرم",
+    "url": "https://portfolio-platform-fawn.vercel.app/market/funds?compare=%5B%22%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D9%85%D9%88%D8%AC%22%2C%22%D9%86%D8%A7%D8%B1%D9%86%D8%AC+%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D8%AA%D9%88%D8%A7%D9%86%22%2C%22%D8%AC%D9%87%D8%B4%22%5D",
+    "visibleText": [
+      "نتیجهٔ فیلتر",
+      "۹ نتیجه از ۳۴۵ صندوق",
+      "نمایشِ ۹ از ۹ نتیجه · کلِ صندوق‌ها: ۳۴۵"
+    ]
+  },
+  "fillElapsedMs": 121,
+  "settleElapsedMs": 2020,
+  "settleError": "Error: Timed out waiting for URL https://portfolio-platform-fawn.vercel.app/market/funds?compare=%5B%22%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D9%85%D9%88%D8%AC%22%2C%22%D9%86%D8%A7%D8%B1%D9%86%D8%AC+%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D8%AA%D9%88%D8%A7%D9%86%22%2C%22%D8%AC%D9%87%D8%B4%22%5D&q=%D8%A7%D9%87%D8%B1%D9%85 in tab 4.",
+  "settled": {
+    "compare": [
+      "اهرم",
+      "موج",
+      "نارنج اهرم",
+      "توان",
+      "جهش"
+    ],
+    "input": "اهرم",
+    "url": "https://portfolio-platform-fawn.vercel.app/market/funds?compare=%5B%22%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D9%85%D9%88%D8%AC%22%2C%22%D9%86%D8%A7%D8%B1%D9%86%D8%AC+%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D8%AA%D9%88%D8%A7%D9%86%22%2C%22%D8%AC%D9%87%D8%B4%22%5D"
+  },
+  "followLogs": [],
+  "hashes": [
+    {
+      "name": "before.ax.txt",
+      "sha256": "225ba35c3e418525a54c428c9517f3856886a6a008c0cc37bfc9bea54383151f"
+    },
+    {
+      "name": "failure.ax.txt",
+      "sha256": "f86593611870b13afe2216e3cd2df3e508ada115f914dcd3d547dee306a50837"
+    },
+    {
+      "name": "failure.png",
+      "sha256": "c0682d5b9ee6de2f635839abb248e9701a99d01a9ee9e22bdc49f820fb24f472"
+    }
+  ],
+  "networkCapture": "UNAVAILABLE",
+  "explicitWriteActions": 0,
+  "interpretation": "Local filter works; q settlement did not pass bounded 2-second observation; delayed server navigation vs state defect unresolved."
+}

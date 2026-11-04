@@ -1,0 +1,69 @@
+{
+  "status": "SOURCE_PATCH_READY_FOR_INDEPENDENT_REVIEW",
+  "base": "918e6840a5ed0f6f69c14737ccbda218346cdb76",
+  "parentPacketSha256": "9ca160954f8d07784de65815c29c285e7b894d80f3f2f7dd884cb1c2f8a5b46f",
+  "sourcePatchSha256": "25815bba70f83f1f26607430a6f1ea8f31dae62618c2b26330f7faf61fbe3605",
+  "ciPatchSha256": "1398280a654a1f794caf1c3b53c1dc635691bddff1325a0356c72430fb3c1a91",
+  "changedSourcePaths": [
+    "scripts/ops/cashflow-checkpoint/.gitattributes",
+    "scripts/ops/cashflow-checkpoint/README.md",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/baseline/attempt-profile.ps1",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/baseline/native-adapter.ps1",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/baseline/native-caller.ps1",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/canonical-source-pins.json",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/harness-input.ps1",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/invoke-preflight-case.ps1",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/offline-boundary.ps1",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/receipt-guard.ps1",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/test_attempt_contract.ps1",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/test_attempt_lifecycle.ps1",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/test_harness_preflight.ps1",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/test_receipt_guard.ps1",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/test_v3_attempt_branch.ps1"
+  ],
+  "sourceHashes": {
+    "scripts/ops/cashflow-checkpoint/.gitattributes": "8056dbfd3cc690362e2bec32109e840362b6dc15cdc83cde022eba058668c395",
+    "scripts/ops/cashflow-checkpoint/README.md": "0943169bd101b271d8102c97f20f1592ffc377eb956572620a3f7d02b9ea91b1",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/baseline/attempt-profile.ps1": "6931b653d0f7b354172493ddf965fea9f3f1892d11241a790ea0ad1ff4cc1eb7",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/baseline/native-adapter.ps1": "f75a6f20496fb3f34a701bd40124dc2ec542f8ba0c7bf40a9a29d83418740bdc",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/baseline/native-caller.ps1": "3e5fa182e93b2b49eec824333e3ce5b637bedc776f519fb0d99b97dd0802d8b3",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/canonical-source-pins.json": "1eca780d20112d5cda3be20734da6dc1297bac8676aac63a79f56881f86aa092",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/harness-input.ps1": "bc6b5abd8b752b922c436b910a3c7114241de0925f6c2282b2a26d047ed0107f",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/invoke-preflight-case.ps1": "a27277da24752b527608b4ea3e968a164d4bb20b212f2c645ecefba1a88054d8",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/offline-boundary.ps1": "bb2d42480b355d00966e82c8131934c71251e45b922d70f977c1fe4edff68de6",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/receipt-guard.ps1": "7d8061bcf17bdbbbea80cb0a96b9df7ef01fae55548486c4d6394d159d072c2c",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/test_attempt_contract.ps1": "691bdb5172beb48ca3043138ee662d29035bca6c5e3d5defa75de1e0f32b6f16",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/test_attempt_lifecycle.ps1": "9ba9c15ea54d989a52a05669f05b0b00958464aeec970e53ca5960b9034a88d1",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/test_harness_preflight.ps1": "c527db8beb2a6266ba230e8e4f2a3d201d54fdc1e3f9b2caa2cc0d4bb7eeafdf",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/test_receipt_guard.ps1": "524ce8720b67e29a7724b9b2ee5b8dfcab8a2186bed8965be1757defe5a64eec",
+    "scripts/ops/cashflow-checkpoint/attempt-control/tests/test_v3_attempt_branch.ps1": "579c3ddac7b924a216a55d6b6706be9a929da48c9b5b9b2aafa152d4ba5b9197"
+  },
+  "sourceEnginePinsUnchanged": 63,
+  "appliedToIsolatedSourceCopy": true,
+  "applyExactBytes": true,
+  "rootCheckoutModified": false,
+  "sourceIndexUnchanged": true,
+  "R2Unchanged": true,
+  "windows": {
+    "pureReceiptCases": 117,
+    "invalidRootsFreshContinueCases": 15,
+    "corruptSourceRootRejected": {
+      "exitCode": 1,
+      "stdoutEmpty": true
+    },
+    "originalSuiteCounts": [
+      22,
+      76,
+      14
+    ],
+    "originalSuiteReceipts": "validated-source-mock-receipts.json"
+  },
+  "linux": "NOT_EXECUTED_PENDING_ROOT_CI",
+  "nativeActionsExecuted": false,
+  "keysAccessed": false,
+  "cryptoExecuted": false,
+  "authorityIssued": false,
+  "backupArchiveReadOrCreated": false,
+  "sqlExecuted": false,
+  "releaseAuthorized": false
+}
