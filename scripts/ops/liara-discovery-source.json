@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "sourceCommit": "6df2298f07949bd92a565b95a868977cbd430d47",
+  "sourceCommit": "f3753fd0cf05fa193995cd7af0dbcbb64873127c",
   "files": {
     "scripts/ops/liara-binding-discovery-command.mjs": "9944646ecc4f63f6aad6d35b25d2467b1c70043b",
-    "scripts/ops/liara-binding-discovery.mjs": "00a2015eccf26d8d193f1db00318409d2815d2c9",
+    "scripts/ops/liara-binding-discovery.mjs": "1a876c0bd4de352b6a610168d7474ce8125fba8e",
     "scripts/ops/liara-discovery-websocket.mjs": "175ddbb20146baff1b212c86e7beb115c7de13a8",
     "scripts/ops/liara-binding-discovery-runner.mjs": "8b3464cf78bea15f733fb5dd6ec513f0545a5653"
   }
