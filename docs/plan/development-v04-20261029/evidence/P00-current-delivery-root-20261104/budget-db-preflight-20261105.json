@@ -1,0 +1,51 @@
+{
+  "atUtc": "2026-11-04T21:32:41.433566+00:00",
+  "exit": 0,
+  "result": {
+    "readOnly": true,
+    "source": {
+      "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+      "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+      "health": "healthy",
+      "restarts": 0
+    },
+    "freeBytes": 14295748608,
+    "sqlExit": 0,
+    "schema": {
+      "functions": null,
+      "table": null,
+      "roles": [
+        {
+          "name": "service_role",
+          "bypassrls": true
+        },
+        {
+          "name": "authenticator",
+          "bypassrls": false
+        }
+      ],
+      "defaultFunctionAcl": [
+        {
+          "owner": "postgres",
+          "schema": "storage",
+          "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+        },
+        {
+          "owner": "supabase_auth_admin",
+          "schema": "auth",
+          "acl": "{postgres=X/supabase_auth_admin,dashboard_user=X/supabase_auth_admin}"
+        },
+        {
+          "owner": "supabase_admin",
+          "schema": "cron",
+          "acl": "{postgres=X*/supabase_admin}"
+        },
+        {
+          "owner": "postgres",
+          "schema": "public",
+          "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+        }
+      ]
+    }
+  }
+}
