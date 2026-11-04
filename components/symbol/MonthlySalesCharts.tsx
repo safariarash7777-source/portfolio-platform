@@ -5,7 +5,8 @@
 // قواعد: گپ واقعی برای ماه غایب (connectNulls=false)، واحد صریح روی محور،
 // روایت template‌ای قطعی زیر هر چارت، رنگ فقط از توکن‌ها.
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import styles from "./SymbolDossier.module.css";
 import {
   Bar,
   BarChart,
@@ -422,16 +423,43 @@ export default function MonthlySalesCharts({
   reports,
   sourceTitle,
   sourceUrl,
+  previewControls = false,
 }: {
   reports: CodalN30Data[];
   sourceTitle: string;
   sourceUrl: string | null;
+  previewControls?: boolean;
 }) {
-  const m = useMemo(() => buildMonthlySales(reports), [reports]);
+  const years = useMemo(() => previewControls ? [...new Set((reports ?? []).flatMap(report =>
+    typeof report?.period_end === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(report.period_end) ? [report.period_end.slice(0, 4)] : []))].sort().reverse() : [], [reports, previewControls]);
+  const [year, setYear] = useState('');
+  const [rateIndex, setRateIndex] = useState('all');
+  useEffect(() => {
+    if (!previewControls) return;
+    const restore = () => { const query = new URLSearchParams(window.location.search); setYear(query.get('monthlyYear') ?? ''); setRateIndex(query.get('rateSeries') ?? 'all'); };
+    restore(); window.addEventListener('popstate', restore);
+    return () => window.removeEventListener('popstate', restore);
+  }, [previewControls]);
+  const selectedYear = previewControls && years.includes(year) ? year : years[0];
+  const m = useMemo(() => buildMonthlySales(previewControls && selectedYear
+    ? reports.filter(report => { const value = typeof report?.period_end === 'string' ? Number(report.period_end.slice(0, 4)) : NaN; return value === Number(selectedYear) || value === Number(selectedYear) - 1; })
+    : reports), [reports, previewControls, selectedYear]);
+  const setSelection = (key: string, value: string) => {
+    const url = new URL(window.location.href);
+    if (value === 'all') url.searchParams.delete(key); else url.searchParams.set(key, value);
+    if (key === 'monthlyYear') { setYear(value); setRateIndex('all'); url.searchParams.delete('rateSeries'); }
+    else setRateIndex(value);
+    window.history.replaceState(window.history.state, '', url);
+  };
   if (!m) return null;
-  const firstRate = m.rateSeries[0];
+  const rateKey = (series: RateSeries) => JSON.stringify([series.productName, series.market]);
+  const selectableRates = m.rateSeries.filter(series => m.rateSeries.filter(other => rateKey(other) === rateKey(series)).length === 1);
+  const chosenRate = selectableRates.find(series => rateKey(series) === rateIndex);
+  const selectedRateIndex = chosenRate ? rateIndex : 'all';
+  const rateModel = previewControls && chosenRate ? { ...m, rateSeries: [chosenRate] } : m;
+  const firstRate = rateModel.rateSeries[0];
   const rateNarrative = firstRate?.rateUnit && firstRate.points.every(point => point.rate === null || hasRateUnit(point, firstRate.rateUnit!.denominator))
-    ? narrativeRate(m) : null;
+    ? narrativeRate(rateModel) : null;
   const lastQuantity = m.prodVsSales[m.prodVsSales.length - 1];
   const quantityNarrative = !m.quantitySeries?.length && lastQuantity && hasQuantityUnit(lastQuantity) ? narrativeProdVsSales(m) : null;
 
@@ -448,13 +476,23 @@ export default function MonthlySalesCharts({
               <>
                 {" · "}
                 <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "var(--navy-ink)" }}>
-                  {sourceTitle}
+                  {previewControls ? `مرجع بستهٔ گزارش‌ها: ${sourceTitle}` : sourceTitle}
                 </a>
               </>
             ) : null}
           </p>
         </div>
       </header>
+
+      {previewControls ? <div className={styles.previewControls}>
+        <label>سال تقویمی گزارش‌های ماهانه<select value={selectedYear} onChange={event => setSelection('monthlyYear', event.target.value)}>
+          {years.map(value => <option key={value} value={value}>{toPersianDigits(value)}</option>)}
+        </select><span>همراه سال قبل؛ تجمیعی همچنان عددِ گزارش از آغاز سال مالی شرکت است.</span></label>
+        <label>محصول و بازار در نمودار نرخ<select value={selectedRateIndex} onChange={event => setSelection('rateSeries', event.target.value)}>
+          <option value="all">همهٔ سری‌های نرخ موجود</option>
+          {selectableRates.map(series => <option key={rateKey(series)} value={rateKey(series)}>{series.label}</option>)}
+        </select><span>فقط نمودار نرخ فیلتر می‌شود؛ مبلغ کل و مقدار محصول اصلی تغییر نمی‌کند.</span></label>
+      </div> : null}
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <QCard
@@ -482,9 +520,9 @@ export default function MonthlySalesCharts({
             subtitle="واحد نرخ کنار هر نمودار · واحدهای متفاوت جدا هستند · خط‌چین = صادراتی · ماه بدون رکورد = گپ واقعی"
             narrative={rateNarrative}
           >
-            <RateChart m={m} />
+            <RateChart m={rateModel} />
           </QCard>
-        ) : null}
+        ) : previewControls ? <QCard id="q-rate-trend" question="نرخ فروش چه روندی دارد؟" narrative={null}><p role="status">سری نرخ قابل نمایش در این بازه موجود نیست؛ مقدار نامعلوم صفر نمی‌شود.</p></QCard> : null}
 
         {m.latestMix.length > 0 ? (
           <QCard
@@ -510,7 +548,7 @@ export default function MonthlySalesCharts({
               <ProdSalesChart key={series.market} points={series.points} label={series.label} />
             ))}</div> : <ProdSalesChart points={m.prodVsSales} />}
           </QCard>
-        ) : null}
+        ) : previewControls ? <QCard id="q-prod-vs-sales" question="تولید و فروش هم‌خوان‌اند؟" narrative={null}><p role="status">دادهٔ مقدار محصول اصلی در این بازه موجود نیست؛ واحد یا مقدار حدس زده نمی‌شود.</p></QCard> : null}
       </div>
     </div>
   );

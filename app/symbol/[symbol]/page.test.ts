@@ -31,7 +31,7 @@ const fund: IrStockRow = { ...stock, type: "سهامی", nav: 100, navIssue: 101
 const market = (row: IrStockRow, isFund = false): IrMarket => ({ ok: true, fetchedAt: now, gold: [], currency: [], crypto: [], options: [], indices: null, stocks: isFund ? [] : [row], funds: isFund ? [row] : [] });
 
 async function actualPage(ir: IrMarket, symbol = stock.id, fundamentals: SymbolFundamentals | null = null,
-  reads: { history?: "empty" | "error"; fundamental?: "empty" | "error" } = {}) {
+  reads: { history?: "empty" | "error"; fundamental?: "empty" | "error"; deployment?: string; query?: Record<string, string | string[]> } = {}) {
   const source = readFileSync(new URL("./page.tsx", import.meta.url), "utf8");
   const js = ts.transpileModule(source, { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const pageModule = { exports: {} as { default: (props: object) => Promise<React.ReactElement> } };
@@ -52,7 +52,7 @@ async function actualPage(ir: IrMarket, symbol = stock.id, fundamentals: SymbolF
   const fakeRequire = (specifier: string) => {
     if (specifier.endsWith(".module.css")) return cssModule;
     if (specifier in stubs) return stubs[specifier];
-    if (["@/components/symbol/FundamentalCharts", "@/components/symbol/SymbolTabs", "@/components/symbol/CodalReportsTab"].includes(specifier)) return require(`../../../${specifier.slice(2)}`);
+    if (["@/components/symbol/FundamentalCharts", "@/components/symbol/SymbolTabs", "@/components/symbol/CodalReportsTab", "@/components/symbol/CompanyReportSources"].includes(specifier)) return require(`../../../${specifier.slice(2)}`);
     if (specifier.startsWith("@/components/")) {
       const Stub = (props: { children?: React.ReactNode; overview?: React.ReactNode }) => React.createElement(React.Fragment, null, props.children, props.overview);
       Object.defineProperty(Stub, "name", { value: specifier });
@@ -62,8 +62,8 @@ async function actualPage(ir: IrMarket, symbol = stock.id, fundamentals: SymbolF
   };
   // Only the VM's clock is fixed; no global clock or real source is touched.
   class FixedDate extends Date { constructor(value: string | number = now) { super(value); } static now() { return now; } }
-  vm.runInNewContext(js, { module: pageModule, exports: pageModule.exports, require: fakeRequire, Date: FixedDate });
-  const page = await pageModule.exports.default({ params: Promise.resolve({ symbol }) });
+  vm.runInNewContext(js, { module: pageModule, exports: pageModule.exports, require: fakeRequire, Date: FixedDate, process: { env: { VERCEL_ENV: reads.deployment } } });
+  const page = await pageModule.exports.default({ params: Promise.resolve({ symbol }), searchParams: Promise.resolve(reads.query ?? {}) });
   const router = { back() {}, forward() {}, push() {}, replace() {}, refresh() {}, hmrRefresh() {}, async prefetch() {} };
   const tree = React.createElement(AppRouterContext.Provider, { value: router }, page);
   const nodes: React.ReactElement<Record<string, unknown>>[] = [];
@@ -345,7 +345,7 @@ test("market basis: all three actual consumers distinguish unknown, verified zer
     products: [{ product_name: "محصول آزمایشی", market: "داخلی", production_qty: 12, sales_qty: 10, sales_rate: 6_000_000, sales_amount: 60 },
       { product_name: "خدمت آزمایشی", market: "خدمات", production_qty: 8, sales_qty: 5, sales_rate: 8_000_000, sales_amount: 40 }] };
   let ids = 0;
-  const hooks = { ...React, useMemo: (fn: () => unknown) => fn(), useState: () => [true, () => {}], useId: () => `market-basis-${ids++}` };
+  const hooks = { ...React, useEffect() {}, useMemo: (fn: () => unknown) => fn(), useState: () => [true, () => {}], useId: () => `market-basis-${ids++}` };
   const Views = ["MonthlySalesCharts", "FundamentalCharts", "SymbolFundamentalCard"].map(name => clientComponent(name, hooks));
   const render = (r: CodalN30Data) => {
     const fundamentals = reportSet(companyPeriods());
@@ -453,6 +453,43 @@ function presentationNodes(node: React.ReactNode): React.ReactElement<Record<str
   const element = node as React.ReactElement<Record<string, unknown>>;
   return [element, ...presentationNodes(element.props.children as React.ReactNode)];
 }
+
+test('company layout query is Preview-only and cannot change Production, unknown views or funds', async () => {
+  for (const view of ['decision', 'dossier']) {
+    const shown = await actualPage(market(stock), stock.id, null, {deployment:'preview', query:{view}});
+    assert.match(shown.html, new RegExp(`data-company-view="${view}"`));
+    assert.match(shown.html, /شناسنامهٔ منابع شرکت/);
+    assert.equal((shown.html.match(/role="tabpanel"/g) ?? []).length, 4);
+    assert.match(shown.html, /گزارش قابل استفاده‌ای/);
+    for (const deployment of ['production','development',undefined]) {
+      const unchanged = await actualPage(market(stock), stock.id, null, {deployment, query:{view}});
+      assert.doesNotMatch(unchanged.html, /data-company-view|مقایسهٔ دو چیدمان شرکت/);
+    }
+    assert.doesNotMatch((await actualPage(market(fund, true), fund.id, null, {deployment:'preview', query:{view}})).html, /data-company-view/);
+  }
+  for (const view of ['unknown', ['decision', 'dossier']]) {
+    assert.doesNotMatch((await actualPage(market(stock), stock.id, null, {deployment:'preview', query:{view}})).html, /data-company-view/);
+  }
+});
+
+test('switching company layouts retains the mounted chart slot, tab and existing URL selections', () => {
+  const states: unknown[] = ['fundamental','decision']; let index = 0;
+  const location = {href:'https://preview.invalid/symbol/example?view=decision&monthlyYear=1404&quarters=4#fundamental'};
+  const Tabs = clientComponent('SymbolTabs', { ...React, useEffect() {}, useId:()=> 'p14-tabs',
+    useState:()=> {const slot=index++; return [states[slot], (value:unknown)=>{states[slot]=value;}];},
+  }, { URL, window:{location, history:{state:null, replaceState:(_state:unknown,_title:string,url:URL)=>{location.href=String(url);}}} });
+  const chart = React.createElement('span', {'data-actual-chart':'same'}, 'same chart instance');
+  const props={overview:'overview',fundamental:chart,reports:'reports',assembly:'assembly',previewView:'decision',companySources:'source'};
+  const render=()=>{index=0;return presentationNodes(Tabs(props));};
+  for (const label of ['پروندهٔ مستند','نمای پرسش‌محور']) {
+    const nodes=render(); const button=nodes.find(node=>node.type==='button'&&node.props.children===label)!;
+    (button.props.onClick as ()=>void)();
+    const updated=render(); assert.equal(updated.find(node=>node.props['data-actual-chart']==='same'),chart);
+    assert.equal(states[0],'fundamental');
+    const url=new URL(location.href); assert.equal(url.searchParams.get('monthlyYear'),'1404'); assert.equal(url.searchParams.get('quarters'),'4'); assert.equal(url.hash,'#fundamental');
+    assert.equal(updated.filter(node=>node.props.role==='tabpanel').length,4);
+  }
+});
 
 test("symbol tabs preserve click/hash navigation and expose RTL keyboard selection with linked panels", () => {
   let active = "overview", prevented = 0;

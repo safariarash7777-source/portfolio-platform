@@ -19,6 +19,8 @@ import {
   YAxis,
 } from "recharts";
 import type { DerivedQuarter, TtmPoint } from "@/lib/core/quarterly";
+import { useEffect, useState } from "react";
+import styles from "./SymbolDossier.module.css";
 import { toPersianDigits } from "@/lib/format";
 
 const nf = new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 0 });
@@ -72,6 +74,7 @@ export default function QuarterlyCharts({
   peSeries,
   currentPe,
   sourceTitle,
+  previewControls = false,
 }: {
   quarters: DerivedQuarter[];
   ttm: TtmPoint[];
@@ -80,10 +83,18 @@ export default function QuarterlyCharts({
   /** P/E جاری از قیمت روز و آخرین EPS TTM؛ null اگر محاسبه‌پذیر نبود. */
   currentPe: number | null;
   sourceTitle: string;
+  previewControls?: boolean;
 }) {
+  const [range, setRange] = useState(12);
+  useEffect(() => {
+    if (!previewControls) return;
+    const restore = () => { const value = Number(new URLSearchParams(window.location.search).get('quarters')); setRange([4, 8, 12].includes(value) ? value : 12); };
+    restore(); window.addEventListener('popstate', restore);
+    return () => window.removeEventListener('popstate', restore);
+  }, [previewControls]);
   if (quarters.length === 0) return null;
 
-  const last12 = quarters.slice(-12);
+  const last12 = quarters.slice(-(previewControls ? range : 12));
   const revData = last12.map((q) => ({
     name: faQ(q.label),
     درآمد: q.revenue != null ? q.revenue / 10_000 : null,
@@ -122,6 +133,14 @@ export default function QuarterlyCharts({
           فصل‌سازی با تفاضل گزارش‌های تجمیعی ۳/۶/۹/۱۲ماهه — منبع: {sourceTitle}
         </p>
       </header>
+
+      {previewControls ? <div className={styles.previewControls}><label>بازهٔ نمودار درآمد و حاشیه‌های فصلی<select value={range} onChange={event => {
+        const value = Number(event.target.value); setRange(value);
+        const url = new URL(window.location.href); url.searchParams.set('quarters', String(value));
+        window.history.replaceState(window.history.state, '', url);
+      }}>{[4, 8, 12].map(value => <option key={value} value={value}>{toPersianDigits(String(value))} فصل آخر</option>)}</select>
+        <span>فصل فاقد زنجیرهٔ کامل خالی می‌ماند؛ محاسبهٔ TTM از تاریخچهٔ کامل حفظ می‌شود.</span>
+      </label></div> : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card

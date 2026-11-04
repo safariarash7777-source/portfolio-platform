@@ -48,6 +48,40 @@
   min-width: 0;
 }
 
+/* P14: same mounted panels and charts, two Preview-only reading orders. */
+.previewToolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 18px; margin-bottom: 20px; border: 1px solid var(--line); border-inline-start: 3px solid var(--gold); border-radius: 18px; background: var(--surface); }
+.previewToolbar p, .previewSources p { margin-top: 8px; font-size: 13px; line-height: 1.9; color: var(--text-3); }
+.previewSwitch { display: flex; flex-wrap: wrap; gap: 8px; }
+.previewSwitch button, .previewReadingPath a { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 12px; touch-action: manipulation; }
+.previewSwitch button[aria-pressed="true"] { background: var(--navy-deep); color: var(--text-on-navy); }
+.previewFundamental { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+.previewReadingPath { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 16px; border-radius: 18px; background: var(--surface-2); }
+.previewReadingPath strong { flex-basis: 100%; color: var(--heading); }
+.previewReadingPath a { font-size: 13px; background: var(--surface); color: var(--navy-ink); }
+.previewSourceSlot { min-width: 0; }
+.previewChartSlot { min-width: 0; }
+.previewSources { padding: 20px; border: 1px solid var(--line); border-radius: 20px; background: var(--surface); scroll-margin-top: 140px; }
+.previewSources h2 { font-size: 18px; font-weight: 750; color: var(--heading); }
+.previewSources h3 { font-weight: 700; color: var(--navy-ink); }
+.previewSourceGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 16px; margin-top: 16px; }
+.previewSourceGrid article { min-width: 0; padding: 16px; border-radius: 14px; background: var(--surface-2); overflow-wrap: anywhere; }
+.previewSourceGrid dl { display: grid; grid-template-columns: minmax(90px, 1fr) 2fr; gap: 8px 12px; margin: 16px 0; font-size: 12px; line-height: 1.9; }
+.previewSourceGrid dt { color: var(--text-3); }
+.previewSourceGrid dd { min-width: 0; }
+.previewControls { display: flex; flex-wrap: wrap; gap: 12px; margin-block: 16px; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-2); }
+.previewControls label { display: flex; flex-direction: column; gap: 8px; flex: 1 1 180px; font-size: 13px; }
+.previewControls select { min-height: 44px; max-width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--text); padding: 8px; font-size: 16px; }
+@media (min-width: 1024px) {
+  .tabs[data-company-view="dossier"] { display: grid; grid-template-columns: 200px minmax(0, 1fr); align-items: start; gap: 24px; }
+  .tabs[data-company-view="dossier"] .previewToolbar { grid-column: 1 / -1; margin-bottom: 0; }
+  .tabs[data-company-view="dossier"] .tabList { flex-direction: column; top: 88px; }
+  .tabs[data-company-view="dossier"] .tab { justify-content: flex-start; }
+  .tabs[data-company-view="dossier"] .tabContent { margin-top: 0; }
+}
+@media (hover: hover) and (pointer: fine) {
+  .previewReadingPath a:hover { border-color: var(--gold); text-decoration: underline; }
+}
+
 .tabList {
   position: sticky;
   top: 64px;

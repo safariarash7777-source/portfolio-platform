@@ -13,7 +13,7 @@ import { foladQuantityFixture } from "../../relay/fixtures/codal-offline.mjs";
 
 type Trace = { component: string; props: Record<string, unknown> };
 const require = createRequire(import.meta.url);
-function renderChart(reports: CodalN30Data[], capture = true) {
+function renderChart(reports: CodalN30Data[], capture = true, previewSelection?: [string, string]) {
   const traces: Trace[] = [];
   const source = readFileSync(new URL("./MonthlySalesCharts.tsx", import.meta.url), "utf8");
   const javascript = ts.transpileModule(source, { compilerOptions: {
@@ -25,8 +25,11 @@ function renderChart(reports: CodalN30Data[], capture = true) {
     traces.push({ component, props });
     return React.createElement("div", { "data-test-chart": component }, props.children);
   }]));
-  const chartModule = { exports: {} as { default: React.ComponentType<{ reports: CodalN30Data[]; sourceTitle: string; sourceUrl: string | null }> } };
+  const chartModule = { exports: {} as { default: React.ComponentType<{ reports: CodalN30Data[]; sourceTitle: string; sourceUrl: string | null; previewControls?: boolean }> } };
+  let stateIndex = 0;
   const isolatedRequire = (id: string) => {
+    if (id === 'react' && previewSelection) return { ...React, useEffect() {}, useState: () => [previewSelection[stateIndex++], () => {}] };
+    if (id.endsWith('.module.css')) return { __esModule: true, default: new Proxy({}, { get: (_, key) => String(key) }) };
     if (id === "recharts" && capture) return recharts;
     return require(id.startsWith("@/") ? `../../${id.slice(2)}` : id);
   };
@@ -34,10 +37,33 @@ function renderChart(reports: CodalN30Data[], capture = true) {
   const before = structuredClone(reports);
   const html = renderToStaticMarkup(React.createElement(chartModule.exports.default, {
     reports, sourceTitle: "گزارش همان شرکت", sourceUrl: "https://codal.ir/Reports/fixture",
+    previewControls: previewSelection !== undefined,
   }));
   assert.deepEqual(reports, before, "Rendering must not mutate reports or backfill units");
   return { html, traces };
 }
+
+test('Preview period/rate selection uses existing models without changing totals, gaps or unknown units', () => {
+  const reports = [report('1405-01-31'), report('1404-03-31'), report('1404-01-31'), report('1403-01-31')];
+  const chosen = renderChart(reports, true, ['1404', JSON.stringify(['محصول آزمون', 'داخلی'])]);
+  assert.match(chosen.html, /سال تقویمی گزارش‌های ماهانه/);
+  assert.match(chosen.html, /سال ۱۴۰۴ در کنار سال ۱۴۰۳/);
+  const bars = chosen.traces.find(trace => trace.component === 'ComposedChart')!;
+  assert.deepEqual(values(bars, 'current').slice(0, 4), [1, null, 1, null]);
+  assert.deepEqual(values(bars, 'prior').slice(0, 4), [1, null, null, null]);
+  const unknown = renderChart([report('1404-01-31', [product({qty_unit:null})])], true, ['9999', 'invalid']);
+  assert.match(unknown.html, /سال ۱۴۰۴/);
+  assert.doesNotMatch(unknown.html, /ریال به ازای تن/);
+  assert.match(unknown.html, /واحد نامعلوم|واحد معتبر|واحد نرخ/);
+  assert.doesNotMatch(renderChart(reports).html, /سال تقویمی گزارش‌های ماهانه/);
+});
+
+test('Preview rate selection cannot identify ambiguous market series as one verified product', () => {
+  const rows = [product({market:'داخلی', market_basis:undefined}), product({market:'صادراتی', market_basis:undefined})];
+  const shown = renderChart([report('1404-01-31', rows)], true, ['1404', JSON.stringify(['محصول آزمون','نامشخص'])]);
+  assert.doesNotMatch(shown.html, /<option[^>]*>محصول آزمون — تفکیک نامعلوم<\/option>/);
+  assert.match(shown.html, /همهٔ سری‌های نرخ موجود/);
+});
 function product(overrides: Partial<N30ProductRow> = {}): N30ProductRow {
   return { product_name: "محصول آزمون", market: "داخلی", market_basis: "section_header", qty_unit: "تن",
     production_qty: 20, sales_qty: 10, sales_rate: 100, sales_amount: 1, ...overrides };
