@@ -26,12 +26,14 @@ function inspect(frozen) {
   // No caller-supplied binding: inspect is invoked only with the frozen constant.
   if (fs.realpathSync(frozen.cwd) !== frozen.cwd) throw Error('unavailable');
   checkTime();
-  const candidates = [], entries = fs.readdirSync('/proc');
-  if(entries.length > 4096) throw Error('process_limit');
+  const candidates = [];
   const startTime=pid=>{const v=boundedRead('/proc/'+pid+'/stat',8192).toString('utf8').split(') ').at(-1).split(' ')[19];if(!/^[0-9]+$/.test(v || ''))throw Error('unavailable');return v;};
   const argv=pid=>{const a=boundedRead('/proc/'+pid+'/cmdline',8192).toString('utf8').split('\0');if(a.at(-1)==='')a.pop();return a;};
-  for (const pid of entries) {
-    checkTime();
+  const directory=fs.opendirSync('/proc');let entryCount=0;
+  try { while (true) {
+    checkTime();const entry=directory.readSync();if(!entry)break;
+    if(++entryCount>4096)throw Error('process_limit');
+    const pid=entry.name;
     if (!/^[1-9][0-9]{0,8}$/.test(pid)) continue;
     try {
       const started=startTime(pid);
@@ -39,7 +41,7 @@ function inspect(frozen) {
       if(startTime(pid)!==started)throw Error('changed');
       if(exe===frozen.exe && cwd===frozen.cwd && JSON.stringify(args)===JSON.stringify(frozen.argv))candidates.push({pid,started,args});
     } catch { return {state:'collector_unresolved',collector:'unresolved',initialBackendMatch:null,files:[]}; }
-  }
+  } } finally { directory.closeSync(); }
   if (candidates.length !== 1) return {state:'collector_unresolved',collector:candidates.length>1?'multiple':'zero',initialBackendMatch:null,files:[]};
   const {pid,started,args}=candidates[0];
   const env=boundedRead('/proc/'+pid+'/environ', 131072).toString('utf8').split('\0');

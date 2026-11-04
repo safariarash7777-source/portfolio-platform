@@ -61,22 +61,30 @@ function commandContext(fake,now=()=>0){
   let output='';const c=vm.createContext({require:name=>{if(name==='node:fs')return fake;if(name==='node:crypto')return {createHash};if(name==='node:perf_hooks')return {performance:{now}};throw Error('forbidden');},Buffer,process:{argv:['node',nonce],stdout:{write:x=>{output+=x;}}}});vm.runInContext(FIXED_PROBE_SOURCE,c);return {c,output};
 }
 test('fixed unresolved command is inert without touching filesystem',()=>{const {output}=commandContext(new Proxy({},{get(){throw Error('filesystem touched');}}));assert.equal(JSON.parse(output).state,'binding_unresolved');assert.equal(output.includes(secret),false);});
+function directoryFixture(names){let index=0;return {readSync:()=>index<names.length?{name:names[index++]}:null,closeSync:()=>{}};}
 function filesystem(mode='ok'){
   let data=Buffer.from('code');const stat={isFile:()=>true,dev:1,ino:1,mtimeMs:1,ctimeMs:1};let offset=0,stats=0,closed=0;
   return {constants:{O_RDONLY:0,O_NOFOLLOW:131072,O_NONBLOCK:2048},openSync:(path,flags)=>{assert.equal(flags,133120);if(mode==='symlink')throw Error(secret);data=Buffer.from(path.endsWith('/stat')?'9 (node) '+Array.from({length:20},(_,i)=>i===19?'123':'0').join(' '):'code');offset=0;return 1;},fstatSync:()=>{stats++;return {...stat,isFile:()=>!['directory','fifo'].includes(mode),size:mode==='oversize'?100:data.length,ino:mode==='drift'&&stats>1?2:1};},readSync:(_fd,b,n,len)=>{const count=Math.min(len,data.length-offset);data.copy(b,n,offset,offset+count);offset+=count;return count;},closeSync:()=>{closed++;},get closed(){return closed;}};
 }
 test('bounded read rejects symlink/nonregular/FIFO/oversize/stat drift and closes fd',()=>{for(const mode of ['ok','symlink','directory','fifo','oversize','drift']){const f=filesystem(mode),{c}=commandContext(f);c.file='/fixed/code';if(mode==='ok')assert.equal(vm.runInContext('boundedRead(file,8).toString()',c),'code');else assert.throws(()=>vm.runInContext('boundedRead(file,8)',c));assert.equal(f.closed,mode==='symlink'?0:1);}});
-test('zero/multiple matching processes do not read environment or code',()=>{for(const n of [0,2]){const f=filesystem();f.realpathSync=p=>p;f.readdirSync=()=>Array.from({length:n},(_,i)=>String(i+1));f.readlinkSync=p=>p.endsWith('/exe')?'/fixed/node':'/fixed';const {c}=commandContext(f);c.frozen={cwd:'/fixed',exe:'/fixed/node',argv:['code']};const r=vm.runInContext('inspect(frozen)',c);assert.equal(r.collector,n?'multiple':'zero');assert.equal(r.files.length,0);}});
+test('zero/multiple matching processes do not read environment or code',()=>{for(const n of [0,2]){const f=filesystem();f.realpathSync=p=>p;f.opendirSync=()=>directoryFixture(Array.from({length:n},(_,i)=>String(i+1)));f.readlinkSync=p=>p.endsWith('/exe')?'/fixed/node':'/fixed';const {c}=commandContext(f);c.frozen={cwd:'/fixed',exe:'/fixed/node',argv:['code']};const r=vm.runInContext('inspect(frozen)',c);assert.equal(r.collector,n?'multiple':'zero');assert.equal(r.files.length,0);}});
 test('deadline also covers postidentity; clean socket closure is not final acceptance',async()=>{const r=await fixture('post-stall');assert.ok(['deadline','protocol_rejected'].includes(r.out.state));assert.equal(r.gets,2);assert.equal(r.connections,1);});
 test('release JSON rejects duplicate and escaped duplicate identity keys but accepts whitespace',async()=>{for(const mode of ['duplicate-release','duplicate-state','duplicate-id','escaped-key'])assert.equal((await fixture(mode)).out.state,'protocol_rejected');assert.equal((await fixture('whitespace')).out.state,'unresolved');});
 test('PID census and monotonic time are bounded',()=>{
-  const f=filesystem();f.realpathSync=p=>p;f.readdirSync=()=>Array(4097).fill('9');const {c}=commandContext(f);c.frozen={cwd:'/fixed'};assert.throws(()=>vm.runInContext('inspect(frozen)',c));
+  const f=filesystem();f.realpathSync=p=>p;let reads=0,closed=0;f.opendirSync=()=>({readSync(){reads++;return {name:'non-pid'};},closeSync(){closed++;}});const {c}=commandContext(f);c.frozen={cwd:'/fixed'};assert.throws(()=>vm.runInContext('inspect(frozen)',c));assert.equal(reads,4097);assert.equal(closed,1);
   let time=0;const expired=commandContext(filesystem(),()=>time);time=1001;assert.throws(()=>vm.runInContext("boundedRead('/fixed/code',8)",expired.c));
+});
+test('incremental directory closes on deadline and read failure without scanning more entries',()=>{
+  for(const mode of ['deadline','read-error']){
+    let time=0,reads=0,closed=0;const f=filesystem();f.realpathSync=p=>p;
+    f.opendirSync=()=>({readSync(){reads++;if(mode==='read-error')throw Error(secret);time=1001;return {name:'non-pid'};},closeSync(){closed++;}});
+    const {c}=commandContext(f,()=>time);c.frozen={cwd:'/fixed'};assert.throws(()=>vm.runInContext('inspect(frozen)',c));assert.equal(reads,1);assert.equal(closed,1);
+  }
 });
 test('one fixture process yields only approved code hashes and initial environment predicate',()=>{
   for(const mode of ['ok','duplicate-env','initial-reuse','final-reuse','final-argv','unreadable-sibling']) {
     const opened=[],handles=new Map();let next=0,stats=0,args=0;
-    const fake={constants:{O_RDONLY:0,O_NOFOLLOW:131072,O_NONBLOCK:2048},realpathSync:p=>p,readdirSync:()=>mode==='unreadable-sibling'?['9','10']:['9'],readlinkSync:p=>p.endsWith('/exe')?'/fixed/node':'/fixed',
+    const fake={constants:{O_RDONLY:0,O_NOFOLLOW:131072,O_NONBLOCK:2048},realpathSync:p=>p,opendirSync:()=>directoryFixture(mode==='unreadable-sibling'?['9','10']:['9']),readlinkSync:p=>p.endsWith('/exe')?'/fixed/node':'/fixed',
       openSync:(p,flags)=>{assert.equal(flags,133120);opened.push(p);let content;
         if(p.startsWith('/proc/10/'))throw Error(secret);
         if(p.endsWith('/cmdline')){args++;content=mode==='final-argv'&&args>1?'node\0different.mjs\0':'node\0server.mjs\0';}
