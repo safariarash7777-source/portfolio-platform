@@ -1035,6 +1035,10 @@ class PostMemberDiagnostic(unittest.TestCase):
         self.assertIsNone(runner.project_failure_log(b'P03_ASSEMBLED_FAILURE {"reason":"p03_composition_secret_DO_NOT_OUTPUT"}')['nativeFailureCode'])
     def test_product_statements_byte_exact(self):
         after=post_member_case_source()
+        after=after.replace(b"import {validateTicketRequest} from '../../../lib/consultation/tickets.ts';\n",b'')
+        line=next(line for line in after.splitlines(keepends=True) if b'const denied=' in line)
+        oldline=line.replace(b'const denied=validateTicketRequest({',b'const denied={')[:-4]+b'};\n'
+        after=after.replace(line,oldline)
         cleaned=b''.join(line for line in after.splitlines(keepends=True) if not line.startswith(b" console.log('P03_ASSEMBLED_STAGE '+"))
         self.assertEqual(hashlib.sha256(cleaned).hexdigest(),'f2bc233694297d150e577534c2ce6c8bfc704678518ece16ff517e4b4996a0da')
     def test_two_guarded_mock_operation_boundaries(self):
@@ -1047,6 +1051,32 @@ class PostMemberDiagnostic(unittest.TestCase):
             env={k:v for k,v in os.environ.items() if k.upper() in ['PATH','SYSTEMROOT','TEMP','TMP']}
             for script,count in [(probe,4),(entry,2)]:
                 result=subprocess.run([shutil.which('node'),'--test-reporter=tap','--require',str(guard),str(script)],env=env,capture_output=True,timeout=60)
+                output=result.stdout.decode('utf8')+result.stderr.decode('utf8')
+                self.assertEqual(result.returncode,0,output)
+                self.assertTrue(valid_guarded_pure_output(output,count),output)
+
+
+class CanonicalNegativePrepare(unittest.TestCase):
+    def test_actual_e0_validators_and_server_reject_old_body_before_parent_and_accept_canonical(self):
+        guard=HERE/'pure-node-guard.cjs';probe=HERE/'pure-node-guard.test.mjs';entry=HERE/'canonical-validator.test.cjs'
+        self.assertEqual(hashlib.sha256(guard.read_bytes()).hexdigest(),'4f572d05be71696339860f301d4891f6dbe0e4ab3a7f70570052ce69eb9bb028')
+        self.assertEqual(hashlib.sha256(probe.read_bytes()).hexdigest(),'a6bc1a6c3e54ae71b853674761415b03761555a8e3e3bd33f473ecfe25158d72')
+        self.assertEqual(hashlib.sha256(entry.read_bytes()).hexdigest(),'bd92e5cd50b19d63a556e74351f49511a9d8a639a165ca7ff7174d7943e6089e')
+        self.assertEqual(hashlib.sha256((HERE/'fixtures/validator-e0-source.json').read_bytes()).hexdigest(),'b3f545fe86f0f7150657809f3fdb2f2f1e602d750505a83dbc7bca85a8bfb048')
+        proposed=post_member_case_source()
+        literal=b"import {validateTicketRequest} from '../../../lib/consultation/tickets.ts';\n"
+        self.assertEqual(proposed.count(literal),1)
+        old=proposed.replace(literal,b'')
+        line=next(line for line in old.splitlines(keepends=True) if b'const denied=' in line)
+        self.assertIn(b'const denied=validateTicketRequest({',line);self.assertTrue(line.endswith(b'});\n'))
+        oldline=line.replace(b'const denied=validateTicketRequest({',b'const denied={')[:-4]+b'};\n'
+        old=old.replace(line,oldline)
+        self.assertEqual(hashlib.sha256(old).hexdigest(),'3a030ee8a7026e9107c203579b8306693a6356f39647a7cc6f121e31a4020af2')
+        with tempfile.TemporaryDirectory(prefix='p03-canonical-pure-') as folder:
+            local=Path(folder);(local/'base-case.mjs').write_bytes(old);(local/'proposed-case.mjs').write_bytes(proposed)
+            env={k:v for k,v in os.environ.items() if k.upper() in ['PATH','SYSTEMROOT','TEMP','TMP']}
+            for script,extra,count in [(probe,[],4),(entry,[str(local)],3)]:
+                result=subprocess.run([shutil.which('node'),'--test-reporter=tap','--require',str(guard),str(script),*extra],env=env,capture_output=True,timeout=60)
                 output=result.stdout.decode('utf8')+result.stderr.decode('utf8')
                 self.assertEqual(result.returncode,0,output)
                 self.assertTrue(valid_guarded_pure_output(output,count),output)

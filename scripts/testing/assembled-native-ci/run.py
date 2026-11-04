@@ -390,7 +390,7 @@ COMPOSITION = 'p03-composition-e0-v1'
 SELECTED_PROFILE = 'assembled-member-admin-v1'
 CAPSULE_FILE = 'sealed-v4b-app-f07.tar'
 NATIVE_GLOB = 'assembled-member-admin-native-*'
-COMPOSITION_SPEC = {'application': 'e0b930927563d7f9f6d79e848917c4ba0d77ed6f', 'tree': 'c6c67f2a78cd2cf672cf4f489f81e7f14cb041da', 'capsuleSha256': '67d67bc171f92ee7308c738b9aedaa6ef730158aca75703fccd10c9b2d205afb', 'driverSha256': '3da3f5babd4e668ca5f53d652efaca721bba2594b91d29c131b46d842e4a7d34', 'overlayNames': ['assembled-auth-gateway.mjs', 'assembled-auth-runtime.mjs', 'assembled-member-scenario.mjs', 'assembled-native-profile.mjs', 'assembled-native-source.json', 'assembled-native.mjs', 'assembled-observer-policy.mjs', 'assembled-overlay-gate.mjs', 'composition-browser-case.mjs', 'composition-contract.mjs', 'composition-contract.test.mjs', 'composition-member-phase.mjs', 'composition-transport.mjs', 'composition-transport.test.mjs']}
+COMPOSITION_SPEC = {'application': 'e0b930927563d7f9f6d79e848917c4ba0d77ed6f', 'tree': 'c6c67f2a78cd2cf672cf4f489f81e7f14cb041da', 'capsuleSha256': '54d35e1aa4b48962e48085140af0c214547bd139870ea1b9e08e644ac5c8d255', 'driverSha256': 'e8b12e8f44e80e6fc41719028769ea126a16a4250f0a6b0e2433d8481b643850', 'overlayNames': ['assembled-auth-gateway.mjs', 'assembled-auth-runtime.mjs', 'assembled-member-scenario.mjs', 'assembled-native-profile.mjs', 'assembled-native-source.json', 'assembled-native.mjs', 'assembled-observer-policy.mjs', 'assembled-overlay-gate.mjs', 'composition-browser-case.mjs', 'composition-contract.mjs', 'composition-contract.test.mjs', 'composition-member-phase.mjs', 'composition-transport.mjs', 'composition-transport.test.mjs']}
 
 
 def composition_json(raw):
