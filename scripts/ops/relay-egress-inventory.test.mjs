@@ -85,3 +85,30 @@ test('hanging fetch deadline is bounded without provider calls or retries', asyn
   const r = await collectEgressInventory({ token: 'private', fetchImpl: async () => new Promise(() => {}), timeoutMs: 10 });
   assert.equal(r.state, 'list_unconfirmed'); assert.equal(r.controlPlaneRequests, 1); assert.equal(r.providerCalls, 0);
 });
+test('release metadata binds a stable current release and exposes only an allowlisted image reference', async () => {
+  const id = 'a'.repeat(24), commit = 'b'.repeat(40), image = 'apps/' + 'c'.repeat(24) + ':synthetic1';
+  const calls = [];
+  const r = await collectEgressInventory({ token: 'private', includeRelease: true, fetchImpl: async url => {
+    calls.push(url);
+    if (url === base) return Response.json({ projects: [{ project_id:'arsadata', scale:1 }] });
+    if (url === base + '/arsadata') return Response.json({ project:{ project_id:'arsadata', envs:[] } });
+    if (url.includes('/releases?')) return Response.json({ currentRelease:id, releases:[{ _id:id, state:'READY', imageName:image, message:'relay @ ' + commit, raw:'PRIVATE' }] });
+    assert.equal(url, 'https://api.liara.ir/v1/releases/' + id);
+    return Response.json({ release:{ _id:id, imageName:'registry.c2.liara.ir/' + image, raw:'PRIVATE' } });
+  } });
+  assert.equal(calls.length,5);assert.equal(r.release.state,'metadata_read');assert.equal(r.release.imageReference,image);
+  assert.equal(r.release.sourceCommitFromMessage,commit);assert.equal(r.release.rollbackAuthorized,false);
+  assert.equal(JSON.stringify(r).includes('PRIVATE'),false);
+});
+test('changed release or conflicting image references do not attest a rollback image', async () => {
+  for (const changed of [true,false]) {
+    const id='a'.repeat(24);let reads=0;
+    const r=await collectEgressInventory({token:'private',includeRelease:true,fetchImpl:async url=>{
+      if(url===base)return Response.json({projects:[{project_id:'arsadata',scale:1}]});
+      if(url===base+'/arsadata')return Response.json({project:{project_id:'arsadata',envs:[]}});
+      if(url.includes('/releases?')){reads++;return Response.json({currentRelease:changed&&reads>1?'d'.repeat(24):id,releases:[{_id:id,state:'READY',image:'apps/'+'c'.repeat(24)+':old'}]});}
+      return Response.json({release:{_id:id,image:'apps/'+'c'.repeat(24)+':different',message:'PRIVATE'}});
+    }});
+    assert.equal(r.release.imageReference,null);assert.equal(r.release.rollbackAuthorized,false);
+  }
+});
