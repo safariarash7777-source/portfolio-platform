@@ -10,6 +10,7 @@ import { buildMonthlySales, narrativeRate } from "../../lib/core/monthlyReport";
 import type { CodalN30Data, N30ProductRow } from "../../lib/fundamental/types";
 import { withKnownMonthlyQuantities, type QuantityWitnessedReport } from "../../lib/core/monthly-quantity";
 import { foladQuantityFixture } from "../../relay/fixtures/codal-offline.mjs";
+import MeasuredResponsiveContainer from "./MeasuredResponsiveContainer";
 
 type Trace = { component: string; props: Record<string, unknown> };
 const require = createRequire(import.meta.url);
@@ -29,6 +30,11 @@ function renderChart(reports: CodalN30Data[], capture = true, previewSelection?:
   let stateIndex = 0;
   const isolatedRequire = (id: string) => {
     if (id === 'react' && previewSelection) return { ...React, useEffect() {}, useState: () => [previewSelection[stateIndex++], () => {}] };
+    // These are data/format tests, not layout tests. Exercise the real gate in
+    // SSR mode; chart traces bypass measurement just as they stub Recharts.
+    if (id === "./MeasuredResponsiveContainer") return { default: capture
+      ? ({ children }: { children: React.ReactNode }) => React.createElement(React.Fragment, null, children)
+      : MeasuredResponsiveContainer };
     if (id === "recharts" && capture) return recharts;
     return require(id.startsWith("@/") ? `../../${id.slice(2)}` : id);
   };

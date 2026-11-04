@@ -13,11 +13,11 @@ import {
   LineChart,
   Legend,
   ReferenceLine,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import MeasuredResponsiveContainer from "./MeasuredResponsiveContainer";
 import type { DerivedQuarter, TtmPoint } from "@/lib/core/quarterly";
 import { useEffect, useState } from "react";
 import { toPersianDigits } from "@/lib/format";
@@ -154,7 +154,7 @@ export default function QuarterlyCharts({
             .join(" ")}
         >
           <div style={{ width: "100%", height: 250 }} dir="ltr">
-            <ResponsiveContainer>
+            <MeasuredResponsiveContainer>
               <BarChart data={revData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
                 <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-35} height={50} textAnchor="end" />
@@ -167,7 +167,7 @@ export default function QuarterlyCharts({
                 <Bar dataKey="درآمد" fill="var(--navy)" radius={[3, 3, 0, 0]} />
                 <Bar dataKey="سود خالص" fill="var(--gold)" radius={[3, 3, 0, 0]} />
               </BarChart>
-            </ResponsiveContainer>
+            </MeasuredResponsiveContainer>
           </div>
         </Card>
 
@@ -177,7 +177,7 @@ export default function QuarterlyCharts({
           note="حاشیه = نسبت به درآمد همان فصل (٪)؛ فصل بدون درآمد مثبت نقطه ندارد."
         >
           <div style={{ width: "100%", height: 250 }} dir="ltr">
-            <ResponsiveContainer>
+            <MeasuredResponsiveContainer>
               <LineChart data={marginData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
                 <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-35} height={50} textAnchor="end" />
@@ -191,7 +191,7 @@ export default function QuarterlyCharts({
                 <Line type="monotone" dataKey="عملیاتی" stroke="var(--gold)" dot={{ r: 2 }} connectNulls={false} />
                 <Line type="monotone" dataKey="خالص" stroke="var(--success)" dot={{ r: 2 }} connectNulls={false} />
               </LineChart>
-            </ResponsiveContainer>
+            </MeasuredResponsiveContainer>
           </div>
         </Card>
       </div>
@@ -212,7 +212,7 @@ export default function QuarterlyCharts({
               .join(" ")}
           >
             <div style={{ width: "100%", height: 230 }} dir="ltr">
-              <ResponsiveContainer>
+              <MeasuredResponsiveContainer>
                 <LineChart data={peData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
                   <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-35} height={50} textAnchor="end" />
@@ -226,7 +226,7 @@ export default function QuarterlyCharts({
                   ) : null}
                   <Line type="monotone" dataKey="pe" name="P/E TTM" stroke="var(--navy)" dot={{ r: 3 }} connectNulls={false} />
                 </LineChart>
-              </ResponsiveContainer>
+              </MeasuredResponsiveContainer>
             </div>
           </Card>
         ) : ttm.length > 0 ? (

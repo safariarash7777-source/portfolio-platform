@@ -16,11 +16,11 @@ import {
   Line,
   LineChart,
   ReferenceLine,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import MeasuredResponsiveContainer from "./MeasuredResponsiveContainer";
 import { toPersianDigits } from "@/lib/format";
 import type { CodalN30Data } from "@/lib/fundamental/types";
 import {
@@ -125,7 +125,7 @@ function MonthlyBars({ m }: { m: MonthlySales }) {
   }));
   return (
     <div style={{ height: 280 }} dir="ltr">
-      <ResponsiveContainer width="100%" height="100%">
+      <MeasuredResponsiveContainer>
         <ComposedChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
           <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--text-3)" }} reversed />
@@ -153,7 +153,7 @@ function MonthlyBars({ m }: { m: MonthlySales }) {
             />
           ) : null}
         </ComposedChart>
-      </ResponsiveContainer>
+      </MeasuredResponsiveContainer>
     </div>
   );
 }
@@ -168,7 +168,7 @@ function CumulativeChart({ m }: { m: MonthlySales }) {
   }));
   return (
     <div style={{ height: 280 }} dir="ltr">
-      <ResponsiveContainer width="100%" height="100%">
+      <MeasuredResponsiveContainer>
         <LineChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
           <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--text-3)" }} reversed />
@@ -202,7 +202,7 @@ function CumulativeChart({ m }: { m: MonthlySales }) {
             connectNulls={false}
           />
         </LineChart>
-      </ResponsiveContainer>
+      </MeasuredResponsiveContainer>
     </div>
   );
 }
@@ -240,7 +240,7 @@ function RateChart({ m }: { m: MonthlySales }) {
         return <div key={unit} role="group" aria-label={`نرخ فروش — ${unitLabel}`}>
           <p className="mb-2 text-[12px]" style={{ color: "var(--text-3)" }}>واحد نرخ: {unitLabel}</p>
           <div style={{ height: 280 }} dir="ltr">
-            <ResponsiveContainer width="100%" height="100%">
+            <MeasuredResponsiveContainer>
               <LineChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
                 <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--text-3)" }} reversed />
@@ -271,7 +271,7 @@ function RateChart({ m }: { m: MonthlySales }) {
                   />
                 ))}
               </LineChart>
-            </ResponsiveContainer>
+            </MeasuredResponsiveContainer>
           </div>
         </div>;
       })}
@@ -386,7 +386,7 @@ function ProdSalesChart({ points, label }: { points: ProdSalesPoint[]; label?: s
       {units.map(unit => <div key={unit} role="group" aria-label={`${label ?? "تولید و فروش"} — ${unit}`}>
         <p className="mb-2 text-[12px]" style={{ color: "var(--text-3)" }}>واحد مقدار: {unit}</p>
         <div style={{ height: 280 }} dir="ltr">
-          <ResponsiveContainer width="100%" height="100%">
+          <MeasuredResponsiveContainer>
             <BarChart data={points.map(point => ({
               ...point,
               production: hasQuantityUnit(point, unit) ? point.production : null,
@@ -408,7 +408,7 @@ function ProdSalesChart({ points, label }: { points: ProdSalesPoint[]; label?: s
               <Bar dataKey="production" name="مقدار تولید" fill="var(--line-strong)" radius={[3, 3, 0, 0]} />
               <Bar dataKey="sales" name="مقدار فروش" fill="var(--navy)" radius={[3, 3, 0, 0]} />
             </BarChart>
-          </ResponsiveContainer>
+          </MeasuredResponsiveContainer>
         </div>
       </div>)}
       {points.some(point => !hasQuantityUnit(point)) ? <p role="status" className="text-[12px]" style={{ color: "var(--text-3)" }}>ماه فاقد مقدار کامل یا واحد معتبر خالی می‌ماند؛ واحدهای متفاوت در نمودارهای جدا نمایش داده می‌شوند.</p> : null}
