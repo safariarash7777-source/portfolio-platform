@@ -10,15 +10,16 @@ const isSource = (target: EventTarget | null) => target instanceof Element
  */
 export default function MonthlySourceChartFrame({ enabled, children }: {
   enabled: boolean;
-  children: (trigger: "click" | "hover" | undefined) => React.ReactNode;
+  children: (trigger: "click" | "hover" | undefined, portal?: HTMLDivElement | null) => React.ReactNode;
 }) {
   const [trigger, setTrigger] = useState<"click" | "hover">("click");
+  const [portal, setPortal] = useState<HTMLDivElement | null>(null);
   if (!enabled) return <div style={{ height: 280 }} dir="ltr">{children(undefined)}</div>;
   return <>
     <p className="mb-2 text-xs leading-5" dir="rtl">
-      برای دیدن منبع، روی نقطه کلیک یا لمس کنید. با صفحه‌کلید، نمودار را انتخاب کنید و از کلیدهای چپ و راست استفاده کنید؛ با Tab به پیوند منبع بروید. Escape جزئیات را می‌بندد.
+      برای دیدن منبع، روی نقطه کلیک یا لمس کنید. جزئیات زیر نمودار نمایش داده می‌شوند. با صفحه‌کلید، نمودار را انتخاب کنید و از کلیدهای چپ و راست استفاده کنید؛ با Tab به پیوند منبع بروید. Escape جزئیات را می‌بندد.
     </p>
-    <div style={{ height: 280 }} dir="ltr"
+    <div dir="ltr"
       onPointerDownCapture={event => { if (!isSource(event.target)) setTrigger("click"); }}
       onMouseOverCapture={event => event.stopPropagation()}
       onMouseMoveCapture={event => event.stopPropagation()}
@@ -29,8 +30,15 @@ export default function MonthlySourceChartFrame({ enabled, children }: {
       }}
       onBlurCapture={event => {
         // Focusing the link is still part of this chart's keyboard interaction.
-        if (isSource(event.relatedTarget) && event.currentTarget.contains(event.relatedTarget as Node)) event.stopPropagation();
+        if (event.relatedTarget && event.currentTarget.contains(event.relatedTarget as Node)
+          && (isSource(event.relatedTarget) || isSource(event.target))) event.stopPropagation();
       }}
-    >{children(trigger)}</div>
+    >
+      <div style={{ height: 280 }}>{children(trigger, portal)}</div>
+      {/* Recharts' default portal precedes its SVG. This host follows the chart
+          in DOM order, so native Tab reaches the link; no scripted focus. With
+          an explicit portal Recharts uses normal flow, preventing chart overlap. */}
+      <div ref={setPortal} data-monthly-source-portal="" dir="rtl" />
+    </div>
   </>;
 }

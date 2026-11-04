@@ -128,7 +128,7 @@ function MonthlyBars({ m, sources }: { m: MonthlySales; sources?: ReadonlyMap<st
     ...(sources ? { currentMonthKey: cm.monthKey, priorMonthKey: m.priorMonths?.[i].monthKey ?? null } : {}),
   }));
   return (
-    <MonthlySourceChartFrame enabled={!!sources}>{trigger => (
+    <MonthlySourceChartFrame enabled={!!sources}>{(trigger, portal) => (
       <MeasuredResponsiveContainer>
         <ComposedChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
@@ -141,6 +141,7 @@ function MonthlyBars({ m, sources }: { m: MonthlySales; sources?: ReadonlyMap<st
           />
           <Tooltip
             trigger={trigger}
+            portal={portal}
             contentStyle={tooltipStyle}
             wrapperStyle={sources ? { pointerEvents: "auto", maxWidth: "min(280px, 75vw)", overflowWrap: "anywhere" } : undefined}
             labelFormatter={sources ? (label, payload) => <MonthlyPointSourceLabel label={label} payload={payload} sources={sources} /> : undefined}
@@ -175,7 +176,7 @@ function CumulativeChart({ m, sources }: { m: MonthlySales; sources?: ReadonlyMa
     ...(sources ? { currentMonthKey: cm.monthKey, priorMonthKey: m.priorMonths?.[i].monthKey ?? null } : {}),
   }));
   return (
-    <MonthlySourceChartFrame enabled={!!sources}>{trigger => (
+    <MonthlySourceChartFrame enabled={!!sources}>{(trigger, portal) => (
       <MeasuredResponsiveContainer>
         <LineChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
@@ -188,6 +189,7 @@ function CumulativeChart({ m, sources }: { m: MonthlySales; sources?: ReadonlyMa
           />
           <Tooltip
             trigger={trigger}
+            portal={portal}
             contentStyle={tooltipStyle}
             wrapperStyle={sources ? { pointerEvents: "auto", maxWidth: "min(280px, 75vw)", overflowWrap: "anywhere" } : undefined}
             labelFormatter={sources ? (label, payload) => <MonthlyPointSourceLabel label={label} payload={payload} sources={sources} /> : undefined}

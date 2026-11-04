@@ -154,6 +154,7 @@ test("non-Preview monthly charts ignore supplied point records and retain origin
   for (const tooltip of shown.traces.filter(t => t.component === "Tooltip").slice(0, 2)) {
     assert.equal(tooltip.props.labelFormatter, undefined);assert.equal(tooltip.props.wrapperStyle, undefined);
     assert.equal(tooltip.props.trigger, undefined);
+    assert.equal(tooltip.props.portal, undefined);
   }
   const point = chartData(shown.traces.find(t => t.component === "ComposedChart")!)[0];
   assert.equal(Object.hasOwn(point, "currentMonthKey"), false);assert.equal(Object.hasOwn(point, "priorMonthKey"), false);
@@ -163,6 +164,7 @@ test("Preview source charts pin pointer selection with click trigger, while ordi
   const shown = renderChart([report("1404-01-31")], true, ["1404", "all"]);
   const tips = shown.traces.filter(t => t.component === "Tooltip");
   assert.equal(tips[0].props.trigger, "click");assert.equal(tips[1].props.trigger, "click");
+  assert.equal(tips[0].props.portal, null);assert.equal(tips[1].props.portal, null);
   assert.ok(tips.slice(2).every(t => t.props.trigger === undefined));
   assert.ok(shown.html.includes("با Tab به پیوند منبع بروید"));
   assert.ok(!renderChart([report("1404-01-31")]).html.includes("با Tab به پیوند منبع بروید"));
@@ -170,21 +172,26 @@ test("Preview source charts pin pointer selection with click trigger, while ordi
 
 function interactionFrame() {
   class Target { constructor(public source = false) {} closest() { return this.source ? this : null; } }
-  let mode = "click";
+  const states: unknown[] = ["click", null];
+  let stateIndex = 0, childPortal: unknown;
   const source = readFileSync(new URL("./MonthlySourceChartFrame.tsx", import.meta.url), "utf8");
-  const compiled = { exports: {} as { default: (props: { enabled: boolean; children: (trigger: unknown) => unknown }) => React.ReactElement } };
+  const compiled = { exports: {} as { default: (props: { enabled: boolean; children: (trigger: unknown, portal?: unknown) => unknown }) => React.ReactElement } };
   const javascript = ts.transpileModule(source, { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   vm.runInNewContext(javascript, { module: compiled, exports: compiled.exports, Element: Target, require: (id: string) => id === "react"
-    ? { ...React, useState: () => [mode, (value: string) => { mode = value; }] } : require(id) });
+    ? { ...React, useState: () => { const index = stateIndex++; return [states[index], (value: unknown) => { states[index] = value; }]; } } : require(id) });
   const render = (enabled = true) => {
-    const element = compiled.exports.default({ enabled, children: value => value });
+    stateIndex = 0;
+    const element = compiled.exports.default({ enabled, children: (value, portal) => { childPortal = portal; return value; } });
     const props = element.props as { children: React.ReactElement[] };
-    return (enabled ? props.children[1] : element).props as Record<string, unknown>;
+    const frame = (enabled ? props.children[1] : element).props as Record<string, unknown>;
+    if (!enabled) return frame;
+    const slots = frame.children as React.ReactElement[];
+    return { ...frame, children: (slots[0].props as { children: unknown }).children, slots };
   };
   const event = (target = new Target()) => ({ target, relatedTarget: null as Target | null, currentTarget: { contains: () => true }, key: "", stopped: false,
     stopPropagation() { this.stopped = true; }, preventDefault() { assert.fail("native navigation and scrolling must not be cancelled"); } });
   const send = (props: Record<string, unknown>, name: string, e: ReturnType<typeof event>) => (props[name] as (event: unknown) => void)(e);
-  return { Target, render, event, send };
+  return { Target, render, event, send, childPortal: () => childPortal };
 }
 
 test("source frame preserves keyboard-to-link focus and isolates native pointer movement without cancelling defaults", () => {
@@ -197,6 +204,8 @@ test("source frame preserves keyboard-to-link focus and isolates native pointer 
   props = render();assert.equal(props.children, "hover");assert.equal(arrow.stopped, false);
   const link = new Target(true), blur = event();blur.relatedTarget = link;
   send(props, "onBlurCapture", blur);assert.equal(blur.stopped, true);
+  const reverse = event(link);reverse.relatedTarget = new Target();
+  send(props, "onBlurCapture", reverse);assert.equal(reverse.stopped, true, "Shift+Tab to the same chart retains keyboard selection");
   const external = event();external.relatedTarget = link;external.currentTarget.contains = () => false;
   send(props, "onBlurCapture", external);assert.equal(external.stopped, false);
   const leave = event();send(props, "onBlurCapture", leave);assert.equal(leave.stopped, false);
@@ -204,6 +213,22 @@ test("source frame preserves keyboard-to-link focus and isolates native pointer 
   send(props, "onPointerDownCapture", event());assert.equal(render().children, "click");
   const plain = render(false);assert.equal(plain.children, undefined);
   assert.ok(!Object.keys(plain).some(key => key.startsWith("on")));
+});
+
+test("Preview source portal is after the fixed-height chart and hands its mounted host to Tooltip without scripted focus", () => {
+  const { render, Target, childPortal } = interactionFrame();
+  const props = render(), slots = props.slots as React.ReactElement[];
+  assert.equal(slots.length, 2);
+  const chart = slots[0].props as { style: { height: number } };
+  const portal = slots[1].props as { dir: string; tabIndex?: number; "data-monthly-source-portal": string };
+  const attach = (slots[1] as unknown as { ref: (host: unknown) => void }).ref;
+  assert.equal(chart.style.height, 280);
+  assert.equal(portal["data-monthly-source-portal"], "");assert.equal(portal.dir, "rtl");
+  assert.equal(portal.tabIndex, undefined);assert.equal(props.style, undefined, "outer frame must expand for normal-flow portal content");
+  assert.equal(childPortal(), null);
+  const host = new Target();attach(host);render();assert.equal(childPortal(), host);
+  attach(null);render();assert.equal(childPortal(), null);
+  render(false);assert.equal(childPortal(), undefined);
 });
 
 test("actual Recharts reducer and selector keep clicked point on movement and support the isolated keyboard lane", () => {
