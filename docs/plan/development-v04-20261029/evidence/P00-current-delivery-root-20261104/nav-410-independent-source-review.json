@@ -1,0 +1,17 @@
+{
+  "reviewer": "existing agent_runtime_audit; not NAV author",
+  "head": "dc7a0d0c98517949538f0a3142558d7f68d32f34",
+  "verdict": "SOURCE_PASS_LIMITED",
+  "remainingConfirmedP1P2": 0,
+  "reviewScope": "bulk rejection to fallback/completion, budget admission, noRetry isolation, independent NAV stop, six-file source delta",
+  "correction": {
+    "initialFinding": "redirect follow would bypass one-attempt budget",
+    "status": "WITHDRAWN_FALSE_POSITIVE",
+    "evidence": "Production server and client both use brsFetch; brsapi-transport.mjs forces redirect:error on provider and configured provider bases"
+  },
+  "reviewerExecutedTests": false,
+  "reviewerNetworkCalls": 0,
+  "runtimeAccepted": false,
+  "providerShapeAccepted": false,
+  "productionFreshnessAccepted": false
+}

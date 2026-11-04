@@ -4,3 +4,13 @@ funds-064239-* -text -whitespace
 funds-065403-* -text -whitespace
 p15-harness-411d-adoption.json -text -whitespace
 p15-harness-independent-source-review.json -text -whitespace
+
+p15-linux-* -text -whitespace
+p08-release-* -text -whitespace
+preview-binding-* -text -whitespace
+p14-rebound-* -text -whitespace
+p08-rebound-* -text -whitespace
+p08-prod-1ceba-* -text -whitespace
+data-chain-* -text -whitespace
+nav-410-* -text -whitespace
+p07-rejected-* -text -whitespace

@@ -1,0 +1,457 @@
+Browser tab: 7, Title: "نماد فولاد — قیمت، تاریخچه و تحلیل بنیادی · آرش صفری", URL: "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=4&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#fundamental".
+1 AXWebArea نماد فولاد — قیمت، تاریخچه و تحلیل بنیادی · آرش صفری, URL: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=4&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#fundamental
+	2 container
+		3 link Description: نشان آرش صفری آرش صفری تحلیلگر و مشاور سرمایه‌گذاری, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/
+		4 container ناوبری اصلی
+			5 link Description: بازار, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/market
+			6 pop up button (collapsed) تحلیل‌ها, Secondary Actions: Expand
+			7 pop up button (collapsed) محصولات, Secondary Actions: Expand
+			8 link Description: دربارهٔ آرش, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/about
+		9 button فعال‌سازی حالت تیره
+			10 image
+		11 link Description: مشاوره, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/#waitlist
+		12 link Description: ورود, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/dashboard
+	13 container
+		14 text دادهٔ تابلوی بازار از بانک داده در این بارگذاری دریافت نشد. گزارش‌های بنیادی از مسیر جداگانه خوانده می‌شوند؛ این وضعیت به معنی نبود گزارش شرکت نیست.
+		15 container مسیر صفحه
+			16 link Description: میز بازار, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/market
+			17 link Description: بانک داده, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/data
+			18 text فولاد
+		19 text پروندهٔ نماد
+		20 heading فولاد, Value: 1
+			21 text فولاد
+		22 text فولاد مبارکه اصفهان
+		23 link Description: دانلود تاریخچه (CSV), Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/api/data/%D9%81%D9%88%D9%84%D8%A7%D8%AF/history.csv
+		24 text دادهٔ این بخش در دسترس نیست
+		25 text زمان معتبر قیمت نامشخص است
+		26 text زمان دریافت نامعلوم
+		27 text دادهٔ جاری این نماد در اسنپ‌شات بازار نیست
+		28 text تاریخچه و گزارش‌های ثبت‌شده، اگر موجود باشند، مستقل نمایش داده می‌شوند؛ مقدار جاری با صفر جایگزین نشده است.
+		29 text قیمت پایانی — تغییر روز — ارزش معاملات — ورود پول حقیقی (امروز) — P/E — EPS (ریال) ۶۳ ارزش بازار — حجم معاملات —
+		30 container مقایسهٔ دو چیدمان شرکت
+			31 text پیش‌نمایش صفحهٔ شرکت
+			32 text دو چیدمان از همان گزارش‌ها و نمودارها؛ دادهٔ ناموجود تکمیل نمی‌شود.
+			33 container چیدمان صفحه
+				34 checkbox نمای پرسش‌محور, Value: 0
+				35 checkbox پروندهٔ مستند, Value: 1
+		36 tab group بخش‌های صفحهٔ نماد
+			37 tab (selectable, settable, boolean) نمای کلی, Value: 0
+			38 tab (selected, settable, boolean) بنیادی, Value: 1
+			39 tab (selectable, settable, boolean) گزارش‌ها, Value: 0
+			40 tab (selectable, settable, boolean) مجامع, Value: 0
+		41 container بنیادی
+			42 container Description: شناسنامهٔ منابع شرکت, ID: company-sources
+				43 heading این بررسی به کدام گزارش‌ها متکی است؟, Value: 2
+					44 text این بررسی به کدام گزارش‌ها متکی است؟
+				45 text تاریخ دوره، انتشار و دریافت یکی نیستند. جزئیات هر نسخه در تب گزارش‌ها قابل بررسی است.
+				46 container
+					47 heading فعالیت ماهانه, Value: 3
+						48 text فعالیت ماهانه
+					49 text گزارش‌های فعالیت ماهانه (ن-۳۰) کدال
+					50 definition list
+						51 container دوره‌های مجموعهٔ خوانده‌شده
+							52 text دوره‌های مجموعهٔ خوانده‌شده
+						53 text ۱۴۰۵-۰۶-۳۱، ۱۴۰۳-۱۱-۳۰، ۱۴۰۳-۱۰-۳۰، ۱۴۰۳-۰۹-۳۰، ۱۴۰۳-۰۸-۳۰، ۱۴۰۳-۰۷-۳۰، ۱۴۰۳-۰۶-۳۱، ۱۴۰۳-۰۵-۳۱، ۱۴۰۳-۰۴-۳۱، ۱۴۰۳-۰۳-۳۱
+						54 container واحد مبلغ گزارش
+							55 text واحد مبلغ گزارش
+						56 text میلیون ریال
+						57 container انتشار در منبع
+							58 text انتشار در منبع
+						59 text به تفکیک هر گزارش در تب گزارش‌ها؛ مجموعه زمان انتشار واحد ندارد
+						60 container دامنهٔ ارقام
+							61 text دامنهٔ ارقام
+						62 text نامشخص
+						63 container مبنای اعتبار واحد مجموعه
+							64 text مبنای اعتبار واحد مجموعه
+						65 text برای همهٔ گزارش‌ها مبنای واحد حسابی ثبت شده؛ تازگی مستقل است
+					66 link Description: اطلاعیهٔ مرجع مجموعه؛ منشأ تمام دوره‌ها نیست, Value: codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1
+				67 container
+					68 heading صورت‌های مالی, Value: 3
+						69 text صورت‌های مالی
+					70 text صورت‌های مالی ۳ماههٔ حسابرسی‌نشدهٔ سال مالی ۱۴۰۵ (کدال)
+					71 definition list
+						72 container پایان دورهٔ گزارش مرجع
+							73 text پایان دورهٔ گزارش مرجع
+						74 text ۱۴۰۵-۰۳-۳۱
+						75 container واحد مبلغ گزارش
+							76 text واحد مبلغ گزارش
+						77 text میلیون ریال
+						78 container انتشار در منبع
+							79 text انتشار در منبع
+						80 text ۱۴۰۵/۰۵/۰۳ ۱۶:۵۴:۵۳
+						81 container دامنهٔ ارقام
+							82 text دامنهٔ ارقام
+						83 text شرکت اصلی
+						84 container اعتبارسنجی حسابی
+							85 text اعتبارسنجی حسابی
+						86 text انجام شده؛ اعتبار زمانی مستقل است
+					87 link Description: مشاهدهٔ اطلاعیهٔ کدال, Value: codal.ir/Reports/Decision.aspx?LetterSerial=yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d&rt=0&let=6&ct=0&ft=-1
+			88 container مسیر خواندن تحلیل شرکت
+				89 text فهرست پرونده
+				90 link Description: روند درآمد, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=4&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#chart-5y-trend
+				91 link Description: سود خالص, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=4&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#chart-net-profit
+				92 link Description: حاشیهٔ سود, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=4&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#chart-margins
+				93 link Description: نرخ محصولات, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=4&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#chart-product-rates
+				94 link Description: مقدار تولید و فروش, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=4&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#chart-prod-vs-sales
+				95 link Description: منبع و دوره, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=4&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#company-sources
+			96 container
+				97 container
+					98 text دورهٔ فعالیت:  ۱۴۰۵-۰۶
+				99 heading کارت بنیادی — فعالیت ماهانه ( ن-۳۰ ), Value: 2
+					100 text کارت بنیادی — فعالیت ماهانه (
+					101 link Description: ن-۳۰, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/learn/glossary#n10-n30
+					102 text )
+				103 text گزارش‌های فعالیت ماهانه (ن-۳۰) کدال
+				104 link Description: منبع رسمی: کدال, Value: codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1
+				105 text فروش شهریور ۱۴۰۵: ۶۳۹۴۱.۸ میلیارد تومان. عمدتاً از محصولات گرم.
+				106 button (collapsed) روند و ترکیب فروش (۱۲ ماه), Secondary Actions: Expand
+				107 button (collapsed) جدول محصولات آخرین ماه (دادهٔ خام), Secondary Actions: Expand
+			108 container
+				109 heading کارت امتیاز سه‌محوره (بنیادی · روند · کیفیت گزارش), Value: 2
+					110 text کارت امتیاز سه‌محوره (بنیادی · روند · کیفیت گزارش)
+				111 text به‌زودی هر امتیاز با فرمول شفاف و توضیحِ «چرا» ارائه خواهد شد؛ تا تصویب منطق امتیازدهی، هیچ نمرهٔ موقتی نمایش داده نمی‌شود.
+			112 text بعضی گزارش‌های ماهانه ذخیره شده‌اند، اما واحد مبلغ آن‌ها مشخص نیست. مبلغ و مقایسه‌های وابسته تا تأیید واحد نمایش داده نمی‌شوند؛ نمودارهای موجود فقط دوره‌های دارای واحد مشخص را پوشش می‌دهند.
+			113 container
+				114 heading شناسنامهٔ بنیادی — فروش ماهانه, Value: 2
+					115 text شناسنامهٔ بنیادی — فروش ماهانه
+				116 container
+					117 text ۹  گزارش فعالیت ماهانه (ن-۳۰) کدال · واحد مبالغ: میلیون ریال (نمایش: میلیارد تومان/همت)  · 
+					118 link Description: مرجع بستهٔ گزارش‌ها: گزارش‌های فعالیت ماهانه (ن-۳۰) کدال, Value: codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1
+				119 text سال تقویمی گزارش‌های ماهانه
+				120 pop up button (collapsed, settable) سال تقویمی گزارش‌های ماهانه همراه سال قبل؛ تجمیعی همچنان عددِ گزارش از آغاز سال مالی شرکت است., Value: ۱۴۰۳, Secondary Actions: Expand
+					121 menu
+						122 ۱۴۰۵
+						123 (selected) ۱۴۰۳
+				124 text همراه سال قبل؛ تجمیعی همچنان عددِ گزارش از آغاز سال مالی شرکت است. محصول و بازار در نمودار نرخ
+				125 pop up button (collapsed, settable) محصول و بازار در نمودار نرخ فقط نمودار نرخ فیلتر می‌شود؛ مبلغ کل و مقدار محصول اصلی تغییر نمی‌کند., Value: محصولات گرم — تفکیک نامعلوم, Secondary Actions: Expand
+					126 menu
+						127 همهٔ سری‌های نرخ موجود
+						128 (selected) محصولات گرم — تفکیک نامعلوم
+						129 محصولات سرد — تفکیک نامعلوم
+						130 تختال — تفکیک نامعلوم
+				131 text فقط نمودار نرخ فیلتر می‌شود؛ مبلغ کل و مقدار محصول اصلی تغییر نمی‌کند.
+				132 container q-monthly-sales
+					133 container
+						134 heading فروش ماهانه چطور حرکت می‌کند؟, Value: 3
+							135 text فروش ماهانه چطور حرکت می‌کند؟
+						136 text درآمد ماهانهٔ سال ۱۴۰۳ · خط طلایی: میانگین سال جاری · ماه بدون گزارش خالی است
+					137 container
+						138 content list
+							139 container
+								140 image سال ۱۴۰۳ legend icon
+								141 text سال ۱۴۰۳
+						142 container
+						143 container
+							144 text فروردین
+							145 text خرداد
+							146 text تیر
+							147 text مرداد
+							148 text مهر
+							149 text آبان
+							150 text آذر
+							151 text دی
+							152 text اسفند
+							153 text ۰
+							154 text ۷ همت
+							155 text ۱۳ همت
+							156 text ۲۰ همت
+							157 text ۲۶ همت
+							158 text میانگین ۱۴۰۳
+					159 text فروش بهمن حدود ۱۳.۶ درصد بالاتر از میانگین ماهانهٔ سال ۱۴۰۳ است.
+				160 container q-cumulative
+					161 container
+						162 heading از ابتدای سال مالی کجاییم؟, Value: 3
+							163 text از ابتدای سال مالی کجاییم؟
+						164 text فروش تجمیعی (fy_cumulative از خود گزارش) — سال ۱۴۰۳
+					165 container
+						166 content list
+							167 container
+								168 image تجمیعی ۱۴۰۳ legend icon
+								169 text تجمیعی ۱۴۰۳
+						170 container
+							171 text فروردین
+							172 text خرداد
+							173 text تیر
+							174 text شهریور
+							175 text مهر
+							176 text آبان
+							177 text آذر
+							178 text دی
+							179 text اسفند
+							180 text ۰
+							181 text ۶۵ همت
+							182 text ۱۳۰
+							183 text همت
+							184 text ۱۹۵
+							185 text همت
+							186 text ۲۶۰
+							187 text همت
+				188 container q-rate-trend
+					189 container
+						190 heading نرخ فروش چه روندی دارد؟, Value: 3
+							191 text نرخ فروش چه روندی دارد؟
+						192 text واحد نرخ کنار هر نمودار · واحدهای متفاوت جدا هستند · خط‌چین = صادراتی · ماه بدون رکورد = گپ واقعی
+					193 text نرخ فروش با واحد معتبر موجود نیست؛ واحد نامعلوم یا دادهٔ مفقود صفر نشده است.
+				194 container q-sales-mix
+					195 container
+						196 heading چه می‌فروشد؟, Value: 3
+							197 text چه می‌فروشد؟
+						198 text ترکیب فروش بهمن (آخرین ماه دارای گزارش) — سهم محصولات و داخلی/صادراتی
+					199 container سهم محصولات از فروش آخرین ماه
+					200 content list
+						201 container
+							202 text محصولات گرم ( تفکیک نامعلوم ) ٪۳۷٫۳ ۹٫۶ همت
+						203 container
+							204 text تختال ( تفکیک نامعلوم ) ٪۱۹٫۹ ۵٫۱ همت
+						205 container
+							206 text محصولات سرد ( تفکیک نامعلوم ) ٪۱۹٫۷ ۵٫۱ همت
+						207 container
+							208 text تختال ( تفکیک نامعلوم ) ٪۱۱٫۱ ۲٫۸ همت
+						209 container
+							210 text محصولات گرم ( تفکیک نامعلوم ) ٪۶ ۱٫۶ همت
+						211 container
+							212 text محصولات پوشش دار ( تفکیک نامعلوم ) ٪۵٫۵ ۱٫۴ همت
+						213 container
+							214 text محصولات سرد ( تفکیک نامعلوم ) ٪۰٫۲ ۵۹ میلیارد تومان
+						215 container
+							216 text محصولات پوشش دار ( تفکیک نامعلوم ) ٪۰٫۲ ۵۸ میلیارد تومان
+					217 container
+						218 text تفکیک بازار تأیید نشده ؛ سهم صادرات نامعلوم است.
+					219 text در بهمن تفکیک کامل و تأییدشدهٔ بازار در دسترس نیست؛ سهم صادرات نامعلوم است.
+				220 container q-prod-vs-sales
+					221 container
+						222 heading تولید و فروش هم‌خوان‌اند؟, Value: 3
+							223 text تولید و فروش هم‌خوان‌اند؟
+						224 text مقدار تولید و فروش «محصولات گرم» (محصول اصلی) — ماه فاقد گزارش یا مقدار کامل روی محور خالی است؛ صفر گزارش‌شده حفظ می‌شود
+					225 text مقدار قابل‌مقایسهٔ تولید و فروش موجود نیست؛ دادهٔ مفقود یا واحد نامعلوم صفر نشده است.
+			226 container quarterly
+				227 container
+					228 heading تحلیل فصلی (ن-۱۰), Value: 3
+						229 text تحلیل فصلی (ن-۱۰)
+					230 text فصل‌سازی با تفاضل گزارش‌های تجمیعی ۳/۶/۹/۱۲ماهه — منبع:  گزارش‌های ن-۱۰ شرکت — دوره‌های ۱۴۰۵-۰۳-۳۱، ۱۴۰۴-۰۹-۳۰، ۱۴۰۴-۰۶-۳۱، ۱۴۰۴-۰۳-۳۱، ۱۴۰۳-۱۲-۳۰، ۱۴۰۳-۰۹-۳۰، ۱۴۰۳-۰۳-۳۱، ۱۴۰۲-۱۲-۲۹، ۱۴۰۲-۰۹-۳۰، ۱۴۰۲-۰۶-۳۱، ۱۴۰۲-۰۳-۳۱
+				231 container
+					232 text بازهٔ نمودار درآمد و حاشیه‌های فصلی
+					233 pop up button (collapsed, settable) Value: ۴ فصل آخر, Secondary Actions: Expand, بازهٔ نمودار درآمد و حاشیه‌های فصلی فصل فاقد زنجیرهٔ کامل خالی می‌ماند؛ محاسبهٔ TTM از تاریخچهٔ کامل حفظ می‌شود.
+						234 menu
+							235 (selected) ۴ فصل آخر
+							236 ۸ فصل آخر
+							237 ۱۲ فصل آخر
+					238 text فصل فاقد زنجیرهٔ کامل خالی می‌ماند؛ محاسبهٔ TTM از تاریخچهٔ کامل حفظ می‌شود.
+				239 container
+					240 heading درآمد و سود خالص فصلی, Value: 4
+						241 text درآمد و سود خالص فصلی
+					242 text فروش و سودآوری فصل‌به‌فصل چگونه تغییر کرده است؟
+				243 container
+					244 content list
+						245 container
+							246 image درآمد legend icon
+							247 text درآمد
+						248 container
+							249 image سود خالص legend icon
+							250 text سود خالص
+					251 container
+					252 container
+						253 text ف۲ ۱۴۰۴
+						254 text ف۳ ۱۴۰۴
+						255 text ف۴ ۱۴۰۴
+						256 text ف۱ ۱۴۰۵
+						257 text -۵۰۰۰۰
+						258 text ۰
+						259 text ۵۰۰۰۰
+						260 text ۱۰۰۰۰۰
+						261 text ۱۵۰۰۰۰
+				262 text واحد: میلیارد تومان. فصل‌هایی که گزارش زنجیرهٔ کامل ندارند بدون ستون‌اند (هیچ درون‌یابی نمی‌شود).
+				263 container
+					264 heading روند حاشیه‌های سود, Value: 4
+						265 text روند حاشیه‌های سود
+					266 text کیفیت سودآوری (حاشیهٔ ناخالص، عملیاتی، خالص) رو به بهبود است یا افت؟
+				267 container
+					268 content list
+						269 container
+							270 image خالص legend icon
+							271 text خالص
+						272 container
+							273 image عملیاتی legend icon
+							274 text عملیاتی
+						275 container
+							276 image ناخالص legend icon
+							277 text ناخالص
+					278 container
+						279 text ف۲ ۱۴۰۴
+						280 text ف۳ ۱۴۰۴
+						281 text ف۴ ۱۴۰۴
+						282 text ف۱ ۱۴۰۵
+						283 text -۵۰
+						284 text -۲۵
+						285 text ۰
+						286 text ۲۵
+						287 text ۵۰
+				288 text حاشیه = نسبت به درآمد همان فصل (٪)؛ فصل بدون درآمد مثبت نقطه ندارد.
+				289 container
+					290 text EPS دوازده‌ماهه محاسبه شد ( ۳  نقطه) اما قیمت تاریخی پایان فصل برای رسم نمودار P/E در دسترس نیست.
+			291 container
+				292 heading تحلیل بنیادی (گزارش‌های کدال), Value: 2
+					293 text تحلیل بنیادی (گزارش‌های کدال)
+				294 text منبع:  صورت‌های مالی ۳ماههٔ حسابرسی‌نشدهٔ سال مالی ۱۴۰۵ (کدال) پایان دورهٔ مالی:  ۱۴۰۵/۰۳/۳۱ انتشار در کدال:  ۱۴۰۵/۰۵/۰۳ ۱۶:۵۴:۵۳ واحد ارقام:  میلیون ریال
+				295 text اعتبارسنجی حسابی ✓
+				296 link Description: مشاهدهٔ اطلاعیه در کدال, Value: codal.ir/Reports/Decision.aspx?LetterSerial=yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d&rt=0&let=6&ct=0&ft=-1
+				297 text ۳ گزارش تلفیقی به علت تأیید نشدن دامنهٔ شرکت اصلی از محاسبات کنار گذاشته شد.
+				298 container chart-pe-ttm
+					299 heading ۱) روند P/E فصلی TTM, Value: 3
+						300 text ۱) روند P/E فصلی TTM
+					301 text به‌زودی
+					302 text برای رسم روند، چهار فصل مالی متوالی و دست‌کم دو قیمت تاریخیِ معتبر در پایان فصل لازم است. وضعیت دادهٔ همین نماد در بخش تحلیل فصلی مشخص می‌شود.
+					303 text طبق قواعد پلتفرم، تا رسیدن دادهٔ واقعی هیچ عدد جایگزینی نمایش داده نمی‌شود.
+				304 container chart-margins
+					305 container
+						306 heading ۲) حاشیه‌های سود (ناخالص / عملیاتی / خالص), Value: 3
+							307 text ۲) حاشیه‌های سود (ناخالص / عملیاتی / خالص)
+						308 text مقایسهٔ دورهٔ ۳ماههٔ منتهی به ۱۴۰۵/۰۳/۳۱ با دورهٔ ۳ماههٔ مشابه سال قبل
+						309 button اشتراک, Help: کپی لینک این نمودار
+					310 container
+						311 content list
+							312 container
+								313 image دورهٔ ۳ماههٔ مشابه سال قبل legend icon
+								314 text دورهٔ ۳ماههٔ مشابه سال قبل
+							315 container
+								316 image دورهٔ ۳ماههٔ منتهی به ۱۴۰۵/۰۳/۳۱ legend icon
+								317 text دورهٔ ۳ماههٔ منتهی به ۱۴۰۵/۰۳/۳۱
+						318 container
+						319 container
+							320 text ناخالص
+							321 text عملیاتی
+							322 text خالص
+							323 text ٪۰
+							324 text ٪۲۵
+							325 text ٪۵۰
+							326 text ٪۷۵
+							327 text ٪۱۰۰
+					328 text حاشیهٔ سود ناخالص از ۳۱٫۳ درصد به ۲۷٫۹ درصد کاهش یافته است.
+				329 container chart-net-profit
+					330 container
+						331 heading ۳) سود خالص, Value: 3
+							332 text ۳) سود خالص
+						333 text مقایسهٔ دورهٔ ۳ماههٔ منتهی به ۱۴۰۵/۰۳/۳۱ با دورهٔ ۳ماههٔ مشابه سال قبل
+						334 container واحد نمایش
+							335 button ریالی
+							336 text دلاری
+						337 button اشتراک, Help: کپی لینک این نمودار
+					338 container
+						339 text دورهٔ ۳ماههٔ منتهی به ۱۴۰۵/۰۳/۳۱
+						340 container
+							341 text ۰ میلیارد تومان
+						342 text ۴٫۵ همت
+						343 text ۹٫۰ همت
+						344 text ۱۳٫۵ همت
+						345 text ۱۸٫۰ همت
+					346 text سود خالص دورهٔ ۳ماههٔ منتهی به ۱۴۰۵/۰۳/۳۱ نسبت به دورهٔ مشابه سال قبل ۲۵٫۶ درصد کاهش یافته است.
+				347 container chart-sales-mix
+					348 container
+						349 heading ۴) سهم محصولات از فروش, Value: 3
+							350 text ۴) سهم محصولات از فروش
+						351 text جمع ۱۰ ماه گزارش فعالیت ماهانه (ن-۳۰) کدال · تفکیک بازار تأیید نشده؛ سهم صادرات نامعلوم است
+						352 button اشتراک, Help: کپی لینک این نمودار
+					353 container
+						354 text ٪۰
+						355 text ٪۱۵
+						356 text ٪۳۰
+						357 text ٪۴۵
+						358 text ٪۵۸.۵
+						359 text محصولات گرم
+						360 text محصولات سرد
+						361 text تختال
+						362 container
+							363 text محصولات پوشش دار
+						364 text گندله
+				365 container chart-product-rates
+					366 heading ۵) نرخ و مقدار فروش هر محصول (ماهانه), Value: 3
+						367 text ۵) نرخ و مقدار فروش هر محصول (ماهانه)
+					368 text به‌زودی
+					369 text گزارش‌های ماهانهٔ ن-۳۰ موجودند، اما مقدار و نرخ فروش با واحد معتبر و قابل مقایسه در دسترس نیست؛ نمودار مقدار و نرخ نمایش داده نمی‌شود.
+					370 text طبق قواعد پلتفرم، تا رسیدن دادهٔ واقعی هیچ عدد جایگزینی نمایش داده نمی‌شود.
+				371 container chart-prod-vs-sales
+					372 heading ۶) مقدار تولید در برابر مقدار فروش, Value: 3
+						373 text ۶) مقدار تولید در برابر مقدار فروش
+					374 text به‌زودی
+					375 text گزارش‌های ماهانهٔ ن-۳۰ موجودند، اما مقادیر تولید و فروش با واحد معتبر و قابل مقایسه در دسترس نیست؛ نمودار مقدار نمایش داده نمی‌شود.
+					376 text طبق قواعد پلتفرم، تا رسیدن دادهٔ واقعی هیچ عدد جایگزینی نمایش داده نمی‌شود.
+				377 container chart-5y-trend
+					378 container
+						379 heading روند سالانهٔ فروش و حاشیهٔ ناخالص, Value: 3
+							380 text روند سالانهٔ فروش و حاشیهٔ ناخالص
+						381 text از گزارش‌های سالانهٔ کدال — ستون: فروش (میلیون ریال) · خط: حاشیهٔ ناخالص
+						382 container واحد نمایش
+							383 button ریالی
+							384 text دلاری
+						385 button اشتراک, Help: کپی لینک این نمودار
+					386 container
+						387 content list
+							388 container
+								389 image حاشیهٔ ناخالص legend icon
+								390 text حاشیهٔ ناخالص
+							391 container
+								392 image فروش legend icon
+								393 text فروش
+						394 container
+						395 container
+							396 text ۱۴۰۲
+							397 text ۱۴۰۳
+							398 text ۰ میلیارد
+							399 text تومان
+							400 text ۷۰٫۰ همت
+							401 text ۱۴۰ همت
+							402 text ۲۱۰ همت
+							403 text ۲۸۰ همت
+							404 text ٪۰
+							405 text ٪۲۵
+							406 text ٪۵۰
+							407 text ٪۷۵
+							408 text ٪۱۰۰
+					409 text فروش دورهٔ ۳ماههٔ منتهی به ۱۴۰۵/۰۳/۳۱ نسبت به دورهٔ مشابه سال قبل ۱٫۶ درصد کاهش یافته است.
+		410 container مسیرِ حسابِ کاربری
+			411 text با حساب، این صفحه‌ها به هم وصل می‌شوند
+			412 text واچ‌لیست، یادداشت و پیگیریِ نمادها به حسابِ شما گره می‌خورد.
+			413 link Description: برگشت به میزِ بازار, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/market
+			414 link Description: ورود, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/login?next=%2Fsymbol%2F%25D9%2581%25D9%2588%25D9%2584%25D8%25A7%25D8%25AF%3Ffrom%3D%252Fdata
+			415 link Description: ساختِ حساب, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/register?next=%2Fsymbol%2F%25D9%2581%25D9%2588%25D9%2584%25D8%25A7%25D8%25AF%3Ffrom%3D%252Fdata
+		416 text همهٔ اعداد از گزارش‌های رسمی کدال، فید بازار و تاریخچهٔ ثبت‌شدهٔ سامانه استخراج و با کد محاسبه شده‌اند؛ دادهٔ ناموجود «—» نمایش داده می‌شود. این صفحه صرفاً اطلاع‌رسانی و آموزشی است و توصیهٔ خرید یا فروش نیست. مسئولیت تصمیم‌گیری با خود سرمایه‌گذار است.
+	417 container
+		418 image نشان آرش صفری
+		419 text آرش صفری تحلیلگر و مشاور سرمایه‌گذاری
+		420 link Description: تلگرام, Value: t.me/arashsafariiiiiiii
+		421 link Description: اینستاگرام, Value: instagram.com/arash_safariiiiiii/
+		422 heading بازارها, Value: 4
+			423 text بازارها
+		424 content list
+			425 link Description: رصد بازار, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/market
+			426 link Description: نقشهٔ بازار, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/market/map
+			427 link Description: صندوق‌ها, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/market/funds
+			428 link Description: تابلوی سهام, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/market/stocks
+			429 link Description: اختیار معامله, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/market/options
+			430 link Description: کدال, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/codal
+			431 link Description: بانک داده, Value: …
+		432 heading تحلیل‌ها, Value: 4
+			433 text تحلیل‌ها
+		434 content list
+			435 link Description: کارنامه, Value: …
+			436 link Description: یادداشت روزانه, Value: …
+			437 link Description: تحلیل‌های اجتماعی, Value: …
+			438 link Description: واژه‌نامهٔ مالی, Value: …
+			439 link Description: سناریوی سبد, Value: …
+		440 heading محصولات, Value: 4
+			441 text محصولات
+		442 content list
+			443 link Description: وبینار, Value: …
+			444 link Description: مشاورهٔ اختصاصی, Value: …
+		445 heading درباره و قوانین, Value: 4
+			446 text درباره و قوانین
+		447 content list
+			448 link Description: دربارهٔ آرش صفری, Value: …
+			449 link Description: راهنمای استفاده از سایت, Value: …
+			450 link Description: حریم خصوصی, Value: …
+			451 link Description: شرایط استفاده, Value: …
+			452 link Description: سلب مسئولیت, Value: …
+		453 text سرمایه‌گذاری در بازارهای مالی با ریسکِ از دست رفتنِ اصلِ سرمایه همراه است. هیچ بازدهی تضمین نمی‌شود و مسئولیتِ تصمیمِ نهایی با خودِ سرمایه‌گذار است. © ۱۴۰۵ آرش صفری
+		454 link Description: preview · e9ce72b, Help: Preview build — نسخهٔ آزمایشی، نه Production, Value: …
+
+The focused UI element is 1 AXWebArea نماد فولاد — قیمت، تاریخچه و تحلیل بنیادی · آرش صفری, URL: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=4&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#fundamental

@@ -1,0 +1,76 @@
+Browser tab: 7, Title: "نماد فملی — قیمت، تاریخچه و تحلیل بنیادی · آرش صفری", URL: "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%85%D9%84%DB%8C?view=dossier#fundamental".
+The following is a diff from the previous accessibility tree with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 345-390
+~1 AXWebArea نماد فملی — قیمت، تاریخچه و تحلیل بنیادی · آرش صفری, URL: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%85%D9%84%DB%8C?view=dossier#fundamental
+~				28 checkbox نمای پرسش‌محور, Value: 0
+~				29 checkbox پروندهٔ مستند, Value: 1
++			436 container Description: شناسنامهٔ منابع شرکت, ID: company-sources
++				437 heading این بررسی به کدام گزارش‌ها متکی است؟, Value: 2
++					438 text این بررسی به کدام گزارش‌ها متکی است؟
++				439 text تاریخ دوره، انتشار و دریافت یکی نیستند. جزئیات هر نسخه در تب گزارش‌ها قابل بررسی است.
++				440 container
++					441 heading فعالیت ماهانه, Value: 3
++						442 text فعالیت ماهانه
++					443 text گزارش‌های فعالیت ماهانه (ن-۳۰) کدال
++					444 definition list
++						445 container دوره‌های مجموعهٔ خوانده‌شده
++							446 text دوره‌های مجموعهٔ خوانده‌شده
++						447 text ۱۴۰۵-۰۶-۳۱، ۱۴۰۴-۰۳-۳۱، ۱۴۰۴-۰۲-۳۱، ۱۴۰۳-۱۲-۳۰، ۱۴۰۳-۱۱-۳۰، ۱۴۰۳-۱۰-۳۰، ۱۴۰۳-۰۹-۳۰، ۱۴۰۳-۰۸-۳۰
++						448 container واحد مبلغ گزارش
++							449 text واحد مبلغ گزارش
++						450 text میلیون ریال
++						451 container انتشار در منبع
++							452 text انتشار در منبع
++						453 text به تفکیک هر گزارش در تب گزارش‌ها؛ مجموعه زمان انتشار واحد ندارد
++						454 container دامنهٔ ارقام
++							455 text دامنهٔ ارقام
++						456 text نامشخص
++						457 container مبنای اعتبار واحد مجموعه
++							458 text مبنای اعتبار واحد مجموعه
++						459 text برای همهٔ گزارش‌ها مبنای واحد حسابی ثبت شده؛ تازگی مستقل است
++					460 link Description: اطلاعیهٔ مرجع مجموعه؛ منشأ تمام دوره‌ها نیست, Value: codal.ir/Reports/Decision.aspx?LetterSerial=22drbzrf03IsMsAGHrTQQQaQQQWA%3d%3d&rt=0&let=58&ct=0&ft=-1
++				461 container
++					462 heading صورت‌های مالی, Value: 3
++						463 text صورت‌های مالی
++					464 text صورت‌های مالی ۳ماههٔ حسابرسی‌نشدهٔ سال مالی ۱۴۰۵ (کدال)
++					465 definition list
++						466 container پایان دورهٔ گزارش مرجع
++							467 text پایان دورهٔ گزارش مرجع
++						468 text ۱۴۰۵-۰۳-۳۱
++						469 container واحد مبلغ گزارش
++							470 text واحد مبلغ گزارش
++						471 text میلیون ریال
++						472 container انتشار در منبع
++							473 text انتشار در منبع
++						474 text ۱۴۰۵/۰۵/۱۸ ۱۷:۲۰:۰۶
++						475 container دامنهٔ ارقام
++							476 text دامنهٔ ارقام
++						477 text شرکت اصلی
++						478 container اعتبارسنجی حسابی
++							479 text اعتبارسنجی حسابی
++						480 text انجام شده؛ اعتبار زمانی مستقل است
++					481 link Description: مشاهدهٔ اطلاعیهٔ کدال, Value: codal.ir/Reports/Decision.aspx?LetterSerial=FoOZCP1raiCQKWL3YU1uoA%3d%3d&rt=0&let=6&ct=0&ft=-1
+~				37 text فهرست پرونده
+~				38 link Description: روند درآمد, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%85%D9%84%DB%8C?view=dossier#chart-5y-trend
+~				39 link Description: سود خالص, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%85%D9%84%DB%8C?view=dossier#chart-net-profit
+~				40 link Description: حاشیهٔ سود, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%85%D9%84%DB%8C?view=dossier#chart-margins
+~				41 link Description: نرخ محصولات, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%85%D9%84%DB%8C?view=dossier#chart-product-rates
+~				42 link Description: مقدار تولید و فروش, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%85%D9%84%DB%8C?view=dossier#chart-prod-vs-sales
+~				43 link Description: منبع و دوره, Value: portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%85%D9%84%DB%8C?view=dossier#company-sources
++							482 text ٪۶۰٫۷
++							483 text ٪۴۹٫۹
++							484 text ٪۴۳٫۷
++							485 text ٪۷۴٫۴
++							486 text ٪۶۶
++							487 text ٪۵۵٫۹
++						488 text ۲۰٫۱ همت
++						489 text ۷۲٫۶ همت
++						490 text ٪۶۷.۵
++						491 text ٪۱۲.۷
++						492 text ٪۶
++						493 text ٪۵.۸
++						494 text ٪۴.۸
++						495 text ٪۲.۱
++						496 text ٪۱.۱
++						497 text ٪۰.۱
+The focused UI element is 29 checkbox پروندهٔ مستند, Value: 1

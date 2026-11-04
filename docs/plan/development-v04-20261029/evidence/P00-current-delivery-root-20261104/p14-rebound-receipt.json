@@ -1,0 +1,215 @@
+{
+  "source": "e9ce72bf8c40eaa96f8202dfc4cc41c72fa37159",
+  "deployment": "dpl_4ayExvPEvn4437kRLN2HA2EmjU9T",
+  "base": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app",
+  "startedAt": "2026-11-04T07:34:01.137Z",
+  "endedAt": "2026-11-04T07:34:45.298Z",
+  "durationMs": 44161,
+  "mainNavigations": 3,
+  "beforeReload": {
+    "scrollWidth": 1425,
+    "selects": [
+      "1403",
+      "[\"محصولات گرم\",\"نامشخص\"]",
+      "4"
+    ],
+    "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=4&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#fundamental",
+    "view": "dossier",
+    "width": 1425
+  },
+  "afterReload": {
+    "scrollWidth": 1425,
+    "selects": [
+      "1403",
+      "[\"محصولات گرم\",\"نامشخص\"]",
+      "4"
+    ],
+    "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=4&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#fundamental",
+    "view": "dossier",
+    "width": 1425
+  },
+  "fameli": {
+    "scrollWidth": 375,
+    "selects": [
+      "1405",
+      "all",
+      "12"
+    ],
+    "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%85%D9%84%DB%8C?view=dossier#fundamental",
+    "view": "dossier",
+    "width": 375
+  },
+  "passed": [
+    "Stored N10/N30 financial reports visible on Folad and Fameli",
+    "Folad year1403 updates monthly display from1 to9 reports",
+    "Folad quarterly selector4 and chart axis four quarters observed",
+    "Rate-series selection serialized and restored; valid rate chart remains unavailable",
+    "dossier view/year/rate/quarters survive reload together",
+    "Both companies decision/dossier switch",
+    "No horizontal overflow at measured1425/375"
+  ],
+  "limitations": [
+    "Market snapshot still read failed",
+    "Rate and quantity lack verified comparable units; absent values not replaced with zero",
+    "Market split unknown",
+    "P/E history unavailable",
+    "23 captured zero-size Recharts warnings; timing/root cause not yet diagnosed",
+    "No source-provider request, login, env write or database action performed by this pass",
+    "Network capture unavailable; measured request totals/POST absence not asserted"
+  ],
+  "consoleLogs": [
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:05.450Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:05.451Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:05.452Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:05.452Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:05.452Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:05.452Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:05.452Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:05.452Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:28.801Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:28.801Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:28.802Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:28.803Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:28.803Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:28.804Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:28.804Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:28.804Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:44.097Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:44.099Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:44.099Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:44.100Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:44.100Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:44.100Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "level": "warn",
+      "message": "The width(0) and height(0) of chart should be greater than 0,\n       please check the style of container, or the props width(100%) and height(100%),\n       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the\n       height and width.",
+      "timestamp": "2026-11-04T07:34:44.100Z",
+      "url": "https://portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    }
+  ],
+  "cleanup": {
+    "tabClosed": true,
+    "viewportReset": true
+  },
+  "status": "LIMITED_FINANCIAL_UI_PASS_WITH_DATA_AND_CHART_WARNINGS",
+  "files": {
+    "fameli-dossier.ax.txt": "1a6bff835fcc80fb197c4bcfb66d5bf56893e41fb4755d555685c7a39b545a35",
+    "fameli-initial.ax.txt": "dd60fa54b561aecfac556a9b1c7453692043145e3f9d1a24e6362bea7d6ba5bc",
+    "fameli-mobile.png": "38b4df580bcf04c8d4ba1f42ae723c1770ff4e77456e570ecfd80d981e7bca63",
+    "folad-dossier.png": "2e3e58b969b614effb545f0015823a233bce67364010d5e3ce53f2d0b5e8706e",
+    "folad-filters.ax.txt": "5a4e8c5ffc883329bf1b4692a4e8af8a3783aa2338a6101b5407d50e6f5a6526",
+    "folad-initial.ax.txt": "68c5c035252d1572da0b89aa9f82e8410c9d0c752ee4d63565a2df255f176a70",
+    "folad-reload.ax.txt": "96fba10a75d296df2e4adf3c30e09e7123cb832cd07607fb6ffa3a2d339afc5e",
+    "folad-selected.ax.txt": "74b225ab5a53393a59a92200d33da6bb3e78315a3bfb9201d5d440ee644f2d0a"
+  }
+}

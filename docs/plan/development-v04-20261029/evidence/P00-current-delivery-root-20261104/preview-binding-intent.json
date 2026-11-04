@@ -1,0 +1,38 @@
+{
+  "atUtc": "2026-11-04T07:29:49Z",
+  "purpose": "repair missing approved read-only Preview binding; two exact-source deployments",
+  "project": "prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp",
+  "team": "safariarash7777-4463s-projects",
+  "pair": [
+    {
+      "id": "9NEamcg9U7e4wcSX",
+      "key": "FUNDAMENTAL_READ_URL"
+    },
+    {
+      "id": "rbwHDphHrW3rf8Hk",
+      "key": "FUNDAMENTAL_READ_ANON_KEY"
+    }
+  ],
+  "originalBranch": "codex/media-archive-filters-20261103",
+  "target": [
+    "preview"
+  ],
+  "sourceValuesRead": false,
+  "sourceValuesChanged": false,
+  "plans": [
+    {
+      "branch": "codex/p14-company-views-20261104",
+      "sha": "e9ce72bf8c40eaa96f8202dfc4cc41c72fa37159",
+      "ci": 41790736034
+    },
+    {
+      "branch": "codex/p08-funds-url-20261104",
+      "sha": "e29599bcceabc53c405530f95979cb8a66648c94",
+      "ci": 41790730518
+    }
+  ],
+  "method": "move existing sensitive pair scope only, readback, one exact GitSource Preview then restore both scopes; no Production/Auth/SQL/provider/model changes",
+  "rollback": "restore same two IDs target preview and original branch in finally; no build on partial scope; preserve failed/unknown receipts before any retry",
+  "acceptance": "bounded actual pages after READY; check selectedPair and data, never infer from env panel",
+  "productionChanged": false
+}

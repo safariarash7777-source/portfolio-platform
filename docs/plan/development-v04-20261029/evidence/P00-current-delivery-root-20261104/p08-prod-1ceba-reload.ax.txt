@@ -1,0 +1,113 @@
+Browser tab: 9, Title: "دیده‌بان صندوق‌ها · آرش صفری", URL: "https://portfolio-platform-fawn.vercel.app/market/funds?compare=%5B%22%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D9%85%D9%88%D8%AC%22%2C%22%D9%86%D8%A7%D8%B1%D9%86%D8%AC+%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D8%AA%D9%88%D8%A7%D9%86%22%2C%22%D8%AC%D9%87%D8%B4%22%5D&q=%D8%A7%D9%87%D8%B1%D9%85".
+The following is a diff from the previous accessibility tree with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+Removed element IDs: 1780-1782, 1879-1886, 1893, 1898-1910, 1923-1925, 1929-1931, 1959-1961, 1965-1967, 1971-1973, 1989-1991, 2013-2015, 2026-2317
+~				21 link Description: طلا و ارز, Help: بخشی از نمای کلان, Value: portfolio-platform-fawn.vercel.app/market
++			1779 button پاک کردن انتخاب‌ها
++			1780 container
++				1781 heading 3
++					1782 link portfolio-platform-fawn.vercel.app/symbol/%D8%A7%D9%87%D8%B1%D9%85?from=%2Fmarket%2Ffunds%3Fcompare%3D%255B%2522%25D8%25A7%25D9%2587%25D8%25B1%25D9%2585%2522%252C%2522%25D9%2585%25D9%2588%25D8%25AC%2522%252C%2522%25D9%2586%25D8%25A7%25D8%25B1%25D9%2586%25D8%25AC%2B%25D8%25A7%25D9%2587%25D8%25B1%25D9%2585%2522%252C%2522%25D8%25AA%25D9%2588%25D8%25A7%25D9%2586%2522%252C%2522%25D8%25AC%25D9%2587%25D8%25B4%2522%255D%26q%3D%25D8%25A7%25D9%2587%25D8%25B1%25D9%2585
++			1783 container
++				1784 heading 3
++					1785 link portfolio-platform-fawn.vercel.app/symbol/%D9%85%D9%88%D8%AC?from=%2Fmarket%2Ffunds%3Fcompare%3D%255B%2522%25D8%25A7%25D9%2587%25D8%25B1%25D9%2585%2522%252C%2522%25D9%2585%25D9%2588%25D8%25AC%2522%252C%2522%25D9%2586%25D8%25A7%25D8%25B1%25D9%2586%25D8%25AC%2B%25D8%25A7%25D9%2587%25D8%25B1%25D9%2585%2522%252C%2522%25D8%25AA%25D9%2588%25D8%25A7%25D9%2586%2522%252C%2522%25D8%25AC%25D9%2587%25D8%25B4%2522%255D%26q%3D%25D8%25A7%25D9%2587%25D8%25B1%25D9%2585
++			1786 container
++				1787 heading 3
++					1788 link portfolio-platform-fawn.vercel.app/symbol/%D9%86%D8%A7%D8%B1%D9%86%D8%AC%20%D8%A7%D9%87%D8%B1%D9%85?from=%2Fmarket%2Ffunds%3Fcompare%3D%255B%2522%25D8%25A7%25D9%2587%25D8%25B1%25D9%2585%2522%252C%2522%25D9%2585%25D9%2588%25D8%25AC%2522%252C%2522%25D9%2586%25D8%25A7%25D8%25B1%25D9%2586%25D8%25AC%2B%25D8%25A7%25D9%2587%25D8%25B1%25D9%2585%2522%252C%2522%25D8%25AA%25D9%2588%25D8%25A7%25D9%2586%2522%252C%2522%25D8%25AC%25D9%2587%25D8%25B4%2522%255D%26q%3D%25D8%25A7%25D9%2587%25D8%25B1%25D9%2585
++			1789 container
++				1790 heading 3
++					1791 link …
++			1792 container
++				1793 heading 3
++					1794 link …
++		1795 text نتیجهٔ فیلتر ۹ از ۳۴۵ صندوق ارزش بازار نمادها ۱۶۰٫۰ همت از ۹ صندوق از ۹ میانگین بازده روز ▲ ٪۴٫۰ از ۹ صندوقِ دارای بازده نسبت مثبت ٪۱۰۰ از ۹ صندوقِ دارای بازده میانگین حباب — از ۰ صندوقِ دارای NAV معتبر
++		1796 image ۱۰۰ درصد صندوق‌ها مثبت
++		1797 text مثبت ٪ ۱۰۰ منفی ٪ ۰
++		1798 button (collapsed) نقشهٔ فشردهٔ صندوق‌ها اندازه: ارزش معاملات · رنگ: بازده روز, Secondary Actions: Expand
++			1799 text نقشهٔ فشردهٔ صندوق‌ها
++			1800 text اندازه: ارزش معاملات · رنگ: بازده روز
++		1801 text فیلتر و مرتب‌سازی جست‌وجوی صندوق
++		1802 image
++		1803 text field (settable) جست‌وجوی صندوق, Value: اهرم
++		1804 container دستهٔ صندوق
++			1805 checkbox همه۹, Value: 1
++			1806 checkbox اهرمی۹, Value: 0
++		1807 text مرتب‌سازی صندوق‌ها
++		1808 pop up button (collapsed, settable) Description: مرتب‌سازی صندوق‌ها, Value: ارزش معاملات, Secondary Actions: Expand
++			1809 menu
++				1810 (selected) ارزش معاملات
++				1811 تغییر روز
++				1812 حباب
++				1813 بازده یک‌ماهه
++				1814 نام صندوق
++		1815 image
++		1816 text ۹ نتیجه از ۳۴۵ صندوق
++		1817 link Description: اهرم, Value: …
++		1818 text صندوق های سرمایه گذاری اهرمی ▲ ٪۴٫۰ ۷٬۴۰۶ تومان ارزش:  ۱۲۳۹۵٫۶ میلیارد NAV ابطال:  ۹٬۰۹۷ تومان حباب:  — NAV: زمان معتبر منبع یا دریافت نامشخص است · زمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخص
++		1819 link Description: بررسی جزئیات صندوق, Value: …
++		1820 link Description: موج, Value: …
++		1821 text صندوق های سرمایه گذاری اهرمی ▲ ٪۴٫۰ ۹٬۸۹۶ تومان ارزش:  ۶۷۳۸٫۷ میلیارد NAV ابطال:  ۱۲٬۱۸۳ تومان حباب:  — NAV: زمان معتبر منبع یا دریافت نامشخص است · زمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخص
++		1822 link Description: بررسی جزئیات صندوق, Value: …
++		1823 link Description: نارنج اهرم, Value: …
++		1824 text صندوق های سرمایه گذاری اهرمی ▲ ٪۴٫۰ ۷٬۱۳۸ تومان ارزش:  ۵۱۵۲٫۶ میلیارد NAV ابطال:  ۸٬۶۴۹ تومان حباب:  — NAV: زمان معتبر منبع یا دریافت نامشخص است · زمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخص
++		1825 link Description: بررسی جزئیات صندوق, Value: …
++		1826 link Description: توان, Value: …
++		1827 text صندوق های سرمایه گذاری اهرمی ▲ ٪۴٫۰ ۷٬۱۸۰ تومان ارزش:  ۳۱۱۴٫۱ میلیارد NAV ابطال:  ۸٬۹۳۵ تومان حباب:  — NAV: زمان معتبر منبع یا دریافت نامشخص است · زمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخص
++		1828 link Description: بررسی جزئیات صندوق, Value: …
++		1829 link Description: جهش, Value: …
++		1830 text صندوق های سرمایه گذاری اهرمی ▲ ٪۴٫۰ ۴٬۵۵۱ تومان ارزش:  ۲۶۲۹٫۹ میلیارد NAV ابطال:  ۵٬۶۹۰ تومان حباب:  — NAV: زمان معتبر منبع یا دریافت نامشخص است · زمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخص
++		1831 link Description: بررسی جزئیات صندوق, Value: …
++		1832 link Description: بیدار, Value: …
++		1833 text صندوق های سرمایه گذاری اهرمی ▲ ٪۴٫۰ ۶٬۳۵۴ تومان ارزش:  ۲۲۵۰٫۰ میلیارد NAV ابطال:  ۷٬۷۵۵ تومان حباب:  — NAV: زمان معتبر منبع یا دریافت نامشخص است · زمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخص
++		1834 link Description: بررسی جزئیات صندوق, Value: …
++		1835 link Description: شتاب, Value: …
++		1836 text صندوق های سرمایه گذاری اهرمی ▲ ٪۴٫۰ ۵٬۶۷۵ تومان ارزش:  ۱۳۷۲٫۴ میلیارد NAV ابطال:  ۶٬۹۰۱ تومان حباب:  — NAV: زمان معتبر منبع یا دریافت نامشخص است · زمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخص
++		1837 link Description: بررسی جزئیات صندوق, Value: …
++		1838 link Description: دوایکس, Value: …
++		1839 text صندوق های سرمایه گذاری اهرمی ▲ ٪۴٫۰ ۴٬۰۰۸ تومان ارزش:  ۱۰۲۲٫۴ میلیارد NAV ابطال:  ۴٬۷۲۷ تومان حباب:  — NAV: زمان معتبر منبع یا دریافت نامشخص است · زمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخص
++		1840 link Description: بررسی جزئیات صندوق, Value: …
++		1841 link Description: پیشران, Value: …
++		1842 text صندوق های سرمایه گذاری اهرمی ▲ ٪۴٫۰ ۴٬۰۲۴ تومان ارزش:  ۴۵۴٫۴ میلیارد NAV ابطال:  ۳٬۸۳۶ تومان حباب:  — NAV: زمان معتبر منبع یا دریافت نامشخص است · زمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخص
++		1843 link Description: بررسی جزئیات صندوق, Value: …
++		1844 text نمایشِ ۹ از ۹ نتیجه  · کلِ صندوق‌ها: ۳۴۵ پوشش تاریخی برای محاسبهٔ بازده کافی نیست. تا رسیدن دادهٔ معتبر، عددی نمایش داده نمی‌شود. داده از فید رسمی بازار سرمایه دریافت می‌شود و برای شناخت بازار است؛ به‌تنهایی مبنای تصمیم شخصی نیست. حباب = (قیمت − NAV ابطال) ÷ NAV ابطال؛ NAV ابطال از سامانهٔ رسمی بازار (به‌روزرسانی حدوداً ساعتی) و ممکن است چند دقیقه با قیمت جاری فاصله داشته باشد.
++		1845 container مسیرِ حسابِ کاربری
++			1846 text حسابِ شما
++			1847 text دسترسی کامل فعال است.
++			1848 link Description: برگشت به میز بازار, Value: portfolio-platform-fawn.vercel.app/market
++			1849 link Description: داشبورد من, Value: portfolio-platform-fawn.vercel.app/dashboard
++	1850 container
++		1851 image نشان آرش صفری
++		1852 text آرش صفری تحلیلگر و مشاور سرمایه‌گذاری
++		1853 link Description: تلگرام, Value: t.me/arashsafariiiiiiii
++		1854 link Description: اینستاگرام, Value: instagram.com/arash_safariiiiiii/
++		1855 heading بازارها, Value: 4
++			1856 text بازارها
++		1857 content list
++			1858 link Description: رصد بازار, Value: portfolio-platform-fawn.vercel.app/market
++			1859 link Description: نقشهٔ بازار, Value: portfolio-platform-fawn.vercel.app/market/map
++			1860 link Description: صندوق‌ها, Value: portfolio-platform-fawn.vercel.app/market/funds
++			1861 link Description: تابلوی سهام, Value: portfolio-platform-fawn.vercel.app/market/stocks
++			1862 link Description: اختیار معامله, Value: portfolio-platform-fawn.vercel.app/market/options
++			1863 link Description: کدال, Value: …
++			1864 link Description: بانک داده, Value: …
++		1865 heading تحلیل‌ها, Value: 4
++			1866 text تحلیل‌ها
++		1867 content list
++			1868 link Description: کارنامه, Value: …
++			1869 link Description: یادداشت روزانه, Value: …
++			1870 link Description: تحلیل‌های اجتماعی, Value: …
++			1871 link Description: واژه‌نامهٔ مالی, Value: …
++			1872 link Description: سناریوی سبد, Value: …
++		1873 heading محصولات, Value: 4
++			1874 text محصولات
++		1875 content list
++			1876 link Description: وبینار, Value: …
++			1877 link Description: مشاورهٔ اختصاصی, Value: …
++		1878 heading درباره و قوانین, Value: 4
++			1879 text درباره و قوانین
++		1880 content list
++			1881 link Description: دربارهٔ آرش صفری, Value: …
++			1882 link Description: راهنمای استفاده از سایت, Value: …
++			1883 link Description: حریم خصوصی, Value: …
++			1884 link Description: شرایط استفاده, Value: …
++			1885 link Description: سلب مسئولیت, Value: …
++		1886 text سرمایه‌گذاری در بازارهای مالی با ریسکِ از دست رفتنِ اصلِ سرمایه همراه است. هیچ بازدهی تضمین نمی‌شود و مسئولیتِ تصمیمِ نهایی با خودِ سرمایه‌گذار است. © ۱۴۰۵ آرش صفری
+The focused UI element is 1 AXWebArea دیده‌بان صندوق‌ها · آرش صفری, URL: portfolio-platform-fawn.vercel.app/market/funds?compare=%5B%22%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D9%85%D9%88%D8%AC%22%2C%22%D9%86%D8%A7%D8%B1%D9%86%D8%AC+%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D8%AA%D9%88%D8%A7%D9%86%22%2C%22%D8%AC%D9%87%D8%B4%22%5D&q=%D8%A7%D9%87%D8%B1%D9%85

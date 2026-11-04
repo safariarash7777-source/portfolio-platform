@@ -1,0 +1,50 @@
+{
+  "schema": "funds-root-release-review.v1",
+  "pr": 409,
+  "reviewedSource": "e29599bcceabc53c405530f95979cb8a66648c94",
+  "ciRun": 41790730518,
+  "actualCiCheckout": "0c134ad89efa4f1e6cd5041b017324e6e1418e95",
+  "sourceAndCiTree": "9a9c715dff678693b358a0077d31d3a33f54b632",
+  "requiredJobs": "5_SUCCESS",
+  "nativeJob": "SKIPPED",
+  "fullLogsRead": [
+    {
+      "job": 126443238389,
+      "characters": 1280974
+    },
+    {
+      "job": 126443238587,
+      "characters": 3280087
+    }
+  ],
+  "rawLogsLocallyArchived": false,
+  "sourcePeerReview": "existing financial_release_review SOURCE PASS, no P1/P2",
+  "mergedCommit": "1ceba5b38ac35ee11b8044e670bfb088255bc7a7",
+  "productionBefore": {
+    "id": "dpl_9mDrtmwd7pRW6pW9BPYP8RAs3Ksa",
+    "sha": "1ceba5b38ac35ee11b8044e670bfb088255bc7a7",
+    "ref": "main",
+    "state": "READY",
+    "target": "production",
+    "url": "portfolio-platform-duha9ml9h-safariarash7777-4463s-projects.vercel.app"
+  },
+  "productionAfter": {
+    "id": "dpl_9mDrtmwd7pRW6pW9BPYP8RAs3Ksa",
+    "sha": "1ceba5b38ac35ee11b8044e670bfb088255bc7a7",
+    "ref": "main",
+    "state": "READY",
+    "target": "production",
+    "url": "portfolio-platform-duha9ml9h-safariarash7777-4463s-projects.vercel.app",
+    "association": "metadata before/after browser window; no per-response SHA badge captured"
+  },
+  "productionReceiptSha256": "5b485273d446a829e3847d97dd5733bc68b706ede500d87510d231d2297bca05",
+  "productionBrowserResult": "PASS_QUERY_COMPARE_RELOAD_AND_RETURN_LINKS",
+  "limits": [
+    "No per-response source badge; metadata-window association only",
+    "nonempty hash and same-document Back not tested",
+    "price date and fund unit class unknown; premium/period-return completeness not accepted",
+    "network capture unavailable; no measured zero-POST claim",
+    "intermittent reader root cause not proven resolved"
+  ],
+  "databaseAuthCollectorOrAppearanceChanged": false
+}

@@ -1,0 +1,83 @@
+{
+  "plan": {
+    "branch": "codex/p08-funds-url-20261104",
+    "sha": "e29599bcceabc53c405530f95979cb8a66648c94",
+    "ci": 41790730518
+  },
+  "events": [
+    {
+      "operation": "scope_to_candidate",
+      "id": "9NEamcg9U7e4wcSX",
+      "isError": false
+    },
+    {
+      "operation": "scope_to_candidate",
+      "id": "rbwHDphHrW3rf8Hk",
+      "isError": false
+    },
+    {
+      "operation": "restore_original_scope",
+      "id": "9NEamcg9U7e4wcSX",
+      "isError": false
+    },
+    {
+      "operation": "restore_original_scope",
+      "id": "rbwHDphHrW3rf8Hk",
+      "isError": false
+    }
+  ],
+  "createAttempted": true,
+  "restoreVerified": true,
+  "valuesRead": false,
+  "valuesChanged": false,
+  "productionChanged": false,
+  "scopedReadback": [
+    {
+      "id": "9NEamcg9U7e4wcSX",
+      "key": "FUNDAMENTAL_READ_URL",
+      "type": "sensitive",
+      "target": [
+        "preview"
+      ],
+      "gitBranch": "codex/p08-funds-url-20261104"
+    },
+    {
+      "id": "rbwHDphHrW3rf8Hk",
+      "key": "FUNDAMENTAL_READ_ANON_KEY",
+      "type": "sensitive",
+      "target": [
+        "preview"
+      ],
+      "gitBranch": "codex/p08-funds-url-20261104"
+    }
+  ],
+  "deployment": {
+    "id": "dpl_4MasB3MuRprj8XBhL1NpgdVQ5Pap",
+    "url": "portfolio-platform-6wnb7g2v6-safariarash7777-4463s-projects.vercel.app",
+    "state": "INITIALIZING",
+    "target": null,
+    "metaSha": "e29599bcceabc53c405530f95979cb8a66648c94",
+    "metaRef": "codex/p08-funds-url-20261104"
+  },
+  "restoredReadback": [
+    {
+      "id": "9NEamcg9U7e4wcSX",
+      "key": "FUNDAMENTAL_READ_URL",
+      "type": "sensitive",
+      "target": [
+        "preview"
+      ],
+      "gitBranch": "codex/media-archive-filters-20261103"
+    },
+    {
+      "id": "rbwHDphHrW3rf8Hk",
+      "key": "FUNDAMENTAL_READ_ANON_KEY",
+      "type": "sensitive",
+      "target": [
+        "preview"
+      ],
+      "gitBranch": "codex/media-archive-filters-20261103"
+    }
+  ],
+  "otherVisibleMetadataUnchanged": true
+}

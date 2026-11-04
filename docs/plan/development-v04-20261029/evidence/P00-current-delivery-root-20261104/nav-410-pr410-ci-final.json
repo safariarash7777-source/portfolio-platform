@@ -1,0 +1,136 @@
+{
+  "pr": 410,
+  "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/410",
+  "draft": true,
+  "merged": false,
+  "head": "dc7a0d0c98517949538f0a3142558d7f68d32f34",
+  "base": "636d38e7778fd58d8caf844c810d3d2bef2b1001",
+  "branch": "codex/nav-budget-fallback-20261104",
+  "ciRun": 41792611570,
+  "ciStatus": "completed",
+  "githubSyntheticMerge": {
+    "sha": "75b3cb9ac82de275c0f035d061ed6476c7fa8d96",
+    "tree": "bc22de7e56427928e214c5f6a517c44a8822e556",
+    "parents": [
+      "636d38e7778fd58d8caf844c810d3d2bef2b1001",
+      "dc7a0d0c98517949538f0a3142558d7f68d32f34"
+    ]
+  },
+  "reviewedHeadTree": "bc22de7e56427928e214c5f6a517c44a8822e556",
+  "forcePush": false,
+  "manualDispatch": false,
+  "rerun": false,
+  "collectorDeployment": false,
+  "manualVercelDeployment": false,
+  "ciConclusion": "success",
+  "run": {
+    "id": 41792611570,
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "dc7a0d0c98517949538f0a3142558d7f68d32f34",
+    "event": "pull_request",
+    "run_attempt": 1,
+    "created_at": "2026-11-04T07:29:24Z",
+    "updated_at": "2026-11-04T07:34:19Z",
+    "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41792611570"
+  },
+  "jobs": [
+    {
+      "id": 126449258605,
+      "name": "Typecheck · Lint · Tests · Build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126449258708,
+      "name": "Dependencies",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126449258731,
+      "name": "Database RLS · Integrity (Postgres)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126449258783,
+      "name": "Secret scan · SQL validation",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126451052345,
+      "name": "CI Gate",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126451082886,
+      "name": "Assembled native · explicit allocation only",
+      "status": "completed",
+      "conclusion": "skipped"
+    }
+  ],
+  "ordinaryJobsPassed": 5,
+  "explicitNativeJob": "skipped",
+  "logsRead": [
+    {
+      "id": 126449258605,
+      "chars": 1289724
+    },
+    {
+      "id": 126449258731,
+      "chars": 3280663
+    }
+  ],
+  "fullLogsArchivedLocally": false,
+  "selectedEvidence": {
+    "nav": [
+      "2026-11-04T07:30:55.3888617Z ok 726 - NAV rejects invalid latest version without reviving older version and continues to older eligible dates",
+      "2026-11-04T07:31:18.9954300Z ok 5 - NAV blacklist and unknown causes persist; stale/zero/unverified NAV is never current",
+      "2026-11-04T07:31:56.9504244Z ok 1 - NAV denied: no fallback or completion (client=0)",
+      "2026-11-04T07:31:56.9510659Z ok 2 - NAV unknown-lease: no fallback or completion (client=0)",
+      "2026-11-04T07:31:56.9514654Z ok 3 - NAV timeout: no fallback or completion (client=0)",
+      "2026-11-04T07:31:56.9518598Z ok 4 - NAV http500: no fallback or completion (client=0)",
+      "2026-11-04T07:31:56.9522197Z ok 5 - NAV malformed: no fallback or completion (client=0)",
+      "2026-11-04T07:31:56.9525501Z ok 6 - NAV shape: no fallback or completion (client=0)",
+      "2026-11-04T07:31:56.9542115Z ok 7 - NAV valid empty: no unnecessary single calls (client=0)",
+      "2026-11-04T07:31:56.9545457Z ok 8 - NAV valid bulk: no unnecessary single calls (client=0)",
+      "2026-11-04T07:31:56.9549191Z ok 9 - NAV partial identified reply: each missing symbol exactly once (client=0)",
+      "2026-11-04T07:31:56.9551871Z ok 10 - NAV single timeout: no retry or completion duplicate (client=0)",
+      "2026-11-04T07:31:56.9554463Z ok 11 - NAV completion uses same budget, without repeating the top round (client=0)",
+      "2026-11-04T07:31:56.9556758Z ok 12 - NAV denied: no fallback or completion (client=1)",
+      "2026-11-04T07:31:56.9580487Z ok 13 - NAV unknown-lease: no fallback or completion (client=1)",
+      "2026-11-04T07:31:56.9583153Z ok 14 - NAV timeout: no fallback or completion (client=1)",
+      "2026-11-04T07:31:56.9585379Z ok 15 - NAV http500: no fallback or completion (client=1)",
+      "2026-11-04T07:31:56.9587612Z ok 16 - NAV malformed: no fallback or completion (client=1)",
+      "2026-11-04T07:31:56.9589950Z ok 17 - NAV shape: no fallback or completion (client=1)",
+      "2026-11-04T07:31:56.9592274Z ok 18 - NAV valid empty: no unnecessary single calls (client=1)",
+      "2026-11-04T07:31:56.9594757Z ok 19 - NAV valid bulk: no unnecessary single calls (client=1)",
+      "2026-11-04T07:31:56.9597537Z ok 20 - NAV partial identified reply: each missing symbol exactly once (client=1)",
+      "2026-11-04T07:31:56.9611300Z ok 21 - NAV single timeout: no retry or completion duplicate (client=1)",
+      "2026-11-04T07:31:56.9613992Z ok 22 - NAV completion uses same budget, without repeating the top round (client=1)",
+      "2026-11-04T07:31:56.9616156Z ok 23 - client noRetry timeout counts a single attempt",
+      "2026-11-04T07:31:56.9618165Z ok 24 - client noRetry http500 counts a single attempt",
+      "2026-11-04T07:31:56.9620414Z ok 25 - client noRetry http429 counts a single attempt",
+      "2026-11-04T07:31:56.9623184Z ok 26 - client noRetry body counts a single attempt",
+      "2026-11-04T07:31:56.9625784Z ok 27 - one-attempt requests cannot join retry-policy jobs",
+      "2026-11-04T07:31:56.9628703Z ok 28 - NAV admission opt-in rejects missing or denied budget even in observe-only mode"
+    ],
+    "selected": [
+      "2026-11-04T07:29:31.3195804Z HEAD is now at 75b3cb9 Merge dc7a0d0c98517949538f0a3142558d7f68d32f34 into 636d38e7778fd58d8caf844c810d3d2bef2b1001",
+      "2026-11-04T07:29:31.3273233Z 75b3cb9ac82de275c0f035d061ed6476c7fa8d96",
+      "2026-11-04T07:29:31.8229599Z node: v22.23.4",
+      "2026-11-04T07:31:56.9729161Z # tests 28",
+      "2026-11-04T07:31:56.9730140Z # pass 28",
+      "2026-11-04T07:34:05.4043266Z  ✓ Generating static pages (39/39)"
+    ]
+  },
+  "node": "22.23.4",
+  "actualCheckout": "75b3cb9ac82de275c0f035d061ed6476c7fa8d96",
+  "actualCheckoutTreeEqualsReviewedHead": true,
+  "productionChangedByThisTask": false,
+  "quota404Repaired": false,
+  "freshnessAccepted": false
+}

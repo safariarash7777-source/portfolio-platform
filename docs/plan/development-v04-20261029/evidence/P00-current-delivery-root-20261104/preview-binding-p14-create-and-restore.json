@@ -1,0 +1,83 @@
+{
+  "plan": {
+    "branch": "codex/p14-company-views-20261104",
+    "sha": "e9ce72bf8c40eaa96f8202dfc4cc41c72fa37159",
+    "ci": 41790736034
+  },
+  "events": [
+    {
+      "operation": "scope_to_candidate",
+      "id": "9NEamcg9U7e4wcSX",
+      "isError": false
+    },
+    {
+      "operation": "scope_to_candidate",
+      "id": "rbwHDphHrW3rf8Hk",
+      "isError": false
+    },
+    {
+      "operation": "restore_original_scope",
+      "id": "9NEamcg9U7e4wcSX",
+      "isError": false
+    },
+    {
+      "operation": "restore_original_scope",
+      "id": "rbwHDphHrW3rf8Hk",
+      "isError": false
+    }
+  ],
+  "createAttempted": true,
+  "restoreVerified": true,
+  "valuesRead": false,
+  "valuesChanged": false,
+  "productionChanged": false,
+  "scopedReadback": [
+    {
+      "id": "9NEamcg9U7e4wcSX",
+      "key": "FUNDAMENTAL_READ_URL",
+      "type": "sensitive",
+      "target": [
+        "preview"
+      ],
+      "gitBranch": "codex/p14-company-views-20261104"
+    },
+    {
+      "id": "rbwHDphHrW3rf8Hk",
+      "key": "FUNDAMENTAL_READ_ANON_KEY",
+      "type": "sensitive",
+      "target": [
+        "preview"
+      ],
+      "gitBranch": "codex/p14-company-views-20261104"
+    }
+  ],
+  "deployment": {
+    "id": "dpl_4ayExvPEvn4437kRLN2HA2EmjU9T",
+    "url": "portfolio-platform-il2jw1g20-safariarash7777-4463s-projects.vercel.app",
+    "state": "INITIALIZING",
+    "target": null,
+    "metaSha": "e9ce72bf8c40eaa96f8202dfc4cc41c72fa37159",
+    "metaRef": "codex/p14-company-views-20261104"
+  },
+  "restoredReadback": [
+    {
+      "id": "9NEamcg9U7e4wcSX",
+      "key": "FUNDAMENTAL_READ_URL",
+      "type": "sensitive",
+      "target": [
+        "preview"
+      ],
+      "gitBranch": "codex/media-archive-filters-20261103"
+    },
+    {
+      "id": "rbwHDphHrW3rf8Hk",
+      "key": "FUNDAMENTAL_READ_ANON_KEY",
+      "type": "sensitive",
+      "target": [
+        "preview"
+      ],
+      "gitBranch": "codex/media-archive-filters-20261103"
+    }
+  ],
+  "otherVisibleMetadataUnchanged": true
+}

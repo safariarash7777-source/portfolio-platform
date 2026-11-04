@@ -1,0 +1,663 @@
+{
+  "schema": "data-chain-source-evidence-map.v1",
+  "preparedAt": "2026-11-04T07:14:10.361Z",
+  "purpose": "bounded evidence attachment for root COMMAND-CENTER, not a second status ledger",
+  "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+  "mainComparison": "636d38e7778fd58d8caf844c810d3d2bef2b1001",
+  "evidenceCommit": "a9446e75db73d7835d4cb928e31b4f291b774c48",
+  "code": [
+    {
+      "file": "relay/server.mjs",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "67a71c3569455c5a76b97b892c5756e49f7c829e1dbe3aeda90fa1730240a452",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "relay/brsapi-budget-store.mjs",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "7900f3bd7f3a154bbcb17e25240b4eec6070afc7ce5202117d4ba53153f4dc6d",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "relay/brsapi-client.mjs",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "3d9092392b79708db4ee112477f2a3e60f0b1f4e292c57f5d980636033317a59",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "relay/brsapi-legacy-meter.mjs",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "12f2e508072a420352559e0e371d1dd49098cd921081c9b9db1a529fd31d019e",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "sql/phase28_brsapi_budget.sql",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "eba0791bdba2fb37e79f00794cbe832a4d1e4f6c0e0342714cff3926022f3d8e",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "relay/codal-engine.mjs",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "9a7f04b7e3975a4287050a851c4fe485bc75fab3f963f8952f9a1b0001875a3b",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "relay/codal.mjs",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "a0c2a680c588065891e37e25da364307c0ab5423de94824c7e029f5c8631fd4a",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "relay/codal-archive.mjs",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "e32a510c123840c36e0fc603d12189f15b15c2174a75879a7886204e4328c17e",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "relay/eod.mjs",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "e49a214cee04eca435cf2307deb48c26e3bb2deb661045bd90262527137beb80",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "relay/candle-backfill.mjs",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "1324cf3bc371576ef0937c14cafe98c011e5693e14753e2b22ee24ed681a518c",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "relay/liara.json",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "fecda6fa31651fdc5ed67b7ce54225f8fb0bfc3a5c6608826d866f053bc0dc79",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "relay/package.json",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "165301461fdfc895571541de575aba6db6bd5c5080e6b01d50959f51818b3558",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "lib/market-ir.ts",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "f24fb645e6e486155e49e8e6bec30c7a78b2dfb42b766808e446ec86b83e5840",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "lib/market-funds-read.server.ts",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "9a5ee4434b267cf89fa2047cb18128bf5f859b38c49bc1fbc9f335b93d8aa704",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "lib/fundamental/read-config.server.ts",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "7a5c285f328460c16eeee5f041360cc0a3a15cd31c0179c108859105497bdfbb",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "lib/fundamental/supabase.ts",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "ee522b1911d80f3c800c49e2e6904328b10c1fcb50c7c76a6d13c89686f5fff8",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "lib/core/history.ts",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "c626bb4c055be280b0510615583d2c9360841d6f7e0dd97e8007a579556774f4",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "lib/core/navHistory.ts",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "a77c888ae408fdbad994025d890e48e88eebb7f60747c567d0f61d771c63922b",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "lib/liara-public-env.js",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "fed178d9fb88f8f2a4675499dcd37354fa68b8cb936c17498379aca0fd0bae5e",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "next.config.js",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "86b8e00ffa1a433775a13f7b7bffc74c493952bb75703ff92832161f9b38b4e7",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "app/market/funds/page.tsx",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "7feab8cb21c2365e8cad6ffdbc4f155f389fd21fc45f3de6bc011a23180aa981",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "app/symbol/[symbol]/page.tsx",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "547cb4bbe4c8366fbe44763afc5772e20a781763b7dd8569768783dc0a6dd1fe",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": ".github/workflows/deploy-relay.yml",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "da406c1024c40453407cbc09f70894be993f67c28fa9add5895621963e08d48e",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "vercel.json",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "d8cd526051398b4aff4c212853fa032a6ab9bf37c12dfdb5ff11251be9608601",
+      "sameBytesAsMain636": true
+    },
+    {
+      "file": "scripts/ops/liara-binding-discovery.mjs",
+      "source": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+      "sha256": "a97be5bf0991ee677e8f4794a98dafe6a3606e88bf5c9f92d88f6082283d507c",
+      "sameBytesAsMain636": true
+    }
+  ],
+  "evidence": [
+    {
+      "file": "docs/plan/development-v04-20261029/evidence/P00-current-delivery-root-20261104/backend-binding-actual.json",
+      "git": "636d38e7778fd58d8caf844c810d3d2bef2b1001",
+      "sha256": "3ced57898cacf782c7dee86e6d6530f9d3f7e00b1d58af6fcc841bfc69fc5fd6"
+    },
+    {
+      "file": "docs/plan/development-v04-20261029/evidence/P00-current-delivery-root-20261104/budget-functions-vps-only.json",
+      "git": "636d38e7778fd58d8caf844c810d3d2bef2b1001",
+      "sha256": "78d03ebe5b063acef9d18941b59270c9d3098352d6213aec3a0bf5959e29ed1f"
+    },
+    {
+      "file": "docs/plan/development-v04-20261029/evidence/P00-current-delivery-root-20261104/funds-db-metadata-and-resources.json",
+      "git": "a9446e75db73d7835d4cb928e31b4f291b774c48",
+      "sha256": "c8b8171e04b7858d0134606dab913d0c3a74a9a0766ff28f2a5081009ee59848"
+    },
+    {
+      "file": "docs/plan/development-v04-20261029/evidence/P00-current-delivery-root-20261104/codal-last-stored-observation.json",
+      "git": "a9446e75db73d7835d4cb928e31b4f291b774c48",
+      "sha256": "07559f8d9b95ea8859f72eaaaac53887c69f616f1384491ac79f9cc97f8f437f"
+    },
+    {
+      "file": "docs/plan/development-v04-20261029/evidence/P00-current-delivery-root-20261104/data-source-page-current-matrix.json",
+      "git": "67af5a4c7bc0bd19f933bac78ae917e8ff8a427a",
+      "sha256": "f930ecfd4eeabfacb9c9792216b8c6003d5555a1f5cd9e9c73eb158bdfd71f22"
+    }
+  ],
+  "scope": {
+    "providerCalls": 0,
+    "liveGets": 0,
+    "websocketStarts": 0,
+    "sqlExecuted": false,
+    "checkoutModified": false,
+    "keysRead": false,
+    "sourceOnly": true
+  },
+  "identity": {
+    "controlPlane": {
+      "project": {
+        "status": "read",
+        "httpStatus": 200,
+        "data": {
+          "projectId": "arsadata",
+          "status": null,
+          "cpuLimit": null,
+          "ramLimit": null,
+          "reviewedBackendBinding": {
+            "present": true,
+            "parseValid": true,
+            "noCredentialsQueryHash": true,
+            "exactReviewedBackendMatch": true,
+            "duplicateNameRejected": false,
+            "reason": "exact_match"
+          },
+          "envNames": [
+            "BRSAPI_COMMODITY_ENABLED",
+            "BRSAPI_KEY",
+            "CODAL_ENABLED",
+            "CODAL_PER_CYCLE",
+            "CODAL_SYMBOLS",
+            "NODE_ENV",
+            "PORT",
+            "RELAY_TOKEN",
+            "SUPABASE_SERVICE_ROLE_KEY",
+            "SUPABASE_URL"
+          ],
+          "envNamesComplete": true
+        }
+      },
+      "releases": {
+        "status": "read",
+        "httpStatus": 200,
+        "data": {
+          "currentReleaseId": "6ad37ec877b9f9b4324de29e",
+          "match": "exact",
+          "release": {
+            "id": "6ad37ec877b9f9b4324de29e",
+            "state": "READY",
+            "createdAt": "2026-10-17T13:57:28.335Z",
+            "finishedAt": "2026-10-17T13:59:54.145Z",
+            "commit": null,
+            "branch": null
+          }
+        }
+      },
+      "identity": "matched_control_plane_metadata",
+      "limitations": [
+        "Environment values arrive in API memory only; names and booleans for one reviewed backend URL comparison are emitted.",
+        "Control-plane metadata is not proof of running process code, collector exclusion, budget or ingestion success."
+      ]
+    },
+    "controlPlaneObservedAt": "2026-11-04T00:03:59.849Z",
+    "effectiveProcessEnvironment": null,
+    "runningCodeHash": null,
+    "postgrestDatabaseBinding": null,
+    "discovery": {
+      "path": "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\outputs\\liara-binding-discovery-run-41785607091\\receipt.json",
+      "sha256": "2d8774fbc4dd866041b225c7a5a78f3c0c3ce1db8d78731e24c8b15a29305100",
+      "receipt": {
+        "state": "protocol_rejected",
+        "remoteHalt": "unknown",
+        "diagnostics": {
+          "phase": "frame_validate",
+          "bodyBytesCapped1048577": 24449,
+          "fetchCalls": 1,
+          "fetchReturns": 1,
+          "httpStatusClass": "2xx",
+          "connectCalls": 1,
+          "connectReturns": 1,
+          "wsOpenEventsCapped2": 1,
+          "startSendCalls": 1,
+          "startSendReturned": 1,
+          "frameCountCapped2": 1,
+          "lastFrameBytesCapped8193": 431,
+          "closeCode": null,
+          "receiptCheck": "framing_control"
+        }
+      }
+    }
+  },
+  "budget": {
+    "sourceEndpoint": "/rest/v1/rpc/brsapi_budget_lease",
+    "leaseArguments": [
+      "p_day",
+      "p_want",
+      "p_hard"
+    ],
+    "releaseEndpoint": "/rest/v1/rpc/brsapi_budget_release",
+    "releaseArguments": [
+      "p_day",
+      "p_back"
+    ],
+    "migration": "sql/phase28_brsapi_budget.sql",
+    "observedAt": "2026-11-04T00:03:59.849Z",
+    "observed": {
+      "providerAccountUsage": null,
+      "providerResetAt": null,
+      "liaraCost": null,
+      "clientEnabled": false,
+      "client": {
+        "available": null,
+        "persistent": null,
+        "day": null,
+        "softBudget": null,
+        "hardCeiling": null,
+        "used": null,
+        "remaining": null,
+        "rejectedByBudget": null,
+        "softExhausted": null,
+        "store": {
+          "healthy": null,
+          "errors": null,
+          "error": null,
+          "httpStatus": null,
+          "sqlCode": null
+        }
+      },
+      "legacy": {
+        "enforced": false,
+        "usedAggregate": 19446,
+        "rejectedAggregate": 18546,
+        "overBudgetPassedAggregate": 18546,
+        "unmetered": 0,
+        "budget": {
+          "available": null,
+          "persistent": true,
+          "day": "2026-11-04",
+          "softBudget": 6000,
+          "hardCeiling": 9000,
+          "used": 0,
+          "remaining": 9000,
+          "rejectedByBudget": 169,
+          "softExhausted": false,
+          "store": {
+            "healthy": false,
+            "errors": 135,
+            "error": "budget_or_rate_limit",
+            "httpStatus": 404,
+            "sqlCode": null
+          }
+        }
+      },
+      "stopped": false,
+      "servedAgeMs": 127745
+    },
+    "metadataObservation": {
+      "rpcCalls": 0,
+      "sqlWrites": false,
+      "scope": "pinned VPS database only; no PaaS backend or quota conclusion",
+      "restConfiguration": [
+        {
+          "containerId": "703c0d4a0273aa257df593633629936bad6703e74b2e4b9da87d82e7580cab41",
+          "name": "portfolio-stage-rest-1",
+          "configuredSchemas": "public",
+          "observedVia": "PGRST_DB_SCHEMAS allowlist only",
+          "effectiveRuntimeAndBackendNotVerified": true
+        }
+      ],
+      "functions": [],
+      "status": "READ_ONLY_METADATA_COMPLETE",
+      "sourceId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+      "sourceImage": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+      "sourceHealthyBeforeAfter": true,
+      "observedAtUtc": "2026-11-03T23:00:10.126162+00:00",
+      "payloadSha256": "06b8f9cf5255348a5f9ecc2eca20a54bef1b670f5f2560f02c3965505088cb6b",
+      "remoteWrites": false,
+      "automaticRetry": false
+    },
+    "rootCauseConfirmed": null,
+    "doNotTreatZeroOrRemainingAsProviderQuota": true
+  },
+  "families": [
+    {
+      "family": "stock-and-fund-price",
+      "sourceContract": [
+        "BRSAPI_BASE default https://Api.BrsApi.ir",
+        "GET /Tsetmc/AllSymbols.php?type=1; secret key omitted"
+      ],
+      "producer": "relay/server.mjs fetchStocks/buildPayload/refresh",
+      "configuredDeployment": {
+        "app": "arsadata",
+        "port": 3400,
+        "entry": "node server.mjs"
+      },
+      "sourceScheduler": "in-process setInterval(refresh, 300000), initial refresh after baseline/blacklist load; non-overlap refreshing promise",
+      "write": "SUPABASE_URL /rest/v1/ir_market_snapshots?on_conflict=key, key latest",
+      "read": "market-ir.ts primary NEXT_PUBLIC_SUPABASE_URL snapshot; legacy fallback IR_MARKET_RELAY_URL /market.json; funds explicit FUNDAMENTAL_READ pair is DB-only; symbol page getStoredIrMarket",
+      "sourceRefs": [
+        "relay/server.mjs:54-63,367-371,925-946,1270-1308,1528-1534",
+        "lib/market-ir.ts:430-555,584-635",
+        "lib/market-funds-read.server.ts:40-65",
+        "app/symbol/[symbol]/page.tsx:103-108"
+      ],
+      "lastObservedProducer": {
+        "sampleAt": "2026-11-04T00:03:59.849Z",
+        "lastAttempt": "2026-11-04T00:01:51.124Z",
+        "lastRefresh": "2026-11-04T00:01:51.124Z",
+        "source": {
+          "ok": true,
+          "gold": null,
+          "currency": null,
+          "stocks": 777,
+          "funds": 345,
+          "cached": null,
+          "updated": null,
+          "failed": null,
+          "error": null
+        },
+        "storage": {
+          "enabled": true,
+          "ok": true,
+          "httpStatus": 200,
+          "at": "2026-11-04T00:01:52.174Z",
+          "error": null
+        }
+      },
+      "databaseObservation": {
+        "at": "2026-11-04T02:47:04.498316+00:00",
+        "rowExists": true,
+        "rowCount": 1,
+        "payloadType": "object",
+        "fundsType": "array",
+        "fundsLength": 345,
+        "stocksType": "array",
+        "stocksLength": 777,
+        "fetchedAtType": "number",
+        "fetchedAt": 1793760412042,
+        "fundsAggregatePerformed": true,
+        "fundItemTypes": {
+          "object": 345
+        },
+        "fundPriceTypes": {
+          "number": 345
+        },
+        "validPositiveNumericPriceCount": 345
+      },
+      "sourceQuoteTime": null,
+      "productionDbBinding": null,
+      "twoNaturalCyclesAccepted": false
+    },
+    {
+      "family": "nav",
+      "sourceContract": [
+        "GET /Tsetmc/Nav.php bulk or l18 (key omitted)",
+        "predtran redemption NAV; psubtran issue NAV; source date/time retained"
+      ],
+      "producer": "relay/server.mjs cacheNavRow/applyNav",
+      "sourceScheduler": "hourly bulk/top round within 5min refresh; catchup path separate; cached source values are not refreshed quote clocks",
+      "storage": "latest snapshot funds NAV and symbol_history raw.nav_toman on EOD",
+      "read": "funds snapshot; symbol getNavHistory uses NEXT_PUBLIC_SUPABASE pair and symbol_history",
+      "sourceRefs": [
+        "relay/server.mjs:513-529,535-600,678-694",
+        "lib/core/navHistory.ts:20-70"
+      ],
+      "lastObservedProducer": {
+        "ok": true,
+        "gold": null,
+        "currency": null,
+        "stocks": null,
+        "funds": null,
+        "cached": 336,
+        "updated": 150,
+        "failed": 0,
+        "error": null
+      },
+      "sourceNavTime": null,
+      "unitClassVerified": false,
+      "confirmedSourceDefect": "bulk catch falls through to direct unmetered single-symbol fetch at server.mjs:569-591; live occurrence unproven",
+      "historicalReadLimitation": "getNavHistory returns [] both on missing config/failed rows and verified empty; caller cannot distinguish these from return shape alone",
+      "twoNaturalCyclesAccepted": false
+    },
+    {
+      "family": "monthly-sales",
+      "sourceContract": [
+        "BRSAPI Codal/Announcement.php",
+        "official report download and N30 parser"
+      ],
+      "producer": "relay/codal-engine.mjs runEngineCycle; archive independent",
+      "sourceScheduler": "CODAL_ENABLED=1, first90s, CODAL_INTERVAL_MS default3h; archive default enabled unless 0, first6min then45min",
+      "storage": "codal_feed by link; codal_reports by source_url; engine/archive checkpoints in ir_market_snapshots",
+      "read": "fundamental registry -> supabase.ts -> codal_reports -> symbol MonthlySalesCharts",
+      "sourceRefs": [
+        "relay/server.mjs:1561-1584",
+        "relay/codal.mjs:22-27,844-876,933-1000",
+        "relay/codal-engine.mjs:100-140,215,251-326,432-459",
+        "lib/fundamental/supabase.ts:69-111,514-554"
+      ],
+      "lastObservedAttempt": "2026-11-03T21:11:40.673Z",
+      "lastCompleteSuccess": null,
+      "feed": {
+        "pages": 3,
+        "seen": 52,
+        "matched": 12,
+        "downloaded": 0,
+        "inserted": 0,
+        "parseFailed": 0,
+        "complete": false,
+        "incompleteReason": "invalid_or_empty_response",
+        "incompleteReasonCode": "invalid_order_or_identity"
+      },
+      "admissionLastCycle": {
+        "unsupported_layout": 6,
+        "short_rows": 0,
+        "missing_sales": 0,
+        "zero_sales_only": 0,
+        "arithmetic_mismatch": 0,
+        "mixed_rows": 0,
+        "no_product_rows": 0,
+        "unspecified": 0
+      },
+      "standaloneOfficialAttempt": {
+        "symbol": "فملی",
+        "feedId": 22948,
+        "atUtc": "2026-11-04T01:10:14Z",
+        "httpStatus": 500
+      },
+      "sourcePeriod": null,
+      "twoNaturalCyclesAccepted": false
+    },
+    {
+      "family": "financial-statements",
+      "sourceContract": [
+        "same feed/official download",
+        "N10 full admission remains mandatory"
+      ],
+      "producer": "same engine; monthly and N10 admission are distinct",
+      "sourceScheduler": "same engine3h default; effective interval unverified",
+      "storage": "codal_reports source_url dedup after full admission",
+      "read": "fundamental supabase.ts -> symbol QuarterlyCharts and report cards",
+      "sourceRefs": [
+        "relay/codal.mjs:264-587,933-1000",
+        "lib/fundamental/supabase.ts",
+        "app/symbol/[symbol]/page.tsx:155-176,279-286,344-360"
+      ],
+      "lastObservedAttempt": "2026-11-03T21:11:40.673Z",
+      "lastCompleteSuccess": null,
+      "admissionTotals": {
+        "context_invalid": 79,
+        "geometry_ambiguous": 0,
+        "scope_unknown": 616,
+        "scope_unsupported": 1378,
+        "statement_ambiguous": 0,
+        "unit_unverified": 0,
+        "values_unobserved": 0,
+        "period_unverified": 0,
+        "arithmetic_mismatch": 0,
+        "capital_unverified": 0,
+        "normalized_identity_mismatch": 0,
+        "eps_unverified": 0,
+        "internal_exception": 0,
+        "unspecified": 0
+      },
+      "officialSample": {
+        "symbol": "فولاد",
+        "feedId": 19270,
+        "httpStatus": 200,
+        "admission": "scope_unknown",
+        "blankCellsRemainNull": 4,
+        "scopeOwnership": null,
+        "periodBinding": null
+      },
+      "storedObservation": {
+        "observedAt": "2026-11-04T01:10:33.177881+00:00",
+        "exactCounts": [
+          {
+            "feedId": 19270,
+            "exactReportCount": 0
+          },
+          {
+            "feedId": 22948,
+            "exactReportCount": 0
+          }
+        ],
+        "maxId": 12219,
+        "maxIdPeriod": "2024-01-20",
+        "latestCompleteCycle": null
+      },
+      "twoNaturalCyclesAccepted": false
+    },
+    {
+      "family": "history",
+      "sourceContract": [
+        "fresh market payload for history/EOD",
+        "optional BRSAPI Tsetmc/Candlestick.php for backfill"
+      ],
+      "producer": "same relay process, not a proved separately deployed history service",
+      "sourceScheduler": "snapshot sections every30min; EOD after Tehran hour14 default on refresh; backfill unless disabled first3min then10min; source dates checked",
+      "storage": "ir_market_history; symbol_history; index_history; daily FX/breadth separate",
+      "read": "history.ts and navHistory.ts using NEXT_PUBLIC_SUPABASE pair; symbol page and CSV; /api/market/ohlc is global crypto path, not Iran stock history",
+      "sourceRefs": [
+        "relay/server.mjs:968-1034,1072-1213,1305-1311,1538-1542",
+        "relay/candle-backfill.mjs:215",
+        "lib/core/history.ts:19-78,143",
+        "lib/core/navHistory.ts:20-70",
+        "app/api/market/ohlc/route.ts:1-14"
+      ],
+      "lastObservedProducer": {
+        "eodHistory": {
+          "ok": null,
+          "lastRun": "2026-11-03T10:31:54.198Z",
+          "lastDate": "2026-11-03",
+          "rows": 1103,
+          "error": null,
+          "skipped": null
+        },
+        "indexHistory": {
+          "ok": null,
+          "lastRun": null,
+          "lastDate": "1405-08-12",
+          "rows": null,
+          "error": null,
+          "skipped": null
+        },
+        "marketBreadth": {
+          "ok": null,
+          "lastRun": null,
+          "lastDate": "1405-08-12",
+          "rows": null,
+          "error": null,
+          "skipped": null
+        },
+        "historyPrune": {
+          "ok": null,
+          "lastRun": "2026-11-03T11:01:51.691Z",
+          "lastDate": null,
+          "rows": null,
+          "error": null,
+          "skipped": null
+        }
+      },
+      "lastCompleteSuccess": null,
+      "sourceTime": null,
+      "twoNaturalCyclesAccepted": false
+    }
+  ],
+  "framing": {
+    "cliVersion": "9.5.1",
+    "installedSourceSha256": "3bf2c50bd4794be8a501073754b6bc578c486618772d08a29e4e3386cf0667fa",
+    "officialSource": "https://github.com/liara-cloud/cli/blob/master/src/commands/app/shell.ts",
+    "officialSourceFetched": "2026-11-04",
+    "observed": "terminal-oriented START with cols/rows; stdin input/resize; raw websocket output; close exit0; no explicit non-PTY option in inspected shell command",
+    "unknown": [
+      "actual rejected frame content",
+      "backend process identity",
+      "whether provider supports a separate non-PTY API"
+    ],
+    "doNotInfer": [
+      "ANSI is cause",
+      "Docker header is cause",
+      "command succeeded",
+      "new infrastructure migration required"
+    ],
+    "safeNextStep": "keep parser strict; verify documented non-PTY contract with provider or prepare bounded first-failure control-character class diagnostics for independent review; no live retry implied",
+    "docsLimit": "official docs URL unavailable via web tool; public GitHub source inspected; no CLI launched"
+  },
+  "nextEvidenceNeeded": [
+    "attest same running collector code/environment and actual PostgREST DB before migration",
+    "record exact quota RPC status and sanitized error code on that binding",
+    "owner repair NAV unmetered fallback with offline regression before deploy",
+    "after root-authorized deployment/readback observe two natural cycles per source; 3h periodic default is not a 5min price cadence",
+    "match quote/NAV/source period/unit to same stored row and authenticated/current page"
+  ],
+  "allFamiliesAccepted": false
+}

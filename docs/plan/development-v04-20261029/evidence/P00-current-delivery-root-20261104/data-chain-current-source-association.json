@@ -1,0 +1,14 @@
+{
+  "sourceMap": "0ec76222e26a195e2e2cc76006117ea0e285f7c7",
+  "mapComparison": "636d38e7778fd58d8caf844c810d3d2bef2b1001",
+  "filesVerifiedAtComparison": 25,
+  "currentProductionSource": "1ceba5b38ac35ee11b8044e670bfb088255bc7a7",
+  "changedMappedPaths": [
+    {
+      "path": "app/market/funds/page.tsx",
+      "sourceMapSha256": "7feab8cb21c2365e8cad6ffdbc4f155f389fd21fc45f3de6bc011a23180aa981",
+      "productionSourceSha256": "535a0ecab36671b6d86281a5a14ebb37266e234fd684eb5ef51bd8b5d6f4b5e1"
+    }
+  ],
+  "rootNote": "PR409 changes client URL/account-return presentation; collector and data-reader selectors unchanged. Runtime backend/DB identity and natural source-cycle acceptance remain unproven."
+}

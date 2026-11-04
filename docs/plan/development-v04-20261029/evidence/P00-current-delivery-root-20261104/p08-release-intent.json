@@ -1,0 +1,19 @@
+{
+  "source": "e29599bcceabc53c405530f95979cb8a66648c94",
+  "pr": 409,
+  "baseObserved": "636d38e7778fd58d8caf844c810d3d2bef2b1001",
+  "ci": 41790730518,
+  "ciCheckout": "0c134ad89efa4f1e6cd5041b017324e6e1418e95",
+  "ciTree": "9a9c715dff678693b358a0077d31d3a33f54b632",
+  "sourceTreeEqual": true,
+  "requiredJobs": "5_SUCCESS",
+  "nativeJob": "SKIPPED",
+  "review": "independent source review and root full CI logs read",
+  "actualPreview": "dpl_4MasB3MuRprj8XBhL1NpgdVQ5Pap",
+  "browserReceiptSha256": "7900ca5fe736c6acdcdb08e3d0404de648acbf191e07bcfb5afd9abcf92853f5",
+  "browserScope": "q within 2 sec, 5 compare, reload, symbol.from and account.next; date/class completeness NOT accepted; hash empty; same-document popstate NOT tested",
+  "releaseScope": "same nonvisual fund URL bug fix only; existing main Vercel integration",
+  "noSqlNoAuthNoCollectorNoEnvNoAppearanceChange": true,
+  "rollback": "retain prior main636 READY deployment and data; source rollback through reviewed normal PR if needed",
+  "productionAcceptance": "PENDING_REMOTE_READBACK_AND_BROWSER"
+}
