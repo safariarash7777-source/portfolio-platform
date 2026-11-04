@@ -56,12 +56,13 @@ test('fixed reasons identify failure categories without raw messages or candidat
   }
 });
 function offline(adopted=true){const s=readFileSync(new URL('./liara-binding-discovery.mjs',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ','').replace(/const DISCOVERY_ADOPTED = (?:false|true)/,'const DISCOVERY_ADOPTED = '+adopted).replace('},15000)','},20)');const c=vm.createContext({createHash,FIXED_DISCOVERY_SOURCE,Buffer,URL,URLSearchParams,TextDecoder,AbortController,setTimeout,clearTimeout});vm.runInContext(s,c);return vm.runInContext('discoverBinding',c);}
-async function protocol(mode='ok'){
+async function protocol(mode='ok',rawFrame){
   let gets=0,ws=0,starts=0,lastSocket,statusReads=0;
   const r=await offline()({token:secret,nonce,fetchImpl:async(url,init)=>{gets++;if(mode==='post-late-reject'&&gets===2){lastSocket.emit('open');lastSocket.emit('message','late');throw Error(secret);}assert.equal(url,'https://api.liara.ir/v1/projects/arsadata/releases?page=1&count=100');assert.equal(init.method,'GET');assert.equal(init.redirect,'error');if(mode==='get-throw'||(mode==='post-throw'&&gets===2))throw Error(secret);if(mode==='get-stall'||(mode==='post-stall'&&gets===2))return new Promise(()=>{});if(mode==='body-throw')return {ok:true,status:200,body:{getReader:()=>({read:async()=>{throw Error(secret);},cancel:async()=>{}})}};if(mode==='bad-json')return new Response(secret);if(mode==='http')return new Response(secret,{status:401});const id=mode==='release-change'&&gets===2?'c'.repeat(24):release;let text=JSON.stringify({currentRelease:id,releases:[{_id:id,state:'READY'}]});if(mode==='duplicate-release')text=text.replace('"currentRelease":','"currentRelease":"'+release+'","currentRelease":');const response=new Response(mode==='body-limit'?'x'.repeat(1048577):text);if(mode==='status-throws')return {ok:true,body:response.body,get status(){statusReads++;throw Error(secret);}};return response;},connect:url=>{
     ws++;if(mode==='connect-throw')throw Error(secret);const u=new URL(url);assert.equal(u.origin,'wss://api.iran.liara.ir');assert.equal(u.searchParams.get('project_id'),'arsadata');assert.equal(u.searchParams.get('token'),secret);assert.equal(u.searchParams.get('cmd').includes(secret),false);
     const socket=new EventEmitter();lastSocket=socket;socket.close=()=>{};socket.send=text=>{starts++;if(mode==='send-throw')throw Error(secret);assert.equal(JSON.parse(text).action,'start');queueMicrotask(()=>{if(mode==='ws-stall')return;if(mode==='empty'){socket.emit('close',1000);return;}let text=JSON.stringify({version:1,nonce,state:'discovered_candidate',reason:'stable_candidate',count:1,pid:7,startTicks:'123',exeKind:'node_usr',cwdKind:'app',entryKind:'relative_server'});
       if(mode==='valid-unresolved')text=JSON.stringify({version:1,nonce,state:'unresolved',reason:'zero_candidate',count:0,pid:null,startTicks:null,exeKind:null,cwdKind:null,entryKind:null});if(mode==='nonce')text=text.replace(nonce,'d'.repeat(32));if(mode==='duplicate-frame-key')text=text.replace('"version":1','"version":1,"version":1');if(mode==='secret-field')text=text.replace('"version":1','"version":1,"argv":"'+secret+'"');if(mode==='crlf')text+='\r\n';if(mode==='ansi')text='\u001b[0m'+text;if(mode==='frame-limit')text='x'.repeat(8193);
+      if(rawFrame!==undefined)text=rawFrame;
       if(mode==='split-frame'){socket.emit('message',text.slice(0,10));socket.emit('message',text.slice(10));}else if(mode==='truncated-utf8')socket.emit('message',new Uint8Array([0xc3]));else socket.emit('message',text);if(mode==='extra-frame')socket.emit('message',text);if(mode==='socket-error')socket.emit('error',Error(secret));socket.emit('close',mode==='unclean'?1006:mode==='bad-close'?999999:1000);
     });};queueMicrotask(()=>{socket.emit('open');if(mode==='duplicate-open')socket.emit('open');});return socket;
   }});assert.equal(JSON.stringify(r).includes(secret),false);assert.equal(JSON.stringify(r).includes('Sha256'),false);assert.equal(r.remoteHalt,'unknown');assert.ok(gets<=2&&ws<=1&&starts<=1);return {r,gets,ws,starts,statusReads};
@@ -72,11 +73,11 @@ test('deadline covers preflight, socket and postflight, no remote stop claim or 
 
 // Pure framing evaluation: no native transport, CLI entry or credential lookup.
 function framingFixture(){
-  let parses=0;
+  let parses=0;const parseInputs=[];
   const source=readFileSync(new URL('./liara-binding-discovery.mjs',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export /gm,'');
-  const context=vm.createContext({Buffer,createHash,FIXED_DISCOVERY_SOURCE,JSON:{stringify:JSON.stringify,parse:s=>{parses++;return JSON.parse(s);}}});
+  const context=vm.createContext({Buffer,createHash,FIXED_DISCOVERY_SOURCE,JSON:{stringify:JSON.stringify,parse:s=>{parses++;parseInputs.push(s);return JSON.parse(s);}}});
   vm.runInContext(source,context);
-  return {read:vm.runInContext('receipt',context),parses:()=>parses};
+  return {read:vm.runInContext('receipt',context),readJson:vm.runInContext('strictJson',context),parses:()=>parses,fullParses:raw=>parseInputs.filter(input=>input===raw).length};
 }
 const canonicalReceipt=JSON.stringify({version:1,nonce,state:'discovered_candidate',reason:'stable_candidate',count:1,pid:7,startTicks:'123',exeKind:'node_usr',cwdKind:'app',entryKind:'relative_server'});
 test('framing accepts exactly no terminator or one LF/CRLF and rejects whitespace/control/text extras',()=>{
@@ -97,7 +98,7 @@ test('CRLF stays single-frame candidate-only; split frames and truncated UTF8 fa
   for(const mode of ['split-frame','truncated-utf8']){const failed=await protocol(mode);assert.equal(failed.r.state,'protocol_rejected');assert.equal(failed.gets,1);assert.equal(failed.ws,1);assert.equal(failed.starts,1);}
 });
 
-const diagnosticKeys=['phase','bodyBytesCapped1048577','fetchCalls','fetchReturns','httpStatusClass','connectCalls','connectReturns','wsOpenEventsCapped2','startSendCalls','startSendReturned','frameCountCapped2','lastFrameBytesCapped8193','closeCode'];
+const diagnosticKeys=['phase','bodyBytesCapped1048577','fetchCalls','fetchReturns','httpStatusClass','connectCalls','connectReturns','wsOpenEventsCapped2','startSendCalls','startSendReturned','frameCountCapped2','lastFrameBytesCapped8193','closeCode','receiptCheck'];
 test('failure diagnostics distinguish request/body/schema/socket/send/frame/close/post phases without raw details',async()=>{
   const modes={ 'get-throw':'pre_release_fetch',http:'pre_release_fetch','body-throw':'pre_release_body','bad-json':'pre_release_validate','connect-throw':'ws_connect','send-throw':'start_send','duplicate-open':'ws_open','frame-limit':'frame_read',nonce:'frame_validate',unclean:'ws_close','post-throw':'post_release_fetch','release-change':'post_release_validate'};
   for(const [mode,phase] of Object.entries(modes)){
@@ -136,4 +137,52 @@ test('pre/post body read failure captures first observation before failure-trigg
     await assert.rejects(readIdentity(async()=>response,'fixture',new AbortController().signal,diagnostic,()=>{order.push('capture');captured={...diagnostic};}));
     assert.deepEqual(order,['capture','cancel']);assert.equal(captured.phase,prefix+'_release_body');assert.equal(captured.bodyBytesCapped1048577,mode==='read-failure'?null:1048577);assert.equal(JSON.stringify(captured).includes(secret),false);
   }
+});
+
+test('receipt check reports only the first rejecting predicate with one full JSON parse',()=>{
+  const cases=[
+    [canonicalReceipt+'\n\n','framing_control',0],
+    ['\x1b'+secret,'framing_control',0],
+    ['{"private":"'+secret+'"','json_syntax',1],
+    [canonicalReceipt.replace('"version":1','"version":1,"vers\\u0069on":1'),'json_integrity',1],
+    ['['.repeat(65)+'0'+']'.repeat(65),'json_integrity',1],
+    [' '+canonicalReceipt,'canonical',1],
+    [canonicalReceipt.replace('"version":1','"version":2'),'envelope_schema',1],
+    [canonicalReceipt.replace('"version":1','"version":1,"'+secret+'":true'),'envelope_schema',1],
+    [canonicalReceipt.replace(nonce,'d'.repeat(32)),'nonce',1],
+    [canonicalReceipt.replace('"count":1','"count":2'),'semantic',1],
+    // Earlier failure wins even when nonce and semantics are also invalid.
+    [canonicalReceipt.replace('"version":1','"version":2').replace(nonce,'d'.repeat(32)).replace('"count":1','"count":2'),'envelope_schema',1],
+  ];
+  for(const [raw,check,fullParses] of cases){
+    const f=framingFixture(),diagnostic={receiptCheck:null};
+    assert.throws(()=>f.read(raw,nonce,diagnostic),error=>error.message==='rejected');
+    assert.deepEqual(diagnostic,{receiptCheck:check});assert.equal(f.fullParses(raw),fullParses);
+    assert.equal(JSON.stringify(diagnostic).includes(secret),false);
+  }
+  const f=framingFixture(),checks=[];
+  // Token-budget rejection shares integrity with depth and duplicate keys;
+  // this direct parser fixture is larger than the unchanged WS frame cap.
+  assert.throws(()=>f.readJson('['+'0,'.repeat(50001)+'0]',check=>{checks.push(check);throw Error('rejected');}));
+  assert.deepEqual(checks,['json_integrity']);
+});
+
+test('receipt checks are failure-only, null outside receipt rejection and immutable after later events',async()=>{
+  for(const [raw,check] of [[canonicalReceipt+'\n\n','framing_control'],['{"private":"'+secret+'"','json_syntax'],
+    [canonicalReceipt.replace('"version":1','"version":1,"version":1'),'json_integrity'],
+    [' '+canonicalReceipt,'canonical'],[canonicalReceipt.replace('"version":1','"version":2'),'envelope_schema'],
+    [canonicalReceipt.replace(nonce,'d'.repeat(32)),'nonce'],[canonicalReceipt.replace('"count":1','"count":2'),'semantic']]){
+    const p=await protocol('extra-frame',raw);
+    assert.equal(p.r.state,'protocol_rejected');assert.equal(p.gets,1);assert.equal(p.ws,1);assert.equal(p.starts,1);
+    assert.equal(p.r.diagnostics.receiptCheck,check);assert.equal(p.r.diagnostics.phase,'frame_validate');
+    assert.equal(p.r.diagnostics.frameCountCapped2,1);assert.equal(p.r.diagnostics.closeCode,null);
+    assert.ok(Object.isFrozen(p.r.diagnostics));assert.equal(JSON.stringify(p.r).includes(secret),false);
+  }
+  for(const mode of ['bad-json','duplicate-release','frame-limit','truncated-utf8','empty','unclean','post-throw','post-late-reject','get-stall','ws-stall','post-stall']){
+    assert.equal((await protocol(mode)).r.diagnostics.receiptCheck,null,mode);
+  }
+  for(const raw of [canonicalReceipt,canonicalReceipt+'\n',canonicalReceipt+'\r\n']){
+    const diagnostic={receiptCheck:null};assert.equal(framingFixture().read(raw,nonce,diagnostic).version,1);assert.equal(diagnostic.receiptCheck,null);
+  }
+  for(const mode of ['ok','valid-unresolved'])assert.equal((await protocol(mode)).r.diagnostics,undefined);
 });
