@@ -64,11 +64,26 @@ t("قبل از رزرو، اجاره شارژ می‌شود", async () => {
   assert.equal(b.ensured, 1, "بدونِ ensure، بودجهٔ ماندگار هرگز اجاره نمی‌گیرد");
 });
 
-t("سوییچِ اجرا از پرچمِ کلاینت جداست", () => {
-  assert.equal(legacyEnforced({ BRSAPI_CLIENT_ENABLED: "1" }), false,
-    "روشن‌کردنِ پرچمِ کلاینت نباید رد‌کردنِ مسیرِ قدیمی را فعال کند");
+t("enforcement defaults closed independently of the client flag", () => {
+  assert.equal(legacyEnforced({ BRSAPI_CLIENT_ENABLED: "1" }), true);
   assert.equal(legacyEnforced({ BRSAPI_BUDGET_ENFORCE_LEGACY: "1" }), true);
-  assert.equal(legacyEnforced({}), false);
+  assert.equal(legacyEnforced({}), true);
+  assert.equal(legacyEnforced({ BRSAPI_BUDGET_ENFORCE_LEGACY: "typo" }), true);
+  assert.equal(legacyEnforced({ BRSAPI_BUDGET_ENFORCE_LEGACY: "0" }), false);
+});
+
+t("default meter refuses an unavailable or exhausted store before a provider send", async () => {
+  const old = process.env.BRSAPI_BUDGET_ENFORCE_LEGACY;
+  delete process.env.BRSAPI_BUDGET_ENFORCE_LEGACY;
+  try {
+    await assert.rejects(new LegacyMeter(() => null).count("nav-primary", "critical"), BudgetUnavailableError);
+    const exhausted = new LegacyMeter(() => ({ async ensure() {}, reserve: () => false }));
+    await assert.rejects(exhausted.count("stock-all", "critical"), LegacyBudgetError);
+    assert.equal(exhausted.snapshot().overBudgetPassed['stock-all'], undefined);
+  } finally {
+    if (old === undefined) delete process.env.BRSAPI_BUDGET_ENFORCE_LEGACY;
+    else process.env.BRSAPI_BUDGET_ENFORCE_LEGACY = old;
+  }
 });
 
 t("طبقهٔ بودجه به بودجه منتقل می‌شود، نه اینکه همه standard شوند", async () => {

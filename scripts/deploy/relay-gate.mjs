@@ -300,9 +300,9 @@ export function evaluateFlags(raw, opts = {}) {
 
   // پیش‌نیازهای نسخهٔ هدف.
   if (!phase28Applied) {
-    if (f.BRSAPI_BUDGET_ENFORCE_LEGACY === "1") {
+    if (f.BRSAPI_BUDGET_ENFORCE_LEGACY !== "0") {
       failures.push(
-        "BRSAPI_BUDGET_ENFORCE_LEGACY=1 است ولی phase28 اجرا نشده — " +
+        "کنترل بودجه فعال است ولی phase28 اجرا نشده — " +
           "کدِ هدف از ارسالِ بی‌شمارش امتناع می‌کند و دادهٔ بازار می‌ایستد",
       );
     }

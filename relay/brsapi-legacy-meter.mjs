@@ -7,12 +7,11 @@
  * سقفی که با یک سوییچ کور می‌شود سقف نیست — و شمارنده‌ای که بخشی از واقعیت
  * را نمی‌بیند، روزی برای اشتباه‌ترین دلیل باور می‌شود.
  *
- * ── چرا پیش‌فرض فقط می‌شمارد و رد نمی‌کند ───────────────────────────────────
- * امروز پرچم در Production خاموش است. اگر همین حالا مسیرِ قدیمی هم شروع به
- * رد‌کردن کند، اولین دیپلوی رفتارِ Production را عوض می‌کند — همان چیزی که
- * قرار بود نکنیم. پس حفره از «نامرئی» به «دیده‌شده» می‌رود، و تبدیلش به
- * «بسته» یک **تصمیمِ صریح** است (`BRSAPI_BUDGET_ENFORCE_LEGACY=1`)، نه یک
- * اثرِ جانبیِ دیپلوی.
+ * Phase28 is now installed on the reviewed backend. Enforcement defaults on:
+ * unavailable or exhausted internal allocation stops new upstream requests.
+ * Explicit BRSAPI_BUDGET_ENFORCE_LEGACY=0 is an observable rollback only.
+ * This daily internal allocation is not the provider's rolling-window limit
+ * or provider account usage. Earlier consumption remains unknown.
  *
  * سوییچِ اجرا عمداً از پرچمِ کلاینت جداست، تا کسی با روشن‌کردنِ یکی، ناخواسته
  * رفتارِ دیگری را هم فعال نکند.
@@ -40,7 +39,9 @@ export class LegacyBudgetError extends Error {
 }
 
 export function legacyEnforced(env = process.env) {
-  return env.BRSAPI_BUDGET_ENFORCE_LEGACY === "1";
+  // Phase28 is installed on the reviewed backend. Missing or mistyped flags
+  // must not reopen unmetered sends; explicit 0 is the operational rollback.
+  return env.BRSAPI_BUDGET_ENFORCE_LEGACY !== "0";
 }
 
 export class LegacyMeter {
