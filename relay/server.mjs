@@ -1,6 +1,7 @@
 import { readProviderJson } from './capitalization-response.mjs';
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
 import { brsTransportMetrics, waitForBrsReadiness } from "./brsapi-transport.mjs";
+import { createNavRefreshSequence } from "./nav-refresh-sequence.mjs";
 import { writeDailyFx } from "./daily-fx.mjs";
 import { retainMarketFamilies, retainCommoditySnapshot, mergeStoredBaseline, sourceErrorCategory, validStoredSnapshot } from "./market-retention.mjs";
 // ─────────────────────────────────────────────────────────────────────────────
@@ -531,7 +532,7 @@ function cacheNavRow(l18, d, now) {
   return true;
 }
 
-async function refreshNavs(funds) {
+async function refreshNavs(funds, attempted = new Set()) {
   if (!BRSAPI_KEY || funds.length === 0) return;
   if (Date.now() - lastNavRound < NAV_REFRESH_MS) return;
   lastNavRound = Date.now(); // اول ست می‌شود تا دورِ موازی شروع نشود
@@ -584,13 +585,24 @@ async function refreshNavs(funds) {
     while (queue.length) {
       const f = queue.shift();
       if (!f) return;
+      attempted.add(f.id);
       try {
-        const res = await fetch(`${base}&l18=${encodeURIComponent(f.id)}`, {
-          headers: HDRS,
-          signal: AbortSignal.timeout(15000),
-        });
-        if (!res.ok) { failed++; recordNavResult(f.id, false); continue; }
-        const j = await res.json();
+        const c = brsClient();
+        let j;
+        if (c) {
+          j = await c.request({
+            endpoint: "Tsetmc/Nav.php", params: { l18: f.id },
+            producer: "nav-primary", priority: "background", budgetClass: "standard",
+            dedupeTtlMs: 300_000, timeoutMs: 15_000,
+          });
+        } else {
+          await countLegacy("nav-primary", "standard");
+          const res = await fetch(`${base}&l18=${encodeURIComponent(f.id)}`, {
+            headers: HDRS, signal: AbortSignal.timeout(15000),
+          });
+          if (!res.ok) { failed++; recordNavResult(f.id, false); continue; }
+          j = await res.json();
+        }
         const d = Array.isArray(j) ? j[0] : j;
         if (cacheNavRow(f.id, d, Date.now())) { updated++; recordNavResult(f.id, true); }
         else { failed++; recordNavResult(f.id, false); }
@@ -620,9 +632,10 @@ async function refreshNavs(funds) {
 const NAV_COMPLETION_MS = 12 * 60 * 60 * 1000; // هر ۱۲ ساعت
 const NAV_COMPLETION_CAP = 400;
 let lastCompletionRound = 0;
+const refreshNavSequence = createNavRefreshSequence(refreshNavs, refreshNavCompletion);
 let navCompletionState = { lastRoundAt: null, targeted: 0, updated: 0, failed: 0, skipped: null };
 
-async function refreshNavCompletion(funds) {
+async function refreshNavCompletion(funds, attempted = new Set()) {
   if (!BRSAPI_KEY || funds.length === 0) return;
   if (navBulkMode === true) { navCompletionState.skipped = "bulk mode covers all funds"; return; }
   if (Date.now() - lastCompletionRound < NAV_COMPLETION_MS) return;
@@ -632,6 +645,7 @@ async function refreshNavCompletion(funds) {
   // C1 — زیرنماد، حق تقدم و بلک‌لیست دائمی هرگز وارد دور تکمیلی نمی‌شوند
   // (ریشهٔ اخطار BrsApi: ریکوئست NAV برای نمادهای فاقد NAV مثل آوند4).
   const missing = funds
+    .filter((f) => !attempted.has(f.id))
     .filter((f) => !isSubTicker(f.id) && !isRightsIssue(f.id) && !isNavBlacklisted(f.id))
     .filter((f) => { const c = navCache.get(f.id); return !c || now - c.at > NAV_STALE_MS; })
     .slice(0, NAV_COMPLETION_CAP);
@@ -855,9 +869,7 @@ async function buildPayload() {
   ]);
   // دورهای NAV و نوعِ صندوق در پس‌زمینه (ساعتی؛ درونشان سهمیه‌بندی شده) —
   // payload فعلی از کشِ موجود پر می‌شود و دورِ بعدی نتیجهٔ تازه را برمی‌دارد.
-  refreshNavs(sf.funds).catch((e) => console.error("nav refresh error:", errMsg(e)));
-  // T5-3 — دور تکمیلی NAV برای صندوق‌های فاقد NAV (۲ بار در روز)
-  refreshNavCompletion(sf.funds).catch((e) => console.error("nav completion error:", errMsg(e)));
+  refreshNavSequence(sf.funds).catch((e) => console.error("nav refresh error:", errMsg(e)));
   refreshFundMeta(sf.funds).catch((e) => console.error("fund meta error:", errMsg(e)));
   // Commodity receipt belongs to this cycle, not the next background cycle.
   refreshCertificates({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS, client: brsClient(), countLegacy }).catch((e) => console.error("ime cert error:", errMsg(e)));
