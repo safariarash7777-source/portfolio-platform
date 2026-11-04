@@ -10,6 +10,14 @@ import { collectControlPlane, collectReceipt, sanitizeDebug, errorCategory, tran
 const storedUrl = 'https://portfolio-platform-fawn.vercel.app/api/codal-list?symbol=' + encodeURIComponent('فولاد');
 const storedBody = { source: 'codal_feed', coverage: 'stored-announcements', data: [{ private: 'NEVER_EMIT_PRIVATE_VALUE' }] };
 const secret = 'NEVER_EMIT_PRIVATE_VALUE';
+test('MCP receipt exposes confirmed cache state without credentials or raw errors', () => {
+  const d = sanitizeDebug({ mcpfarsiQuote: { enabled: true, configured: true, requests: 1,
+    publication: 'confirmed', pendingPublication: false, lastError: secret, token: secret,
+    sourceDateRaw: '2026-11-04', sourceAtUtc: secret } });
+  assert.equal(d.mcpfarsiQuote.publication, 'confirmed');
+  assert.equal(d.mcpfarsiQuote.sourceAtUtc, null);
+  assert.equal(JSON.stringify(d).includes(secret), false);
+});
 test('enforced runtime requires explicit installed-schema evidence in passive acceptance', async () => {
   const d = debug(); d.brsapiLegacy.enforced = true;
   const fetchImpl = async url => new Response(url.endsWith('/debug') ? JSON.stringify(d)

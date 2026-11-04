@@ -1,0 +1,15 @@
+{
+  "status": 200,
+  "data": {
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"symbol\":\"فملی\",\"name\":\"ملی‌ صنایع‌ مس‌ ایران‌\",\"ins_code\":\"35425587644337450\",\"isin\":\"IRO1MSMI0001\",\"market\":\"بازار بورس\",\"sector\":\"فلزات اساسی\",\"status\":\"مجاز\",\"unit\":\"rial\",\"date\":\"2026-11-04\",\"time\":\"13:16:54\",\"last\":29170,\"close\":29090,\"yesterday\":28330,\"open\":29170,\"low\":28460,\"high\":29170,\"change_pct\":2.97,\"close_change_pct\":2.68,\"volume\":943595048,\"trades\":50858,\"value\":27446282810280,\"allowed_min\":27490,\"allowed_max\":29170,\"week_low\":26500,\"week_high\":29170,\"year_low\":8140,\"year_high\":34180,\"shares\":1440000000000,\"market_cap\":41889600000000000,\"sector_pe\":11.46}"
+        }
+      ]
+    },
+    "jsonrpc": "2.0",
+    "id": 12
+  }
+}

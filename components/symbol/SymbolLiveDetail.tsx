@@ -14,6 +14,20 @@ const fmtNum = (v: number): string =>
   toPersianDigits(v.toLocaleString("en-US", { maximumFractionDigits: 2 })).replace(".", "٫");
 
 type Raw = Record<string, unknown>;
+type SourceQuote = { symbol: string; unit: "rial"; lastRial: number | null; closeRial: number | null;
+  sourceDateRaw: string; sourceTimeRaw: string; freshness: "unknown"; sourceAtUtc: null };
+function QuoteCard({quote}: {quote: SourceQuote | null}) {
+  if (!quote) return null;
+  return <div className="card p-4 text-sm" data-source="tsetmc-mcp">
+    <p className="font-medium">قیمت ثبت‌شدهٔ نماد — منبع: TSETMC</p>
+    <p className="mt-2">آخرین معامله: {typeof quote.lastRial === "number" && Number.isFinite(quote.lastRial)
+      ? `${fmtNum(quote.lastRial / 10)} تومان` : "—"}</p>
+    <p>پایانی: {typeof quote.closeRial === "number" && Number.isFinite(quote.closeRial)
+      ? `${fmtNum(quote.closeRial / 10)} تومان` : "—"}</p>
+    <p className="mt-2 text-xs text-muted-foreground">تاریخ میلادی منبع: {quote.sourceDateRaw}، ساعت {quote.sourceTimeRaw}؛ تازگی لحظه‌ای تأیید نشده است.</p>
+  </div>;
+}
+
 
 const num = (v: unknown): number | null => {
   if (v == null || (typeof v !== "number" && typeof v !== "string") || (typeof v === "string" && !v.trim())) return null;
@@ -55,13 +69,15 @@ export default function SymbolLiveDetail({
   sections?: "market" | "assembly" | "all";
 }) {
   const [data, setData] = useState<Raw | null>(null);
+  const [quote, setQuote] = useState<SourceQuote | null>(null);
   const [stale, setStale] = useState(false);
-  const [state, setState] = useState<"loading" | "ok" | "unavailable" | "notInRotation">("loading");
+  const [state, setState] = useState<"loading" | "ok" | "quoteOnly" | "unavailable" | "notInRotation">("loading");
   const [openAssembly, setOpenAssembly] = useState<number | null>(null);
 
   useEffect(() => {
     let alive = true;
     setData(null);
+    setQuote(null);
     setState("loading");
     const stop = startVisiblePoll((signal) => fetch(`/api/symbol-detail?l18=${encodeURIComponent(symbol)}`, {
       cache: "no-store", signal: AbortSignal.any([signal, AbortSignal.timeout(15_000)]),
@@ -70,8 +86,11 @@ export default function SymbolLiveDetail({
         if (r.ok) return r.json();
         return Promise.reject(new Error(String(r.status)));
       })
-      .then((j: { stale?: boolean; data?: Raw; at?: number | null }) => {
+      .then((j: { stale?: boolean; data?: Raw; at?: number | null; quote?: SourceQuote | null }) => {
         if (!alive) return;
+        const q = j.quote?.symbol === symbol && j.quote.unit === "rial" && j.quote.freshness === "unknown"
+          && j.quote.sourceAtUtc === null ? j.quote : null;
+        setQuote(q);
         if (j && j.data && typeof j.data === "object") {
           setData(j.data);
           // دادهٔ چرخشی قدیمی‌تر از ۱۵ دقیقه ← برچسب «آخرین اسنپ‌شات» (صادقانه)
@@ -79,7 +98,7 @@ export default function SymbolLiveDetail({
           setStale(Boolean(j.stale) || at === null || !Number.isFinite(at) || at <= 0
             || at > Date.now() + 120_000 || Date.now() - at > 15 * 60 * 1000);
           setState("ok");
-        } else setState("unavailable");
+        } else setState(q ? "quoteOnly" : "unavailable");
       })
       .catch((e: Error) => {
         if (!alive) return;
@@ -87,6 +106,12 @@ export default function SymbolLiveDetail({
       }), browserPollEnvironment(), 60_000, true);
     return () => { alive = false; stop(); };
   }, [symbol]);
+
+  if (state === "quoteOnly") {
+    return <div className="space-y-4">{sections !== "assembly" && <QuoteCard quote={quote} />}
+      <p className="text-sm text-muted-foreground">جزئیات جامع، جریان معاملات و مجامع این نماد در اسنپ‌شات موجود نیست.</p>
+    </div>;
+  }
 
   if (state === "loading") {
     return (
@@ -162,6 +187,7 @@ export default function SymbolLiveDetail({
 
   return (
     <div className="space-y-4">
+      {showMarket && <QuoteCard quote={quote} />}
       {(stale || updated) && (
         <p className="text-xs text-muted-foreground">
           {stale ? "آخرین اسنپ‌شات موجود؛ تازگی دریافت تأیید نشده است" : "اسنپ‌شات با دریافت تازه"}
