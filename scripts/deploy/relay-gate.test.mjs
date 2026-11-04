@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import vm from 'node:vm';
+import {createHash} from 'node:crypto';
 import {
   validateShaInput,
   validateResolvedSha,
@@ -674,7 +676,16 @@ function assertHealthCredentialScope(workflow) {
     "        run: node scripts/ops/relay-health-receipt.mjs",
   ].join("\n");
   assert.ok(normalized.includes(observer), "control-plane credential belongs only to the fixed passive observer step");
-  assert.ok(!normalized.replace(observer, "").includes("LIARA_API_TOKEN"), "no credential outside the observer step");
+  const discovery = [
+    "      - name: Single authorized discovery receipt",
+    "        if: steps.preflight.outputs.authorized == 'true'",
+    "        env:",
+    "          DISCOVERY_OPERATION: "+"$"+"{{ inputs.operation }}",
+    "          LIARA_API_TOKEN: "+"$"+"{{ secrets.LIARA_API_TOKEN }}",
+    "        run: node reviewed/scripts/ops/liara-binding-discovery-runner.mjs --execute > liara-binding-discovery-receipt.json",
+  ].join("\n");
+  assert.ok(normalized.includes(discovery), 'discovery credential only after verified preflight');
+  assert.ok(!normalized.replace(observer, "").replace(discovery, "").includes("LIARA_API_TOKEN"), "no credential outside the two exact scoped steps");
   assert.ok(!/liara.*deploy|deploy --app|--path|method:\s*["'](?:POST|PUT|PATCH|DELETE)|(?:-X|--request)\s+(?:POST|PUT|PATCH|DELETE)/i.test(normalized), "no deployment or mutation commands in health workflow");
 }
 
@@ -682,6 +693,40 @@ test("health credential scope rejects extra use and write commands", () => {
   assertHealthCredentialScope(HEALTH_WF);
   for (const suffix of ["\n    LIARA_API_TOKEN: forbidden", "\n        run: curl -X POST https://example.invalid", "\n        run: liara deploy"]) {
     assert.throws(() => assertHealthCredentialScope(HEALTH_WF + suffix));
+  }
+});
+
+test('discovery workflow is isolated, manual main attempt1, bounded and source-pinned',()=>{
+  const w=HEALTH_WF.replace(/\r\n/g,'\n'), d=w.split('  discovery:\n')[1];
+  assert.match(w,/options: \[health, discovery\]\n        default: health/);
+  assert.ok(w.includes("if: ${{ (inputs.operation == 'health' || inputs.operation == '') }}"));
+  assert.ok(d.includes("github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.run_attempt == 1 && inputs.operation == 'discovery'"));
+  assert.match(w,/group: relay-health\n  cancel-in-progress: false/);
+  assert.match(d,/timeout-minutes: 2\n    permissions:\n      contents: read/);
+  assert.ok(!/curl|healthz|\/debug|RELAY_TOKEN/.test(d));
+  assert.match(d,/if: always\(\) && steps.preflight.outputs.authorized == 'true'/);
+  assert.match(d,/ref: \$\{\{ github.workflow_sha \}\}/);
+  const m=JSON.parse(_rf(new URL('../ops/liara-discovery-source.json',import.meta.url),'utf8'));
+  assert.ok(d.includes('ref: '+m.sourceCommit));
+});
+
+test('discovery trusted inline bootstrap rejects bad pins, symlinks and contexts before runner execution',()=>{
+  const w=HEALTH_WF.replace(/\r\n/g,'\n');
+  const body=w.split("  discovery:\n")[1].split("node --input-type=module <<'NODE'\n")[1].split('\n          NODE')[0].split('\n').map(l=>l.slice(10)).join('\n').replace(/^import .*;\n/gm,'');
+  const manifest=JSON.parse(_rf(new URL('../ops/liara-discovery-source.json',import.meta.url),'utf8'));
+  const blob=b=>createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex');
+  for(const mode of ['ok','wrong-main','wrong-source','wrong-context','pin','symlink','oversize','drift']){
+    let runs=0;const handles=new Map();let next=0;
+    const env={GITHUB_WORKFLOW_SHA:'a'.repeat(40),GITHUB_SHA:'a'.repeat(40),GITHUB_REPOSITORY:'safariarash7777-source/portfolio-platform',GITHUB_REF:'refs/heads/main',GITHUB_EVENT_NAME:'workflow_dispatch',GITHUB_RUN_ATTEMPT:'1',DISCOVERY_OPERATION:'discovery'};
+    if(mode==='wrong-context')env.GITHUB_RUN_ATTEMPT='2';
+    const bytes=p=>{if(p.startsWith('control/'))return Buffer.from(JSON.stringify(manifest));const r=spawnSync('git',['show','HEAD:'+p.slice('reviewed/'.length)],{maxBuffer:131072});assert.equal(r.status,0);assert.ok(Buffer.isBuffer(r.stdout)&&r.stdout.length<=131072);return r.stdout;};
+    const fakefs={lstatSync:()=>({isDirectory:()=>true,isSymbolicLink:()=>mode==='symlink'}),constants:{O_RDONLY:0,O_NOFOLLOW:1,O_NONBLOCK:2},openSync:p=>{handles.set(++next,{bytes:bytes(p),calls:0});return next;},fstatSync:fd=>{const h=handles.get(fd);return {isFile:()=>true,size:mode==='oversize'?200000:h.bytes.length,ino:1,mtimeMs:mode==='drift'?h.calls++:1,ctimeMs:1};},readSync:(fd,b)=>{const v=handles.get(fd).bytes;v.copy(b);return v.length;},closeSync:fd=>handles.delete(fd)};
+    const process={env,execPath:'mock-node',exitCode:0};
+    const execFileSync=(cmd,args,options)=>{if(cmd==='mock-node'){runs++;assert.equal(args[1],'--preflight');return;}assert.equal(cmd,'git');if(args.length===2)return options.cwd==='control'?(mode==='wrong-main'?'c'.repeat(40):env.GITHUB_SHA):(mode==='wrong-source'?'c'.repeat(40):manifest.sourceCommit);const p=args[1].slice(5);return options.cwd==='control'?blob(bytes('control/'+p)):(mode==='pin'?'d'.repeat(40):manifest.files[p]);};
+    // rev-parse HEAD and HEAD:path both have two args; discriminate explicitly.
+    const git=(cmd,args,o)=>cmd==='git'&&args[1]!=='HEAD'? (o.cwd==='control'?blob(bytes('control/'+args[1].slice(5))):(mode==='pin'?'d'.repeat(40):manifest.files[args[1].slice(5)])):execFileSync(cmd,args,o);
+    vm.runInNewContext(body,{fs:fakefs,createHash,execFileSync:git,Buffer,process,console:{log:value=>assert.equal(value.includes('PRIVATE'),false)}});
+    assert.equal(runs,mode==='ok'?1:0,mode);assert.equal(process.exitCode,mode==='ok'?0:1,mode);assert.equal(handles.size,0);
   }
 });
 
