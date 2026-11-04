@@ -122,6 +122,12 @@ let commodityBudgetResolved = false;
 function commodityBudget() {
   if (commodityBudgetResolved) return commodityBudgetInstance;
   commodityBudgetResolved = true;
+  // Commodity may fall back to the main key: that is one provider allowance.
+  // Never mint a second namespace (or a fallback budget) for the same key.
+  if (BRSAPI_KEY.trim() && commodityConfig().key === BRSAPI_KEY.trim()) {
+    commodityBudgetInstance = sharedBudget();
+    return commodityBudgetInstance;
+  }
   const store = makeSupabaseLeaseStore({ url: SUPABASE_URL, serviceKey: SUPABASE_SERVICE_ROLE_KEY });
   if (!store) return null;
   commodityBudgetInstance = new PersistentDailyBudget({
