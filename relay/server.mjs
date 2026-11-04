@@ -167,7 +167,9 @@ function commodityClient() {
  */
 const budgetStop = { active: false, cycle: 0, lastAt: null, producers: Object.create(null) };
 function noteBudgetStop(producer) {
-  budgetStop.active = true;
+  // NAV is an independent background family. Its denied refresh retains its
+  // cache; it must not veto an otherwise valid price snapshot/history cycle.
+  if (!["nav-bulk", "nav-single", "nav-completion"].includes(producer)) budgetStop.active = true;
   budgetStop.cycle += 1;
   budgetStop.lastAt = Date.now();
   budgetStop.producers[producer] = (budgetStop.producers[producer] ?? 0) + 1;
@@ -194,9 +196,9 @@ function brsClient() {
 
 /** شمارندهٔ مسیرِ قدیمی — منطقش در `brsapi-legacy-meter.mjs` است تا تست‌پذیر بماند. */
 const legacyMeter = new LegacyMeter(() => (sharedBudgetResolved ? sharedBudgetInstance : sharedBudget()));
-const countLegacy = async (producer, budgetClass) => {
+const countLegacy = async (producer, budgetClass, options) => {
   try {
-    await legacyMeter.count(producer, budgetClass);
+    await legacyMeter.count(producer, budgetClass, options);
   } catch (e) {
     noteBudgetStop(producer);   // هم `LegacyBudgetError` هم `BudgetUnavailableError`
     throw e;
@@ -517,6 +519,9 @@ const NAV_STALE_MS = 24 * 60 * 60 * 1000; // NAV کهنه‌تر از یک رو�
 const navCache = new Map(); // l18 → { nav, navIssue, navDate, navTime, at } (ریال)
 let lastNavRound = 0;
 let navBulkMode = null; // null = هنوز نامشخص
+let navRoundAllowed = false;
+let navAttempted = new Set();
+let navRefreshing = null;
 
 function cacheNavRow(l18, d, now) {
   const nav = Number(d?.predtran);
@@ -532,10 +537,13 @@ function cacheNavRow(l18, d, now) {
 }
 
 async function refreshNavs(funds) {
-  if (!BRSAPI_KEY || funds.length === 0) return;
-  if (Date.now() - lastNavRound < NAV_REFRESH_MS) return;
+  if (!BRSAPI_KEY || funds.length === 0) return false;
+  if (Date.now() - lastNavRound < NAV_REFRESH_MS) return navRoundAllowed;
   lastNavRound = Date.now(); // اول ست می‌شود تا دورِ موازی شروع نشود
+  navRoundAllowed = false;
+  navAttempted = new Set();
   const base = `${BRSAPI_BASE}/Tsetmc/Nav.php?key=${BRSAPI_KEY}`;
+  let bulkUpdated = 0;
 
   // ۱) تلاش bulk
   if (navBulkMode !== false) {
@@ -548,26 +556,38 @@ async function refreshNavs(funds) {
           producer: "nav-bulk", priority: "background",
           // یک درخواست که NAVِ همهٔ صندوق‌ها را می‌آورد — ارزانِ پرفایده.
           budgetClass: "standard",
-          dedupeTtlMs: 60_000, timeoutMs: 20_000,
+          dedupeTtlMs: 60_000, timeoutMs: 20_000, noRetry: true,
         });
       } else {
-        await countLegacy("nav-bulk", "standard");
+        await countLegacy("nav-bulk", "standard", { requireAdmission: true });
         const res = await fetch(base, { headers: HDRS, signal: AbortSignal.timeout(20000) });
-        if (res.ok) json = await res.json();
+        if (!res.ok) throw new Error(`NAV HTTP ${res.status}`);
+        json = await res.json();
       }
       {
-        if (Array.isArray(json) && json.length > 1 && json[0] && json[0].l18) {
+        const validRow = row => row && typeof row.l18 === "string" && row.l18.trim()
+          && Number.isFinite(Number(row.predtran)) && Number(row.predtran) > 0;
+        if (Array.isArray(json) && json.length !== 1 && json.every(validRow)) {
           navBulkMode = true;
           const now = Date.now();
           let updated = 0;
           for (const it of json) if (cacheNavRow(it.l18, it, now)) updated++;
           status.sources.brsapi_nav = { ok: updated > 0, mode: "bulk", cached: navCache.size, updated, failed: 0, error: null };
-          return;
+          navRoundAllowed = true;
+          return true;
         }
+        // Only a successful, identified single NAV row proves partial bulk support.
+        // HTTP errors, error envelopes, malformed JSON and unknown shapes never do.
+        const single = Array.isArray(json) && json.length === 1 ? json[0] : json;
+        if (!validRow(single) || !funds.some(f => f.id === single.l18)) throw new Error("NAV shape unverified");
+        cacheNavRow(single.l18, single, Date.now());
+        bulkUpdated = 1;
+        navAttempted.add(single.l18);
       }
       navBulkMode = false;
     } catch {
-      navBulkMode = false;
+      status.sources.brsapi_nav = { ok: false, cached: navCache.size, updated: 0, failed: 1, error: "nav_bulk_unconfirmed" };
+      return false;
     }
   }
 
@@ -575,32 +595,46 @@ async function refreshNavs(funds) {
   // C1 — قبل از صف‌کردن: زیرنماد، حق تقدم و بلک‌لیست دائمی NAV حذف می‌شوند.
   const top = funds
     .filter((f) => !isSubTicker(f.id) && !isRightsIssue(f.id) && !isNavBlacklisted(f.id))
+    .filter((f) => !navAttempted.has(f.id))
     .sort((a, b) => (b.value || 0) - (a.value || 0))
     .slice(0, NAV_TOP);
-  let updated = 0;
+  let updated = bulkUpdated;
   let failed = 0;
   const queue = [...top];
+  let stopped = false;
   async function worker() {
-    while (queue.length) {
+    while (queue.length && !stopped) {
       const f = queue.shift();
       if (!f) return;
+      if (navAttempted.has(f.id)) continue;
+      navAttempted.add(f.id);
       try {
-        const res = await fetch(`${base}&l18=${encodeURIComponent(f.id)}`, {
-          headers: HDRS,
-          signal: AbortSignal.timeout(15000),
-        });
-        if (!res.ok) { failed++; recordNavResult(f.id, false); continue; }
-        const j = await res.json();
+        const c = brsClient();
+        let j;
+        if (c) {
+          j = await c.request({ endpoint: "Tsetmc/Nav.php", params: { l18: f.id },
+            producer: "nav-single", priority: "background", budgetClass: "standard",
+            dedupeTtlMs: 60_000, timeoutMs: 15_000, noRetry: true });
+        } else {
+          await countLegacy("nav-single", "standard", { requireAdmission: true });
+          const res = await fetch(`${base}&l18=${encodeURIComponent(f.id)}`, {
+            headers: HDRS, signal: AbortSignal.timeout(15000),
+          });
+          if (!res.ok) throw new Error(`NAV HTTP ${res.status}`);
+          j = await res.json();
+        }
         const d = Array.isArray(j) ? j[0] : j;
         if (cacheNavRow(f.id, d, Date.now())) { updated++; recordNavResult(f.id, true); }
         else { failed++; recordNavResult(f.id, false); }
       } catch {
+        stopped = true;
         failed++;
         // خطای شبکه/timeout تقصیر نماد نیست — در بلک‌لیست ثبت نمی‌شود.
       }
     }
   }
   await Promise.all(Array.from({ length: NAV_CONCURRENCY }, worker));
+  navRoundAllowed = !stopped;
   status.sources.brsapi_nav = {
     ok: updated > 0,
     mode: "per-symbol",
@@ -611,6 +645,16 @@ async function refreshNavs(funds) {
   };
   // C1 — ذخیرهٔ دائمی بلک‌لیست بعد از هر دور
   saveNavBlacklist({ supabaseUrl: SUPABASE_URL.replace(/\/+$/, ""), serviceKey: SUPABASE_SERVICE_ROLE_KEY }).catch(() => {});
+  return navRoundAllowed;
+}
+
+// One existing background chain: completion cannot race or bypass an unknown bulk result.
+export function refreshNavFamily(funds) {
+  if (navRefreshing) return navRefreshing;
+  navRefreshing = (async () => {
+    if (await refreshNavs(funds)) await refreshNavCompletion(funds);
+  })().finally(() => { navRefreshing = null; });
+  return navRefreshing;
 }
 
 // T5-3 — دور تکمیلی NAV: ۲ بار در روز فقط برای صندوق‌هایی که NAV ندارند
@@ -624,6 +668,7 @@ let navCompletionState = { lastRoundAt: null, targeted: 0, updated: 0, failed: 0
 
 async function refreshNavCompletion(funds) {
   if (!BRSAPI_KEY || funds.length === 0) return;
+  if (!navRoundAllowed) return;
   if (navBulkMode === true) { navCompletionState.skipped = "bulk mode covers all funds"; return; }
   if (Date.now() - lastCompletionRound < NAV_COMPLETION_MS) return;
   lastCompletionRound = Date.now();
@@ -633,16 +678,20 @@ async function refreshNavCompletion(funds) {
   // (ریشهٔ اخطار BrsApi: ریکوئست NAV برای نمادهای فاقد NAV مثل آوند4).
   const missing = funds
     .filter((f) => !isSubTicker(f.id) && !isRightsIssue(f.id) && !isNavBlacklisted(f.id))
+    .filter((f) => !navAttempted.has(f.id))
     .filter((f) => { const c = navCache.get(f.id); return !c || now - c.at > NAV_STALE_MS; })
     .slice(0, NAV_COMPLETION_CAP);
   navCompletionState = { lastRoundAt: now, targeted: missing.length, updated: 0, failed: 0, skipped: null };
   if (missing.length === 0) return;
   const base = `${BRSAPI_BASE}/Tsetmc/Nav.php?key=${BRSAPI_KEY}`;
   const queue = [...missing];
+  let stopped = false;
   async function worker() {
-    while (queue.length) {
+    while (queue.length && !stopped) {
       const f = queue.shift();
       if (!f) return;
+      if (navAttempted.has(f.id)) continue;
+      navAttempted.add(f.id);
       try {
         const c = brsClient();
         let j;
@@ -653,18 +702,20 @@ async function refreshNavCompletion(funds) {
             // دورِ تکمیلی پرحجم است و اول از بودجه کنار می‌رود — دقیقاً همان
             // چیزی که `bulk` برایش وجود دارد.
             budgetClass: "bulk",
-            dedupeTtlMs: 300_000, timeoutMs: 15_000,
+            dedupeTtlMs: 300_000, timeoutMs: 15_000, noRetry: true,
           });
         } else {
-          await countLegacy("nav-completion", "bulk");
+          await countLegacy("nav-completion", "bulk", { requireAdmission: true });
           const res = await fetch(`${base}&l18=${encodeURIComponent(f.id)}`, { headers: HDRS, signal: AbortSignal.timeout(15000) });
-          if (!res.ok) { navCompletionState.failed++; recordNavResult(f.id, false); continue; }
+          if (!res.ok) throw new Error(`NAV HTTP ${res.status}`);
           j = await res.json();
         }
         const d = Array.isArray(j) ? j[0] : j;
         if (cacheNavRow(f.id, d, Date.now())) { navCompletionState.updated++; recordNavResult(f.id, true); }
         else { navCompletionState.failed++; recordNavResult(f.id, false); }
       } catch {
+        stopped = true;
+        navRoundAllowed = false;
         navCompletionState.failed++;
         // خطای شبکه — در بلک‌لیست ثبت نمی‌شود.
       }
@@ -855,9 +906,7 @@ async function buildPayload() {
   ]);
   // دورهای NAV و نوعِ صندوق در پس‌زمینه (ساعتی؛ درونشان سهمیه‌بندی شده) —
   // payload فعلی از کشِ موجود پر می‌شود و دورِ بعدی نتیجهٔ تازه را برمی‌دارد.
-  refreshNavs(sf.funds).catch((e) => console.error("nav refresh error:", errMsg(e)));
-  // T5-3 — دور تکمیلی NAV برای صندوق‌های فاقد NAV (۲ بار در روز)
-  refreshNavCompletion(sf.funds).catch((e) => console.error("nav completion error:", errMsg(e)));
+  refreshNavFamily(sf.funds).catch((e) => console.error("nav refresh error:", errMsg(e)));
   refreshFundMeta(sf.funds).catch((e) => console.error("fund meta error:", errMsg(e)));
   // Commodity receipt belongs to this cycle, not the next background cycle.
   refreshCertificates({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS, client: brsClient(), countLegacy }).catch((e) => console.error("ime cert error:", errMsg(e)));
