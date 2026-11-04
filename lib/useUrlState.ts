@@ -45,7 +45,13 @@ export function useUrlState() {
         else next.set(k, v);
       }
       const qs = next.toString();
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+      const href = `${pathname}${qs ? `?${qs}` : ""}${window.location.hash ?? ""}`;
+      // Funds filters/search act on already-read client rows. Waiting for a
+      // fresh RSC/database read here can lose the query on an early reload.
+      // Next 15 synchronizes native History writes with useSearchParams. Pass
+      // null: copying history.state's __NA makes Next skip that synchronization.
+      if (pathname === "/market/funds") window.history.replaceState(null, "", href);
+      else router.replace(href, { scroll: false });
     },
     [pathname, router],
   );
@@ -83,8 +89,24 @@ export function useUrlBackedText(
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
+    // A Back/Forward event can retain the same q while changing another filter.
+    // Cancel pending typing even then; it must not overwrite the restored URL.
+    const restore = () => {
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = null;
+      const value = new URLSearchParams(window.location.search).get(key) ?? "";
+      ours.current = value;
+      setLocal(value);
+    };
+    window.addEventListener("popstate", restore);
+    return () => window.removeEventListener("popstate", restore);
+  }, [key]);
+
+  useEffect(() => {
     if (urlValue !== ours.current) {
       // تغییر از بیرون آمد (back/forward یا لینک) — کادر باید تبعیت کند.
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = null;
       ours.current = urlValue;
       setLocal(urlValue);
     }

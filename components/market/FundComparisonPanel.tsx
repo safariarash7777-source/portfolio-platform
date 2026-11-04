@@ -38,7 +38,7 @@ export default function FundComparisonPanel({ funds, from }: { funds: FundCompar
   const update = (next: string[]) => {
     setIds(next);
     setRestoredIssue(false);
-    window.history.replaceState(window.history.state, "", fundSelectionHref(window.location.href, next));
+    window.history.replaceState(null, "", fundSelectionHref(window.location.href, next));
   };
   const choose = (slot: number, id: string) => update(ids.map((value, i) => i === slot ? id : value));
   return (

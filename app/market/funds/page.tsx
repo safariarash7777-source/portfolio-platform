@@ -2,13 +2,13 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FundsFullBoard from "@/components/market/FundsFullBoard";
 import MarketShell from "@/components/market/MarketShell";
-import AccountBridge from "@/components/account/AccountBridge";
+import FundsAccountBridge from "@/components/market/FundsAccountBridge";
 import { readFundsMarket } from "@/lib/market-funds-read.server";
 import { withValidNav } from "@/lib/market-quality";
 import { getBulkReturns } from "@/lib/core/bulkReturns";
 import { getAccess } from "@/lib/access";
 import { pageMetadata } from "@/lib/metadata";
-import { buildSearchIndex, resolveBackTarget } from "@/lib/market-nav";
+import { buildSearchIndex } from "@/lib/market-nav";
 
 export const dynamic = "force-dynamic";
 export const metadata = pageMetadata({
@@ -18,30 +18,9 @@ export const metadata = pageMetadata({
   path: "/market/funds",
 });
 
-export default async function FundsPage({
-  searchParams,
-}: {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-}) {
-  const sp = searchParams ? await searchParams : {};
+export default async function FundsPage() {
   const [{ data: ir, availability }, returns, access] = await Promise.all([readFundsMarket(), getBulkReturns(), getAccess()]);
 
-  /**
-   * مسیرِ بازگشت از حساب باید وضعیتِ همین صفحه را نگه دارد؛ وگرنه کاربری که
-   * فیلتر گذاشته و برای ورود بیرون رفته، به تابلوی بی‌فیلتر برمی‌گردد.
-   * رشته از همان اعتبارسنجِ `resolveBackTarget` می‌گذرد تا فقط پارامترهای
-   * مجاز و معتبر در آن بماند.
-   */
-  const query = new URLSearchParams();
-  for (const [k, v] of Object.entries(sp)) {
-    const val = Array.isArray(v) ? v[0] : v;
-    if (typeof val === "string") query.set(k, val);
-  }
-  const qs = query.toString();
-  const selfHref = resolveBackTarget(qs ? `/market/funds?${qs}` : "/market/funds", {
-    href: "/market/funds",
-    label: "دیده‌بان صندوق‌ها",
-  }).href;
   // M6: بازدهٔ دوره‌ای فقط برای نمادهای دارای تاریخچه — بقیه undefined می‌ماند (در UI «—»).
   // Validate each row's own price/NAV clocks before table, rankings or stats;
   // the snapshot receipt and a raw source bubble are not NAV attestation.
@@ -68,11 +47,7 @@ export default async function FundsPage({
         >
           <FundsFullBoard funds={funds} fetchedAt={fetchedAt} availability={availability} />
           <div className="mt-8">
-            <AccountBridge
-              access={access}
-              returnTo={selfHref}
-              backTo={{ href: "/market", label: "برگشت به میز بازار" }}
-            />
+            <FundsAccountBridge access={access} />
           </div>
         </MarketShell>
       </main>
