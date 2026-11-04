@@ -291,13 +291,18 @@ jobs:
             echo "::warning::شاهدِ نسخه در دسترس نیست (سکرتِ RELAY_TOKEN یا RELAY_TOKEN روی اپ). پذیرش «در انتظار» ثبت شد، نه موفق."
             exit 0
           fi
-          BODY=$(curl -fsS --max-time 20 -H "Authorization: Bearer ${RELAY_TOKEN}" "$DEBUG_URL" || true)
-          if printf '%s' "$BODY" | node scripts/deploy/relay-gate.mjs accept "{\"phase28Applied\": ${PHASE28_APPLIED}}"; then
-            echo "status=passed" >> "$GITHUB_OUTPUT"
-          else
-            echo "status=failed" >> "$GITHUB_OUTPUT"
-            exit 1
-          fi
+          # Only passive debug reads while the unknown prior-process window drains.
+          # No collector trigger, retry of publish, or weakening of readiness.
+          for i in $(seq 1 40); do
+            BODY=$(curl -fsS --max-time 20 -H "Authorization: Bearer ${RELAY_TOKEN}" "$DEBUG_URL" || true)
+            if printf '%s' "$BODY" | node scripts/deploy/relay-gate.mjs accept "{\"phase28Applied\": ${PHASE28_APPLIED},\"requireTransportPolicy\":true}"; then
+              echo "status=passed" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "status=failed" >> "$GITHUB_OUTPUT"
+          exit 1
 
       # دفترداری **بعد از** راستی‌آزمایی می‌آید.
       #

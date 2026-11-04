@@ -26,6 +26,7 @@ import {
   insertParsedReport, existingUrlsFor, faToEn, codalEnv,
 } from "./codal.mjs";
 import { readStoredReportCounts } from "./codal-coverage.mjs";
+import { isBrsLocalDeferral } from "./brsapi-transport.mjs";
 import { admissionCounts, admissionEvent, readAdmissionDiagnostics, recordAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 
 const { BRSAPI_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = codalEnv;
@@ -239,7 +240,7 @@ async function pushFeedRows(items) {
 async function fetchPageWithRetry(params) {
   try { return await fetchAnnouncementsPage(params); }
   catch (e) {
-    if (e?.name === "AnnouncementSchemaError") throw e;
+    if (e?.name === "AnnouncementSchemaError" || isBrsLocalDeferral(e)) throw e;
     await new Promise((r) => setTimeout(r, 4000));
     return await fetchAnnouncementsPage(params);
   }
@@ -314,6 +315,10 @@ async function pollGlobalFeed() {
         st.complete = false; st.incompleteReason = "report_failure";
       }
     } catch (e) {
+      if (isBrsLocalDeferral(e)) {
+        st.complete = false; st.incompleteReason = 'local_deferred';
+        throw e;
+      }
       recordFailureDiagnostic(stage, "exception");
       st.parseFailed++;
       recordFail(a.link);
@@ -375,6 +380,7 @@ async function backfillSome() {
   let guard = 0;
   while (processedSymbols < BACKFILL_PER_CYCLE && guard < queue.length) {
     guard++;
+    const cursorBefore = state.backfillCursor;
     const sym = queue[state.backfillCursor % queue.length];
     state.backfillCursor++;
     st.cursor = state.backfillCursor;
@@ -411,6 +417,7 @@ async function backfillSome() {
             recordFail(a.link);
           }
         } catch (e) {
+          if (isBrsLocalDeferral(e)) throw e;
           recordFailureDiagnostic(stage, "exception");
           st.parseFailed++;
           recordFail(a.link);
@@ -418,6 +425,11 @@ async function backfillSome() {
       }
       console.log(`codal-engine backfill ${sym}: inserted=${st.inserted} parseFailed=${st.parseFailed}`);
     } catch (e) {
+      if (isBrsLocalDeferral(e)) {
+        state.backfillCursor = cursorBefore;
+        st.cursor = cursorBefore;
+        throw e;
+      }
       engineStatus.lastError = [engineStatus.lastError, `backfill ${sym}: ${e?.message ?? e}`].filter(Boolean).join("; ");
       console.error("codal-engine backfill:", sym, e?.message ?? e);
     }
@@ -440,16 +452,19 @@ export async function runEngineCycle() {
   state.failureDiagnostics.lastCycle = failureCounts();
   state.admissionDiagnostics.lastCycle = admissionCounts();
   const watermarkBefore = state.watermark;
+  let feedDeferred = false;
   try {
     await pollGlobalFeed();
   } catch (e) {
     engineStatus.feed.complete = false;
-    engineStatus.feed.incompleteReason ??= "feed_failure";
+    feedDeferred = isBrsLocalDeferral(e);
+    if (feedDeferred) engineStatus.feed.incompleteReason = 'local_deferred';
+    else engineStatus.feed.incompleteReason ??= "feed_failure";
     engineStatus.lastError = `feed: ${e?.message ?? e}`;
     console.error("codal-engine feed error:", e?.message ?? e);
   }
   try {
-    await backfillSome();
+    if (!feedDeferred) await backfillSome();
   } catch (e) {
     engineStatus.lastError = [engineStatus.lastError, `backfill: ${e?.message ?? e}`].filter(Boolean).join("; ");
     console.error("codal-engine backfill error:", e?.message ?? e);

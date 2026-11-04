@@ -1,4 +1,5 @@
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
+import { isBrsLocalDeferral } from "./brsapi-policy.mjs";
 import { notifyAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 import { createHash } from "node:crypto";
 // ماژول کدال — دریافت خودکار گزارش‌های بنیادی از وب‌سرویس کدالِ BrsApi.
@@ -902,6 +903,7 @@ async function downloadExcelHtml(url, onBody) {
       onBody({ htmlBytes, sourceRef: url, responseUrl: res.url });
       return html;
     } catch (e) {
+      if (isBrsLocalDeferral(e)) throw e;
       lastErr = e;
       if (attempt < 3) await sleep(3000 * attempt);
     }

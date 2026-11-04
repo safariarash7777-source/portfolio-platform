@@ -1,5 +1,5 @@
 import { readProviderJson } from './capitalization-response.mjs';
-import { brsFetch } from "./brsapi-transport.mjs";
+import { brsFetch, isBrsLocalDeferral } from "./brsapi-transport.mjs";
 // brsapi-client.mjs — تنها درگاهِ تماس با BrsApi.
 //
 // ── مسئله‌ای که حل می‌کند ───────────────────────────────────────────────────
@@ -686,6 +686,9 @@ export class BrsApiClient {
           await this.sleep(delay);
         }
       } catch (e) {
+        // A local queue/cutover failure is not a provider network failure and
+        // must not immediately retry. Do not guess/refund an earlier reservation.
+        if (isBrsLocalDeferral(e)) throw e;
         const timedOut = e?.name === "TimeoutError" || /timeout/i.test(e?.message ?? "");
         if (timedOut) this.m.timeout += 1; else this.m.networkErr += 1;
         lastErr = e;

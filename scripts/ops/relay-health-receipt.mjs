@@ -3,6 +3,7 @@ import { appendFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { ADMISSION_REASONS } from '../../relay/codal-admission-diagnostics.mjs';
 import { evaluateDebug } from '../deploy/relay-gate.mjs';
+import { observedBrsTransportPolicy } from '../../relay/brsapi-policy.mjs';
 
 const DEBUG = 'https://arsadata.liara.run/debug';
 const HEALTH = 'https://arsadata.liara.run/healthz';
@@ -59,7 +60,7 @@ function safeErrorCodes(value) {
 }
 const integer = x => Number.isSafeInteger(x) && x >= 0 ? x : null;
 const integerCounts = (value, names) => Object.fromEntries(names.map(name => [name, integer(value?.[name])]));
-const incompleteReasons = ['page_limit', 'invalid_order_or_identity', 'feed_write_failure', 'blocked_report', 'download_limit', 'report_failure', 'feed_failure'];
+const incompleteReasons = ['page_limit', 'invalid_order_or_identity', 'feed_write_failure', 'blocked_report', 'download_limit', 'report_failure', 'feed_failure', 'local_deferred'];
 function diagnostics(value, shape) {
   const valid = value?.version === 1;
   const project = name => Object.fromEntries(Object.entries(shape).map(([group, names]) =>
@@ -128,7 +129,13 @@ export function sanitizeDebug(d) {
     history: Object.fromEntries(['eodHistory', 'indexHistory', 'marketBreadth', 'historyPrune'].map(k => [k, operation(d?.[k])])),
     commodity: { enabled: boolean(d?.commodity?.enabled), ...counts(d?.commodity, ['rows', 'reqToday', 'dailyCap', 'remaining']), lastFetchAt: clock(d?.commodity?.lastFetchAt), counterScope: choice(d?.commodity?.counterScope, ['process']), dayKey: date(d?.commodity?.dayKey), error: errorCategory(d?.commodity?.lastError) },
     ime: imeReceipt(d?.ime),
-    transport: { enabled: boolean(d?.brsapiTransport?.enabled), scope: choice(d?.brsapiTransport?.scope, ['process']), ...counts(d?.brsapiTransport, ['spacingMs', 'pending', 'sent', 'minStartGapMs']) },
+    transport: { enabled: boolean(d?.brsapiTransport?.enabled), scope: choice(d?.brsapiTransport?.scope, ['process']),
+      ...counts(d?.brsapiTransport, ['spacingMs', 'pending', 'sent', 'minStartGapMs', 'rollingWindowMs', 'rollingLimit', 'ipWindowMs', 'ipLimit']),
+      policy: choice(d?.brsapiTransport?.policy, ['conservative_unverified_plan']),
+      windowScope: choice(d?.brsapiTransport?.windowScope, ['process_lifetime']),
+      priorProcessWindow: choice(d?.brsapiTransport?.priorProcessWindow, ['unknown']),
+      coldStartPolicy: choice(d?.brsapiTransport?.coldStartPolicy, ['full_window_defer']),
+      globalEnforced: boolean(d?.brsapiTransport?.globalEnforced), clockValid: boolean(d?.brsapiTransport?.clockValid) },
     budget: { providerAccountUsage: null, providerResetAt: null, liaraCost: null, clientEnabled: boolean(d?.brsapiClient?.enabled), client: budget(d?.brsapiClient?.budget), legacy: { enforced: boolean(d?.brsapiLegacy?.enforced), usedAggregate: sum(d?.brsapiLegacy?.used), rejectedAggregate: sum(d?.brsapiLegacy?.rejected), overBudgetPassedAggregate: sum(d?.brsapiLegacy?.overBudgetPassed), unmetered: number(d?.brsapiLegacy?.unmetered), budget: budget(d?.brsapiLegacy?.budget) }, stopped: boolean(d?.brsapiBudgetStop?.active), servedAgeMs: number(d?.brsapiBudgetStop?.servedAgeMs) },
   };
 }
@@ -239,7 +246,7 @@ export async function collectReceipt({ token, controlPlaneToken, fetchImpl = fet
           return { status: 'read', httpStatus, error: null, rowCount: d.data.length };
         }
         const t = d.brsapiTransport;
-        const spacingPassed = t?.enabled === true && t.scope === 'process' && t.spacingMs === 100 && Number.isSafeInteger(t.sent) && t.sent >= 2 && Number.isFinite(t.minStartGapMs) && t.minStartGapMs >= 100;
+        const spacingPassed = observedBrsTransportPolicy(t);
         return { status: 'read', httpStatus, error: null, acceptance: evaluateDebug(raw, { phase28Applied: false }).ok ? 'passed' : 'failed', spacing: spacingPassed ? 'passed' : 'failed', data: sanitizeDebug(d) };
       } catch { return { status: 'invalid_response', httpStatus, error: kind === 'storedRead' ? 'invalid_stored_read_payload' : 'invalid_debug_payload' }; }
     } catch (error) { return { status: 'connection_error', httpStatus: null, error: transportError(error) }; }

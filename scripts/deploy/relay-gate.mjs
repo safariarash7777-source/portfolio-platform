@@ -10,6 +10,7 @@
  * هیچ وابستگیِ خارجی، هیچ I/O، هیچ دسترسی به شبکه. ورودی → تصمیم.
  */
 
+import { observedBrsTransportPolicy } from '../../relay/brsapi-policy.mjs';
 // ── SHA ─────────────────────────────────────────────────────────────────────
 
 /**
@@ -364,12 +365,15 @@ function sectionsOf(v) {
  * `{}`، فیلدِ مفقود و `written` نامطلوب هر سه **رد** می‌شوند.
  */
 export function evaluateDebug(raw, opts = {}) {
-  const { expectSections = ["gold", "currency"], phase28Applied = false } = opts;
+  const { expectSections = ["gold", "currency"], phase28Applied = false, requireTransportPolicy = false } = opts;
   const parsed = parseObject(raw);
   if (!parsed.ok) return { ok: false, failures: [`پاسخِ /debug ${parsed.reason}`], summary: null };
 
   const d = parsed.value;
   const failures = [];
+  if (requireTransportPolicy && !observedBrsTransportPolicy(d.brsapiTransport)) {
+    failures.push('conservative provider transport policy is not yet observed; ownership/cutover is a separate gate');
+  }
 
   if (Object.keys(d).length === 0) {
     return { ok: false, failures: ["پاسخِ /debug خالی است ({}) — شاهدِ نسخه نمی‌دهد"], summary: null };

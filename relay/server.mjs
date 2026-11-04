@@ -1,6 +1,6 @@
 import { readProviderJson } from './capitalization-response.mjs';
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
-import { brsTransportMetrics } from "./brsapi-transport.mjs";
+import { brsTransportMetrics, waitForBrsReadiness } from "./brsapi-transport.mjs";
 import { writeDailyFx } from "./daily-fx.mjs";
 import { retainMarketFamilies, retainCommoditySnapshot, mergeStoredBaseline, sourceErrorCategory, validStoredSnapshot } from "./market-retention.mjs";
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1525,12 +1525,18 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   // درگاه‌های بودجهٔ codal — یک‌بار، پیش از اولین چرخه.
   setCodalBudgetPorts({ client: brsClient(), countLegacy });
 
-  server.listen(PORT, () => {
+  server.listen(PORT, async () => {
   console.log(`ir-market relay v2 (BrsApi) on :${PORT} | codal=${process.env.CODAL_ENABLED === "1" ? "on" : "off"}`);
   // C1 — بارگذاری بلک‌لیست دائمی NAV قبل از اولین رفرش (تا با ریاستارت پاک نشود)
-  loadNavBlacklist({ supabaseUrl: SUPABASE_URL.replace(/\/+$/, ""), serviceKey: SUPABASE_SERVICE_ROLE_KEY })
-    .catch(() => {})
-    .finally(() => refresh());
+  // Serve the stored baseline immediately. Do not construct provider timeouts or
+  // report jobs until the unknown prior-process five-minute window has elapsed.
+  await Promise.all([
+    hydrateBaseline(),
+    loadNavBlacklist({ supabaseUrl: SUPABASE_URL.replace(/\/+$/, ""), serviceKey: SUPABASE_SERVICE_ROLE_KEY }).catch(() => {}),
+  ]);
+  try { await waitForBrsReadiness(); }
+  catch { status.lastError = 'provider transport readiness unavailable'; return; }
+  refresh();
   setInterval(refresh, CACHE_MS).unref();
   // پل دریافت اکسل کدال — هر ۴۵ ثانیه (سبک؛ فقط یک SELECT کوچک وقتی درخواستی نیست).
   setInterval(() => { codalFetchBridge().catch(() => {}); }, 45 * 1000).unref();

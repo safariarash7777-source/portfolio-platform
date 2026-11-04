@@ -6,6 +6,17 @@ async function probe(scenario) {
   const source = new URL('./server.mjs', import.meta.url).href;
   const program = `
     import http from 'node:http';
+    import { performance } from 'node:perf_hooks';
+    import timers from 'node:timers/promises';
+    import { syncBuiltinESMExports } from 'node:module';
+    // Offline child only: advance the actual transport's monotonic clock port.
+    // Production has no environment switch or shortened policy window.
+    let transportClock = 0;
+    Object.defineProperty(performance, 'now', { value: () => transportClock });
+    timers.setTimeout = async (ms, value, options = {}) => {
+      options.signal?.throwIfAborted(); transportClock += ms; options.signal?.throwIfAborted(); return value;
+    };
+    syncBuiltinESMExports();
     const scenario=${JSON.stringify(scenario)};
     const start=Date.parse('2026-10-06T06:00:00Z'); let now=start,phase=0;
     const RealDate=Date;
