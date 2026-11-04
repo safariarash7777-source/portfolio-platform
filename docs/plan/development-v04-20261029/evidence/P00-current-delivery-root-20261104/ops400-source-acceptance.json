@@ -1,0 +1,43 @@
+{
+  "observedAtUtc": "2026-11-04T01:34:47Z",
+  "pr": 400,
+  "merged": true,
+  "sourceHead": "e400739832d39917b18469e0d5e72ae618a23cd7",
+  "main": "5eda274f1424fe6696a8246079500356802dcb7f",
+  "tree": "fc85989335018853ebb924855a93a4e61fe12dc7",
+  "ciRun": 41754103626,
+  "actualCiCheckout": "cbd69ea10ea33d95941343a291858b40c41f2db2",
+  "actualCiTree": "fc85989335018853ebb924855a93a4e61fe12dc7",
+  "ciParents": [
+    "ff5c49ffca82f3338331596e262f8778e5e50960",
+    "e400739832d39917b18469e0d5e72ae618a23cd7"
+  ],
+  "requiredJobs": {
+    "core": 126325996271,
+    "db": 126325996679,
+    "secretsSql": 126325996606,
+    "dependencies": 126325996689,
+    "gate": 126327944417
+  },
+  "requiredResult": "5 SUCCESS",
+  "rootIndependentlyReadFullCoreAndDbLogs": true,
+  "optionalNative": {
+    "job": 126327975692,
+    "result": "SKIPPED",
+    "acceptance": false
+  },
+  "sourceCommit": "72878684de0aaeb352a0e062740b580f03e775a9",
+  "callerAdopted": false,
+  "discoveryAdopted": false,
+  "bindingAdopted": false,
+  "liveTokenLookup": false,
+  "liveWebSocket": false,
+  "remoteExec": false,
+  "productCodeChanged": false,
+  "productionAtObservation": {
+    "sha": "ff5c49ffca82f3338331596e262f8778e5e50960",
+    "deployment": "dpl_Hs4zu9cXzAzcFqUeaGy6S4Eff6sp",
+    "state": "READY",
+    "note": "Latest observed alias; PR400 deployment not yet verified"
+  }
+}

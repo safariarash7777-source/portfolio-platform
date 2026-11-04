@@ -1,3 +1,5 @@
+**تازه‌تر، ۰۱:۳۴UTC:** [PR400 و پنج CI واقعی](ops400-source-acceptance.json) در main5eda ادغام شدند؛ ابزار همچنان بسته و اجرای زنده صفر است. alias در این مشاهده ff5/READY بود؛ انتشار تازه هنوز اثبات نشده.
+
 ## تازه‌سازی ۰۱:۲۵UTC — ۴ نوامبر
 
 Production روی mainff5 و READY است؛ [هویت و CI399](ops399-publication.json). محصول نسبت به a42 آزموده‌شده ثابت است. [پنج گزارش قبلی موجودند](codal-fiveids.json)؛ [نتیجهٔ صفر نمادی قبلی خطای رمزگذاری ابزار بود](codal-probe-encoding-correction.json). بزرگ‌ترین ID ذخیره‌شده12219 با captured_at ساعت۰۰:۲۰ و دورهٔ قدیمی است؛ [این رسید چرخهٔ کامل یا تازگی منبع را اثبات نمی‌کند](codal-last-stored-observation.json).
