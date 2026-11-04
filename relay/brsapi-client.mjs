@@ -370,20 +370,23 @@ export class PersistentDailyBudget {
   snapshot() {
     this.#roll();
     const u = this.used;
+    // A failed/unconfirmed database read is not an unused provider allowance.
+    const known = this.storeHealthy && this.leaseCalls > 0;
     return {
       day: this.day,
       persistent: true,
+      accountingState: known ? "confirmed_internal_estimate" : "unknown",
       softBudget: this.softBudget,
       hardCeiling: this.hardCeiling,
-      used: u,
-      remaining: Math.max(0, this.hardCeiling - u),
+      used: known ? u : null,
+      remaining: known ? Math.max(0, this.hardCeiling - u) : null,
       remainingByClass: Object.fromEntries(
-        BUDGET_CLASSES.map((c) => [c, Math.max(0, classCeiling(c, this) - u)]),
+        BUDGET_CLASSES.map((c) => [c, known ? Math.max(0, classCeiling(c, this) - u) : null]),
       ),
       usedByClass: { ...this.usedByClass },
       rejectedByBudget: this.rejected,
       rejectedByClass: { ...this.rejectedByClass },
-      softExhausted: u >= this.softBudget,
+      softExhausted: known ? u >= this.softBudget : null,
       lease: {
         size: this.leaseSize,
         granted: this.granted,
