@@ -150,6 +150,7 @@ $$;
 
 revoke all on function public.brsapi_budget_lease(text, integer, integer) from public;
 revoke all on function public.brsapi_budget_lease(text, integer, integer) from anon, authenticated;
+grant execute on function public.brsapi_budget_lease(text, integer, integer) to service_role;
 
 comment on function public.brsapi_budget_lease(text, integer, integer) is
   'یک بلوکِ بودجه اجاره می‌دهد. اتمیک و سریالایز‌شده؛ جمعِ اجاره‌ها هرگز از سقفِ روز رد نمی‌شود.';
@@ -203,6 +204,7 @@ $$;
 
 revoke all on function public.brsapi_budget_release(text, integer) from public;
 revoke all on function public.brsapi_budget_release(text, integer) from anon, authenticated;
+grant execute on function public.brsapi_budget_release(text, integer) to service_role;
 
 comment on function public.brsapi_budget_release(text, integer) is
   'اجارهٔ خرج‌نشده را روی خاموشیِ مرتب پس می‌دهد. بهترین‌کوشش؛ نبودنش ایمن است.';
