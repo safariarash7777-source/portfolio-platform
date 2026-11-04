@@ -22,6 +22,10 @@ on:
         description: "یادداشت برای این بررسی (اختیاری)"
         required: false
         default: ""
+      metadata_only:
+        description: "Read only Liara account configuration; no relay/provider requests"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -41,16 +45,17 @@ jobs:
     name: Relay health → arsadata
     runs-on: ubuntu-latest
     steps:
-      # منطقِ پذیرش از شاخهٔ پیش‌فرض می‌آید، مثلِ خودِ deploy.
+      # شاهد و منطقِ همان commit تغییرناپذیر workflow؛ این کار deploy نمی‌کند.
       - uses: actions/checkout@v4
         with:
-          ref: main
+          ref: ${{ github.workflow_sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
 
       - name: زنده‌بودن
         id: live
+        if: inputs.metadata_only != true
         run: |
           set -uo pipefail
           for i in $(seq 1 12); do
@@ -114,18 +119,33 @@ jobs:
           NODE
 
       - name: Single passive health and storage receipt
-        if: always()
+        if: always() && inputs.metadata_only != true
         env:
           RELAY_TOKEN: ${{ secrets.RELAY_TOKEN }}
           LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
         run: node scripts/ops/relay-health-receipt.mjs
 
       - name: Preserve sanitized receipt
-        if: always()
+        if: always() && inputs.metadata_only != true
         uses: actions/upload-artifact@v4
         with:
           name: relay-health-receipt
           path: relay-health-receipt.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Existing account egress configuration only
+        if: inputs.metadata_only == true
+        env:
+          LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
+        run: node scripts/ops/relay-egress-inventory.mjs
+
+      - name: Preserve sanitized egress configuration
+        if: always() && inputs.metadata_only == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: relay-egress-inventory
+          path: relay-egress-inventory.json
           if-no-files-found: error
           retention-days: 14
 
