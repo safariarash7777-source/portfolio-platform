@@ -40,7 +40,8 @@ async function identity(fetchImpl, token, signal, diagnostic) {
   diagnostic.fetchCalls=(diagnostic.fetchCalls??0)+1;
   const response=await fetchImpl(RELEASES,{method:'GET',redirect:'error',signal,headers:{Authorization:'Bearer '+token,Accept:'application/json'}});
   diagnostic.fetchReturns=(diagnostic.fetchReturns??0)+1;
-  diagnostic.httpStatusClass=Number.isInteger(response.status)&&response.status>=100&&response.status<=599?Math.floor(response.status/100)+'xx':null;
+  let observedStatus;try{observedStatus=response.status;}catch{/* Observation must not change acceptance. */}
+  diagnostic.httpStatusClass=Number.isInteger(observedStatus)&&observedStatus>=100&&observedStatus<=599?Math.floor(observedStatus/100)+'xx':null;
   if(!response.ok || !response.body) fail();
   diagnostic.phase=diagnostic.phase==='pre_release_fetch'?'pre_release_body':'post_release_body';
   const reader=response.body.getReader();const chunks=[];let total=0;
@@ -61,8 +62,8 @@ function socketReceipt(connect, token, nonce, signal, remember, diagnostic, capt
     endpoint.search=new URLSearchParams({token,cmd:'node -e '+quote(FIXED_DISCOVERY_SOURCE)+' '+nonce,project_id:'arsadata',teamID:''}).toString();
     try{diagnostic.phase='ws_connect';diagnostic.connectCalls=1;socket=connect(endpoint.href);diagnostic.connectReturns=1;remember(socket);}catch{rejectSafe();return;}
     signal.addEventListener('abort',rejectSafe,{once:true});
-    socket.on('open',()=>{try{diagnostic.phase='ws_open';diagnostic.wsOpenEvents=1;if(started || settled || signal.aborted)return rejectSafe();started=true;diagnostic.phase='start_send';diagnostic.startSendCalls=1;socket.send(JSON.stringify({action:'start',cols:80,rows:24}));diagnostic.startSendReturned=1;}catch{rejectSafe();}});
-    socket.on('message',data=>{try{diagnostic.phase='frame_read';count++;diagnostic.frameCountCapped2=Math.min(count,2);const bytes=typeof data==='string'?Buffer.byteLength(data):data?.byteLength;diagnostic.lastFrameBytesCapped8193=Number.isSafeInteger(bytes)&&bytes>=0?Math.min(bytes,8193):null;total+=bytes;if(!started || settled || count>1 || !Number.isSafeInteger(bytes) || bytes>8192 || total>8192)return rejectSafe();const raw=typeof data==='string'?data:new TextDecoder('utf-8',{fatal:true}).decode(data);diagnostic.phase='frame_validate';result=receipt(raw,nonce);}catch{rejectSafe();}});
+    socket.on('open',()=>{try{if(!settled){diagnostic.phase='ws_open';diagnostic.wsOpenEventsCapped2=Math.min((diagnostic.wsOpenEventsCapped2??0)+1,2);}if(started || settled || signal.aborted)return rejectSafe();started=true;diagnostic.phase='start_send';diagnostic.startSendCalls=1;socket.send(JSON.stringify({action:'start',cols:80,rows:24}));diagnostic.startSendReturned=1;}catch{rejectSafe();}});
+    socket.on('message',data=>{try{if(!settled)diagnostic.phase='frame_read';count++;if(!settled)diagnostic.frameCountCapped2=Math.min(count,2);const bytes=typeof data==='string'?Buffer.byteLength(data):data?.byteLength;if(!settled)diagnostic.lastFrameBytesCapped8193=Number.isSafeInteger(bytes)&&bytes>=0?Math.min(bytes,8193):null;total+=bytes;if(!started || settled || count>1 || !Number.isSafeInteger(bytes) || bytes>8192 || total>8192)return rejectSafe();const raw=typeof data==='string'?data:new TextDecoder('utf-8',{fatal:true}).decode(data);diagnostic.phase='frame_validate';result=receipt(raw,nonce);}catch{rejectSafe();}});
     socket.on('error',rejectSafe);
     socket.on('unexpected-response',rejectSafe);
     socket.on('close',code=>{signal.removeEventListener('abort',rejectSafe);if(settled)return;diagnostic.phase='ws_close';diagnostic.closeCode=[1000,1001,1002,1003,1005,1006,1007,1008,1009,1010,1011,1012,1013,1014,1015].includes(code)?code:null;if(code!==1000 || !result)return rejectSafe();settled=true;resolve(result);});
@@ -75,7 +76,7 @@ export async function discoverBinding(options={}) {
   if(typeof token!=='string' || !token || !/^[a-f0-9]{32}$/.test(nonce||'') || typeof fetchImpl!=='function' || typeof connect!=='function')return {state:'invalid_input'};
   const controller=new AbortController();let timer,socket;
   // Observations only: returned send is not a server ACK; null means unobserved.
-  const diagnostic={phase:'pre_release_fetch',bodyBytesCapped1048577:null,fetchCalls:null,fetchReturns:null,httpStatusClass:null,connectCalls:null,connectReturns:null,wsOpenEvents:null,startSendCalls:null,startSendReturned:null,frameCountCapped2:null,lastFrameBytesCapped8193:null,closeCode:null};
+  const diagnostic={phase:'pre_release_fetch',bodyBytesCapped1048577:null,fetchCalls:null,fetchReturns:null,httpStatusClass:null,connectCalls:null,connectReturns:null,wsOpenEventsCapped2:null,startSendCalls:null,startSendReturned:null,frameCountCapped2:null,lastFrameBytesCapped8193:null,closeCode:null};
   let failureDiagnostic;
   const captureFailure=()=>failureDiagnostic??=(Object.freeze({...diagnostic}));
   const work=async()=>{
