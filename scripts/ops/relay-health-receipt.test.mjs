@@ -316,3 +316,28 @@ test('reviewed backend binding inspects only the single URL in RAM and never emi
     const serialized=JSON.stringify(out);assert.equal(serialized.includes(reviewed),false);assert.equal(serialized.includes(secret),false);assert.equal(serialized.includes('user:private'),false);
   }
 });
+
+
+test('project detail configuration is typed, preserves false and is never actual process evidence',async()=>{
+  const out=await collectControlPlane({token:secret,fetchImpl:async url=>{
+    const body=controlBodies(url);
+    if(body.project)Object.assign(body.project,{scale:1,zeroDowntime:false});
+    body.projects=[{project_id:'arsadata',scale:99,zeroDowntime:true}];
+    return Response.json(body);
+  }});
+  assert.equal(out.project.data.configuredScale,1);
+  assert.equal(out.project.data.configuredZeroDowntime,false);
+  assert.equal(out.project.data.configuredNotActual,true);
+  assert.equal(JSON.stringify(out).includes(secret),false);
+});
+
+test('unknown or malformed scale/zero-downtime stays null without coercion',async()=>{
+  for(const [scale,zeroDowntime] of [[undefined,undefined],[null,null],[0,0],[-1,1],['1','false'],[1.5,{}],[[],[]],[true,'true']]){
+    const out=await collectControlPlane({token:secret,fetchImpl:async url=>{
+      const body=controlBodies(url);if(body.project)Object.assign(body.project,{scale,zeroDowntime});return Response.json(body);
+    }});
+    assert.equal(out.project.data.configuredScale,null);
+    assert.equal(out.project.data.configuredZeroDowntime,null);
+    assert.equal(out.project.data.configuredNotActual,true);
+  }
+});
