@@ -383,3 +383,24 @@ test('unknown diagnostic scalars cannot become log values and a throwing sink le
   assert.doesNotMatch(JSON.stringify(event),new RegExp(secret));assert.equal(result.availability.state,'error');assert.equal(result.availability.reason,'read-error');
   assert.ok(Number.isNaN(result.availability.readAt),'observation must not rewrite the existing read contract');
 });
+
+test('unknown proxy counts are logged as null without coercion or changing the original read result', async()=>{
+  const secret='PRIVATE_COUNT_SENTINEL';
+  const opaque={toString(){throw Error(secret);},valueOf(){throw Error(secret);}};
+  for(const count of [secret,opaque,null,undefined,NaN,Infinity,-1,0.5,Number.MAX_SAFE_INTEGER+1,0]){
+    const h=privateReader(),data=toMarket(snapshot()),target=data.funds;
+    let reads=0,writes=0;
+    const funds=new Proxy(target,{
+      get(array,key,receiver){if(key==='length'){reads++;return count;}return Reflect.get(array,key,receiver);},
+      set(){writes++;throw Error('observation must not mutate source');},
+    });
+    data.funds=funds;
+    // Fault injection only at the stored-result boundary, with an actual Array proxy.
+    h.market.getStoredIrMarket=(()=>Promise.resolve({data,state:'error',reason:'request',status:null,readAt:h.clock.now})) as unknown as typeof h.market.getStoredIrMarket;
+    const result=await h.readFunds({environment:environmentPair()});
+    assert.equal(h.calls.length,0);assert.equal(h.observations.length,1);
+    assert.equal(h.observations[0].fundCount,count===0?0:null);assert.doesNotMatch(JSON.stringify(h.observations[0]),new RegExp(secret));
+    assert.equal(result.data,data);assert.equal(result.data.funds,funds);assert.equal(target.length,1);
+    assert.equal(reads,1);assert.equal(writes,0);assert.equal(result.availability.state,'error');assert.equal(result.availability.reason,'read-error');
+  }
+});

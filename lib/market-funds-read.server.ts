@@ -30,7 +30,7 @@ function observeFailure(input: {
       urlPresent: input.urlPresent,
       keyPresent: input.keyPresent,
       selectedPair: input.selectedPair,
-      fundCount: count,
+      fundCount: typeof count === "number" && Number.isSafeInteger(count) && count >= 0 ? count : null,
     });
     console.warn(record);
   } catch { /* Observation failure cannot alter availability or trigger a retry. */ }
