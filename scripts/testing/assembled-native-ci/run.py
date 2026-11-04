@@ -303,6 +303,7 @@ NATIVE_FAILURE_CODES = frozenset({
 })
 
 CONTROLLER_FAILURE_CODES = frozenset({
+    "assembled_composition_invalid",
     "assembled_app_copy_not_exact",
     "assembled_applied_sql_not_exact",
     "assembled_artifact_location",
@@ -371,6 +372,183 @@ OBSERVED_CHECKS = (
     "actual-sdk-signout-clear",
     "private-storage-url-and-owned-cleanup",
 )
+
+
+# Proposed additions to the SAME root controller; no independent entrypoint.
+COMPOSITION = 'p03-composition-e0-v1'
+SELECTED_PROFILE = 'assembled-member-admin-v1'
+CAPSULE_FILE = 'sealed-v4b-app-f07.tar'
+NATIVE_GLOB = 'assembled-member-admin-native-*'
+COMPOSITION_SPEC = {'application': 'e0b930927563d7f9f6d79e848917c4ba0d77ed6f', 'tree': 'c6c67f2a78cd2cf672cf4f489f81e7f14cb041da', 'capsuleSha256': 'f03a1e3528374db1ba45a48d1c6cc550df71b0e95de6604434834afca31e7711', 'driverSha256': 'fe100232e61504d2228c7ca6ea1108e64e1f35bff3011691065d849de83b22f4', 'overlayNames': ['assembled-auth-gateway.mjs', 'assembled-auth-runtime.mjs', 'assembled-member-scenario.mjs', 'assembled-native-profile.mjs', 'assembled-native-source.json', 'assembled-native.mjs', 'assembled-observer-policy.mjs', 'assembled-overlay-gate.mjs', 'composition-browser-case.mjs', 'composition-contract.mjs', 'composition-contract.test.mjs', 'composition-member-phase.mjs', 'composition-transport.mjs', 'composition-transport.test.mjs']}
+
+
+def composition_json(raw):
+    need(isinstance(raw, bytes) and 0 < len(raw) <= 2 * 1024 * 1024, 'assembled_composition_invalid')
+    def unique(pairs):
+        row = dict(pairs)
+        need(len(row) == len(pairs), 'assembled_composition_invalid')
+        return row
+    def invalid(_):
+        raise ValueError('assembled_composition_invalid')
+    return json.loads(raw.decode('utf-8'), object_pairs_hook=unique, parse_constant=invalid)
+
+
+def select_profile(inputs):
+    global SELECTED_PROFILE, CANDIDATE, TREE, CAPSULE, DRIVER, PREFIX, CAPSULE_FILE, NATIVE_GLOB, OVERLAY_NAMES
+    profile = inputs.get('acceptance_profile', 'assembled-member-admin-v1')
+    extra = [inputs.get(key, '') for key in ('candidate_sha', 'capsule_sha256', 'driver_sha256')]
+    if profile == 'assembled-member-admin-v1':
+        need(extra == ['', '', ''] and SELECTED_PROFILE == profile, 'assembled_composition_invalid')
+        return profile
+    need(profile == COMPOSITION and extra == [COMPOSITION_SPEC[k] for k in ('application', 'capsuleSha256', 'driverSha256')], 'assembled_composition_invalid')
+    SELECTED_PROFILE = profile
+    CANDIDATE, TREE = COMPOSITION_SPEC['application'], COMPOSITION_SPEC['tree']
+    CAPSULE, DRIVER = extra[1:]
+    CAPSULE_FILE, PREFIX, NATIVE_GLOB = 'sealed-p03-composition-e0-v1.tar', 'consultation-ticket-', 'consultation-ticket-native-*'
+    OVERLAY_NAMES = set(COMPOSITION_SPEC['overlayNames'])
+    return profile
+
+
+def composition_read(local, name):
+    # Local private artifacts only. No shell, DB, network or capsule imports.
+    path = local / name
+    owned(path)
+    need(not local.is_symlink() and hasattr(os, 'O_NOFOLLOW'), 'assembled_composition_invalid')
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    try:
+        before = os.fstat(fd)
+        need(stat.S_ISREG(before.st_mode) and before.st_nlink == 1 and 0 < before.st_size <= 2 * 1024 * 1024, 'assembled_composition_invalid')
+        raw = bytearray()
+        while len(raw) <= before.st_size:
+            chunk = os.read(fd, min(65536, before.st_size + 1 - len(raw)))
+            if not chunk:
+                break
+            raw.extend(chunk)
+        need(len(raw) == before.st_size and file_identity(before) == file_identity(os.fstat(fd)) == file_identity(path.lstat()), 'assembled_composition_invalid')
+        return composition_json(bytes(raw)), sha(bytes(raw))
+    finally:
+        os.close(fd)
+
+
+def reconcile_composition(records, run_id, candidate):
+    """Pure independent reader: rederive counts from persisted attempts/results."""
+    need(isinstance(records, dict) and len(records) <= 256, 'assembled_composition_invalid')
+    get = lambda name: records[name]
+    intents, results, direct, direct_results = {}, {}, {}, {}
+    for name, row in records.items():
+        for pattern, target in [(r'composition-intent-(\d{3})\.json', intents), (r'composition-result-(\d{3})\.json', results),
+                                (r'intent-(\d{3})\.json', direct), (r'transport-result-(\d{3})\.json', direct_results)]:
+            match = re.fullmatch(pattern, name)
+            if match:
+                target[int(match[1])] = row
+    need(set(intents) == set(results) == set(range(1, 27)) and set(direct) == set(direct_results) == set(range(1, 36)), 'assembled_composition_invalid')
+    caps = {('a','/api/portfolio/holdings'):2, ('a','/api/personal-finance/cash-flow'):1,
+            ('a','/api/consultation'):4, ('owner','/api/consultation'):5,
+            ('a','/api/consultation/tickets'):3, ('owner','/api/consultation/tickets'):2,
+            ('a','/api/consultation/ticket-attempts'):5, ('owner','/api/consultation/ticket-attempts'):2,
+            ('owner','/api/consultation/replies'):2}
+    counts, statuses, tokens, products = Counter(), Counter(), set(), {}
+    for index, row in intents.items():
+        need(isinstance(row, dict) and set(row)=={'kind','ordinal','actor','path','body','bodySha256','token'} and row['kind']=='intent' and type(row['ordinal']) is int and row['ordinal']==index and isinstance(row['body'],str), 'assembled_composition_invalid')
+        body = composition_json(row['body'].encode())
+        token=body.get('clientToken',body.get('client_token'))
+        key=(row['actor'],row['path'])
+        need(key in caps and row['token']==token and isinstance(token,str) and UUID.fullmatch(token) and sha(row['body'].encode())==row['bodySha256'], 'assembled_composition_invalid')
+        identity=(*key,token)
+        need(identity not in tokens, 'assembled_composition_invalid');tokens.add(identity);counts[key]+=1
+        result=results[index]
+        need(isinstance(result,dict) and set(result)=={'kind','ordinal','status'} and result['kind']=='result' and type(result['ordinal']) is int and result['ordinal']==index and type(result['status']) is int and result['status'] in (200,201,409,503), 'assembled_composition_invalid')
+        statuses[result['status']]+=1
+        products[(row['path'],token)] = (body,result['status'])
+    need(counts==Counter(caps) and statuses[200]+statuses[201]==24 and statuses[409]==1 and statuses[503]==1, 'assembled_composition_invalid')
+    auth=Counter();matched=set()
+    for index,row in direct.items():
+        need(isinstance(row,dict) and set(row)=={'path','body','sha'} and row['sha']==candidate and isinstance(row['path'],str), 'assembled_composition_invalid')
+        result=direct_results[index]
+        need(isinstance(result,dict) and set(result)=={'ordinal','path','status','sha'} and type(result['ordinal']) is int and result['ordinal']==index and result['path']==row['path'] and result['sha']==candidate and type(result['status']) is int, 'assembled_composition_invalid')
+        path=row['path'];body=row['body']
+        if path.startswith('/api/'):
+            need(isinstance(body,dict), 'assembled_composition_invalid')
+            key=(path,body.get('clientToken',body.get('client_token')))
+            need(key not in matched and key in products and products[key]==(body,result['status']), 'assembled_composition_invalid');matched.add(key)
+        else:
+            need(path in ('/auth/v1/admin/users','/auth/v1/token?grant_type=password','/auth/v1/logout','/rest/v1/rpc/lookup_consultation_ticket_attempt'), 'assembled_composition_invalid')
+            allowed=(403,) if path.startswith('/rest/') else ((200,204) if path.endswith('/logout') else (200,201))
+            need(result['status'] in allowed, 'assembled_composition_invalid');auth[path]+=1
+    need(len(matched)==17 and auth==Counter({'/auth/v1/admin/users':4,'/auth/v1/token?grant_type=password':9,'/auth/v1/logout':4,'/rest/v1/rpc/lookup_consultation_ticket_attempt':1}), 'assembled_composition_invalid')
+    transport=get('transport-observation.json');proof=get('composition-observed.json');db=get('composition-database-observation.json');binding=get('composition-binding.json')
+    need(transport.get('sha')==candidate and transport.get('runId')==run_id and transport.get('schema')=='p03-owned-transport.v1' and transport.get('poisoned') is False and type(transport.get('rejected')) is int and transport['rejected']==0 and type(transport.get('authorizedPostRequests')) is int and transport['authorizedPostRequests']==35 and type(transport.get('sdkReads')) is int and 9<=transport['sdkReads']<=36, 'assembled_composition_invalid')
+    need(proof.get('sha')==candidate and proof.get('appSha')==candidate and proof.get('runId')==run_id and proof.get('schema')=='p03-composition-observed.v1' and binding.get('runId')==run_id and binding.get('appSha')==candidate and binding.get('appTree')==COMPOSITION_SPEC['tree'], 'assembled_composition_invalid')
+    ids=binding.get('authCreatedIds');actors=binding.get('actors')
+    need(isinstance(ids,list) and len(ids)==4 and len(set(ids))==4 and all(isinstance(i,str) and UUID.fullmatch(i) for i in ids) and isinstance(actors,list) and len(actors)==4 and {a['id'] for a in actors}==set(ids) and all(a['run']==run_id for a in actors), 'assembled_composition_invalid')
+    need(db.get('databaseMarker')==run_id and type(db.get('authUsers')) is int and db['authUsers']==4, 'assembled_composition_invalid')
+    for key,value in {'requests':2,'ticketEvents':5,'preparedIntents':6,'summaryEvents':3,'publications':1,'feedback':3,'replyVersions':1,'holdingVersions':2,'cashFlowVersions':1}.items():
+        need(type(db.get(key)) is int and db[key]==value, 'assembled_composition_invalid')
+    need(len(db.get('relationships',[]))==len(db.get('sessions',[]))==1, 'assembled_composition_invalid')
+    rel=db['relationships'][0];session=db['sessions'][0];summary=proof['summary']
+    need(rel['clientId'] in ids and rel['advisorId'] in ids and rel['clientId']!=rel['advisorId'] and rel['revoked'] is True and session['relationshipId']==rel['id']==summary['replyReceipt']['command']['relationshipId'] and session['id']==summary['sessionId'] and session['contentHash']==summary['contentHash'] and isinstance(session['contentHash'],str) and HEX.fullmatch(session['contentHash']) and type(session['version']) is int and session['version']==1, 'assembled_composition_invalid')
+    for identifier in (rel['id'],session['id'],summary['requestId']):
+        need(isinstance(identifier,str) and UUID.fullmatch(identifier), 'assembled_composition_invalid')
+    links=db.get('requestLinks');recommendations=db.get('recommendationLinks')
+    need(isinstance(links,list) and len(links)==2 and len({r['requestId'] for r in links})==2 and all(r['relationshipId']==rel['id'] for r in links) and summary['requestId'] in {r['requestId'] for r in links}, 'assembled_composition_invalid')
+    need(isinstance(recommendations,list) and len(recommendations)==1 and recommendations[0]['requestId']==summary['requestId'] and type(recommendations[0]['version']) is int and recommendations[0]['version']==3 and recommendations[0]['recommendation']=={'sessionId':session['id'],'version':1,'contentHash':session['contentHash']}, 'assembled_composition_invalid')
+    actor_map={'a':rel['clientId'],'owner':rel['advisorId']}
+    holding_rows=db.get('holdingOwnership')
+    need(isinstance(holding_rows,list) and len(holding_rows)==2 and all(type(r.get('version')) is int for r in holding_rows) and {r['version'] for r in holding_rows}=={1,2}, 'assembled_composition_invalid')
+    for row in intents.values():
+        body=composition_json(row['body'].encode())
+        if row['path']=='/api/portfolio/holdings':
+            # This API derives ownership from the authenticated session, not a body field.
+            need(row['actor']=='a' and 'expectedActorId' not in body and 'expectedOwnerId' not in body and type(body.get('base_version')) is int and body['base_version'] in (0,1), 'assembled_composition_invalid')
+            matches=[h for h in holding_rows if h.get('clientToken')==body.get('client_token')]
+            need(len(matches)==1 and matches[0]['userId']==actor_map['a'] and matches[0]['version']==body['base_version']+1, 'assembled_composition_invalid')
+        else:
+            field='expectedOwnerId' if row['path']=='/api/personal-finance/cash-flow' else 'expectedActorId'
+            need(body.get(field)==actor_map[row['actor']], 'assembled_composition_invalid')
+    need(proof.get('unknownScope')=='P03-ticket-only' and proof.get('p09HistoricalAcceptanceTransferred') is False and proof.get('p09UnknownSave')=='NOT_COVERED_MISSING_JOURNAL' and type(proof.get('modelCalls')) is int and proof['modelCalls']==0 and type(proof.get('workbookPosts')) is int and proof['workbookPosts']==0, 'assembled_composition_invalid')
+    expected_browser=['browser-preflight-before-provision','real-member-page-default-right-closed','real-201-discard-live-page-one-post','same-attempt-get-only-recovery','fresh-sdk-context-and-reload-get-only','real-advisor-response-and-member-followup','real-revoke-and-private-fallback-denial','desktop-mobile-and-private-storage-cache-url','unconfirmed-command-destroy-and-server-intent-get-only','unknown-preparation-destroy-no-command','owned-browser-cleanup']
+    checks=proof.get('browserChecks')
+    need(isinstance(checks,list) and len(checks)==11 and {r['name'] for r in checks}==set(expected_browser) and all(r['status']=='PASS' for r in checks), 'assembled_composition_invalid')
+    return {'schemaVersion':'p03-independent-journal.v1','runId':run_id,'sourceCommit':candidate,'productAttempts':26,'positive':24,'denied':2,'directPostAttempts':35,'directProductAttempts':17,'browserProductAttempts':9,'authCreate':4,'authPassword':9,'authLogout':4,'negativeRpc':1,'unresolved':0,'journalMatched':True,'databaseMatched':True,'sqlFilesVerified':19}
+
+
+def verify_composition_state(data, private):
+    need(data and data['migrations']==expected_sql(private), 'assembled_applied_sql_not_exact')
+    local=Path(data['local']);records={};digests={}
+    with os.scandir(local) as entries:
+        for index,entry in enumerate(entries):
+            need(index<256,'assembled_composition_invalid')
+            if entry.name.startswith(('intent-','transport-result-','composition-')) or entry.name=='transport-observation.json':
+                need(entry.name.endswith('.json') and entry.is_file(follow_symlinks=False), 'assembled_composition_invalid')
+                records[entry.name],digests[entry.name]=composition_read(local,entry.name)
+    independent=reconcile_composition(records,data['id'],CANDIDATE)
+    independent.update(dockerContainers=0,dockerNetworks=0,browserTemps=0,fallbackUsed=False)
+    independent.update(compositionProofSha256=digests['composition-observed.json'],transportProofSha256=digests['transport-observation.json'])
+    return independent
+
+
+def project_composition(raw, independent, binding):
+    need(isinstance(raw,bytes) and len(raw)<=64*1024*1024, 'assembled_composition_invalid')
+    rows=[];checks=[]
+    for line in raw.splitlines():
+        if line.startswith(b'P03_ASSEMBLED_NATIVE_AUTH '):
+            rows.append(composition_json(line[len(b'P03_ASSEMBLED_NATIVE_AUTH '):]))
+        if line.startswith(b'P03_ASSEMBLED_NATIVE_CHECK '):
+            checks.append(composition_json(line[len(b'P03_ASSEMBLED_NATIVE_CHECK '):]))
+    need(len(rows)==1, 'assembled_composition_invalid')
+    row=rows[0]
+    names=['isolation-attested','four-fresh-auth-users-and-sdk-getuser','browser-owned-nonzero-dossier-real-consent','assembled-real-member-navigation-and-read-only-dom','browser-real-consumer-checked','composition-summary-published-exact-link','composition-question-reply-and-feedback','composition-fresh-summary-dom-get-only','composition-feedback-stable-before-basis-change','composition-financial-basis-change-readonly','composition-isolation-revocation-history','composition-auth-api-cdp-counts','composition-owned-browser-cleanup']
+    need(len(checks)==13 and {r.get('name') for r in checks}==set(names) and all(r.get('status')=='PASS' for r in checks), 'assembled_composition_invalid')
+    need(row.get('sha')==CANDIDATE and row.get('allocationId')==binding['executionAllocationId'] and row.get('status')=='PASS_BOUNDED_P03_COMPOSITION_NATIVE' and row.get('cleanup')=='REMOVED_OWNED_RESOURCES' and type(row.get('scenarios')) is int and row['scenarios']==13, 'assembled_composition_invalid')
+    need(independent.get('journalMatched') is True and independent.get('databaseMatched') is True and independent.get('fallbackUsed') is False and independent.get('sourceCommit')==CANDIDATE, 'assembled_composition_invalid')
+    for key in ('compositionProofSha256','transportProofSha256'):
+        need(isinstance(row.get(key),str) and HEX.fullmatch(row[key]) and row[key]==independent.get(key), 'assembled_composition_invalid')
+    safe_independent={}
+    for key,value in {'productAttempts':26,'positive':24,'denied':2,'directPostAttempts':35,'directProductAttempts':17,'browserProductAttempts':9,'authCreate':4,'authPassword':9,'authLogout':4,'negativeRpc':1,'unresolved':0,'sqlFilesVerified':19,'dockerContainers':0,'dockerNetworks':0,'browserTemps':0}.items():
+        need(type(independent.get(key)) is int and independent[key]==value, 'assembled_composition_invalid')
+        safe_independent[key]=value
+    safe_independent.update(journalMatched=True,databaseMatched=True,fallbackUsed=False)
+    return {'status':'PASS_BOUNDED_P03_COMPOSITION_NATIVE','nativeChecks':13,'browserChecks':11,'independent':safe_independent,'targetInstall':'NOT_APPLIED','arashAcceptance':'UNOBSERVED','fullAssembledAcceptance':'NOT_ESTABLISHED','p09UnknownSave':'NOT_COVERED_MISSING_JOURNAL'}
 
 
 def need(value, code):
@@ -579,8 +757,12 @@ def paths():
 
 def actual_context():
     value = context(os.environ, sys.platform)
-    event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_bytes())
+    event = composition_json(Path(os.environ['GITHUB_EVENT_PATH']).read_bytes())
     inputs = event.get('inputs', {})
+    need(isinstance(inputs,dict), 'assembled_event_input_binding')
+    profile=select_profile(inputs)
+    if profile==COMPOSITION:
+        value.update(acceptanceProfile=profile,candidateCommit=CANDIDATE,capsuleSha256=CAPSULE,driverContractSha256=DRIVER)
     need(inputs.get('assembled_native') in (True, 'true') and inputs.get('allocation_id') == value['allocationId']
          and inputs.get('reviewed_helper_sha') == value['workflowCommit'], 'assembled_event_input_binding')
     need(git(CONTROL, 'rev-parse', 'HEAD') == value['workflowCommit'], 'assembled_helper_checkout_changed')
@@ -623,7 +805,7 @@ def expected_sql(private):
     overlay = json.loads((base / 'assembled-overlay.json').read_bytes())
     pins = {p['path']: p for p in source['files'] + overlay['additionalBootstrap']}
     names = source['bootstrap'] + [p['path'] for p in overlay['additionalBootstrap']]
-    need(len(names) == len(set(names)) == 18, 'assembled_sql_pin_set')
+    need(len(names) == len(set(names)) == (19 if SELECTED_PROFILE==COMPOSITION else 18), 'assembled_sql_pin_set')
     return [{'file': name, 'sha256': pins[name]['sha256']} for name in names]
 
 
@@ -633,8 +815,9 @@ def prepare():
     private.mkdir(mode=0o700)
     owned(private, True)
     state = {'binding': binding, 'stage': 'PREPARING', 'attempted': False, 'fallbackUsed': False,
-             'beforeNative': sorted(p.name for p in temp.glob('assembled-member-admin-native-*')),
+             'beforeNative': sorted(p.name for p in temp.glob(NATIVE_GLOB)),
              'beforeBrowser': sorted(p.name for p in temp.glob('p09b-*'))}
+    if SELECTED_PROFILE==COMPOSITION:state['compositionStartedMonotonic']=time.monotonic()
     private_json(private / 'state.json', state, True)
     need(git(app, 'rev-parse', 'HEAD') == CANDIDATE and git(app, 'rev-parse', 'HEAD^{tree}') == TREE
          and git(app, 'status', '--porcelain', '--untracked-files=no') == '', 'assembled_app_copy_not_exact')
@@ -645,7 +828,7 @@ def prepare():
         need(config.returncode == 1 and not config.stdout, 'assembled_git_credential_not_allowed')
     capsule_dir = private / 'capsule'
     capsule_dir.mkdir(mode=0o700)
-    unpack_capsule((HERE / 'sealed-v4b-app-f07.tar').read_bytes(), capsule_dir)
+    unpack_capsule((HERE / CAPSULE_FILE).read_bytes(), capsule_dir)
     need(Path('/opt/google/chrome/chrome').is_file()
          and sha(Path('/opt/google/chrome/chrome').read_bytes()) == CHROME, 'assembled_existing_chrome_pin_required')
     need(Path('/var/run/docker.sock').is_socket(), 'assembled_existing_local_docker_required')
@@ -711,12 +894,17 @@ def execute():
     need(node, 'assembled_existing_node_required')
     args = [node, '--import', 'tsx', 'scripts/testing/consultation-tickets/assembled-native.mjs', '--execute',
             '--allocation-id', binding['executionAllocationId'], '--driver-contract-sha256', DRIVER]
+    if SELECTED_PROFILE==COMPOSITION:
+        need(0<=time.monotonic()-state['compositionStartedMonotonic']<22*60,'assembled_composition_invalid')
     with (private / 'native.log').open('xb') as log:
         process = subprocess.Popen(args, cwd=app, env=safe_env(private), stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
         state.update(pid=process.pid, birth=birth(process.pid), stage='RUNNING')
         private_json(private / 'state.json', state)
         try:
-            state['exitCode'] = process.wait(timeout=25 * 60)
+            remaining=25*60
+            if SELECTED_PROFILE==COMPOSITION:
+                remaining=max(0.001,22*60-(time.monotonic()-state['compositionStartedMonotonic']))
+            state['exitCode'] = process.wait(timeout=remaining)
         except (subprocess.TimeoutExpired, KeyboardInterrupt):
             state['timedOutOrInterrupted'] = True
             stop_child(state)
@@ -729,7 +917,7 @@ def execute():
 
 
 def native_state(temp, private, state):
-    new = [p for p in temp.glob('assembled-member-admin-native-*') if p.name not in state['beforeNative']]
+    new = [p for p in temp.glob(NATIVE_GLOB) if p.name not in state['beforeNative']]
     need(len(new) <= 1, 'assembled_native_temp_ambiguous')
     if not new:
         return None
@@ -794,6 +982,7 @@ def cleanup(temp, private, app, state):
 
 
 def verify_native_state(data, private):
+    if SELECTED_PROFILE==COMPOSITION:return verify_composition_state(data,private)
     need(data and data['migrations'] == expected_sql(private), 'assembled_applied_sql_not_exact')
     local = Path(data['local'])
     posts = Counter()
@@ -1012,15 +1201,17 @@ def finalize():
     public.mkdir(exist_ok=True)
     need(not public.is_symlink(), 'assembled_artifact_location')
     report_path = public / 'receipt.json'
+    expected_status='PASS_BOUNDED_P03_COMPOSITION_NATIVE' if SELECTED_PROFILE==COMPOSITION else 'PASS_BOUNDED_ASSEMBLED_NATIVE'
     if report_path.exists():
         previous = json.loads(report_path.read_bytes())
         need(previous.get('binding') == binding, 'assembled_existing_receipt_binding')
-        need(previous.get('status') == 'PASS_BOUNDED_ASSEMBLED_NATIVE', 'assembled_existing_failure_no_replay')
+        need(previous.get('status') == expected_status, 'assembled_existing_failure_no_replay')
         return previous['status']
     report = {'schemaVersion': 'assembled-native-ci.v1', 'status': 'FAIL_NATIVE_NOT_ACCEPTED', 'binding': binding,
               'source': {'commit': CANDIDATE, 'tree': TREE, 'capsuleSha256': CAPSULE, 'driverContractSha256': DRIVER},
               'nativeAttempted': state['attempted'], 'targetInstall': 'NOT_APPLIED', 'arashAcceptance': 'UNOBSERVED',
               'privateArtifactsUploaded': False, 'automaticReplay': False}
+    if SELECTED_PROFILE==COMPOSITION:report['schemaVersion']='p03-composition-native-ci.v1'
     try:
         data = cleanup(temp, private, app, state)
         report['ownedCleanupReadback'] = 'CONFIRMED'
@@ -1029,10 +1220,14 @@ def finalize():
         raw = (private / 'native.log').read_bytes()
         need(len(raw) <= 64 * 1024 * 1024, 'assembled_native_log_bound')
         payload = {'log': raw.decode('utf8'), 'binding': binding, 'tempRoot': str(temp), 'independent': independent}
-        result = command([shutil.which('node'), str(HERE / 'receipt.mjs'), str(app)], env=safe_env(private),
-                         body=json.dumps(payload).encode(), timeout=30)
-        safe = json.loads(result)
-        need(safe.get('status') == 'PASS_BOUNDED_ASSEMBLED_NATIVE', 'assembled_sanitized_receipt_required')
+        if SELECTED_PROFILE==COMPOSITION:
+            need(0<=time.monotonic()-state['compositionStartedMonotonic']<=25*60,'assembled_composition_invalid')
+            safe=project_composition(raw,independent,binding)
+        else:
+            result = command([shutil.which('node'), str(HERE / 'receipt.mjs'), str(app)], env=safe_env(private),
+                             body=json.dumps(payload).encode(), timeout=30)
+            safe = json.loads(result)
+        need(safe.get('status') == expected_status, 'assembled_sanitized_receipt_required')
         report.update(safe)
         report['privateLogSha256'] = sha(raw)
     except Exception as error:
@@ -1041,12 +1236,12 @@ def finalize():
         diagnostics, raw = failure_observation(state, temp, private)
         report['failureDiagnostics'] = diagnostics
         report['privateLogSha256'] = sha(raw) if raw is not None else None
-        report['writeOutcomeUnknown'] = write_outcome_unknown(state, raw if raw is not None else b'')
+        report['writeOutcomeUnknown'] = (True if write_outcome_unknown(state,raw or b'') else None) if SELECTED_PROFILE==COMPOSITION else write_outcome_unknown(state,raw or b'')
     # Only this freshly constructed projection is eligible for upload, never logs.
     private_json(report_path, report, True)
     state['stage'] = 'FINALIZED'
     private_json(private / 'state.json', state)
-    need(report['status'] == 'PASS_BOUNDED_ASSEMBLED_NATIVE', 'assembled_native_not_accepted_see_receipt')
+    need(report['status'] == expected_status, 'assembled_native_not_accepted_see_receipt')
     return report['status']
 
 

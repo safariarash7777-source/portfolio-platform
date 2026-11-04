@@ -23,6 +23,24 @@ on:
         type: boolean
         required: false
         default: false
+      acceptance_profile:
+        description: Explicit reviewed acceptance profile; parent remains default
+        type: choice
+        required: false
+        default: assembled-member-admin-v1
+        options: [assembled-member-admin-v1, p03-composition-e0-v1]
+      candidate_sha:
+        description: Exact reviewed app SHA required for composition only
+        type: string
+        required: false
+      capsule_sha256:
+        description: Exact reviewed composition capsule SHA256
+        type: string
+        required: false
+      driver_sha256:
+        description: Exact reviewed composition driver contract SHA256
+        type: string
+        required: false
       allocation_id:
         description: Coordinator allocation UUID for this one fresh native run
         type: string
@@ -125,6 +143,9 @@ jobs:
       # منطقِ خالص است و اینجا آزموده می‌شود — نه با اجرای واقعی روی Production.
       - name: Deploy gate tests
         run: npm run test:deploy
+
+      - name: Assembled offline source contracts
+        run: python3 scripts/testing/assembled-native-ci/test_run.py
 
       # build آخر است: گران‌ترین گام، بعد از ارزان‌ترین بازخوردها.
       - name: Build
@@ -371,7 +392,7 @@ jobs:
     needs: [ci]
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.assembled_native == true }}
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: ${{ inputs.acceptance_profile == 'p03-composition-e0-v1' && 25 || 35 }}
     defaults:
       run:
         working-directory: control
@@ -388,7 +409,7 @@ jobs:
       - name: Exact isolated app and SQL Git copy
         uses: actions/checkout@v4
         with:
-          ref: f07e0543c46cea88822dc0d400080b5bb94bef91
+          ref: ${{ inputs.acceptance_profile == 'p03-composition-e0-v1' && 'e0b930927563d7f9f6d79e848917c4ba0d77ed6f' || 'f07e0543c46cea88822dc0d400080b5bb94bef91' }}
           path: assembled-candidate
           persist-credentials: false
       - uses: actions/setup-node@v4

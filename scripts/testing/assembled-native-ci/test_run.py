@@ -638,7 +638,9 @@ class Workflow(unittest.TestCase):
         literal = re.search(r'export const checks = Object\.freeze\(\[(.*?)\]\);', receipt, re.S).group(1)
         self.assertEqual(tuple(re.findall(r"'([^']+)'", literal)), runner.OBSERVED_CHECKS)
         self.assertEqual(len(set(runner.OBSERVED_CHECKS)), 14)
-        tree = ast.parse((HERE / 'run.py').read_text(encoding='utf8'))
+        historical = (HERE / 'fixtures/run-d253.py.txt').read_bytes()
+        self.assertEqual(hashlib.sha256(historical).hexdigest(), '097ed514103524b5cfb1df9c82a690752e39652639504178c1c971c5ad654153')
+        tree = ast.parse(historical.decode('utf8'))
         # The sole authorized execution-frame delta is the reviewed capsule filename.
         prepare = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'prepare')
         filenames = [node for node in ast.walk(prepare) if isinstance(node, ast.Constant)
@@ -657,9 +659,30 @@ class Workflow(unittest.TestCase):
                      else [ast.dump(child, include_attributes=False) for child in node] for node in parts])
         self.assertEqual(hashlib.sha256(text.encode()).hexdigest(), '23c8a3ff905dc217178b10d13ae335892d38a28eea64e0e7f3da455c7028b5d3')
 
+    def test_ordinary_offline_step_has_exact_shape_and_no_runtime_authority(self):
+        text = (HERE.parents[2] / '.github/workflows/ci.yml').read_text(encoding='utf8')
+        # Match a complete step up to its next sibling, not merely a substring.
+        name = '      - name: Assembled offline source contracts'
+        self.assertEqual(text.splitlines().count(name), 1)
+        tail = text.split(name + '\n', 1)[1]
+        block = tail.split('\n      - ', 1)[0]
+        body = '\n'.join(line for line in block.splitlines() if line.strip() and not line.lstrip().startswith('#'))
+        self.assertEqual(body, '        run: python3 scripts/testing/assembled-native-ci/test_run.py')
+        # This exact step must belong to the existing quality job, before its next job.
+        lines = text.splitlines(); index = lines.index(name)
+        job = next(line for line in reversed(lines[:index]) if re.fullmatch(r'  [A-Za-z0-9_-]+:', line))
+        self.assertEqual(job, '  quality:')
+        self.assertEqual(text.count('        run: python3 scripts/testing/assembled-native-ci/test_run.py\n'), 1)
+
     def test_ordinary_five_jobs_are_byte_equivalent_and_optional_job_is_explicit(self):
         text = (HERE.parents[2] / '.github/workflows/ci.yml').read_text(encoding='utf8')
-        normal = text.split('jobs:\n', 1)[1].split('\n  # Optional native execution', 1)[0].rstrip() + '\n'
+        # Preserve the exact parent hash after removing this one reviewed step only.
+        step = '      - name: Assembled offline source contracts\n        run: python3 scripts/testing/assembled-native-ci/test_run.py\n'
+        self.assertEqual(text.count(step), 1)
+        self.assertEqual(text.count('      - name: Assembled offline source contracts\n'), 1)
+        normal = text.split('jobs:\n', 1)[1].split('\n  # Optional native execution', 1)[0]
+        self.assertEqual(normal.count(step), 1)
+        normal = normal.replace('\n' + step, '', 1).rstrip() + '\n'
         self.assertEqual(hashlib.sha256(normal.encode()).hexdigest(), '15804e4906da441cfbd4926c77566ad9989777c65022d850075cdd261bd60d73')
         optional = text.split('  assembled-native-bounded:', 1)[1]
         self.assertIn("github.event_name == 'workflow_dispatch' && inputs.assembled_native == true", optional)
@@ -669,6 +692,241 @@ class Workflow(unittest.TestCase):
         self.assertNotIn('CI: true', optional)
         self.assertNotIn('GITHUB_ACTIONS: true', optional)
         self.assertNotIn('tee ', optional)
+
+
+class CompositionCurrentFrame(unittest.TestCase):
+    def setUp(self):
+        keys=['SELECTED_PROFILE','CANDIDATE','TREE','CAPSULE','DRIVER','PREFIX','CAPSULE_FILE','NATIVE_GLOB','OVERLAY_NAMES']
+        self.saved={key:getattr(runner,key) for key in keys}
+        self.addCleanup(lambda:[setattr(runner,key,value) for key,value in self.saved.items()])
+
+    def choose(self):
+        spec=runner.COMPOSITION_SPEC
+        return {'acceptance_profile':runner.COMPOSITION,'candidate_sha':spec['application'],
+                'capsule_sha256':spec['capsuleSha256'],'driver_sha256':spec['driverSha256']}
+
+    def test_current_actual_context_binds_four_inputs_and_reviewed_head(self):
+        with tempfile.TemporaryDirectory() as folder:
+            event=Path(folder)/'event.json';env=synthetic_env();env['GITHUB_EVENT_PATH']=str(event)
+            inputs={**self.choose(),'assembled_native':True,'allocation_id':env['ASSEMBLED_ALLOCATION_ID'],'reviewed_helper_sha':env['ASSEMBLED_REVIEWED_SHA']}
+            event.write_text(json.dumps({'inputs':inputs}))
+            with patch.dict(os.environ,env),patch.object(runner.sys,'platform','linux'),patch.object(runner,'git',return_value=env['GITHUB_SHA']):
+                bound=runner.actual_context()
+                self.assertEqual(bound['acceptanceProfile'],runner.COMPOSITION)
+                self.assertEqual(bound['candidateCommit'],self.choose()['candidate_sha'])
+                for field in ['candidate_sha','capsule_sha256','driver_sha256','reviewed_helper_sha']:
+                    bad={**inputs,field:'0'*len(inputs[field])};event.write_text(json.dumps({'inputs':bad}))
+                    with self.subTest(field=field),self.assertRaises(ValueError):runner.actual_context()
+                event.write_text(json.dumps({'inputs':inputs}))
+                with patch.object(runner,'git',return_value='0'*40),self.assertRaises(ValueError):runner.actual_context()
+
+    def test_current_prepare_routes_exact_capsule_without_native_operations(self):
+        for composition in [False,True]:
+            for key,value in self.saved.items():setattr(runner,key,value)
+            if composition:runner.select_profile(self.choose())
+            with self.subTest(composition=composition),tempfile.TemporaryDirectory() as folder,ExitStack() as stack:
+                temp=Path(folder);private=temp/'private';app=temp/'app';app.mkdir()
+                binding={'workflowCommit':'a'*40};materializer=SimpleNamespace(apply=unittest.mock.Mock())
+                loader=SimpleNamespace(exec_module=lambda _:None)
+                stack.enter_context(patch.object(runner,'actual_context',return_value=binding))
+                stack.enter_context(patch.object(runner,'paths',return_value=(temp,temp,private,app)))
+                stack.enter_context(patch.object(runner,'owned'))
+                journal=stack.enter_context(patch.object(runner,'private_json'))
+                def git(repo,*args):
+                    if args==('rev-parse','HEAD'):return runner.CANDIDATE
+                    if args==('rev-parse','HEAD^{tree}'):return runner.TREE
+                    if args==('status','--porcelain','--untracked-files=no'):return ''
+                    if args==('remote','get-url','origin'):return 'https://github.com/'+runner.REPOSITORY
+                    raise AssertionError('unexpected git read')
+                stack.enter_context(patch.object(runner,'git',side_effect=git))
+                stack.enter_context(patch.object(runner.subprocess,'run',return_value=SimpleNamespace(returncode=1,stdout=b'')))
+                reads=[]
+                def read(path):reads.append(path.name);return b'synthetic'
+                stack.enter_context(patch.object(runner.Path,'read_bytes',read))
+                stack.enter_context(patch.object(runner.Path,'is_file',return_value=True))
+                stack.enter_context(patch.object(runner.Path,'is_socket',return_value=True))
+                stack.enter_context(patch.object(runner,'sha',return_value=runner.CHROME))
+                unpack=stack.enter_context(patch.object(runner,'unpack_capsule'))
+                stack.enter_context(patch.object(runner.importlib.util,'spec_from_file_location',return_value=SimpleNamespace(loader=loader)))
+                stack.enter_context(patch.object(runner.importlib.util,'module_from_spec',return_value=materializer))
+                stack.enter_context(patch.object(runner,'expected_sql',return_value=[]))
+                self.assertEqual(runner.prepare(),'PREPARED_NATIVE_NOT_RUN')
+                expected='sealed-p03-composition-e0-v1.tar' if composition else 'sealed-v4b-app-f07.tar'
+                self.assertIn(expected,reads);unpack.assert_called_once();materializer.apply.assert_called_once_with(private/'capsule/overlay',app,runner.DRIVER)
+                self.assertEqual(journal.call_args.args[1]['stage'],'PREPARED')
+
+    def test_current_sql_and_state_routing_keep_default_and_new_scope_separate(self):
+        for composition in [False,True]:
+            for key,value in self.saved.items():setattr(runner,key,value)
+            if composition:runner.select_profile(self.choose())
+            capsule=HERE/runner.CAPSULE_FILE
+            with tempfile.TemporaryDirectory() as folder:
+                private=Path(folder);destination=private/'capsule';destination.mkdir()
+                runner.unpack_capsule(capsule.read_bytes(),destination)
+                pins=runner.expected_sql(private)
+                self.assertEqual(len(pins),19 if composition else 18)
+                self.assertEqual(pins[-1]['file'],'scripts/testing/consultation-tickets/owned-fixture.sql' if composition else 'supabase/migrations/20261003094327_member_investment_scope_reviews.sql')
+            if composition:
+                sentinel={'source':'synthetic-independent'}
+                with patch.object(runner,'verify_composition_state',return_value=sentinel) as verify:
+                    self.assertIs(runner.verify_native_state({'test':1},Path('synthetic')),sentinel)
+                    verify.assert_called_once()
+
+    def test_current_workflow_hard_bound_and_no_changed_parent_default(self):
+        source=(HERE.parents[2]/'.github/workflows/ci.yml').read_text(encoding='utf8')
+        self.assertIn("default: assembled-member-admin-v1",source)
+        self.assertIn("timeout-minutes: ${{ inputs.acceptance_profile == 'p03-composition-e0-v1' && 25 || 35 }}",source)
+        self.assertIn("'e0b930927563d7f9f6d79e848917c4ba0d77ed6f' || 'f07e0543c46cea88822dc0d400080b5bb94bef91'",source)
+
+
+"""Synthetic/AST tests only: never imports or executes the native controller."""
+import ast,copy,hashlib,json,pathlib,re,unittest
+from collections import Counter
+source=(HERE/'run.py').read_text(encoding='utf-8')
+tree=ast.parse(source)
+names={'composition_json','select_profile','reconcile_composition','project_composition','need','sha'}
+constants={'COMPOSITION','COMPOSITION_SPEC','SELECTED_PROFILE','CAPSULE_FILE','NATIVE_GLOB','CANDIDATE','TREE','CAPSULE','DRIVER','PREFIX','OVERLAY_NAMES'}
+selected=[n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name in names or isinstance(n,ast.Assign) and all(isinstance(t,ast.Name) and t.id in constants for t in n.targets)]
+ns={'json':json,'re':re,'hashlib':hashlib,'Counter':Counter,'UUID':re.compile(r'[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}'),'HEX':re.compile(r'[a-f0-9]{64}')}
+exec(compile(ast.Module(body=selected,type_ignores=[]),'controller-pure-functions','exec'),ns)
+def uid(n):return f'00000000-0000-4000-8000-{n:012d}'
+def compact(x):return json.dumps(x,separators=(',',':'),ensure_ascii=False)
+def fixture():
+    sha=ns['COMPOSITION_SPEC']['application'];run='consultation-ticket-'+uid(500)
+    ids=[uid(i) for i in range(1,5)];relation=uid(10);session=uid(11);request=uid(12);h='a'*64
+    caps=[('a','/api/portfolio/holdings',2),('a','/api/personal-finance/cash-flow',1),('a','/api/consultation',4),('owner','/api/consultation',5),('a','/api/consultation/tickets',3),('owner','/api/consultation/tickets',2),('a','/api/consultation/ticket-attempts',5),('owner','/api/consultation/ticket-attempts',2),('owner','/api/consultation/replies',2)]
+    direct_caps={'/api/portfolio/holdings':2,'/api/personal-finance/cash-flow':1,'/api/consultation':9,'/api/consultation/tickets':1,'/api/consultation/ticket-attempts':2,'/api/consultation/replies':2}
+    r={};i=0;direct=[];counts=Counter()
+    for actor,path,count in caps:
+        for j in range(count):
+            i+=1;body={'clientToken':uid(100+i),'expectedActorId':ids[0 if actor=='a' else 2]}
+            if path=='/api/portfolio/holdings':body={'client_token':uid(100+i),'base_version':j,'positions':[]}
+            if path=='/api/personal-finance/cash-flow':body={'clientToken':uid(100+i),'expectedOwnerId':ids[0]}
+            raw=compact(body)
+            status=503 if path.endswith('ticket-attempts') and j==0 and actor=='a' else 409 if path.endswith('replies') and j==1 else 201
+            r[f'composition-intent-{i:03}.json']={'kind':'intent','ordinal':i,'actor':actor,'path':path,'body':raw,'bodySha256':hashlib.sha256(raw.encode()).hexdigest(),'token':body.get('clientToken',body.get('client_token'))}
+            r[f'composition-result-{i:03}.json']={'kind':'result','ordinal':i,'status':status}
+            if counts[path]<direct_caps[path]:direct.append((path,body,status));counts[path]+=1
+    for path,count,status in [('/auth/v1/admin/users',4,201),('/auth/v1/token?grant_type=password',9,200),('/auth/v1/logout',4,204),('/rest/v1/rpc/lookup_consultation_ticket_attempt',1,403)]:
+        direct.extend((path,{'synthetic':True},status) for _ in range(count))
+    for i,(path,body,status) in enumerate(direct,1):
+        r[f'intent-{i:03}.json']={'sha':sha,'path':path,'body':body};r[f'transport-result-{i:03}.json']={'sha':sha,'path':path,'ordinal':i,'status':status}
+    r['transport-observation.json']={'schema':'p03-owned-transport.v1','sha':sha,'runId':run,'poisoned':False,'rejected':0,'authorizedPostRequests':35,'sdkReads':18}
+    summary={'sessionId':session,'requestId':request,'contentHash':h,'replyReceipt':{'command':{'relationshipId':relation}}}
+    browser=['browser-preflight-before-provision','real-member-page-default-right-closed','real-201-discard-live-page-one-post','same-attempt-get-only-recovery','fresh-sdk-context-and-reload-get-only','real-advisor-response-and-member-followup','real-revoke-and-private-fallback-denial','desktop-mobile-and-private-storage-cache-url','unconfirmed-command-destroy-and-server-intent-get-only','unknown-preparation-destroy-no-command','owned-browser-cleanup']
+    r['composition-observed.json']={'schema':'p03-composition-observed.v1','sha':sha,'appSha':sha,'runId':run,'summary':summary,'unknownScope':'P03-ticket-only','p09UnknownSave':'NOT_COVERED_MISSING_JOURNAL','p09HistoricalAcceptanceTransferred':False,'modelCalls':0,'workbookPosts':0,'browserChecks':[{'name':n,'status':'PASS'} for n in browser]}
+    r['composition-binding.json']={'runId':run,'appSha':sha,'appTree':ns['COMPOSITION_SPEC']['tree'],'authCreatedIds':ids,'actors':[{'id':i,'run':run} for i in ids]}
+    r['composition-database-observation.json']={'databaseMarker':run,'authUsers':4,'relationships':[{'id':relation,'clientId':ids[0],'advisorId':ids[2],'revoked':True}],'sessions':[{'id':session,'relationshipId':relation,'contentHash':h,'version':1}], 'requests':2,'ticketEvents':5,'preparedIntents':6,'summaryEvents':3,'publications':1,'feedback':3,'replyVersions':1,'holdingVersions':2,'cashFlowVersions':1,'requestLinks':[{'requestId':v,'relationshipId':relation} for v in [request,uid(13)]],'recommendationLinks':[{'requestId':request,'version':3,'recommendation':{'sessionId':session,'version':1,'contentHash':h}}]}
+    r['composition-database-observation.json']['holdingOwnership']=[{'userId':ids[0],'version':i,'clientToken':uid(100+i)} for i in (1,2)]
+    return r,run,sha
+class CompositionPureContractCI(unittest.TestCase):
+    def test_synthetic_complete_only(self):
+        r,run,sha=fixture();got=ns['reconcile_composition'](r,run,sha)
+        self.assertEqual((got['productAttempts'],got['directPostAttempts'],got['browserProductAttempts']),(26,35,9))
+        self.assertNotIn('body',compact(got))
+    def test_missing_unknown_and_typed_counts(self):
+        for field,value in [('authorizedPostRequests',None),('authorizedPostRequests',True),('poisoned',None),('rejected',False),('sdkReads','18')]:
+            with self.subTest(field=field,value=value):
+                r,run,sha=fixture();r['transport-observation.json'][field]=value
+                with self.assertRaises((ValueError,KeyError,TypeError)):ns['reconcile_composition'](r,run,sha)
+    def test_no_unknown_result_or_replay_or_source_substitution(self):
+        for change in [lambda r:r.pop('composition-result-001.json'),lambda r:r['composition-result-001.json'].update(status=None),lambda r:r['transport-result-001.json'].update(sha='b'*40),lambda r:r['composition-intent-001.json'].update(bodySha256='b'*64),lambda r:r.update({'intent-036.json':r['intent-001.json']})]:
+            r,run,sha=fixture();change(r)
+            with self.assertRaises((ValueError,KeyError,TypeError)):ns['reconcile_composition'](r,run,sha)
+    def test_uuid_hash_db_and_actor_reconcile(self):
+        for change in [lambda r:r['composition-database-observation.json'].update(databaseMarker='foreign'),lambda r:r['composition-database-observation.json']['sessions'][0].update(contentHash='b'*64),lambda r:r['composition-database-observation.json']['recommendationLinks'][0].update(requestId=uid(999)),lambda r:r['composition-database-observation.json'].update(requests=True),lambda r:r['composition-database-observation.json']['relationships'][0].update(clientId=uid(2))]:
+            r,run,sha=fixture();change(r)
+            with self.assertRaises((ValueError,KeyError,TypeError)):ns['reconcile_composition'](r,run,sha)
+    def test_holdings_real_body_uses_sql_owner_and_token_not_invented_field(self):
+        r,run,sha=fixture();body=json.loads(r['composition-intent-001.json']['body'])
+        self.assertNotIn('expectedOwnerId',body);self.assertNotIn('expectedActorId',body)
+        self.assertTrue(ns['reconcile_composition'](r,run,sha)['databaseMatched'])
+        for key,value in [('userId',uid(2)),('clientToken',uid(999)),('version',True)]:
+            bad=copy.deepcopy(r);bad['composition-database-observation.json']['holdingOwnership'][0][key]=value
+            with self.assertRaises(ValueError):ns['reconcile_composition'](bad,run,sha)
+    def test_json_duplicate_nonfinite_and_empty_rejected(self):
+        for raw in [b'{"x":1,"x":2}',b'{"x":NaN}',b'',b'{']:
+            with self.assertRaises(ValueError):ns['composition_json'](raw)
+    def test_explicit_profile_bindings_and_parent_default(self):
+        self.assertEqual(ns['select_profile']({}),'assembled-member-admin-v1')
+        for inputs in [{'acceptance_profile':ns['COMPOSITION']},{'candidate_sha':'e'*40},{'acceptance_profile':'unknown'}]:
+            with self.assertRaises(ValueError):ns['select_profile'](inputs)
+        spec=ns['COMPOSITION_SPEC'];inputs={'acceptance_profile':ns['COMPOSITION'],'candidate_sha':spec['application'],'capsule_sha256':spec['capsuleSha256'],'driver_sha256':spec['driverSha256']}
+        ns['select_profile'](inputs);self.assertEqual(ns['CANDIDATE'],spec['application'])
+        self.assertEqual(ns['NATIVE_GLOB'],'consultation-ticket-native-*')
+        with self.assertRaises(ValueError):ns['select_profile']({**inputs,'driver_sha256':'0'*64})
+    def test_projector_rejects_literal_pass_missing_evidence(self):
+        row={'status':'PASS_BOUNDED_P03_COMPOSITION_NATIVE','scenarios':13}
+        for raw in [b'',b'P03_ASSEMBLED_NATIVE_AUTH '+compact(row).encode(),b'P03_ASSEMBLED_NATIVE_AUTH {"status":"PASS","status":"FAIL"}']:
+            with self.assertRaises((ValueError,KeyError,TypeError)):ns['project_composition'](raw,{}, {})
+    def test_projector_full_synthetic_and_redaction(self):
+        r,run,sha=fixture();ind=ns['reconcile_composition'](r,run,sha)
+        ind.update(dockerContainers=0,dockerNetworks=0,browserTemps=0,fallbackUsed=False,compositionProofSha256='a'*64,transportProofSha256='b'*64,secret='SYNTHETIC_MUST_NOT_EMIT')
+        names=['isolation-attested','four-fresh-auth-users-and-sdk-getuser','browser-owned-nonzero-dossier-real-consent','assembled-real-member-navigation-and-read-only-dom','browser-real-consumer-checked','composition-summary-published-exact-link','composition-question-reply-and-feedback','composition-fresh-summary-dom-get-only','composition-feedback-stable-before-basis-change','composition-financial-basis-change-readonly','composition-isolation-revocation-history','composition-auth-api-cdp-counts','composition-owned-browser-cleanup']
+        lines=[b'P03_ASSEMBLED_NATIVE_CHECK '+compact({'name':n,'status':'PASS'}).encode() for n in names]
+        row={'sha':sha,'allocationId':uid(600),'status':'PASS_BOUNDED_P03_COMPOSITION_NATIVE','scenarios':13,'cleanup':'REMOVED_OWNED_RESOURCES','compositionProofSha256':'a'*64,'transportProofSha256':'b'*64,'secret':'SYNTHETIC_MUST_NOT_EMIT'}
+        raw=b'\n'.join(lines+[b'P03_ASSEMBLED_NATIVE_AUTH '+compact(row).encode()]);binding={'executionAllocationId':uid(600)}
+        result=ns['project_composition'](raw,ind,binding)
+        self.assertNotIn('SYNTHETIC_MUST_NOT_EMIT',compact(result));self.assertEqual(result['nativeChecks'],13)
+        for key,value in [('directPostAttempts',None),('unresolved',False),('databaseMatched',None),('compositionProofSha256','c'*64)]:
+            bad={**ind,key:value}
+            with self.assertRaises(ValueError):ns['project_composition'](raw,bad,binding)
+        with self.assertRaises(ValueError):ns['project_composition'](raw+b'\n'+lines[0],ind,binding)
+    def test_no_controller_entry_or_native_import_executed(self):
+        self.assertFalse(any(isinstance(n,(ast.Import,ast.ImportFrom)) for n in selected))
+        self.assertEqual({n.name for n in selected if isinstance(n,ast.FunctionDef)},names)
+
+
+def valid_guarded_pure_output(output,count):
+    if not isinstance(output,str) or type(count) is not int or count<1:return False
+    lines=output.splitlines()
+    if lines.count('P03_PURE_GUARD_INSTALLED_V1')!=1 or not lines or lines[0]!='P03_PURE_GUARD_INSTALLED_V1':return False
+    expected={'tests':count,'pass':count,'fail':0,'cancelled':0,'skipped':0}
+    return all(lines.count('# '+key+' '+str(value))==1 and len([line for line in lines if line.startswith('# '+key+' ')])==1 for key,value in expected.items())
+
+class PureGuardReceipt(unittest.TestCase):
+    def test_guard_proof_is_required_before_tests_and_exact_counts(self):
+        good='P03_PURE_GUARD_INSTALLED_V1\nTAP version 13\n# tests 31\n# pass 31\n# fail 0\n# cancelled 0\n# skipped 0\n'
+        self.assertTrue(valid_guarded_pure_output(good,31))
+        for bad in [good.replace('P03_PURE_GUARD_INSTALLED_V1\n',''),good+'P03_PURE_GUARD_INSTALLED_V1\n',good.replace('# fail 0','# fail 1'),good.replace('# skipped 0','# skipped 1'),good.replace('# cancelled 0','# cancelled 1'),'banner\n'+good,good.replace('# tests 31','# tests 30')]:
+            self.assertFalse(valid_guarded_pure_output(bad,31))
+
+class CompositionCapsulePureCI(unittest.TestCase):
+    def test_pinned_composition_contract_and_sdk_transport_offline(self):
+        # The same existing offline step runs these tests on Node22 in CI.
+        # Only four fixed pure modules are materialized; no driver is imported.
+        raw=(HERE/'sealed-p03-composition-e0-v1.tar').read_bytes()
+        self.assertEqual(hashlib.sha256(raw).hexdigest(),runner.COMPOSITION_SPEC['capsuleSha256'])
+        prefix='overlay/scripts/testing/consultation-tickets/'
+        with tarfile.open(fileobj=io.BytesIO(raw)) as archive:
+            members=archive.getmembers()
+            expected={prefix+n for n in runner.COMPOSITION_SPEC['overlayNames']}|{prefix+'assembled-overlay.json','apply-overlay.py','REVIEW.fa.md'}
+            self.assertEqual(len(members),len(expected));self.assertEqual({m.name for m in members},expected)
+            self.assertTrue(all(m.isfile() for m in members));self.assertLess(sum(m.size for m in members),256*1024)
+            contract_raw=archive.extractfile(prefix+'assembled-overlay.json').read()
+            self.assertEqual(hashlib.sha256(contract_raw).hexdigest(),runner.COMPOSITION_SPEC['driverSha256'])
+            contract=runner.composition_json(contract_raw)
+            self.assertEqual(contract['candidateCommit'],runner.COMPOSITION_SPEC['application'])
+            pins={p['path']:p for p in contract['files']}
+            self.assertEqual(len(pins),len(contract['files']))
+            names=['composition-contract.mjs','composition-contract.test.mjs','composition-transport.mjs','composition-transport.test.mjs']
+            with tempfile.TemporaryDirectory(prefix='p03-pure-ci-') as folder:
+                for name in names:
+                    data=archive.extractfile(prefix+name).read();pin=pins['scripts/testing/consultation-tickets/'+name]
+                    self.assertEqual(len(data),pin['bytes']);self.assertEqual(hashlib.sha256(data).hexdigest(),pin['sha256'])
+                    with (Path(folder)/name).open('xb') as handle:handle.write(data)
+                guard=HERE/'pure-node-guard.cjs';probe=HERE/'pure-node-guard.test.mjs'
+                self.assertEqual(hashlib.sha256(guard.read_bytes()).hexdigest(), '4f572d05be71696339860f301d4891f6dbe0e4ab3a7f70570052ce69eb9bb028')
+                self.assertEqual(hashlib.sha256(probe.read_bytes()).hexdigest(), 'a6bc1a6c3e54ae71b853674761415b03761555a8e3e3bd33f473ecfe25158d72')
+                # Direct node:test auto-run: no --test runner or permitted child spawn.
+                entry=Path(folder)/'pure-entry.mjs'
+                entry.write_bytes(b"import './composition-contract.test.mjs';\nimport './composition-transport.test.mjs';\n")
+                env={k:v for k,v in os.environ.items() if k.upper() in ['PATH','SYSTEMROOT','TEMP','TMP']}
+                for script,count in [(probe,4),(entry,31)]:
+                    result=subprocess.run([shutil.which('node'),'--test-reporter=tap','--require',str(guard),str(script)],env=env,capture_output=True,timeout=60)
+                    output=result.stdout.decode('utf8')+result.stderr.decode('utf8')
+                    self.assertEqual(result.returncode,0,output)
+                    self.assertTrue(valid_guarded_pure_output(output,count),output)
 
 
 if __name__ == '__main__':

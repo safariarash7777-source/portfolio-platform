@@ -97,3 +97,19 @@ python3 scripts/testing/assembled-native-ci/test_run.py -v
 The Python tests include the 25 Node receipt tests using the actual sealed browser
 validator. Synthetic records stay within those offline tests and never become a
 native receipt. The optional CI job runs these checks before preparing a fixture.
+
+
+## Explicit P03 composition profile
+
+The default f07/v4b profile and its historical receipts stay unchanged. The
+`p03-composition-e0-v1` profile requires all four exact inputs: acceptance_profile,
+candidate_sha=e0b930927563d7f9f6d79e848917c4ba0d77ed6f, capsule_sha256 and
+driver_sha256 from COMPOSITION_SPEC. It reuses this controller and owned cleanup;
+it does not install the primary database or connect real service entitlement.
+
+Ordinary PR CI runs the existing Python source/mock suite plus pinned Node guard
+probes and 31 pure contract/transport tests without native execution. Explicit
+allocated native execution remains separately gated. Proposed runtime scope is
+13 native/11 browser checks and 19 SQL files; actual counts remain unobserved
+until a fresh authorized run and independent journal/database/cleanup readback.
+P09 workbook unknown-save is NOT_COVERED on the frozen e0 application.

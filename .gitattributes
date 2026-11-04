@@ -1,0 +1,3 @@
+scripts/testing/assembled-native-ci/fixtures/run-d253.py.txt -text
+scripts/testing/assembled-native-ci/pure-node-guard.cjs -text
+scripts/testing/assembled-native-ci/pure-node-guard.test.mjs -text
