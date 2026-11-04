@@ -1,0 +1,33 @@
+Browser tab: 10, Title: "نماد فولاد — قیمت، تاریخچه و تحلیل بنیادی · آرش صفری", URL: "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1405&quarters=8&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#reports".
+The following is a diff from the previous accessibility tree with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+~					104 button (expanded) منبع و زمان این گزارش, Secondary Actions: Collapse
++					173 definition list
++						174 container شناسهٔ رکورد
++							175 text شناسهٔ رکورد
++						176 text ۱۱۶۵۳
++						177 container پایان دورهٔ ذخیره‌شده
++							178 text پایان دورهٔ ذخیره‌شده
++						179 text ۲۰۲۶-۰۹-۲۲
++						180 container پایان دورهٔ داخل گزارش
++							181 text پایان دورهٔ داخل گزارش
++						182 text ۱۴۰۵-۰۶-۳۱
++						183 container تاریخ ارسال منبع
++							184 text تاریخ ارسال منبع
++						185 text ۱۴۰۵/۰۷/۲۹
++						186 container ساعت ارسال منبع
++							187 text ساعت ارسال منبع
++						188 text ۲۰:۵۰:۲۶
++						189 container زمان انتشار به UTC
++							190 text زمان انتشار به UTC
++						191 text نامعلوم؛ تبدیل معتبر ثبت نشده
++						192 container دریافت رکورد؛ متن اصلی منبع
++							193 text دریافت رکورد؛ متن اصلی منبع
++						194 text 2026-10-25T10:15:56.894105+00:00
++						195 container دریافت رکورد؛ UTC با دقت میلی‌ثانیه
++							196 text دریافت رکورد؛ UTC با دقت میلی‌ثانیه
++						197 text 2026-10-25T10:15:56.894Z
++						198 container نسخهٔ پردازش
++							199 text نسخهٔ پردازش
++						200 text ۲؛ از متادیتای رکورد
++					201 text نشانهٔ اصلاحیه در این رکورد ثبت شده است.
+The focused UI element is 104 button (expanded) منبع و زمان این گزارش, Secondary Actions: Collapse

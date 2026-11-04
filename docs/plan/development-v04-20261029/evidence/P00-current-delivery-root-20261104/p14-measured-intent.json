@@ -1,0 +1,32 @@
+{
+  "atUtc": "2026-11-04T09:48:20Z",
+  "purpose": "one exact-source measured-chart Preview with approved read-only binding",
+  "source": "7fd355b8f7c39328b5f545831e1ced41bb9e1936",
+  "sourceCi": 41809462871,
+  "existingDeploymentId": "dpl_GzGEvfjWjDUkWqH1JPU8BjBRucw1",
+  "request": {
+    "deploymentId": "dpl_GzGEvfjWjDUkWqH1JPU8BjBRucw1",
+    "withLatestCommit": false,
+    "project": "prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp",
+    "name": "portfolio-platform",
+    "target": "omitted means Preview"
+  },
+  "pair": [
+    {
+      "id": "9NEamcg9U7e4wcSX",
+      "key": "FUNDAMENTAL_READ_URL"
+    },
+    {
+      "id": "rbwHDphHrW3rf8Hk",
+      "key": "FUNDAMENTAL_READ_ANON_KEY"
+    }
+  ],
+  "originalBranch": "codex/media-archive-filters-20261103",
+  "branch": "codex/p14-company-views-20261104",
+  "scopeOnly": true,
+  "valuesRead": false,
+  "valuesChanged": false,
+  "productionChanged": false,
+  "rollback": "restore both scopes in finally, read back both and other45metadata; no deployment on partial/unverified scope",
+  "automaticRetry": false
+}

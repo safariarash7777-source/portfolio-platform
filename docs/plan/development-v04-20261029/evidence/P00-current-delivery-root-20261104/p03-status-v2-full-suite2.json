@@ -1,0 +1,28 @@
+{
+  "createdAtUtc": "2026-11-04T09:29:56.874254+00:00",
+  "baseCommit": "c5d6da6eecdbbe345ede09bda2f0e203028f8b5e",
+  "result": "PASS_OFFLINE_ONLY",
+  "discoveredTests": 68,
+  "pass": 68,
+  "errors": 0,
+  "fail": 0,
+  "skip": 0,
+  "sourceFixAttempted": false,
+  "rerun": true,
+  "nativeNetworkSql": false,
+  "pins": {
+    "run.py": "4536ba9b55a3267b76efac0c9d4817b664ddf1763863546a88fe751897902f2a",
+    "test_run.py": "477fc2534254248c331acc71aa8ec548f871ca2097afbd6f5bb2ab30bb4d55a7",
+    "pure-node-guard.cjs": "4f572d05be71696339860f301d4891f6dbe0e4ab3a7f70570052ce69eb9bb028",
+    "sealed-p03-composition-e0-v1.tar": "67d67bc171f92ee7308c738b9aedaa6ef730158aca75703fccd10c9b2d205afb"
+  },
+  "harnessSha256": "9a974a3ff124bfc5028408a4893a2abb4e106dc2db193d68d23e55eef6f656ab",
+  "logSha256": "6545d812158c2d3cc835bdd2f666c7bb0d9d9908a8268ae226c51e214db88840",
+  "passCount": 68,
+  "reason": "exact-base missing workflow fixture restored; no source patch change",
+  "previousReceiptSha256": "1bc92bbaa72da66d6d19121025f55d702c2f913bccf935ec92b89adba4f021da",
+  "workflowPins": {
+    "ci.yml": "8bbb301b8aeb8d551f44afefe208bf6c4f9cd3a9acd7762bbb39c132cd1b52a1",
+    "assembled-native-runner-observation.yml": "e8ef8a0c20cd9e6bd29b4b1ae2c21313abf273a3fd510d1665d7dc5a862802b9"
+  }
+}

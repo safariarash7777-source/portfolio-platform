@@ -1,3 +1,25 @@
+## خروجی قابل استفادهٔ تازه — ۴ نوامبر، آزمون۰۹:۵۲–۰۹:۵۵UTC
+
+**شرکت: هشت نمودار واقعی روی دو چیدمان، در مرورگر پذیرفتهٔ محدود شدند.** source7fd355b8 در [PR408](https://github.com/safariarash7777-source/portfolio-platform/pull/408)، Preview dpl_Hqnmqm3e6VyfY8s7X8YXUKGbttAq:
+[پرسش‌محور فولاد](https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=decision&monthlyYear=1403&quarters=8#fundamental) · [پروندهٔ مستند فولاد](https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=8#fundamental).
+[رسید مرورگر](p14-measured-browser-receipt.json)، [دسکتاپ و tooltip](p14-measured-browser-tooltip-desktop.png)، [موبایل](p14-measured-browser-mobile.png)، [CI/tree مستقل root](p14-measured-root-linux-ci-review.json).
+
+اجرای۱۷۷٫۴۹۷ثانیه با۳ناوبری اصلی و دوreload هدفمند، N10/N30 واقعی فولاد را نمایش داد. هشت نمودار دارای محور و اندازهٔ مثبت در تب بنیادی دیده شدند؛ بعد از hidden/show چهار تب و عرض۱۴۲۵→۳۷۵→۱۴۲۵ برگشتند. scrollWidth در دو عرض برابرclientWidth بود. دوview و جزئیات/منابع، Back/Forward هم‌سند و انتخاب‌های سال۱۴۰۳، سری محصول گرم/تفکیک نامعلوم و۸فصل بعد ازreload حفظ شدند. نشان commit درDOM همان7fd بود. تغییر سال عمداً سری نرخ را بهall بازمی‌گرداند؛ این رفتار موجود با ازبین‌رفتن انتخاب هنگامreload یکی نیست. tooltip سود خالص واقعاً دیده و باhide/show بسته شد.
+
+کنسول warn/error در این اجرای محدود خالی بود؛ شمارش مستقل pageerror یا شبکه/POST موجود نیست. رفع هر یک از۲۳warning تاریخی جدا نسبت داده نشده؛ این نتیجه به همه نمادها/سایرمرزهای نمودار تعمیم ندارد.۱۳مرز source اصلاح شدند اما۸نمودار دارای داده در این پذیرش حاضر بودند. نرخ معتبر/واحد مقدار، تفکیک بازار، قیمت روز/تاریخچه و انتخاب بصری آرش هنوز بازند؛ مقدار نامعلوم صفر نشد و دادهٔ آموزشی وارد محصول نشده است. **این نسخه به Production وارد نشده است.**
+
+۵CI معمول41809462871 و tree واقعیa8a203 برابرsource7fd تأیید شدند. [دو خطای انتشار Git و رفع harness ازAPI رسمی](p14-measured-source-reconciliation.json) شفاف ثبت‌اند؛۲۵آزمون واقعی صفحه پس از اصلاح resolver مسیرکامپوننت پاس شدند، assertion حذف نشد. [ساخت یک snapshot و restore](p14-measured-create-and-restore.json) همان دوscope حساس خواندنی را فقط برای build جابه‌جا کرد؛ مقدار خوانده/عوض نشد، هر دوscope بهmedia برگشتند و۴۵metadata دیگر ثابت ماندند. [READY metadata](p14-measured-ready-metadata.json).
+
+**عضو: HTTP۴۰۰ به همان تلاش متصل و نقص بدنهٔ آزمون پیدا شد.** [اجرای41809710663](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41809710663) رویaf پس از۵CI و۶۸آزمون تشخیصی معتبر انجام شد. [رسید خام امن](p03-native-418097-receipt.json)، [ZIP اصلی](p03-native-418097-safe-artifact.zip)، [تطبیق مستقل](p03-native-418097-independent-readback.json). مرز composition-default-prepare/before، HTTP400 و کد ثابتp03_composition_result_binding اکنون از پاسخِ همانordinal/path/source/body binding مشاهده شدند؛ از شمارPOST حدس زده نشده‌اند. cleanupCONFIRMED،writeOutcomeUnknown=null،noReplay و نصب اصلیNOT_APPLIED.
+
+خواندن source دقیقe0 و بررسی مستقل actualvalidator نشان داد body ثابتِ denied در آزمایش، command.kind را ابتدا می‌فرستد؛ validator خروجیcanonical باrelationship/request/baseVersion و سپسkind می‌سازد. [قید bytes در محصول](https://github.com/safariarash7777-source/portfolio-platform/blob/e0b930927563d7f9f6d79e848917c4ba0d77ed6f/lib/consultation/ticketIntent.ts#L24) rawbody را پیش ازparent/prepare رد می‌کند. C همان بدنه را با validator واقعی آماده می‌کند؛ **۴۰۰ موفق محسوب نمی‌شود و guard محصول یا انتظار۵۰۳ حق خدمت تضعیف نمی‌شود**. اصلاح canonical هنوز درsource/peer و ثبت آزمون آفلاین است، رویcontroller اجرا/منتشر نشده است. rawprivate log/body خوانده یا منتشر نشده است.
+
+**تعهد بسته‌شده و باز:** برش هشدار اندازه/بازگشت نمودارها در Preview فولاد و تمرین نصب/برگشت یک گزارش PR412/5fe رویLinux مستقل بستهٔ فنی قابل‌بررسی دارند؛ کلP07/P14 یا مسیر عضو کامل پذیرفته نیست. منبع تا دریافت تازه و واحد معتبر هنوز باز، SQL اصلیNOT_APPLIED، حق خدمتNOT_CONNECTED، بازیابی پژوهش پس ازبسته‌شدن صفحهNOT_RUN و مسیر کاملNOT_ACCEPTED. پذیرش صندوق رویProduction1ceba و sourceبرابرmain5ec همان رسید قبلی را دارد. Liara همچنانCR@8/count32 وremoteHalt/backendUNKNOWN است؛ Hermes نصب/انتقال/مدل/هزینه‌ای ندارد.
+
+سه تحویل بعدی: **root/C** اصلاحcanonical با validator واقعی، CI و اجرای مستقل مجاز؛ **A/root** بستن مقدار دارای شاهد با طرح آمادهٔ نصب/برگشتPR412؛ **root** هویت backend/quota وbackupتازه قابل‌بازیابی مقصد. بازخورد بصری آرش دربارهٔ همین دوPreview ثبت می‌شود؛ کار مستقل برای نظر یا مانع سرور متوقف نمی‌شود.
+
+### رسید پیشین؛ وضعیت در زمان خود
+
 ## نتیجهٔ اجرای تازهٔ عضو — ۰۹:۱۸UTC
 
 [اجرای41805399352](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41805399352) رویc5d6، با allocation/ac782 و execution/2402 مستقل، **FAIL_NATIVE_NOT_ACCEPTED** شد. [رسید خام امن](p03-native-418053-receipt.json)، [ZIP اصلی](p03-native-418053-safe-artifact.zip) و [readback مستقل root](p03-native-418053-independent-readback.json) به همین پرونده افزوده شدند. پنج بررسی عادی قبل از native موفق بودند؛ قبولی آن‌ها نتیجهٔ native را تغییر نمی‌دهد.

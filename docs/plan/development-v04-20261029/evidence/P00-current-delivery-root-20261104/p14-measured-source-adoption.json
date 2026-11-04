@@ -1,0 +1,54 @@
+{
+  "schema": "root-p14-measured-chart-adoption.v1",
+  "atUtc": "2026-11-04T09:34:55.532875+00:00",
+  "baseP14": "e9ce72bf8c40eaa96f8202dfc4cc41c72fa37159",
+  "mainMerged": "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+  "baseAfterMerge": "4377e5ebffc363ffa308f37ce7025076f968ce7e",
+  "source": "3e7269bcc394e96e644b5b4cccc9ee494b54e1c0",
+  "sourceTree": "81ccfaebbe02e2b7cd8739a749e9814887be8095",
+  "paths": [
+    "components/symbol/FundamentalCharts.tsx",
+    "components/symbol/MeasuredResponsiveContainer.test.mjs",
+    "components/symbol/MeasuredResponsiveContainer.tsx",
+    "components/symbol/MonthlySalesCharts.test.tsx",
+    "components/symbol/MonthlySalesCharts.tsx",
+    "components/symbol/QuarterlyCharts.tsx",
+    "package.json"
+  ],
+  "measuredChartSites": 13,
+  "tabAndUrlSourceByteEqual": true,
+  "financialAndNullLogicChanged": false,
+  "rootChangesBeyondPacket": [
+    "explicit React import supports actual tsx SSR runner",
+    "three meaningful geometry tests registered in existing test:core",
+    "test VM identifier renamed to satisfy existing Next lint rule"
+  ],
+  "uniqueTargetedTests": 18,
+  "regressionLog": {
+    "file": "root-behavior-and-regression-tests2.txt",
+    "sha256": "80a4101b29415e189e59bf5ac108ecf0b5016dc90c44bc9ca466e9e234e59c99",
+    "result": "PASS"
+  },
+  "threeGeometryCasesRerunAfterVmIdentifierFix": {
+    "file": "root-measurement-tests3.txt",
+    "sha256": "997060c0db5efdcb6596ad92fcb6d16e48a469792929abf6ed88fb21dce22b4b",
+    "exitCode": 0
+  },
+  "typecheck": {
+    "file": "root-typecheck.txt",
+    "result": "PASS"
+  },
+  "lint": {
+    "file": "root-eslint2.txt",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "exitCode": 0
+  },
+  "firstSsrAndLintFailureLogsRetained": true,
+  "browserAcceptance": "NOT_RUN",
+  "all23WarningsResolved": "NOT_PROVEN",
+  "internalChartTooltipMayResetWhenHidden": true,
+  "productionAppearanceChanged": false,
+  "primarySqlOrProviderCalled": false,
+  "skillReview": "react-best-practices: stable hooks/effect cleanup; functional setState; hydration-compatible initial empty chart; no fetch/dependency/waterfall",
+  "ci": "PENDING"
+}

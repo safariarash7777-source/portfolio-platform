@@ -1,0 +1,97 @@
+Browser tab: 10, Title: "نماد فولاد — قیمت، تاریخچه و تحلیل بنیادی · آرش صفری", URL: "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=4#fundamental".
+1 AXWebArea نماد فولاد — قیمت، تاریخچه و تحلیل بنیادی · آرش صفری, URL: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=4#fundamental
+	2 container
+		3 link Description: نشان آرش صفری آرش صفری تحلیلگر و مشاور سرمایه‌گذاری, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/
+		4 container ناوبری اصلی
+			5 link Description: بازار, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/market
+			6 pop up button (collapsed) تحلیل‌ها, Secondary Actions: Expand
+			7 pop up button (collapsed) محصولات, Secondary Actions: Expand
+			8 link Description: دربارهٔ آرش, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/about
+		9 button فعال‌سازی حالت تیره
+			10 image
+		11 link Description: مشاوره, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/#waitlist
+		12 link Description: ورود, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/dashboard
+	13 container
+		14 text دادهٔ تابلوی بازار از بانک داده در این بارگذاری دریافت نشد. گزارش‌های بنیادی از مسیر جداگانه خوانده می‌شوند؛ این وضعیت به معنی نبود گزارش شرکت نیست.
+		15 container مسیر صفحه
+			16 link Description: میز بازار, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/market
+			17 link Description: بانک داده, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/data
+			18 text فولاد
+		19 text پروندهٔ نماد
+		20 heading فولاد, Value: 1
+			21 text فولاد
+		22 text فولاد مبارکه اصفهان
+		23 link Description: دانلود تاریخچه (CSV), Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/api/data/%D9%81%D9%88%D9%84%D8%A7%D8%AF/history.csv
+		24 text دادهٔ این بخش در دسترس نیست
+		25 text زمان معتبر قیمت نامشخص است
+		26 text زمان دریافت نامعلوم
+		27 text دادهٔ جاری این نماد در اسنپ‌شات بازار نیست
+		28 text تاریخچه و گزارش‌های ثبت‌شده، اگر موجود باشند، مستقل نمایش داده می‌شوند؛ مقدار جاری با صفر جایگزین نشده است.
+		29 text قیمت پایانی — تغییر روز — ارزش معاملات — ورود پول حقیقی (امروز) — P/E — EPS (ریال) ۶۳ ارزش بازار — حجم معاملات —
+		30 container مقایسهٔ دو چیدمان شرکت
+			31 text پیش‌نمایش صفحهٔ شرکت
+			32 text دو چیدمان از همان گزارش‌ها و نمودارها؛ دادهٔ ناموجود تکمیل نمی‌شود.
+			33 container چیدمان صفحه
+				34 checkbox نمای پرسش‌محور, Value: 0
+				35 checkbox پروندهٔ مستند, Value: 1
+		36 tab group بخش‌های صفحهٔ نماد
+			37 tab (selected, settable, boolean) نمای کلی, Value: 1
+			38 tab (selectable, settable, boolean) بنیادی, Value: 0
+			39 tab (selectable, settable, boolean) گزارش‌ها, Value: 0
+			40 tab (selectable, settable, boolean) مجامع, Value: 0
+		41 container نمای کلی
+			42 container
+				43 heading تاریخچهٔ قیمت و جریان پول, Value: 2
+					44 text تاریخچهٔ قیمت و جریان پول
+				45 text خواندن تاریخچهٔ این نماد موفق نشد؛ این وضعیت به معنی نبود تاریخچه در سامانه نیست. دوباره صفحه را باز کنید.
+			46 container
+				47 heading تابلوی زندهٔ نماد, Value: 2
+					48 text تابلوی زندهٔ نماد
+				49 text در حال دریافت دادهٔ زندهٔ نماد…
+		50 container مسیرِ حسابِ کاربری
+			51 text با حساب، این صفحه‌ها به هم وصل می‌شوند
+			52 text واچ‌لیست، یادداشت و پیگیریِ نمادها به حسابِ شما گره می‌خورد.
+			53 link Description: برگشت به میزِ بازار, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/market
+			54 link Description: ورود, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/login?next=%2Fsymbol%2F%25D9%2581%25D9%2588%25D9%2584%25D8%25A7%25D8%25AF%3Ffrom%3D%252Fdata
+			55 link Description: ساختِ حساب, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/register?next=%2Fsymbol%2F%25D9%2581%25D9%2588%25D9%2584%25D8%25A7%25D8%25AF%3Ffrom%3D%252Fdata
+		56 text همهٔ اعداد از گزارش‌های رسمی کدال، فید بازار و تاریخچهٔ ثبت‌شدهٔ سامانه استخراج و با کد محاسبه شده‌اند؛ دادهٔ ناموجود «—» نمایش داده می‌شود. این صفحه صرفاً اطلاع‌رسانی و آموزشی است و توصیهٔ خرید یا فروش نیست. مسئولیت تصمیم‌گیری با خود سرمایه‌گذار است.
+	57 container
+		58 image نشان آرش صفری
+		59 text آرش صفری تحلیلگر و مشاور سرمایه‌گذاری
+		60 link Description: تلگرام, Value: t.me/arashsafariiiiiiii
+		61 link Description: اینستاگرام, Value: instagram.com/arash_safariiiiiii/
+		62 heading بازارها, Value: 4
+			63 text بازارها
+		64 content list
+			65 link Description: رصد بازار, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/market
+			66 link Description: نقشهٔ بازار, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/market/map
+			67 link Description: صندوق‌ها, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/market/funds
+			68 link Description: تابلوی سهام, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/market/stocks
+			69 link Description: اختیار معامله, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/market/options
+			70 link Description: کدال, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/codal
+			71 link Description: بانک داده, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/data
+		72 heading تحلیل‌ها, Value: 4
+			73 text تحلیل‌ها
+		74 content list
+			75 link Description: کارنامه, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/analyses
+			76 link Description: یادداشت روزانه, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/notes
+			77 link Description: تحلیل‌های اجتماعی, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/insights
+			78 link Description: واژه‌نامهٔ مالی, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/learn/glossary
+			79 link Description: سناریوی سبد, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/tools/portfolio-scenario
+		80 heading محصولات, Value: 4
+			81 text محصولات
+		82 content list
+			83 link Description: وبینار, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/webinars
+			84 link Description: مشاورهٔ اختصاصی, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/#waitlist
+		85 heading درباره و قوانین, Value: 4
+			86 text درباره و قوانین
+		87 content list
+			88 link Description: دربارهٔ آرش صفری, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/about
+			89 link Description: راهنمای استفاده از سایت, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/help
+			90 link Description: حریم خصوصی, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/legal/privacy
+			91 link Description: شرایط استفاده, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/legal/terms
+			92 link Description: سلب مسئولیت, Value: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/legal/disclaimer
+		93 text سرمایه‌گذاری در بازارهای مالی با ریسکِ از دست رفتنِ اصلِ سرمایه همراه است. هیچ بازدهی تضمین نمی‌شود و مسئولیتِ تصمیمِ نهایی با خودِ سرمایه‌گذار است. © ۱۴۰۵ آرش صفری
+		94 link Description: preview · 7fd355b, Help: Preview build — نسخهٔ آزمایشی، نه Production, Value: github.com/safariarash7777-source/portfolio-platform/commit/7fd355b8f7c39328b5f545831e1ced41bb9e1936
+
+The focused UI element is 1 AXWebArea نماد فولاد — قیمت، تاریخچه و تحلیل بنیادی · آرش صفری, URL: portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=4#fundamental

@@ -1,0 +1,28 @@
+{
+  "schema": "root-p03-default-prepare-projection-adoption.v1",
+  "atUtc": "2026-11-04T09:40:46Z",
+  "base": "c5d6da6eecdbbe345ede09bda2f0e203028f8b5e",
+  "source": "af41371715f7b905d65876d0362b4a4dbd432041",
+  "paths": [
+    "scripts/testing/assembled-native-ci/run.py",
+    "scripts/testing/assembled-native-ci/test_run.py"
+  ],
+  "peerFullOfflineTests": 68,
+  "peerFullOfflineResult": "PASS",
+  "rootRepeatedOfflineTests": false,
+  "ci": 41808965021,
+  "ciStateAtRecord": "IN_PROGRESS",
+  "projection": "fixed typed HTTP status, exact owner/stage/ordinal/path/source/body admission binding; missing or invalid null",
+  "capsuleSha256": "67d67bc171f92ee7308c738b9aedaa6ef730158aca75703fccd10c9b2d205afb",
+  "capsuleAndDriverChanged": false,
+  "acceptanceChanged": false,
+  "runtimeChanged": false,
+  "networkOrNativeExecuted": false,
+  "privateJournalReadByRoot": false,
+  "oldRunsReplayed": false,
+  "rootCause": "UNKNOWN",
+  "primaryInstall": "NOT_APPLIED",
+  "firstPushRejectedThenRemoteOldHeadReadBack": true,
+  "secondPush": "CONFIRMED",
+  "publicationProof": "GitHub CI41808965021 for exact af413717"
+}

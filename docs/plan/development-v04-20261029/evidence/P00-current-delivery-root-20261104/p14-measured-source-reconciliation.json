@@ -1,0 +1,54 @@
+{
+  "schema": "root-p14-api-source-reconciliation.v1",
+  "recordedAtUtc": "2026-11-04T09:51:03Z",
+  "pr": 408,
+  "firstSource": "3e7269bcc394e96e644b5b4cccc9ee494b54e1c0",
+  "firstCI": 41808714358,
+  "firstCoreFailure": {
+    "job": 126502157254,
+    "fullDecodedCharactersRead": 926444,
+    "error": "Cannot find module './MeasuredResponsiveContainer' in offline clientComponent VM helper; all product assertions retained"
+  },
+  "localHarnessFix": "6910f4f1ec17cd88c7e9a3b1f74f24150bcadfa0",
+  "localCanonicalTree": "58124991bd109b983be1d129348a1828e1b1c4cf",
+  "gitPushAttempts": [
+    {
+      "result": "REMOTE_INTERNAL_SERVER_ERROR",
+      "timeUtc": "2026-11-04T09:40:00Z"
+    },
+    {
+      "result": "REMOTE_INTERNAL_SERVER_ERROR",
+      "timeUtc": "2026-11-04T09:41:02Z"
+    }
+  ],
+  "remoteHeadReadbackBeforeApi": "3e7269bcc394e96e644b5b4cccc9ee494b54e1c0",
+  "remoteLocalCommitGet": "422 commit absent; no branch update claimed",
+  "publication": {
+    "channel": "GitHub connected plugin update_file",
+    "oldContentBlob": "5f1dd76623603030089c946bd18746f8abbf30b8",
+    "newContentBlob": "9d69a0a2d95bbfae7eaa866dde27d4c310c8dea3",
+    "publishedCommit": "7fd355b8f7c39328b5f545831e1ced41bb9e1936",
+    "publishedTree": "58124991bd109b983be1d129348a1828e1b1c4cf",
+    "treeEqualLocalCanonical": true,
+    "parent": "3e7269bcc394e96e644b5b4cccc9ee494b54e1c0"
+  },
+  "localReconciliation": {
+    "mergeCommit": "3d72c922e216d940b80b4306536a81e216a3b33b",
+    "parents": [
+      "6910f4f1ec17cd88c7e9a3b1f74f24150bcadfa0",
+      "7fd355b8f7c39328b5f545831e1ced41bb9e1936"
+    ],
+    "treeUnchanged": true,
+    "published": false,
+    "resetOrForce": false
+  },
+  "localDirectPageTests": {
+    "command": "node node_modules/tsx/dist/cli.mjs app/symbol/[symbol]/page.test.ts",
+    "pass": 25,
+    "fail": 0,
+    "note": "Literal direct file command required; Node --test treated brackets as glob and did not execute this file in an earlier 16-test invocation. Success was established by separate direct invocation and Linux CI."
+  },
+  "knownSsrTermWarningsRetained": true,
+  "browserAcceptance": "NOT_RUN_AT_RECORD",
+  "productionChanged": false
+}

@@ -1,0 +1,34 @@
+{
+  "schema": "root-p14-measured-full-linux-ci-review.v1",
+  "atUtc": "2026-11-04T09:48:20Z",
+  "source": "7fd355b8f7c39328b5f545831e1ced41bb9e1936",
+  "sourceTree": "58124991bd109b983be1d129348a1828e1b1c4cf",
+  "localEquivalentCommit": "6910f4f1ec17cd88c7e9a3b1f74f24150bcadfa0",
+  "localEquivalentTreeEqual": true,
+  "run": 41809462871,
+  "actualCiCheckout": "a8a2035ff790b207a131a3a09a9c5ecadab0d5f6",
+  "actualCiTree": "58124991bd109b983be1d129348a1828e1b1c4cf",
+  "wholeTreeEqual": true,
+  "requiredJobs": "5_SUCCESS",
+  "optionalNative": "SKIPPED",
+  "fullDecodedLogsRead": [
+    {
+      "job": 126504838268,
+      "characters": 1285016
+    },
+    {
+      "job": 126504808494,
+      "characters": 3280819
+    }
+  ],
+  "pageRegressionPass": 25,
+  "firstFailedCi": 41808714358,
+  "firstFailedCoreJob": 126502157254,
+  "firstFailureCause": "offline VM resolved relative measured-container dependency from page test instead of actual component module",
+  "firstFailureLogFullyReadCharacters": 926444,
+  "firstAssertionsRetained": true,
+  "gitPushServerFailures": 2,
+  "publicationChannel": "GitHub connected plugin update_file with exact old blob lease; subsequent Git fetch/tree verification",
+  "newBrowserAcceptance": "NOT_RUN",
+  "appearanceProductionChanged": false
+}

@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "createdAtUtc": "2026-11-04T09:27:41.403731+00:00",
+  "verdict": "NOT_DEPLOYED",
+  "noReplay": true,
+  "runtimeCause": "UNKNOWN",
+  "baseCommit": "c5d6da6eecdbbe345ede09bda2f0e203028f8b5e",
+  "files": {
+    "run.py": {
+      "baseSha256": "6083170bbde82defac802a2db7d6ff066fdc8bdf49129b35ab3f0eb333619a47",
+      "proposedSha256": "4536ba9b55a3267b76efac0c9d4817b664ddf1763863546a88fe751897902f2a"
+    },
+    "test_run.py": {
+      "baseSha256": "51d3230c1999dcf5c22090fa6411099daf7f935fc43b97a4f3143da9d8d87be0",
+      "proposedSha256": "477fc2534254248c331acc71aa8ec548f871ca2097afbd6f5bb2ab30bb4d55a7"
+    }
+  },
+  "fullPatchSha256": "145ad61ebc50e25fbf9a6befce44b067e830f7b6e86034d156e555d8fc7ded3d",
+  "deltaSha256": "e1112827a95f2da41dfef3fdad352978b21b2770a1449a6d0695dc9ffc191880",
+  "readmeSha256": "622567fc29b43d82ec9182cf7355ec7d045febefc82c17001b1e1b8ee79f0289",
+  "testLogs": {
+    "binding-closure-tests.txt": "a83ffcef3c387b94d03a039de793ead719250e49d31be9ca97859adb896d4a8b",
+    "targeted-tests.txt": "680ad4140300c6bb7bf7b4f56bdcc9e87c73236eab522e31d95b7af0e85fc5b2"
+  },
+  "finalTests": {
+    "pass": 2,
+    "fail": 0,
+    "selection": "new pure/mock status projection only"
+  },
+  "capsuleChanged": false,
+  "liveActions": false,
+  "privateArtifactRead": false
+}

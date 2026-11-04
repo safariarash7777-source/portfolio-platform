@@ -1,0 +1,13 @@
+{
+  "id": "dpl_Hqnmqm3e6VyfY8s7X8YXUKGbttAq",
+  "url": "portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app",
+  "state": "READY",
+  "target": null,
+  "meta": {
+    "githubCommitRef": "codex/p14-company-views-20261104",
+    "githubCommitSha": "7fd355b8f7c39328b5f545831e1ced41bb9e1936",
+    "githubCommitMessage": "test(charts): resolve client dependencies from their source module",
+    "githubRepo": "portfolio-platform",
+    "githubOrg": "safariarash7777-source"
+  }
+}

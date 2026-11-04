@@ -30,3 +30,7 @@ production-ops-* -text -whitespace
 
 p03-native-418053-* -text -whitespace
 liara-rest-contract-* -text -whitespace
+
+p14-measured-* -text -whitespace
+p03-status-v2-* -text -whitespace
+p03-native-418097-* -text -whitespace

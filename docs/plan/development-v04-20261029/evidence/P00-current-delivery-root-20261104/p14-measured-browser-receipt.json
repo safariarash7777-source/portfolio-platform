@@ -1,0 +1,1367 @@
+{
+  "startedAt": "2026-11-04T09:52:33.719Z",
+  "source": "7fd355b8f7c39328b5f545831e1ced41bb9e1936",
+  "deployment": "dpl_Hqnmqm3e6VyfY8s7X8YXUKGbttAq",
+  "navigationCount": 3,
+  "stages": [
+    {
+      "stage": "initial-settled",
+      "active": [
+        "بنیادی"
+      ],
+      "details": [
+        "منبع و زمان این گزارش",
+        "منبع و زمان این گزارش",
+        "منبع و زمان این گزارش",
+        "منبع و زمان این گزارش",
+        "منبع و زمان این گزارش",
+        "منبع و زمان این گزارش",
+        "منبع و زمان این گزارش",
+        "منبع و زمان این گزارش",
+        "منبع و زمان این گزارش",
+        "منبع و زمان این گزارش",
+        "منبع و زمان این گزارش"
+      ],
+      "scrollWidth": 1425,
+      "selects": [
+        {
+          "options": [
+            {
+              "label": "۱۴۰۵",
+              "value": "1405"
+            },
+            {
+              "label": "۱۴۰۳",
+              "value": "1403"
+            }
+          ],
+          "value": "1403"
+        },
+        {
+          "options": [
+            {
+              "label": "همهٔ سری‌های نرخ موجود",
+              "value": "all"
+            },
+            {
+              "label": "محصولات گرم — تفکیک نامعلوم",
+              "value": "[\"محصولات گرم\",\"نامشخص\"]"
+            },
+            {
+              "label": "محصولات سرد — تفکیک نامعلوم",
+              "value": "[\"محصولات سرد\",\"نامشخص\"]"
+            },
+            {
+              "label": "تختال — تفکیک نامعلوم",
+              "value": "[\"تختال\",\"نامشخص\"]"
+            }
+          ],
+          "value": "all"
+        },
+        {
+          "options": [
+            {
+              "label": "۴ فصل آخر",
+              "value": "4"
+            },
+            {
+              "label": "۸ فصل آخر",
+              "value": "8"
+            },
+            {
+              "label": "۱۲ فصل آخر",
+              "value": "12"
+            }
+          ],
+          "value": "4"
+        }
+      ],
+      "svgs": [
+        {
+          "height": 14,
+          "section": "q-monthly-sales",
+          "width": 14
+        },
+        {
+          "height": 280,
+          "section": "q-monthly-sales",
+          "width": 392.3875122070313
+        },
+        {
+          "height": 14,
+          "section": "q-cumulative",
+          "width": 14
+        },
+        {
+          "height": 280,
+          "section": "q-cumulative",
+          "width": 392.3875122070313
+        },
+        {
+          "height": 14,
+          "section": "quarterly",
+          "width": 14
+        },
+        {
+          "height": 14,
+          "section": "quarterly",
+          "width": 14
+        },
+        {
+          "height": 250,
+          "section": "quarterly",
+          "width": 373.5874938964844
+        },
+        {
+          "height": 14,
+          "section": "quarterly",
+          "width": 14
+        },
+        {
+          "height": 14,
+          "section": "quarterly",
+          "width": 14
+        },
+        {
+          "height": 14,
+          "section": "quarterly",
+          "width": 14
+        },
+        {
+          "height": 250,
+          "section": "quarterly",
+          "width": 373.5874938964844
+        },
+        {
+          "height": 14,
+          "section": "chart-margins",
+          "width": 14
+        },
+        {
+          "height": 14,
+          "section": "chart-margins",
+          "width": 14
+        },
+        {
+          "height": 256,
+          "section": "chart-margins",
+          "width": 392.3875122070313
+        },
+        {
+          "height": 256,
+          "section": "chart-net-profit",
+          "width": 392.3875122070313
+        },
+        {
+          "height": 260,
+          "section": "chart-sales-mix",
+          "width": 392.3875122070313
+        },
+        {
+          "height": 14,
+          "section": "chart-5y-trend",
+          "width": 14
+        },
+        {
+          "height": 14,
+          "section": "chart-5y-trend",
+          "width": 14
+        },
+        {
+          "height": 288,
+          "section": "chart-5y-trend",
+          "width": 846.3875122070312
+        }
+      ],
+      "url": "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=4#fundamental",
+      "width": 1425
+    },
+    {
+      "stage": "selection",
+      "url": "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1405&quarters=8&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#fundamental",
+      "values": [
+        "1405",
+        "[\"محصولات گرم\",\"نامشخص\"]",
+        "8"
+      ]
+    },
+    {
+      "stage": "tab-نمای کلی",
+      "url": "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1405&quarters=8&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#overview",
+      "visibleSvg": 0
+    },
+    {
+      "stage": "tab-گزارش‌ها",
+      "url": "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1405&quarters=8&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#reports",
+      "visibleSvg": 0
+    },
+    {
+      "stage": "tab-مجامع",
+      "url": "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1405&quarters=8&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#assembly",
+      "visibleSvg": 0
+    },
+    {
+      "stage": "tab-بنیادی",
+      "url": "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1405&quarters=8&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#fundamental",
+      "visibleSvg": 8
+    },
+    {
+      "stage": "after-tabs-views-details",
+      "charts": [
+        {
+          "axisLabels": [
+            "فروردین",
+            "خرداد",
+            "تیر",
+            "مرداد",
+            "مهر",
+            "آبان",
+            "آذر",
+            "دی",
+            "اسفند",
+            "۰",
+            "۷ همت",
+            "۱۳ همت",
+            "۲۰ همت",
+            "۲۶ همت"
+          ],
+          "h": 280,
+          "hostHeight": 280,
+          "hostWidth": 392.3999938964844,
+          "section": "q-monthly-sales",
+          "svgRole": null,
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "فروردین",
+            "خرداد",
+            "تیر",
+            "شهریور",
+            "مهر",
+            "آبان",
+            "آذر",
+            "دی",
+            "اسفند",
+            "۰",
+            "۶۵ همت",
+            "۱۳۰همت",
+            "۱۹۵همت",
+            "۲۶۰همت"
+          ],
+          "h": 280,
+          "hostHeight": 280,
+          "hostWidth": 392.3999938964844,
+          "section": "q-cumulative",
+          "svgRole": null,
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "ف۲ ۱۴۰۳",
+            "ف۳ ۱۴۰۳",
+            "ف۴ ۱۴۰۳",
+            "ف۱ ۱۴۰۴",
+            "ف۲ ۱۴۰۴",
+            "ف۳ ۱۴۰۴",
+            "ف۴ ۱۴۰۴",
+            "ف۱ ۱۴۰۵",
+            "-۵۰۰۰۰",
+            "۰",
+            "۵۰۰۰۰",
+            "۱۰۰۰۰۰",
+            "۱۵۰۰۰۰"
+          ],
+          "h": 250,
+          "hostHeight": 250,
+          "hostWidth": 373.6000061035156,
+          "section": "quarterly",
+          "svgRole": null,
+          "w": 373.5874938964844
+        },
+        {
+          "axisLabels": [
+            "ف۲ ۱۴۰۳",
+            "ف۳ ۱۴۰۳",
+            "ف۴ ۱۴۰۳",
+            "ف۱ ۱۴۰۴",
+            "ف۲ ۱۴۰۴",
+            "ف۳ ۱۴۰۴",
+            "ف۴ ۱۴۰۴",
+            "ف۱ ۱۴۰۵",
+            "-۵۰",
+            "-۲۵",
+            "۰",
+            "۲۵",
+            "۵۰"
+          ],
+          "h": 250,
+          "hostHeight": 250,
+          "hostWidth": 373.6000061035156,
+          "section": "quarterly",
+          "svgRole": null,
+          "w": 373.5874938964844
+        },
+        {
+          "axisLabels": [
+            "ناخالص",
+            "عملیاتی",
+            "خالص",
+            "٪۰",
+            "٪۲۵",
+            "٪۵۰",
+            "٪۷۵",
+            "٪۱۰۰"
+          ],
+          "h": 256,
+          "hostHeight": 256,
+          "hostWidth": 392.3999938964844,
+          "section": "chart-margins",
+          "svgRole": null,
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "دورهٔ ۳ماههٔ منتهی به ۱۴۰۵/۰۳/۳۱",
+            "۰ میلیاردتومان",
+            "۴٫۵ همت",
+            "۹٫۰ همت",
+            "۱۳٫۵ همت",
+            "۱۸٫۰ همت"
+          ],
+          "h": 256,
+          "hostHeight": 256,
+          "hostWidth": 392.3999938964844,
+          "section": "chart-net-profit",
+          "svgRole": "application",
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "٪۰",
+            "٪۱۵",
+            "٪۳۰",
+            "٪۴۵",
+            "٪۵۸.۵",
+            "محصولات گرم",
+            "محصولات سرد",
+            "تختال",
+            "محصولاتپوشش دار",
+            "گندله"
+          ],
+          "h": 260,
+          "hostHeight": 260,
+          "hostWidth": 392.3999938964844,
+          "section": "chart-sales-mix",
+          "svgRole": "application",
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "۱۴۰۲",
+            "۱۴۰۳",
+            "۰ میلیاردتومان",
+            "۷۰٫۰ همت",
+            "۱۴۰ همت",
+            "۲۱۰ همت",
+            "۲۸۰ همت",
+            "٪۰",
+            "٪۲۵",
+            "٪۵۰",
+            "٪۷۵",
+            "٪۱۰۰"
+          ],
+          "h": 288,
+          "hostHeight": 288,
+          "hostWidth": 846.4000244140625,
+          "section": "chart-5y-trend",
+          "svgRole": null,
+          "w": 846.3875122070312
+        }
+      ],
+      "clientWidth": 1425,
+      "scrollWidth": 1425,
+      "url": "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=8#fundamental",
+      "values": [
+        "1403",
+        "all",
+        "8"
+      ],
+      "view": "dossier"
+    },
+    {
+      "stage": "mobile",
+      "charts": [
+        {
+          "axisLabels": [
+            "اردیبهشت",
+            "تیر",
+            "شهریور",
+            "آبان",
+            "آذر",
+            "دی",
+            "اسفند",
+            "۰",
+            "۷ همت",
+            "۱۳ همت",
+            "۲۰ همت",
+            "۲۶ همت"
+          ],
+          "h": 280,
+          "hostHeight": 280,
+          "hostWidth": 301.6000061035156,
+          "section": "q-monthly-sales",
+          "svgRole": null,
+          "w": 301.5874938964844
+        },
+        {
+          "axisLabels": [
+            "اردیبهشت",
+            "تیر",
+            "شهریور",
+            "آبان",
+            "آذر",
+            "دی",
+            "اسفند",
+            "۰",
+            "۶۵ همت",
+            "۱۳۰همت",
+            "۱۹۵همت",
+            "۲۶۰همت"
+          ],
+          "h": 280,
+          "hostHeight": 280,
+          "hostWidth": 301.6000061035156,
+          "section": "q-cumulative",
+          "svgRole": null,
+          "w": 301.5874938964844
+        },
+        {
+          "axisLabels": [
+            "ف۲ ۱۴۰۳",
+            "ف۳ ۱۴۰۳",
+            "ف۴ ۱۴۰۳",
+            "ف۱ ۱۴۰۴",
+            "ف۲ ۱۴۰۴",
+            "ف۳ ۱۴۰۴",
+            "ف۴ ۱۴۰۴",
+            "ف۱ ۱۴۰۵",
+            "-۵۰۰۰۰",
+            "۰",
+            "۵۰۰۰۰",
+            "۱۰۰۰۰۰",
+            "۱۵۰۰۰۰"
+          ],
+          "h": 250,
+          "hostHeight": 250,
+          "hostWidth": 268,
+          "section": "quarterly",
+          "svgRole": null,
+          "w": 268
+        },
+        {
+          "axisLabels": [
+            "ف۲ ۱۴۰۳",
+            "ف۳ ۱۴۰۳",
+            "ف۴ ۱۴۰۳",
+            "ف۱ ۱۴۰۴",
+            "ف۲ ۱۴۰۴",
+            "ف۳ ۱۴۰۴",
+            "ف۴ ۱۴۰۴",
+            "ف۱ ۱۴۰۵",
+            "-۵۰",
+            "-۲۵",
+            "۰",
+            "۲۵",
+            "۵۰"
+          ],
+          "h": 250,
+          "hostHeight": 250,
+          "hostWidth": 268,
+          "section": "quarterly",
+          "svgRole": null,
+          "w": 268
+        },
+        {
+          "axisLabels": [
+            "ناخالص",
+            "عملیاتی",
+            "خالص",
+            "٪۰",
+            "٪۲۵",
+            "٪۵۰",
+            "٪۷۵",
+            "٪۱۰۰"
+          ],
+          "h": 256,
+          "hostHeight": 256,
+          "hostWidth": 301.6000061035156,
+          "section": "chart-margins",
+          "svgRole": null,
+          "w": 301.5874938964844
+        },
+        {
+          "axisLabels": [
+            "دورهٔ ۳ماههٔ منتهی به۱۴۰۵/۰۳/۳۱",
+            "۰ میلیاردتومان",
+            "۴٫۵ همت",
+            "۹٫۰ همت",
+            "۱۳٫۵ همت",
+            "۱۸٫۰ همت"
+          ],
+          "h": 256,
+          "hostHeight": 256,
+          "hostWidth": 301.6000061035156,
+          "section": "chart-net-profit",
+          "svgRole": "application",
+          "w": 301.5874938964844
+        },
+        {
+          "axisLabels": [
+            "٪۰",
+            "٪۱۵",
+            "٪۳۰",
+            "٪۴۵",
+            "٪۵۸.۵",
+            "محصولات گرم",
+            "محصولات سرد",
+            "تختال",
+            "محصولاتپوشش دار",
+            "گندله"
+          ],
+          "h": 260,
+          "hostHeight": 260,
+          "hostWidth": 301.6000061035156,
+          "section": "chart-sales-mix",
+          "svgRole": "application",
+          "w": 301.5874938964844
+        },
+        {
+          "axisLabels": [
+            "۱۴۰۲",
+            "۱۴۰۳",
+            "۰ میلیاردتومان",
+            "۷۰٫۰ همت",
+            "۱۴۰ همت",
+            "۲۱۰ همت",
+            "۲۸۰ همت",
+            "٪۰",
+            "٪۲۵",
+            "٪۵۰",
+            "٪۷۵",
+            "٪۱۰۰"
+          ],
+          "h": 288,
+          "hostHeight": 288,
+          "hostWidth": 301.6000061035156,
+          "section": "chart-5y-trend",
+          "svgRole": null,
+          "w": 301.5874938964844
+        }
+      ],
+      "clientWidth": 375,
+      "scrollWidth": 375,
+      "url": "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=8#fundamental",
+      "values": [
+        "1403",
+        "all",
+        "8"
+      ],
+      "view": "dossier"
+    },
+    {
+      "stage": "desktop-return",
+      "charts": [
+        {
+          "axisLabels": [
+            "فروردین",
+            "خرداد",
+            "تیر",
+            "مرداد",
+            "مهر",
+            "آبان",
+            "آذر",
+            "دی",
+            "اسفند",
+            "۰",
+            "۷ همت",
+            "۱۳ همت",
+            "۲۰ همت",
+            "۲۶ همت"
+          ],
+          "h": 280,
+          "hostHeight": 280,
+          "hostWidth": 392.3999938964844,
+          "section": "q-monthly-sales",
+          "svgRole": null,
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "فروردین",
+            "خرداد",
+            "تیر",
+            "شهریور",
+            "مهر",
+            "آبان",
+            "آذر",
+            "دی",
+            "اسفند",
+            "۰",
+            "۶۵ همت",
+            "۱۳۰همت",
+            "۱۹۵همت",
+            "۲۶۰همت"
+          ],
+          "h": 280,
+          "hostHeight": 280,
+          "hostWidth": 392.3999938964844,
+          "section": "q-cumulative",
+          "svgRole": null,
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "ف۲ ۱۴۰۳",
+            "ف۳ ۱۴۰۳",
+            "ف۴ ۱۴۰۳",
+            "ف۱ ۱۴۰۴",
+            "ف۲ ۱۴۰۴",
+            "ف۳ ۱۴۰۴",
+            "ف۴ ۱۴۰۴",
+            "ف۱ ۱۴۰۵",
+            "-۵۰۰۰۰",
+            "۰",
+            "۵۰۰۰۰",
+            "۱۰۰۰۰۰",
+            "۱۵۰۰۰۰"
+          ],
+          "h": 250,
+          "hostHeight": 250,
+          "hostWidth": 373.6000061035156,
+          "section": "quarterly",
+          "svgRole": null,
+          "w": 373.5874938964844
+        },
+        {
+          "axisLabels": [
+            "ف۲ ۱۴۰۳",
+            "ف۳ ۱۴۰۳",
+            "ف۴ ۱۴۰۳",
+            "ف۱ ۱۴۰۴",
+            "ف۲ ۱۴۰۴",
+            "ف۳ ۱۴۰۴",
+            "ف۴ ۱۴۰۴",
+            "ف۱ ۱۴۰۵",
+            "-۵۰",
+            "-۲۵",
+            "۰",
+            "۲۵",
+            "۵۰"
+          ],
+          "h": 250,
+          "hostHeight": 250,
+          "hostWidth": 373.6000061035156,
+          "section": "quarterly",
+          "svgRole": null,
+          "w": 373.5874938964844
+        },
+        {
+          "axisLabels": [
+            "ناخالص",
+            "عملیاتی",
+            "خالص",
+            "٪۰",
+            "٪۲۵",
+            "٪۵۰",
+            "٪۷۵",
+            "٪۱۰۰"
+          ],
+          "h": 256,
+          "hostHeight": 256,
+          "hostWidth": 392.3999938964844,
+          "section": "chart-margins",
+          "svgRole": null,
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "دورهٔ ۳ماههٔ منتهی به ۱۴۰۵/۰۳/۳۱",
+            "۰ میلیاردتومان",
+            "۴٫۵ همت",
+            "۹٫۰ همت",
+            "۱۳٫۵ همت",
+            "۱۸٫۰ همت"
+          ],
+          "h": 256,
+          "hostHeight": 256,
+          "hostWidth": 392.3999938964844,
+          "section": "chart-net-profit",
+          "svgRole": "application",
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "٪۰",
+            "٪۱۵",
+            "٪۳۰",
+            "٪۴۵",
+            "٪۵۸.۵",
+            "محصولات گرم",
+            "محصولات سرد",
+            "تختال",
+            "محصولاتپوشش دار",
+            "گندله"
+          ],
+          "h": 260,
+          "hostHeight": 260,
+          "hostWidth": 392.3999938964844,
+          "section": "chart-sales-mix",
+          "svgRole": "application",
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "۱۴۰۲",
+            "۱۴۰۳",
+            "۰ میلیاردتومان",
+            "۷۰٫۰ همت",
+            "۱۴۰ همت",
+            "۲۱۰ همت",
+            "۲۸۰ همت",
+            "٪۰",
+            "٪۲۵",
+            "٪۵۰",
+            "٪۷۵",
+            "٪۱۰۰"
+          ],
+          "h": 288,
+          "hostHeight": 288,
+          "hostWidth": 846.4000244140625,
+          "section": "chart-5y-trend",
+          "svgRole": null,
+          "w": 846.3875122070312
+        }
+      ],
+      "clientWidth": 1425,
+      "scrollWidth": 1425,
+      "url": "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=8#chart-5y-trend",
+      "values": [
+        "1403",
+        "all",
+        "8"
+      ],
+      "view": "dossier"
+    },
+    {
+      "stage": "reload-before-final-rate",
+      "charts": [
+        {
+          "axisLabels": [
+            "فروردین",
+            "خرداد",
+            "تیر",
+            "مرداد",
+            "مهر",
+            "آبان",
+            "آذر",
+            "دی",
+            "اسفند",
+            "۰",
+            "۷ همت",
+            "۱۳ همت",
+            "۲۰ همت",
+            "۲۶ همت"
+          ],
+          "h": 280,
+          "hostHeight": 280,
+          "hostWidth": 392.3999938964844,
+          "section": "q-monthly-sales",
+          "svgRole": null,
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "فروردین",
+            "خرداد",
+            "تیر",
+            "شهریور",
+            "مهر",
+            "آبان",
+            "آذر",
+            "دی",
+            "اسفند",
+            "۰",
+            "۶۵ همت",
+            "۱۳۰همت",
+            "۱۹۵همت",
+            "۲۶۰همت"
+          ],
+          "h": 280,
+          "hostHeight": 280,
+          "hostWidth": 392.3999938964844,
+          "section": "q-cumulative",
+          "svgRole": null,
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "ف۲ ۱۴۰۳",
+            "ف۳ ۱۴۰۳",
+            "ف۴ ۱۴۰۳",
+            "ف۱ ۱۴۰۴",
+            "ف۲ ۱۴۰۴",
+            "ف۳ ۱۴۰۴",
+            "ف۴ ۱۴۰۴",
+            "ف۱ ۱۴۰۵",
+            "-۵۰۰۰۰",
+            "۰",
+            "۵۰۰۰۰",
+            "۱۰۰۰۰۰",
+            "۱۵۰۰۰۰"
+          ],
+          "h": 250,
+          "hostHeight": 250,
+          "hostWidth": 373.6000061035156,
+          "section": "quarterly",
+          "svgRole": null,
+          "w": 373.5874938964844
+        },
+        {
+          "axisLabels": [
+            "ف۲ ۱۴۰۳",
+            "ف۳ ۱۴۰۳",
+            "ف۴ ۱۴۰۳",
+            "ف۱ ۱۴۰۴",
+            "ف۲ ۱۴۰۴",
+            "ف۳ ۱۴۰۴",
+            "ف۴ ۱۴۰۴",
+            "ف۱ ۱۴۰۵",
+            "-۵۰",
+            "-۲۵",
+            "۰",
+            "۲۵",
+            "۵۰"
+          ],
+          "h": 250,
+          "hostHeight": 250,
+          "hostWidth": 373.6000061035156,
+          "section": "quarterly",
+          "svgRole": null,
+          "w": 373.5874938964844
+        },
+        {
+          "axisLabels": [
+            "ناخالص",
+            "عملیاتی",
+            "خالص",
+            "٪۰",
+            "٪۲۵",
+            "٪۵۰",
+            "٪۷۵",
+            "٪۱۰۰"
+          ],
+          "h": 256,
+          "hostHeight": 256,
+          "hostWidth": 392.3999938964844,
+          "section": "chart-margins",
+          "svgRole": null,
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "دورهٔ ۳ماههٔ منتهی به ۱۴۰۵/۰۳/۳۱",
+            "۰ میلیاردتومان",
+            "۴٫۵ همت",
+            "۹٫۰ همت",
+            "۱۳٫۵ همت",
+            "۱۸٫۰ همت"
+          ],
+          "h": 256,
+          "hostHeight": 256,
+          "hostWidth": 392.3999938964844,
+          "section": "chart-net-profit",
+          "svgRole": "application",
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "٪۰",
+            "٪۱۵",
+            "٪۳۰",
+            "٪۴۵",
+            "٪۵۸.۵",
+            "محصولات گرم",
+            "محصولات سرد",
+            "تختال",
+            "محصولاتپوشش دار",
+            "گندله"
+          ],
+          "h": 260,
+          "hostHeight": 260,
+          "hostWidth": 392.3999938964844,
+          "section": "chart-sales-mix",
+          "svgRole": "application",
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "۱۴۰۲",
+            "۱۴۰۳",
+            "۰ میلیاردتومان",
+            "۷۰٫۰ همت",
+            "۱۴۰ همت",
+            "۲۱۰ همت",
+            "۲۸۰ همت",
+            "٪۰",
+            "٪۲۵",
+            "٪۵۰",
+            "٪۷۵",
+            "٪۱۰۰"
+          ],
+          "h": 288,
+          "hostHeight": 288,
+          "hostWidth": 846.4000244140625,
+          "section": "chart-5y-trend",
+          "svgRole": null,
+          "w": 846.3875122070312
+        }
+      ],
+      "clientWidth": 1425,
+      "scrollWidth": 1425,
+      "url": "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=8#chart-5y-trend",
+      "values": [
+        "1403",
+        "all",
+        "8"
+      ],
+      "view": "dossier"
+    },
+    {
+      "stage": "final-reload",
+      "charts": [
+        {
+          "axisLabels": [
+            "فروردین",
+            "خرداد",
+            "تیر",
+            "مرداد",
+            "مهر",
+            "آبان",
+            "آذر",
+            "دی",
+            "اسفند",
+            "۰",
+            "۷ همت",
+            "۱۳ همت",
+            "۲۰ همت",
+            "۲۶ همت"
+          ],
+          "h": 280,
+          "hostHeight": 280,
+          "hostWidth": 392.3999938964844,
+          "section": "q-monthly-sales",
+          "svgRole": null,
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "فروردین",
+            "خرداد",
+            "تیر",
+            "شهریور",
+            "مهر",
+            "آبان",
+            "آذر",
+            "دی",
+            "اسفند",
+            "۰",
+            "۶۵ همت",
+            "۱۳۰همت",
+            "۱۹۵همت",
+            "۲۶۰همت"
+          ],
+          "h": 280,
+          "hostHeight": 280,
+          "hostWidth": 392.3999938964844,
+          "section": "q-cumulative",
+          "svgRole": null,
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "ف۲ ۱۴۰۳",
+            "ف۳ ۱۴۰۳",
+            "ف۴ ۱۴۰۳",
+            "ف۱ ۱۴۰۴",
+            "ف۲ ۱۴۰۴",
+            "ف۳ ۱۴۰۴",
+            "ف۴ ۱۴۰۴",
+            "ف۱ ۱۴۰۵",
+            "-۵۰۰۰۰",
+            "۰",
+            "۵۰۰۰۰",
+            "۱۰۰۰۰۰",
+            "۱۵۰۰۰۰"
+          ],
+          "h": 250,
+          "hostHeight": 250,
+          "hostWidth": 373.6000061035156,
+          "section": "quarterly",
+          "svgRole": null,
+          "w": 373.5874938964844
+        },
+        {
+          "axisLabels": [
+            "ف۲ ۱۴۰۳",
+            "ف۳ ۱۴۰۳",
+            "ف۴ ۱۴۰۳",
+            "ف۱ ۱۴۰۴",
+            "ف۲ ۱۴۰۴",
+            "ف۳ ۱۴۰۴",
+            "ف۴ ۱۴۰۴",
+            "ف۱ ۱۴۰۵",
+            "-۵۰",
+            "-۲۵",
+            "۰",
+            "۲۵",
+            "۵۰"
+          ],
+          "h": 250,
+          "hostHeight": 250,
+          "hostWidth": 373.6000061035156,
+          "section": "quarterly",
+          "svgRole": null,
+          "w": 373.5874938964844
+        },
+        {
+          "axisLabels": [
+            "ناخالص",
+            "عملیاتی",
+            "خالص",
+            "٪۰",
+            "٪۲۵",
+            "٪۵۰",
+            "٪۷۵",
+            "٪۱۰۰"
+          ],
+          "h": 256,
+          "hostHeight": 256,
+          "hostWidth": 392.3999938964844,
+          "section": "chart-margins",
+          "svgRole": null,
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "دورهٔ ۳ماههٔ منتهی به ۱۴۰۵/۰۳/۳۱",
+            "۰ میلیاردتومان",
+            "۴٫۵ همت",
+            "۹٫۰ همت",
+            "۱۳٫۵ همت",
+            "۱۸٫۰ همت"
+          ],
+          "h": 256,
+          "hostHeight": 256,
+          "hostWidth": 392.3999938964844,
+          "section": "chart-net-profit",
+          "svgRole": "application",
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "٪۰",
+            "٪۱۵",
+            "٪۳۰",
+            "٪۴۵",
+            "٪۵۸.۵",
+            "محصولات گرم",
+            "محصولات سرد",
+            "تختال",
+            "محصولاتپوشش دار",
+            "گندله"
+          ],
+          "h": 260,
+          "hostHeight": 260,
+          "hostWidth": 392.3999938964844,
+          "section": "chart-sales-mix",
+          "svgRole": "application",
+          "w": 392.3875122070313
+        },
+        {
+          "axisLabels": [
+            "۱۴۰۲",
+            "۱۴۰۳",
+            "۰ میلیاردتومان",
+            "۷۰٫۰ همت",
+            "۱۴۰ همت",
+            "۲۱۰ همت",
+            "۲۸۰ همت",
+            "٪۰",
+            "٪۲۵",
+            "٪۵۰",
+            "٪۷۵",
+            "٪۱۰۰"
+          ],
+          "h": 288,
+          "hostHeight": 288,
+          "hostWidth": 846.4000244140625,
+          "section": "chart-5y-trend",
+          "svgRole": null,
+          "w": 846.3875122070312
+        }
+      ],
+      "clientWidth": 1425,
+      "scrollWidth": 1425,
+      "url": "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=8&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#company-sources",
+      "values": [
+        "1403",
+        "[\"محصولات گرم\",\"نامشخص\"]",
+        "8"
+      ],
+      "view": "dossier"
+    }
+  ],
+  "summaryAttempt": "First summary belonged to hidden reports tab; no visible match, no action. Retargeted after making reports tab visible.",
+  "historyBack": {
+    "url": "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=8#fundamental",
+    "values": [
+      "1403",
+      "all",
+      "8"
+    ]
+  },
+  "historyForward": {
+    "url": "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=8#chart-5y-trend",
+    "values": [
+      "1403",
+      "all",
+      "8"
+    ]
+  },
+  "yearChangeRateReset": "Changing monthlyYear from1405 to1403 reset rateSeries to all and removed it from query; not treated as reload loss.",
+  "finalSelectionUrl": "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=8&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#chart-5y-trend",
+  "finalHistoryBack": {
+    "url": "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=8&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#chart-5y-trend",
+    "values": [
+      "1403",
+      "[\"محصولات گرم\",\"نامشخص\"]",
+      "8"
+    ]
+  },
+  "finalHistoryForward": {
+    "url": "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=8&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#company-sources",
+    "values": [
+      "1403",
+      "[\"محصولات گرم\",\"نامشخص\"]",
+      "8"
+    ]
+  },
+  "tooltip": [
+    {
+      "section": "chart-net-profit",
+      "text": "دورهٔ ۳ماههٔ مشابه سال قبلسود خالص : ۱۶٫۲ همت"
+    }
+  ],
+  "logs": [],
+  "tooltipAfterHideShow": [],
+  "finalGeometry": {
+    "charts": [
+      {
+        "axisLabels": [
+          "فروردین",
+          "خرداد",
+          "تیر",
+          "مرداد",
+          "مهر",
+          "آبان",
+          "آذر",
+          "دی",
+          "اسفند",
+          "۰",
+          "۷ همت",
+          "۱۳ همت",
+          "۲۰ همت",
+          "۲۶ همت"
+        ],
+        "h": 280,
+        "hostHeight": 280,
+        "hostWidth": 392.3999938964844,
+        "section": "q-monthly-sales",
+        "svgRole": null,
+        "w": 392.3875122070313
+      },
+      {
+        "axisLabels": [
+          "فروردین",
+          "خرداد",
+          "تیر",
+          "شهریور",
+          "مهر",
+          "آبان",
+          "آذر",
+          "دی",
+          "اسفند",
+          "۰",
+          "۶۵ همت",
+          "۱۳۰همت",
+          "۱۹۵همت",
+          "۲۶۰همت"
+        ],
+        "h": 280,
+        "hostHeight": 280,
+        "hostWidth": 392.3999938964844,
+        "section": "q-cumulative",
+        "svgRole": null,
+        "w": 392.3875122070313
+      },
+      {
+        "axisLabels": [
+          "ف۲ ۱۴۰۳",
+          "ف۳ ۱۴۰۳",
+          "ف۴ ۱۴۰۳",
+          "ف۱ ۱۴۰۴",
+          "ف۲ ۱۴۰۴",
+          "ف۳ ۱۴۰۴",
+          "ف۴ ۱۴۰۴",
+          "ف۱ ۱۴۰۵",
+          "-۵۰۰۰۰",
+          "۰",
+          "۵۰۰۰۰",
+          "۱۰۰۰۰۰",
+          "۱۵۰۰۰۰"
+        ],
+        "h": 250,
+        "hostHeight": 250,
+        "hostWidth": 373.6000061035156,
+        "section": "quarterly",
+        "svgRole": null,
+        "w": 373.5874938964844
+      },
+      {
+        "axisLabels": [
+          "ف۲ ۱۴۰۳",
+          "ف۳ ۱۴۰۳",
+          "ف۴ ۱۴۰۳",
+          "ف۱ ۱۴۰۴",
+          "ف۲ ۱۴۰۴",
+          "ف۳ ۱۴۰۴",
+          "ف۴ ۱۴۰۴",
+          "ف۱ ۱۴۰۵",
+          "-۵۰",
+          "-۲۵",
+          "۰",
+          "۲۵",
+          "۵۰"
+        ],
+        "h": 250,
+        "hostHeight": 250,
+        "hostWidth": 373.6000061035156,
+        "section": "quarterly",
+        "svgRole": null,
+        "w": 373.5874938964844
+      },
+      {
+        "axisLabels": [
+          "ناخالص",
+          "عملیاتی",
+          "خالص",
+          "٪۰",
+          "٪۲۵",
+          "٪۵۰",
+          "٪۷۵",
+          "٪۱۰۰"
+        ],
+        "h": 256,
+        "hostHeight": 256,
+        "hostWidth": 392.3999938964844,
+        "section": "chart-margins",
+        "svgRole": null,
+        "w": 392.3875122070313
+      },
+      {
+        "axisLabels": [
+          "دورهٔ ۳ماههٔ منتهی به ۱۴۰۵/۰۳/۳۱",
+          "۰ میلیاردتومان",
+          "۴٫۵ همت",
+          "۹٫۰ همت",
+          "۱۳٫۵ همت",
+          "۱۸٫۰ همت"
+        ],
+        "h": 256,
+        "hostHeight": 256,
+        "hostWidth": 392.3999938964844,
+        "section": "chart-net-profit",
+        "svgRole": "application",
+        "w": 392.3875122070313
+      },
+      {
+        "axisLabels": [
+          "٪۰",
+          "٪۱۵",
+          "٪۳۰",
+          "٪۴۵",
+          "٪۵۸.۵",
+          "محصولات گرم",
+          "محصولات سرد",
+          "تختال",
+          "محصولاتپوشش دار",
+          "گندله"
+        ],
+        "h": 260,
+        "hostHeight": 260,
+        "hostWidth": 392.3999938964844,
+        "section": "chart-sales-mix",
+        "svgRole": "application",
+        "w": 392.3875122070313
+      },
+      {
+        "axisLabels": [
+          "۱۴۰۲",
+          "۱۴۰۳",
+          "۰ میلیاردتومان",
+          "۷۰٫۰ همت",
+          "۱۴۰ همت",
+          "۲۱۰ همت",
+          "۲۸۰ همت",
+          "٪۰",
+          "٪۲۵",
+          "٪۵۰",
+          "٪۷۵",
+          "٪۱۰۰"
+        ],
+        "h": 288,
+        "hostHeight": 288,
+        "hostWidth": 846.4000244140625,
+        "section": "chart-5y-trend",
+        "svgRole": null,
+        "w": 846.3875122070312
+      }
+    ],
+    "clientWidth": 1425,
+    "scrollWidth": 1425,
+    "url": "https://portfolio-platform-do3tab8j6-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=8&rateSeries=%5B%22%D9%85%D8%AD%D8%B5%D9%88%D9%84%D8%A7%D8%AA+%DA%AF%D8%B1%D9%85%22%2C%22%D9%86%D8%A7%D9%85%D8%B4%D8%AE%D8%B5%22%5D#fundamental",
+    "values": [
+      "1403",
+      "[\"محصولات گرم\",\"نامشخص\"]",
+      "8"
+    ],
+    "view": "dossier"
+  },
+  "sourceBadge": "https://github.com/safariarash7777-source/portfolio-platform/commit/7fd355b8f7c39328b5f545831e1ced41bb9e1936",
+  "limits": {
+    "networkCaptureAvailable": false,
+    "postCountMeasured": false,
+    "explicitActions": "read-only page/tab/filter/viewport/history interactions only; no auth or submit",
+    "pageErrorSeparateListenerAvailable": false,
+    "financialRateAcceptance": false,
+    "marketSnapshotAvailable": false,
+    "humanVisualApproval": false,
+    "allHistorical23WarningsAttributed": false
+  },
+  "closed": true,
+  "viewportReset": true,
+  "durationMs": 177497,
+  "endedAt": "2026-11-04T09:55:31.215Z",
+  "status": "BOUNDED_BROWSER_PASS_WITH_FINANCIAL_DATA_LIMITS"
+}
