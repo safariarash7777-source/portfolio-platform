@@ -1,0 +1,178 @@
+{
+  "observedAtUtc": "2026-11-04T21:17:31.819064+00:00",
+  "catalogGenerated": "2026-11-04T13:03:58.446Z",
+  "catalogSha256": "2d659821a3ea17ba0b94a2919b61f780d8a28543354767666a75378f43609654",
+  "sources": [
+    {
+      "id": "codal",
+      "docs": "https://mcpfarsi.ir/servers/codal.md",
+      "repo": "https://github.com/sepehr071/codal-mcp",
+      "runModes": [
+        "local",
+        "hosted"
+      ],
+      "unofficialApi": true,
+      "needsIranIp": true,
+      "tools": [
+        "cd_search_letters",
+        "cd_letter",
+        "cd_company",
+        "cd_letter_types",
+        "cd_financial_years"
+      ],
+      "intendedRole": "official announcement metadata candidate; existing financial validators retained"
+    },
+    {
+      "id": "ime",
+      "docs": "https://mcpfarsi.ir/servers/ime.md",
+      "repo": "https://github.com/sepehr071/ime-mcp",
+      "runModes": [
+        "local"
+      ],
+      "unofficialApi": true,
+      "needsIranIp": true,
+      "tools": [
+        "ime_categories",
+        "ime_producers",
+        "ime_trades",
+        "ime_supply",
+        "ime_price_history",
+        "ime_market_summary",
+        "ime_daily_totals",
+        "ime_news",
+        "ime_trade_stats",
+        "ime_weekly_reports",
+        "ime_options",
+        "ime_securities",
+        "ime_certificates",
+        "ime_board"
+      ],
+      "intendedRole": "physical market research candidate; decimal/null/partial-result defects require repair"
+    },
+    {
+      "id": "tsetmc-mcp",
+      "docs": "https://mcpfarsi.ir/servers/tsetmc-mcp.md",
+      "repo": "https://github.com/sepehr071/tsetmc-mcp",
+      "runModes": [
+        "local",
+        "hosted"
+      ],
+      "unofficialApi": true,
+      "needsIranIp": false,
+      "tools": [
+        "ts_search_symbols",
+        "ts_get_quote",
+        "ts_market_movers",
+        "ts_order_book",
+        "ts_price_history",
+        "ts_real_legal",
+        "ts_indices",
+        "ts_index_history"
+      ],
+      "intendedRole": "secondary quote/history candidate; not live validated here"
+    },
+    {
+      "id": "cbi",
+      "docs": "https://mcpfarsi.ir/servers/cbi.md",
+      "repo": "https://github.com/sepehr071/cbi-mcp",
+      "runModes": [
+        "local",
+        "hosted"
+      ],
+      "unofficialApi": true,
+      "needsIranIp": false,
+      "tools": [
+        "cb_exchange_rates",
+        "cb_rate_history",
+        "cb_inflation",
+        "cb_policy_rates",
+        "cb_news",
+        "cb_news_item",
+        "cb_liquidity",
+        "cb_publications",
+        "cb_statistics",
+        "cb_bond_auctions",
+        "cb_open_market"
+      ],
+      "intendedRole": "macro/official FX candidate; not a free-market FX replacement"
+    },
+    {
+      "id": "arzbin",
+      "docs": "https://mcpfarsi.ir/servers/arzbin.md",
+      "repo": "https://github.com/arzbin-com/arzbin-mcp",
+      "runModes": [
+        "remote"
+      ],
+      "unofficialApi": false,
+      "needsIranIp": false,
+      "tools": [
+        "get_latest_fiat_rates",
+        "get_latest_gold_rates",
+        "get_latest_crypto_rates",
+        "get_market_history",
+        "get_fiat_rate_sources",
+        "convert_to_toman"
+      ],
+      "intendedRole": "public supplementary research quotes; unknown quote time prevents primary substitution"
+    }
+  ],
+  "router": {
+    "url": "https://mcp.mcpfarsi.ir/mcp",
+    "unauthenticatedInitializeStatus": 401,
+    "credentialPresentInSuppliedMessage": false,
+    "credentialFoundInCurrentEnvironment": false,
+    "configuredInCodex": true,
+    "enabled": false,
+    "secretWritten": false
+  },
+  "publicArzbin": {
+    "initializeStatus": 200,
+    "toolsDiscovered": 6,
+    "dataCalls": 2,
+    "brsapiCalls": 0,
+    "configuredInCodex": true,
+    "inAppToolReloadObserved": false,
+    "siteCollectorActivated": false,
+    "quoteTimestampAvailable": false,
+    "responseGeneratedAtIsNotQuoteTime": true,
+    "goldBuyZeroAcceptedAsPrice": false,
+    "result": "supplementary_research_only_until_quote_provenance_accepted",
+    "fiat": {
+      "generatedAtUtc": "2026-11-04T21:14:27.7787751+00:00",
+      "rows": [
+        {
+          "code": "EUR",
+          "name": "Euro",
+          "buy": 299716,
+          "sell": 301500,
+          "change": "down",
+          "canonicalUrl": "https://www.arzbin.com/currency/eur-to-toman"
+        },
+        {
+          "code": "USD",
+          "name": "US Dollar",
+          "buy": 266513,
+          "sell": 268100,
+          "change": "down",
+          "canonicalUrl": "https://www.arzbin.com/currency/usd-to-toman"
+        }
+      ]
+    },
+    "gold": {
+      "generatedAtUtc": "2026-11-04T21:14:30.4443783+00:00",
+      "rows": [
+        {
+          "code": "GOLD_GRAM",
+          "name": "طلا ۱۸ عیار (گرم)",
+          "buy": 0,
+          "sell": 25975345,
+          "category": "gold",
+          "change": "flat",
+          "canonicalUrl": "https://www.arzbin.com/gold"
+        }
+      ]
+    }
+  },
+  "productionSourceSwitch": false,
+  "newPurchase": false
+}
