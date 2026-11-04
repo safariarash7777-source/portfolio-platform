@@ -1,0 +1,88 @@
+{
+  "startedAt": "2026-11-04T12:28:15.479Z",
+  "source": "4e4765bdef751b99047ac12996208c0f2b85c5de",
+  "existingDeploymentId": "dpl_C6KZmqBRFp2sGwTthCCooyPeXmEi",
+  "events": [
+    {
+      "operation": "scope_to_candidate",
+      "id": "9NEamcg9U7e4wcSX",
+      "isError": false
+    },
+    {
+      "operation": "scope_to_candidate",
+      "id": "rbwHDphHrW3rf8Hk",
+      "isError": false
+    },
+    {
+      "operation": "restore_original_scope",
+      "id": "9NEamcg9U7e4wcSX",
+      "isError": false
+    },
+    {
+      "operation": "restore_original_scope",
+      "id": "rbwHDphHrW3rf8Hk",
+      "isError": false
+    }
+  ],
+  "valuesRead": false,
+  "valuesChanged": false,
+  "productionChanged": false,
+  "automaticRetry": false,
+  "scopedReadback": [
+    {
+      "id": "9NEamcg9U7e4wcSX",
+      "key": "FUNDAMENTAL_READ_URL",
+      "type": "sensitive",
+      "target": [
+        "preview"
+      ],
+      "gitBranch": "codex/p14-company-views-20261104",
+      "updatedAt": 1793795297265
+    },
+    {
+      "id": "rbwHDphHrW3rf8Hk",
+      "key": "FUNDAMENTAL_READ_ANON_KEY",
+      "type": "sensitive",
+      "target": [
+        "preview"
+      ],
+      "gitBranch": "codex/p14-company-views-20261104",
+      "updatedAt": 1793795298132
+    }
+  ],
+  "createResponseError": false,
+  "deployment": {
+    "id": "dpl_GWHjd8YqCXPHm2rjuFKAYL4hLSgR",
+    "url": "portfolio-platform-dah4c6i6p-safariarash7777-4463s-projects.vercel.app",
+    "state": "INITIALIZING",
+    "target": null,
+    "sha": "4e4765bdef751b99047ac12996208c0f2b85c5de",
+    "branch": "codex/p14-company-views-20261104"
+  },
+  "restoredReadback": [
+    {
+      "id": "9NEamcg9U7e4wcSX",
+      "key": "FUNDAMENTAL_READ_URL",
+      "type": "sensitive",
+      "target": [
+        "preview"
+      ],
+      "gitBranch": "codex/media-archive-filters-20261103",
+      "updatedAt": 1793795303244
+    },
+    {
+      "id": "rbwHDphHrW3rf8Hk",
+      "key": "FUNDAMENTAL_READ_ANON_KEY",
+      "type": "sensitive",
+      "target": [
+        "preview"
+      ],
+      "gitBranch": "codex/media-archive-filters-20261103",
+      "updatedAt": 1793795304111
+    }
+  ],
+  "restoreVerified": true,
+  "other45MetadataUnchanged": true,
+  "visibleEnvCount": 47,
+  "finishedAt": "2026-11-04T12:28:24.761Z"
+}

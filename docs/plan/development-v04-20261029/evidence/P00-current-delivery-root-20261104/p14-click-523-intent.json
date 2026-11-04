@@ -1,0 +1,27 @@
+{
+  "schema": "p14-tooltip-interaction-preview-intent.v1",
+  "source": "52336c9a17cf8a9e8f3c4b5096b2525bf3fa25c7",
+  "tree": "b6b9af92cc8a52fff16c76512de5a82e82543dda",
+  "base": "f7efa2e65b9f6e0ac8f56b442472c18923ce3881",
+  "project": "prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp",
+  "slug": "safariarash7777-4463s-projects",
+  "existingDeployment": "dpl_HCcALMgAx2nwZ5dZy865fvFui8sk",
+  "fromBranch": "codex/media-archive-filters-20261103",
+  "snapshotBranch": "codex/p14-company-views-20261104",
+  "envIds": [
+    "9NEamcg9U7e4wcSX",
+    "rbwHDphHrW3rf8Hk"
+  ],
+  "onlyEnvFieldChanged": "gitBranch",
+  "decryptValues": false,
+  "valueReadOrChanged": false,
+  "productionChange": false,
+  "automaticRetry": false,
+  "packetVerifiedFiles": 52,
+  "rootTargetedTests": {
+    "passed": 28,
+    "failed": 0,
+    "lint": "PASS"
+  },
+  "acceptance": "PENDING_NEW_PREVIEW_NOT_TRANSFERRED_FROM_F7"
+}

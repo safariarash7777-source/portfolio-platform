@@ -1,0 +1,115 @@
+## Runtime Logs
+
+**Project:** prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp
+**Deployment:** dpl_Equ3uaSK1BuY1BA4PMPbKrc3iopp
+**Time range:** 2026-11-04T11:55:00.000Z → 2026-11-04T12:08:00.000Z
+
+### 2026-11-04T12:06:09.416Z GET /api/symbol-detail [warn/function]
+dep=dpl_Equ3uaSK1BuY1BA4PMPbKrc3iopp branch=codex/p14-company-views-20261104 request=69h87-1793793969046-011bf5cdaa29 domain=portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app environment=preview region=fra1 runtime=nodejs26.x stream=stderr
+    stored_read_failed {
+      route: 'symbol-detail',
+      phase: 'headers',
+      elapsedMs: 277,
+      upstreamStatus: 402,
+      errorName: 'unknown',
+      causeCode: 'unknown'
+    }
+
+### 2026-11-04T12:06:09.194Z GET /api/symbol-detail [warn/function]
+dep=dpl_Equ3uaSK1BuY1BA4PMPbKrc3iopp branch=codex/p14-company-views-20261104 request=lxzg4-1793793969044-0dd5e0074a60 domain=portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app environment=preview region=fra1 runtime=nodejs26.x stream=stderr
+    stored_read_failed {
+      route: 'symbol-detail',
+      phase: 'headers',
+      elapsedMs: 48,
+      upstreamStatus: 402,
+      errorName: 'unknown',
+      causeCode: 'unknown'
+    }
+
+### 2026-11-04T12:05:09.157Z GET /api/symbol-detail [warn/function]
+dep=dpl_Equ3uaSK1BuY1BA4PMPbKrc3iopp branch=codex/p14-company-views-20261104 request=6hb42-1793793909041-56a3e36cbe0c domain=portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app environment=preview region=fra1 runtime=nodejs26.x stream=stderr
+    stored_read_failed {
+      route: 'symbol-detail',
+      phase: 'headers',
+      elapsedMs: 37,
+      upstreamStatus: 402,
+      errorName: 'unknown',
+      causeCode: 'unknown'
+    }
+
+### 2026-11-04T12:05:09.147Z GET /api/symbol-detail [warn/function]
+dep=dpl_Equ3uaSK1BuY1BA4PMPbKrc3iopp branch=codex/p14-company-views-20261104 request=c9pgr-1793793909022-71754df44adc domain=portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app environment=preview region=fra1 runtime=nodejs26.x stream=stderr
+    stored_read_failed {
+      route: 'symbol-detail',
+      phase: 'headers',
+      elapsedMs: 33,
+      upstreamStatus: 402,
+      errorName: 'unknown',
+      causeCode: 'unknown'
+    }
+
+### 2026-11-04T12:04:09.474Z GET /api/symbol-detail [warn/function]
+dep=dpl_Equ3uaSK1BuY1BA4PMPbKrc3iopp branch=codex/p14-company-views-20261104 request=w9jlb-1793793849383-3461acb4d2b4 domain=portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app environment=preview region=fra1 runtime=nodejs26.x stream=stderr
+    stored_read_failed {
+      route: 'symbol-detail',
+      phase: 'headers',
+      elapsedMs: 18,
+      upstreamStatus: 402,
+      errorName: 'unknown',
+      causeCode: 'unknown'
+    }
+
+### 2026-11-04T12:04:09.203Z GET /api/symbol-detail [warn/function]
+dep=dpl_Equ3uaSK1BuY1BA4PMPbKrc3iopp branch=codex/p14-company-views-20261104 request=zmxhx-1793793849084-3192270a5b80 domain=portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app environment=preview region=fra1 runtime=nodejs26.x stream=stderr
+    stored_read_failed {
+      route: 'symbol-detail',
+      phase: 'headers',
+      elapsedMs: 33,
+      upstreamStatus: 402,
+      errorName: 'unknown',
+      causeCode: 'unknown'
+    }
+
+### 2026-11-04T12:02:09.264Z GET /api/symbol-detail [warn/function]
+dep=dpl_Equ3uaSK1BuY1BA4PMPbKrc3iopp branch=codex/p14-company-views-20261104 request=rbz8v-1793793729063-f393b84e6a1a domain=portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app environment=preview region=fra1 runtime=nodejs26.x stream=stderr
+    stored_read_failed {
+      route: 'symbol-detail',
+      phase: 'headers',
+      elapsedMs: 119,
+      upstreamStatus: 402,
+      errorName: 'unknown',
+      causeCode: 'unknown'
+    }
+
+### 2026-11-04T12:02:09.260Z GET /api/symbol-detail [warn/function]
+dep=dpl_Equ3uaSK1BuY1BA4PMPbKrc3iopp branch=codex/p14-company-views-20261104 request=257rk-1793793729043-992d656869ff domain=portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app environment=preview region=fra1 runtime=nodejs26.x stream=stderr
+    stored_read_failed {
+      route: 'symbol-detail',
+      phase: 'headers',
+      elapsedMs: 124,
+      upstreamStatus: 402,
+      errorName: 'unknown',
+      causeCode: 'unknown'
+    }
+
+### 2026-11-04T12:00:09.163Z GET /api/symbol-detail [warn/function]
+dep=dpl_Equ3uaSK1BuY1BA4PMPbKrc3iopp branch=codex/p14-company-views-20261104 request=6pnfr-1793793609022-a2c2e0ec6b5a domain=portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app environment=preview region=fra1 runtime=nodejs26.x stream=stderr
+    stored_read_failed {
+      route: 'symbol-detail',
+      phase: 'headers',
+      elapsedMs: 44,
+      upstreamStatus: 402,
+      errorName: 'unknown',
+      causeCode: 'unknown'
+    }
+
+### 2026-11-04T12:00:09.159Z GET /api/symbol-detail [warn/function]
+dep=dpl_Equ3uaSK1BuY1BA4PMPbKrc3iopp branch=codex/p14-company-views-20261104 request=qcpv2-1793793609022-6e1f74813665 domain=portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app environment=preview region=fra1 runtime=nodejs26.x stream=stderr
+    stored_read_failed {
+      route: 'symbol-detail',
+      phase: 'headers',
+      elapsedMs: 47,
+      upstreamStatus: 402,
+      errorName: 'unknown',
+      causeCode: 'unknown'
+    }

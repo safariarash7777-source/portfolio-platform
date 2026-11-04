@@ -1,0 +1,24 @@
+--- a/scripts/testing/assembled-native-ci/run.py
++++ b/scripts/testing/assembled-native-ci/run.py
+@@ -426,7 +426,7 @@
+ OWNED_START_A = 'owned-start-a-copy'
+ M1_BASE = '0d63a8b64e4975a3c9dab3f1f579f91302602b01'
+ M1_TREE = '15cc4ab8315e6c1a2594a5d3eda24b2bb375619a'
+-M1_ADAPTER_SHA = 'e29a32fea28810cadb6f83b5e20932903fd4f47206ca6fbcb3743686227c1312'
++M1_ADAPTER_SHA = '714264d29c18601b7ea38559fe706e18efd65bbf8e4cb0f1a5bc679464308c3b'
+ 
+ 
+ def m1_module(app):
+--- a/scripts/testing/assembled-native-ci/test_run.py
++++ b/scripts/testing/assembled-native-ci/test_run.py
+@@ -1283,6 +1283,10 @@
+         self.assertEqual(calls,[])
+         with self.assertRaises(RuntimeError):self.adapter.OwnedDockerIO(object(),allocation,'0'*64,process)
+ 
++    def test_controller_adapter_pin_matches_actual_source(self):
++        adapter_path=Path(__file__).resolve().parents[1]/'consultation-feedback'/'install-feedback.py'
++        self.assertEqual(runner.M1_ADAPTER_SHA,hashlib.sha256(adapter_path.read_bytes()).hexdigest())
++
+     def test_image_index_config_platform_and_provenance_are_distinct(self):
+         a=self.adapter
+         valid={'Id':a.M1_IMAGE,'Os':'linux','Architecture':'amd64','RepoDigests':[a.M1_REPO_DIGEST]}

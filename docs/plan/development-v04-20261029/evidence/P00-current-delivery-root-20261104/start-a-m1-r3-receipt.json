@@ -1,0 +1,19 @@
+{
+  "verdict": "SOURCE_ONLY_NOT_ADOPTED",
+  "base": "7122a56519d7ae3f34202bb0f9575573143dc80e",
+  "pins": {
+    "scripts/testing/assembled-native-ci/run.py": "d191eab4db73d4c4f8f07bc1e5371abdcd77895a0d3d8a0b7c31b3ccd5ffbbe5",
+    "scripts/testing/assembled-native-ci/test_run.py": "aa4e95851447d91abadc3f100df6a29193f0de77110b460c5e1a42a1b62038d5",
+    "scripts/testing/consultation-feedback/install-feedback.py": "714264d29c18601b7ea38559fe706e18efd65bbf8e4cb0f1a5bc679464308c3b"
+  },
+  "patchSha256": "deb4fc08822d74c3f9a804ad97fa268ac71621d9c49b774eac315153cbd2a72a",
+  "deltaSha256": "62c2e16d93fdf148e2fcf9e8bfb90e6c96e860c661f78e38ff0e867ea93de549",
+  "reconstructionByteExact": true,
+  "tests": {
+    "passed": 12,
+    "failed": 0,
+    "logSha256": "b00355a9da15ae940b780738060850bbe3a4b9824f9649a494017f08b3058347",
+    "scope": "offline M1 mocks plus actual source-pin linkage"
+  },
+  "nativeExecuted": false
+}

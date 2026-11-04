@@ -1,0 +1,23 @@
+{
+  "schema": "root-p14-source-tab-order-adoption.v1",
+  "atUtc": "2026-11-04T12:26:48.595543+00:00",
+  "base": "52336c9a17cf8a9e8f3c4b5096b2525bf3fa25c7",
+  "manifestSha256": "1b217cc17f83545ff9485d42244ac4dddc5475715f3b6c82b9121c934ed961a7",
+  "packetFilesVerified": 53,
+  "patchSha256": "30f06def79bcb372a5c0c28b982f160f3d9d81114caa919a5cdb5576b976b5ba",
+  "changed": [
+    "components/symbol/MonthlySalesCharts.tsx",
+    "components/symbol/MonthlySalesCharts.test.tsx",
+    "components/symbol/MonthlySourceChartFrame.tsx"
+  ],
+  "priorBrowserDefects": [
+    "default tooltip DOM before SVG made natural Tab miss source link",
+    "mobile tooltip extends to x510 outside viewport375 despite pageWidth375"
+  ],
+  "sourceDelta": "supported explicit Tooltip portal follows fixed-height chart in same expandable frame; natural DOM tab order and normal-flow placement; internal blur preserved both directions",
+  "unconditionalHooks": true,
+  "scriptedFocusPositiveTabIndexPreventDefaultAdded": false,
+  "dataMappingNumbersTimesAuthBackendNonPreviewChanged": false,
+  "acceptance": "PENDING_NEW_BROWSER_NOT_TRANSFERRED",
+  "productionChanged": false
+}

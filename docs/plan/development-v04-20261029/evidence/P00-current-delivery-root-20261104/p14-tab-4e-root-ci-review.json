@@ -1,0 +1,64 @@
+{
+  "schema": "root-p14-tab-order-ci.v1",
+  "source": "4e4765bdef751b99047ac12996208c0f2b85c5de",
+  "tree": "6dd9c7977473efe6e70d3b4d751df766ec4752a1",
+  "run": 41829378888,
+  "jobs": [
+    {
+      "id": 126572286115,
+      "name": "Secret scan · SQL validation",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126572286458,
+      "name": "Typecheck · Lint · Tests · Build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126572286496,
+      "name": "Database RLS · Integrity (Postgres)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126572286573,
+      "name": "Dependencies",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126574810809,
+      "name": "CI Gate",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126574863782,
+      "name": "Assembled native · explicit allocation only",
+      "status": "completed",
+      "conclusion": "skipped"
+    }
+  ],
+  "actualCheckout": "a908efbebd33331e24440a4e01626eafa32fd083",
+  "actualTree": "6dd9c7977473efe6e70d3b4d751df766ec4752a1",
+  "parents": [
+    "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+    "4e4765bdef751b99047ac12996208c0f2b85c5de"
+  ],
+  "headTreeEqual": true,
+  "fullCoreLog": {
+    "job": 126572286458,
+    "characters": 1292265,
+    "actualCheckoutObserved": true,
+    "errors": []
+  },
+  "localTargeted": {
+    "pass": 29,
+    "fail": 0,
+    "skip": 0
+  },
+  "humanVisualApproval": "OPEN",
+  "productionChanged": false
+}

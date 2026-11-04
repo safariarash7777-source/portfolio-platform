@@ -1,0 +1,231 @@
+diff --git a/components/symbol/MonthlySalesCharts.tsx b/components/symbol/MonthlySalesCharts.tsx
+index 68454c4..ab39336 100644
+--- a/components/symbol/MonthlySalesCharts.tsx
++++ b/components/symbol/MonthlySalesCharts.tsx
+@@ -22,6 +22,7 @@ import {
+ } from "recharts";
+ import MeasuredResponsiveContainer from "./MeasuredResponsiveContainer";
+ import MonthlyPointSourceLabel from "./MonthlyPointSourceLabel";
++import MonthlySourceChartFrame from "./MonthlySourceChartFrame";
+ import { monthlyPointSources, type MonthlyPointSource, type MonthlySourceRecord } from "./monthly-point-provenance";
+ import { toPersianDigits } from "@/lib/format";
+ import type { CodalN30Data } from "@/lib/fundamental/types";
+@@ -127,7 +128,7 @@ function MonthlyBars({ m, sources }: { m: MonthlySales; sources?: ReadonlyMap<st
+     ...(sources ? { currentMonthKey: cm.monthKey, priorMonthKey: m.priorMonths?.[i].monthKey ?? null } : {}),
+   }));
+   return (
+-    <div style={{ height: 280 }} dir="ltr">
++    <MonthlySourceChartFrame enabled={!!sources}>{trigger => (
+       <MeasuredResponsiveContainer>
+         <ComposedChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
+           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
+@@ -139,6 +140,7 @@ function MonthlyBars({ m, sources }: { m: MonthlySales; sources?: ReadonlyMap<st
+             orientation="right"
+           />
+           <Tooltip
++            trigger={trigger}
+             contentStyle={tooltipStyle}
+             wrapperStyle={sources ? { pointerEvents: "auto", maxWidth: "min(280px, 75vw)", overflowWrap: "anywhere" } : undefined}
+             labelFormatter={sources ? (label, payload) => <MonthlyPointSourceLabel label={label} payload={payload} sources={sources} /> : undefined}
+@@ -159,7 +161,7 @@ function MonthlyBars({ m, sources }: { m: MonthlySales; sources?: ReadonlyMap<st
+           ) : null}
+         </ComposedChart>
+       </MeasuredResponsiveContainer>
+-    </div>
++    )}</MonthlySourceChartFrame>
+   );
+ }
+ 
+@@ -173,7 +175,7 @@ function CumulativeChart({ m, sources }: { m: MonthlySales; sources?: ReadonlyMa
+     ...(sources ? { currentMonthKey: cm.monthKey, priorMonthKey: m.priorMonths?.[i].monthKey ?? null } : {}),
+   }));
+   return (
+-    <div style={{ height: 280 }} dir="ltr">
++    <MonthlySourceChartFrame enabled={!!sources}>{trigger => (
+       <MeasuredResponsiveContainer>
+         <LineChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
+           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
+@@ -185,6 +187,7 @@ function CumulativeChart({ m, sources }: { m: MonthlySales; sources?: ReadonlyMa
+             orientation="right"
+           />
+           <Tooltip
++            trigger={trigger}
+             contentStyle={tooltipStyle}
+             wrapperStyle={sources ? { pointerEvents: "auto", maxWidth: "min(280px, 75vw)", overflowWrap: "anywhere" } : undefined}
+             labelFormatter={sources ? (label, payload) => <MonthlyPointSourceLabel label={label} payload={payload} sources={sources} /> : undefined}
+@@ -211,7 +214,7 @@ function CumulativeChart({ m, sources }: { m: MonthlySales; sources?: ReadonlyMa
+           />
+         </LineChart>
+       </MeasuredResponsiveContainer>
+-    </div>
++    )}</MonthlySourceChartFrame>
+   );
+ }
+ 
+diff --git a/components/symbol/MonthlySalesCharts.test.tsx b/components/symbol/MonthlySalesCharts.test.tsx
+index 81680c8..aab71b8 100644
+--- a/components/symbol/MonthlySalesCharts.test.tsx
++++ b/components/symbol/MonthlySalesCharts.test.tsx
+@@ -122,6 +122,7 @@ test("Preview monthly and cumulative tooltips bind current/prior point identitie
+     assert.ok(html.includes("point-2") && html.includes("point-3"));assert.ok(!html.includes("point-1"));
+     assert.ok(html.includes("۱۴۰۴/۰۳/۳۱ ۱۴:۱۵:۱۶"));assert.ok(html.includes("۱۴۰۳/۰۳/۳۱ ۱۴:۱۵:۱۶"));
+     assert.ok(html.includes("2026-11-04T13:22:33.123456+03:30"));assert.ok(html.includes("2026-11-04T09:52:33.123Z"));
++    assert.ok(html.includes('dir="ltr" style="display:block;white-space:normal;overflow-wrap:anywhere;word-break:break-all;text-align:left"'));
+     assert.ok(html.includes("واحد مبلغ گزارش: میلیون ریال"));
+     assert.ok(!html.includes("https://codal.ir/Reports/fixture"), "bundle reference is never a point source");
+   }
+@@ -152,11 +153,85 @@ test("non-Preview monthly charts ignore supplied point records and retain origin
+   const shown = renderChart(reports, true, undefined, records);
+   for (const tooltip of shown.traces.filter(t => t.component === "Tooltip").slice(0, 2)) {
+     assert.equal(tooltip.props.labelFormatter, undefined);assert.equal(tooltip.props.wrapperStyle, undefined);
++    assert.equal(tooltip.props.trigger, undefined);
+   }
+   const point = chartData(shown.traces.find(t => t.component === "ComposedChart")!)[0];
+   assert.equal(Object.hasOwn(point, "currentMonthKey"), false);assert.equal(Object.hasOwn(point, "priorMonthKey"), false);
+ });
+ 
++test("Preview source charts pin pointer selection with click trigger, while ordinary tooltips remain unchanged", () => {
++  const shown = renderChart([report("1404-01-31")], true, ["1404", "all"]);
++  const tips = shown.traces.filter(t => t.component === "Tooltip");
++  assert.equal(tips[0].props.trigger, "click");assert.equal(tips[1].props.trigger, "click");
++  assert.ok(tips.slice(2).every(t => t.props.trigger === undefined));
++  assert.ok(shown.html.includes("با Tab به پیوند منبع بروید"));
++  assert.ok(!renderChart([report("1404-01-31")]).html.includes("با Tab به پیوند منبع بروید"));
++});
++
++function interactionFrame() {
++  class Target { constructor(public source = false) {} closest() { return this.source ? this : null; } }
++  let mode = "click";
++  const source = readFileSync(new URL("./MonthlySourceChartFrame.tsx", import.meta.url), "utf8");
++  const compiled = { exports: {} as { default: (props: { enabled: boolean; children: (trigger: unknown) => unknown }) => React.ReactElement } };
++  const javascript = ts.transpileModule(source, { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
++  vm.runInNewContext(javascript, { module: compiled, exports: compiled.exports, Element: Target, require: (id: string) => id === "react"
++    ? { ...React, useState: () => [mode, (value: string) => { mode = value; }] } : require(id) });
++  const render = (enabled = true) => {
++    const element = compiled.exports.default({ enabled, children: value => value });
++    const props = element.props as { children: React.ReactElement[] };
++    return (enabled ? props.children[1] : element).props as Record<string, unknown>;
++  };
++  const event = (target = new Target()) => ({ target, relatedTarget: null as Target | null, currentTarget: { contains: () => true }, key: "", stopped: false,
++    stopPropagation() { this.stopped = true; }, preventDefault() { assert.fail("native navigation and scrolling must not be cancelled"); } });
++  const send = (props: Record<string, unknown>, name: string, e: ReturnType<typeof event>) => (props[name] as (event: unknown) => void)(e);
++  return { Target, render, event, send };
++}
++
++test("source frame preserves keyboard-to-link focus and isolates native pointer movement without cancelling defaults", () => {
++  const { Target, render, event, send } = interactionFrame();
++  let props = render();assert.equal(props.children, "click");
++  for (const name of ["onMouseOverCapture", "onMouseMoveCapture", "onTouchMoveCapture"]) {
++    const e = event();send(props, name, e);assert.equal(e.stopped, true);
++  }
++  const arrow = event();arrow.key = "ArrowRight";send(props, "onKeyDownCapture", arrow);
++  props = render();assert.equal(props.children, "hover");assert.equal(arrow.stopped, false);
++  const link = new Target(true), blur = event();blur.relatedTarget = link;
++  send(props, "onBlurCapture", blur);assert.equal(blur.stopped, true);
++  const external = event();external.relatedTarget = link;external.currentTarget.contains = () => false;
++  send(props, "onBlurCapture", external);assert.equal(external.stopped, false);
++  const leave = event();send(props, "onBlurCapture", leave);assert.equal(leave.stopped, false);
++  send(props, "onPointerDownCapture", event(link));assert.equal(render().children, "hover");
++  send(props, "onPointerDownCapture", event());assert.equal(render().children, "click");
++  const plain = render(false);assert.equal(plain.children, undefined);
++  assert.ok(!Object.keys(plain).some(key => key.startsWith("on")));
++});
++
++test("actual Recharts reducer and selector keep clicked point on movement and support the isolated keyboard lane", () => {
++  const slice = require("recharts/lib/state/tooltipSlice");
++  const { combineTooltipInteractionState: select } = require("recharts/lib/state/selectors/combiners/combineTooltipInteractionState");
++  let state = slice.tooltipReducer(undefined, { type: "init" });
++  const pick = (index: string) => ({ activeIndex: index, activeCoordinate: { x: 20, y: 30 } });
++  state = slice.tooltipReducer(state, slice.setMouseClickAxisIndex(pick("2")));
++  state = slice.tooltipReducer(state, slice.setMouseOverAxisIndex(pick("8")));
++  assert.equal(select(state, "axis", "click").index, "2", "pointer motion cannot replace click selection");
++  state = slice.tooltipReducer(state, slice.mouseLeaveChart());
++  assert.equal(select(state, "axis", "click").index, "2");
++  state = slice.tooltipReducer(state, slice.setKeyboardInteraction({ ...pick("3"), active: true }));
++  assert.equal(select(state, "axis", "click").index, "2", "click lane would otherwise mask arrow navigation");
++  assert.equal(select(state, "axis", "hover").index, "3", "isolated hover lane exposes keyboard selection");
++});
++
++test("source label stops chart click/focus/Enter handlers without suppressing anchor navigation or Escape", () => {
++  const mod = loadTooltipDependency("MonthlyPointSourceLabel") as { default: (props: { label: string; payload: unknown[]; sources: Map<string, unknown> }) => React.ReactElement };
++  const label = mod.default({ label: "ماه", payload: [], sources: new Map() });
++  const props = label.props as Record<string, (event: unknown) => void>;
++  for (const [handler, key, expected] of [["onClick", "", true], ["onFocus", "", true], ["onKeyDown", "Enter", true], ["onKeyDown", "Escape", false]] as const) {
++    let stopped = false;
++    props[handler]({ key, stopPropagation() { stopped = true; }, preventDefault() { assert.fail("must preserve native anchor default"); } });
++    assert.equal(stopped, expected);
++  }
++});
++
+ test("monthly charts render declared units, actual values, calendar gaps and unit-bearing tooltips", () => {
+   const reports = [report("1405-01-31"), report("1405-03-31", [product({ sales_rate: 200 })])];
+   const { html, traces } = renderChart(reports);
+diff --git a/components/symbol/MonthlyPointSourceLabel.tsx b/components/symbol/MonthlyPointSourceLabel.tsx
+index 746316b..aa413bd 100644
+--- a/components/symbol/MonthlyPointSourceLabel.tsx
++++ b/components/symbol/MonthlyPointSourceLabel.tsx
+@@ -25,7 +25,11 @@ export default function MonthlyPointSourceLabel({ label, payload, sources }: {
+     return [{ series: typeof item.name === "string" ? item.name : item.dataKey === "current" ? "سال جاری" : "سال قبل", source }];
+   });
+   const text = (value: string | null | undefined) => value ? toPersianDigits(value) : "نامعلوم";
+-  return <span>
++  return <span data-monthly-point-source=""
++    onClick={event => event.stopPropagation()}
++    onFocus={event => event.stopPropagation()}
++    onKeyDown={event => { if (event.key !== "Escape") event.stopPropagation(); }}
++  >
+     <span>{typeof label === "string" || typeof label === "number" ? toPersianDigits(label) : ""}</span>
+     {entries.map(({ series, source }) => <span key={series} className="mt-2 block border-t border-border pt-2 text-xs leading-5" dir="rtl">
+       <span className="block font-semibold">منشأ {series}</span>
+@@ -33,8 +37,8 @@ export default function MonthlyPointSourceLabel({ label, payload, sources }: {
+       <span className="block">واحد مبلغ گزارش: {text(source?.amountUnit)}</span>
+       {source?.record ? <>
+         <span className="block">انتشار در کدال (زمان محلی): {text(source.record.publishedAt)}</span>
+-        <span className="block">دریافت رکورد (متن اصلی): <bdi>{source.record.capturedAtRaw ?? "نامعلوم"}</bdi></span>
+-        <span className="block">دریافت رکورد (UTC): <bdi>{source.record.capturedAt ?? "نامعلوم"}</bdi></span>
++        <span className="block">دریافت رکورد (متن اصلی): <bdi dir="ltr" style={{ display: "block", whiteSpace: "normal", overflowWrap: "anywhere", wordBreak: "break-all", textAlign: "left" }}>{source.record.capturedAtRaw ?? "نامعلوم"}</bdi></span>
++        <span className="block">دریافت رکورد (UTC): <bdi dir="ltr" style={{ display: "block", whiteSpace: "normal", overflowWrap: "anywhere", wordBreak: "break-all", textAlign: "left" }}>{source.record.capturedAt ?? "نامعلوم"}</bdi></span>
+         <span className="block">پایان دورهٔ ذخیره‌شده: {text(source.record.storedPeriodEnd)}</span>
+         {source.record.amendment ? <span className="block">اصلاحیهٔ گزارش</span> : null}
+         <CodalSourceLink url={source.record.sourceUrl} className="block underline" fallback={<span className="block">پیوند دقیق این رکورد نامعلوم است.</span>}>اطلاعیهٔ همین رکورد</CodalSourceLink>
+diff --git a/components/symbol/MonthlySourceChartFrame.tsx b/components/symbol/MonthlySourceChartFrame.tsx
+new file mode 100644
+--- /dev/null
++++ b/components/symbol/MonthlySourceChartFrame.tsx
+@@ -0,0 +1,36 @@
++import React, { useState } from "react";
++
++const isSource = (target: EventTarget | null) => target instanceof Element
++  && target.closest("[data-monthly-point-source]") !== null;
++
++/** Recharts 3 keeps click and keyboard selection separately. A click selection
++ * wins over keyboard selection, so keyboard navigation must use the hover lane.
++ * Do not populate the hover lane with pointer events: those would win over the
++ * keyboard selection too. Pointer selection is deliberate click/tap only.
++ */
++export default function MonthlySourceChartFrame({ enabled, children }: {
++  enabled: boolean;
++  children: (trigger: "click" | "hover" | undefined) => React.ReactNode;
++}) {
++  const [trigger, setTrigger] = useState<"click" | "hover">("click");
++  if (!enabled) return <div style={{ height: 280 }} dir="ltr">{children(undefined)}</div>;
++  return <>
++    <p className="mb-2 text-xs leading-5" dir="rtl">
++      برای دیدن منبع، روی نقطه کلیک یا لمس کنید. با صفحه‌کلید، نمودار را انتخاب کنید و از کلیدهای چپ و راست استفاده کنید؛ با Tab به پیوند منبع بروید. Escape جزئیات را می‌بندد.
++    </p>
++    <div style={{ height: 280 }} dir="ltr"
++      onPointerDownCapture={event => { if (!isSource(event.target)) setTrigger("click"); }}
++      onMouseOverCapture={event => event.stopPropagation()}
++      onMouseMoveCapture={event => event.stopPropagation()}
++      onTouchMoveCapture={event => event.stopPropagation()}
++      onKeyDownCapture={event => {
++        if (isSource(event.target)) return;
++        if (["ArrowLeft", "ArrowRight", "Enter"].includes(event.key)) setTrigger("hover");
++      }}
++      onBlurCapture={event => {
++        // Focusing the link is still part of this chart's keyboard interaction.
++        if (isSource(event.relatedTarget) && event.currentTarget.contains(event.relatedTarget as Node)) event.stopPropagation();
++      }}
++    >{children(trigger)}</div>
++  </>;
++}

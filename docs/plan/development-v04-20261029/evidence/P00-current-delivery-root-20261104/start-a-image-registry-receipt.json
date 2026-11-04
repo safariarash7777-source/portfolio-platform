@@ -1,0 +1,56 @@
+{
+  "schema": "root-m1-public-image-descriptors.v1",
+  "atUtc": "2026-11-04T12:29:28.175755+00:00",
+  "readOnly": true,
+  "repository": "docker.io/library/postgres",
+  "historicalReference": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+  "dockerPullOrLoad": false,
+  "serverChanged": false,
+  "manifestReads": [
+    {
+      "reference": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+      "bytes": 10301,
+      "headers": {
+        "Content-Type": "application/vnd.oci.image.index.v1+json",
+        "Docker-Content-Digest": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+        "Date": "Wed, 04 Nov 2026 12:29:30 GMT"
+      },
+      "mediaType": "application/vnd.oci.image.index.v1+json"
+    },
+    {
+      "reference": "sha256:aa90e97ee862e558111d34cfb8b2c4bec768c2b039fb791341686928560263b3",
+      "bytes": 2866,
+      "headers": {
+        "Content-Type": "application/vnd.oci.image.manifest.v1+json",
+        "Docker-Content-Digest": "sha256:aa90e97ee862e558111d34cfb8b2c4bec768c2b039fb791341686928560263b3",
+        "Date": "Wed, 04 Nov 2026 12:29:30 GMT"
+      },
+      "mediaType": "application/vnd.oci.image.manifest.v1+json"
+    }
+  ],
+  "mapping": "UNKNOWN",
+  "platformDescriptor": {
+    "annotations": {
+      "com.docker.official-images.bashbrew.arch": "amd64",
+      "org.opencontainers.image.base.digest": "sha256:d56c381f961d307a21b3ca004cf1e3910f106644aefb1f43e654c8a56c4fd395",
+      "org.opencontainers.image.base.name": "alpine:3.24",
+      "org.opencontainers.image.created": "2026-09-17T21:29:04Z",
+      "org.opencontainers.image.revision": "2603e26e245e558218728ee14e0a42dcb020dc7f",
+      "org.opencontainers.image.source": "https://github.com/docker-library/postgres.git#2603e26e245e558218728ee14e0a42dcb020dc7f:17/alpine3.24",
+      "org.opencontainers.image.url": "https://hub.docker.com/_/postgres",
+      "org.opencontainers.image.version": "17.11-alpine3.24"
+    },
+    "digest": "sha256:aa90e97ee862e558111d34cfb8b2c4bec768c2b039fb791341686928560263b3",
+    "mediaType": "application/vnd.oci.image.manifest.v1+json",
+    "platform": {
+      "architecture": "amd64",
+      "os": "linux"
+    },
+    "size": 2866
+  },
+  "failure": {
+    "class": "HTTPError",
+    "status": 307,
+    "step": "public registry metadata; no response body published"
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "files": {
+    ".gitattributes": {
+      "sha256": "6ab60252301e7559568a1f5d170c8a9dfa2523de7f63db9dd505642284465877",
+      "bytes": 84
+    },
+    "ATTRIBUTES-PROPOSAL.patch": {
+      "sha256": "a4f5571fa30f9153c21c506878c63d1ccaf3bb1b9fd567a0bbea84805a2dfadc",
+      "bytes": 205
+    },
+    "PIN-UPDATE-PROPOSAL.json": {
+      "sha256": "5896843ac615b790c83f5501ddbc2e02bd5f7cbb5a1eade25bb5aeb1c655b4fa",
+      "bytes": 512
+    },
+    "PROPOSED-selector.patch": {
+      "sha256": "8a61d30b173dd086d07d584055a31ea88dfd0e6c0eae830bfdb78ae4d7bbc49a",
+      "bytes": 690
+    },
+    "REVIEW.fa.md": {
+      "sha256": "b2560b99c9a31f16bec47420c3d34b48780909e25f67fa1e7884b31f94c00141",
+      "bytes": 6320
+    },
+    "actual-component-fixture.json": {
+      "sha256": "aea6e94f487aa1a00188ac9ae7999f2c1622770b35edeb26f53822542279f861",
+      "bytes": 149823
+    },
+    "base-capsule-f41.tar": {
+      "sha256": "f41acf251bd63dc8f7a938b4f4f4308073c44c3bd9085b4f6978dfacad1d7486",
+      "bytes": 204800
+    },
+    "capsule-manifest.json": {
+      "sha256": "f298faa844508bc5a70b02ddc1d5a921d759b84780fe3dac94079eb5197f22da",
+      "bytes": 8382
+    },
+    "compose.cjs": {
+      "sha256": "3982da14b2314f2a7d9f807c3a6c5427261d7d0dcb7274636319bf1586c11721",
+      "bytes": 8194
+    },
+    "history-selector-tests.txt": {
+      "sha256": "f18337ba7ca7cf46e356528181e3ce6a416367ee18d334649d56e7ca99ab6af0",
+      "bytes": 1335
+    },
+    "history-selector.test.cjs": {
+      "sha256": "6527463ddce8dce8a6cd9beb082f5e4c630596dbc67a6d41f7a58c219798e782",
+      "bytes": 9863
+    },
+    "pure-node-guard.cjs": {
+      "sha256": "4f572d05be71696339860f301d4891f6dbe0e4ab3a7f70570052ce69eb9bb028",
+      "bytes": 1864
+    },
+    "pure-node-guard.test.mjs": {
+      "sha256": "a6bc1a6c3e54ae71b853674761415b03761555a8e3e3bd33f473ecfe25158d72",
+      "bytes": 2143
+    },
+    "seal.cjs": {
+      "sha256": "0459e0eed039aaf7659c63311b95af84f9a153d1b73236c0e6c9fad772ba6f5e",
+      "bytes": 6133
+    },
+    "sealed-p03-composition-history-selector-v1.tar": {
+      "sha256": "c3bbd84d308774e2775f7fa267b652e90036e52be9794450275bd52aae5b1e90",
+      "bytes": 204800
+    },
+    "receipt.json": {
+      "sha256": "4d1879584160e8628c3053d20efc051f9b2dd79a2fd8965fe0ce7f4376de78fa",
+      "bytes": 8572
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "schema": "root-p03-history-selector-linux.v1",
+  "source": "cbf9cd3ba146d035ab7ccd14484cfe5a0ad59ddf",
+  "tree": "f885b764465ad60ffcaee7fbef98a9d902e76062",
+  "run": 41827287196,
+  "jobs": [
+    {
+      "id": 126565157178,
+      "name": "Typecheck · Lint · Tests · Build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126565157316,
+      "name": "Dependencies",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126565157410,
+      "name": "Secret scan · SQL validation",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126565157415,
+      "name": "Database RLS · Integrity (Postgres)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126567550216,
+      "name": "CI Gate",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126567598015,
+      "name": "Assembled native · explicit allocation only",
+      "status": "completed",
+      "conclusion": "skipped"
+    }
+  ],
+  "actualCheckout": "85fb6589351656d0f3728cc6e5bd23e369a86578",
+  "actualTree": "f885b764465ad60ffcaee7fbef98a9d902e76062",
+  "parents": [
+    "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+    "cbf9cd3ba146d035ab7ccd14484cfe5a0ad59ddf"
+  ],
+  "linuxPythonMethods": 72,
+  "logs": [
+    {
+      "job": 126565157178,
+      "characters": 1282843,
+      "actualCheckoutObserved": true,
+      "python72Observed": true,
+      "errors": []
+    },
+    {
+      "job": 126565157415,
+      "characters": 3280255,
+      "actualCheckoutObserved": true,
+      "python72Observed": false,
+      "errors": []
+    }
+  ],
+  "native": "NOT_RUN_AFTER_THIS_FIX",
+  "primaryInstall": "NOT_APPLIED",
+  "serviceRight": "NOT_CONNECTED"
+}

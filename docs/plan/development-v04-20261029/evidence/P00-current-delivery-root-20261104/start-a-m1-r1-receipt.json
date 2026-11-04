@@ -1,0 +1,52 @@
+{
+  "createdAtUtc": "2026-11-04T12:17:13.398683+00:00",
+  "verdict": "SOURCE_PROPOSAL_NOT_ADOPTED_NOT_EXECUTED",
+  "controllerBase": "7122a56519d7ae3f34202bb0f9575573143dc80e",
+  "baselineBase": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+  "pins": [
+    {
+      "path": "scripts/testing/assembled-native-ci/run.py",
+      "baseSha256": "dd4ef6e1a8413eb359cdaa95eeaf94d2d7f8ac85902bb3f1e314045c8d292d03",
+      "proposedSha256": "1411563c8a72adf9360b2ef39ce9023678a28429abdb4b52ed553155ce887ed2",
+      "bytes": 87763
+    },
+    {
+      "path": "scripts/testing/assembled-native-ci/test_run.py",
+      "baseSha256": "1757e463ba02d22bfaf6aedc948284f9b26183edd5d8e8e3468696a8610ba6c9",
+      "proposedSha256": "86f1293fa2a2dd441a1fa95cc5f105aa3f31ddb1d1959b5da4f0934d7b12dc3e",
+      "bytes": 105292
+    },
+    {
+      "path": "scripts/testing/consultation-feedback/install-feedback.py",
+      "baseSha256": null,
+      "proposedSha256": "e29a32fea28810cadb6f83b5e20932903fd4f47206ca6fbcb3743686227c1312",
+      "bytes": 80833
+    }
+  ],
+  "patchSha256": "83b08725ce485a3ec9f613e411d61ab57824189be9350efaca0004fb260a17a4",
+  "reconstruction": {
+    "gitApplyCheck": true,
+    "allThreeFilesByteExact": true,
+    "utf8": true
+  },
+  "optionalWorkflowProposalSha256": "168c710b6eecd4f26383874e324b626609f4463884a2b7273685c0f9a9b9dd02",
+  "tests": {
+    "scope": "M1SourceContracts only; local subprocess mocks, no Docker/SQL/network",
+    "count": 10,
+    "failures": 0,
+    "logSha256": "3ecb134c35917ce3015c2ca0094d3847f181133aaafa7c41d13df05b0d3f96c5",
+    "pythonVersion": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+    "initialFailureLogRetained": true
+  },
+  "primaryTargetInstall": "NOT_APPLIED",
+  "fullConsumer": "NOT_WIRED",
+  "nativeExecuted": false,
+  "workflowAdopted": false,
+  "limitations": [
+    "Root integration and exact-image preloading required; image config ID is not a pullable repository digest. --pull never remains enforced.",
+    "No actual PostgreSQL semantics or restore acceptance verified; mocks only. No current M1 test exhaustively exercises lost SQL response or full restore catalog matrix; prior R5 tests are historical evidence only.",
+    "Full snapshot assumes quiescent synthetic owned databases; not a concurrent exported snapshot.",
+    "No real Auth, browser, API consumer or production authority.",
+    "Optional workflow patch is a review proposal only; not applied or dispatched."
+  ]
+}

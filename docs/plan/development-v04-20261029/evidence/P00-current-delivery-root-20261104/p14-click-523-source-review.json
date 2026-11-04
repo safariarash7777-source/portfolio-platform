@@ -1,0 +1,22 @@
+{
+  "schema": "root-p14-tooltip-interaction-adoption.v1",
+  "atUtc": "2026-11-04T12:13:43.338213+00:00",
+  "base": "f7efa2e65b9f6e0ac8f56b442472c18923ce3881",
+  "manifestSha256": "c6bde82de6e8657ab7cadb7e645b6d42f6681e33774828ce2339e19231922fdc",
+  "packetFilesVerified": 52,
+  "patchSha256": "2b1dd985e4fcef03574527d14abe967ea29bea7d91305be9734b360ba1d312c6",
+  "changed": [
+    "components/symbol/MonthlySalesCharts.tsx",
+    "components/symbol/MonthlySalesCharts.test.tsx",
+    "components/symbol/MonthlyPointSourceLabel.tsx",
+    "components/symbol/MonthlySourceChartFrame.tsx"
+  ],
+  "nonPreview": "same original wrapper and undefined trigger; original data/units/source mapping unchanged",
+  "reviewedInstalledLibrary": "Recharts 3.9.1; click/keyboard selection priority confirmed by source and author actual reducer tests",
+  "previewInteractions": "click/tap pins point; keyboard switches lane; internal blur and source events preserve native link navigation; no preventDefault/window.open",
+  "mobileTimes": "raw and UTC exact text retained; LTR block with line breaking",
+  "runtimeBrowserAcceptance": "PENDING",
+  "priorF7OrdinarySourceClick": "NOT_CONFIRMED",
+  "sqlAuthBackendDependencyChanged": false,
+  "productionChanged": false
+}

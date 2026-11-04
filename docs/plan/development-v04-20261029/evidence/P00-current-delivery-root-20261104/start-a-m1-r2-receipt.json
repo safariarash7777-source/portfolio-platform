@@ -1,0 +1,31 @@
+{
+  "createdAtUtc": "2026-11-04T12:32:50.284664+00:00",
+  "verdict": "SOURCE_ONLY_NOT_ADOPTED",
+  "base": "7122a56519d7ae3f34202bb0f9575573143dc80e",
+  "pins": [
+    {
+      "path": "scripts/testing/assembled-native-ci/run.py",
+      "sha256": "93e9d6b9e9f678c3860800cffc2e9221ef3db4a123d8e11f9ecf08e452c19d8c"
+    },
+    {
+      "path": "scripts/testing/assembled-native-ci/test_run.py",
+      "sha256": "092e3b75c50d05236b2aca563234658646710f10d965b8f16d2035afe139f866"
+    },
+    {
+      "path": "scripts/testing/consultation-feedback/install-feedback.py",
+      "sha256": "714264d29c18601b7ea38559fe706e18efd65bbf8e4cb0f1a5bc679464308c3b"
+    }
+  ],
+  "fullPatchSha256": "6d250a5d337438530b7c45fd6445dfcd9cd82fd49128bcdc6a436c51c6d10db8",
+  "deltaSha256": "382a663b58b6f4f1fe275fa58c49e6d8f26599ef034c2074858585d0deffa8b8",
+  "reconstructionByteExact": true,
+  "tests": {
+    "passed": 11,
+    "failed": 0,
+    "logSha256": "581dc3b7f9bc906963f598cfa6c1e620fa3fcafaf7a81e0100b65c843796620d",
+    "scope": "M1SourceContracts mocks only"
+  },
+  "runtimeInspect": "NOT_RUN",
+  "preload": "NOT_RUN",
+  "fullConsumer": "NOT_WIRED"
+}

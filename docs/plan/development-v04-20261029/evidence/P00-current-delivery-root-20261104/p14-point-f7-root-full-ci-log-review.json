@@ -1,0 +1,27 @@
+{
+  "run": 41823312414,
+  "source": "f7efa2e65b9f6e0ac8f56b442472c18923ce3881",
+  "requiredJobs": "5_SUCCESS",
+  "optionalNative": "SKIPPED",
+  "actualCheckout": "88f6b30bed47ef827f21cd357808cf131dfaccc3",
+  "tree": "4368d07a1e99380865a7eb8893160126206ca01d",
+  "parents": [
+    "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+    "f7efa2e65b9f6e0ac8f56b442472c18923ce3881"
+  ],
+  "headTreeEqual": true,
+  "logs": [
+    {
+      "job": 126551622523,
+      "characters": 1289814,
+      "checkoutObserved": true,
+      "errors": []
+    },
+    {
+      "job": 126551622102,
+      "characters": 3280491,
+      "checkoutObserved": true,
+      "errors": []
+    }
+  ]
+}

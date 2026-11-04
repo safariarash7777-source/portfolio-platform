@@ -1,0 +1,919 @@
+{
+  "startedAt": "2026-11-04T11:56:03.989Z",
+  "source": "f7efa2e65b9f6e0ac8f56b442472c18923ce3881",
+  "deployment": "dpl_Equ3uaSK1BuY1BA4PMPbKrc3iopp",
+  "console": [
+    {
+      "type": "error",
+      "message": "Loading the script 'https://vercel.live/_next-live/feedback/feedback.js' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    }
+  ],
+  "pageErrors": [],
+  "requests": [
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/35d9eb37be8f3c35-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/4ff1260a1bda0420-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/7009a0e6afae0c20-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/902e9716815fb483-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/css/ee04187d2ae996e6.css"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/css/98893245a284ed5d.css"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/image"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/webpack-0cd5a77e5b2d4660.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/1255-60d8dc7c8c9309a1.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/main-app-b7ac91ae224968d9.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/d0709137-02608d4546722e55.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2619-04bc32f026a0d946.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2473-cd6d92efe10b616a.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2412-50bb95a06d778a49.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/5325-aff43f442ed94447.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/6740-7ddb8a9f1d500af3.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/6698-a1b4aaf792e2d6bf.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2287-d0a13c11a3ad0980.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/4787-cdefad716dc78e6f.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/1545-e7fb6452e04098ad.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/app/symbol/%5Bsymbol%5D/page-6f12502fcbf95385.js"
+    },
+    {
+      "method": "GET",
+      "host": "vercel.live",
+      "path": "/_next-live/feedback/feedback.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/learn/glossary"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/1627-f9cd4eeb07c8b04d.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/app/learn/glossary/page-85a34010b35f3288.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/learn/glossary"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    }
+  ],
+  "responses": [
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/902e9716815fb483-s.p.woff2"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/35d9eb37be8f3c35-s.p.woff2"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/css/ee04187d2ae996e6.css"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/7009a0e6afae0c20-s.p.woff2"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/css/98893245a284ed5d.css"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/image"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/4ff1260a1bda0420-s.p.woff2"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/webpack-0cd5a77e5b2d4660.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/1255-60d8dc7c8c9309a1.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2473-cd6d92efe10b616a.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2619-04bc32f026a0d946.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/d0709137-02608d4546722e55.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2412-50bb95a06d778a49.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/main-app-b7ac91ae224968d9.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/6698-a1b4aaf792e2d6bf.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/5325-aff43f442ed94447.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/6740-7ddb8a9f1d500af3.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2287-d0a13c11a3ad0980.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/1545-e7fb6452e04098ad.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/4787-cdefad716dc78e6f.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/app/symbol/%5Bsymbol%5D/page-6f12502fcbf95385.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "status": 502,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/learn/glossary"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/1627-f9cd4eeb07c8b04d.js"
+    },
+    {
+      "status": 502,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/app/learn/glossary/page-85a34010b35f3288.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "status": 502,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "status": 502,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "status": 502,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "status": 502,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/learn/glossary"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "status": 502,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "status": 502,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "status": 502,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "status": 502,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "status": 502,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "status": 502,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "status": 502,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "status": 502,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "status": 502,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "status": 502,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "status": 502,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "status": 502,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    }
+  ],
+  "failedRequests": [
+    {
+      "method": "GET",
+      "host": "vercel.live",
+      "path": "/_next-live/feedback/feedback.js",
+      "error": "csp"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF",
+      "error": "net::ERR_ABORTED"
+    }
+  ],
+  "stages": [
+    {
+      "stage": "monthly-keyboard-tooltip",
+      "evidence": [
+        {
+          "text": "خرداد\nمنشأ سال ۱۴۰۳\nپایان دورهٔ گزارش: ۱۴۰۳-۰۳-۳۱\nواحد مبلغ گزارش: میلیون ریال\nانتشار در کدال (زمان محلی): ۱۴۰۳/۰۴/۳۰ ۲۲:۳۸:۲۷\nدریافت رکورد (متن اصلی): 2026-10-25T10:16:24.513528+00:00\nدریافت رکورد (UTC): 2026-10-25T10:16:24.513Z\nپایان دورهٔ ذخیره‌شده: ۲۰۲۴-۰۶-۲۰\nاصلاحیهٔ گزارش\nاطلاعیهٔ همین رکورد\n\nسال ۱۴۰۳ : ۲۵٫۷ همت",
+          "links": [
+            {
+              "text": "اطلاعیهٔ همین رکورد",
+              "href": "https://codal.ir/Reports/Decision.aspx?LetterSerial=J0mjKEgN1oGvJ8QQQaQQQSCqr5AA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            }
+          ],
+          "rect": {
+            "x": 1100.5020751953125,
+            "y": 513.84375,
+            "width": 280,
+            "height": 263
+          }
+        }
+      ]
+    },
+    {
+      "stage": "cumulative-keyboard-tooltip",
+      "evidence": [
+        {
+          "text": "خرداد\nمنشأ تجمیعی ۱۴۰۳\nپایان دورهٔ گزارش: ۱۴۰۳-۰۳-۳۱\nواحد مبلغ گزارش: میلیون ریال\nانتشار در کدال (زمان محلی): ۱۴۰۳/۰۴/۳۰ ۲۲:۳۸:۲۷\nدریافت رکورد (متن اصلی): 2026-10-25T10:16:24.513528+00:00\nدریافت رکورد (UTC): 2026-10-25T10:16:24.513Z\nپایان دورهٔ ذخیره‌شده: ۲۰۲۴-۰۶-۲۰\nاصلاحیهٔ گزارش\nاطلاعیهٔ همین رکورد\n\nتجمیعی ۱۴۰۳ : ۷۳٫۹ همت",
+          "links": [
+            {
+              "text": "اطلاعیهٔ همین رکورد",
+              "href": "https://codal.ir/Reports/Decision.aspx?LetterSerial=J0mjKEgN1oGvJ8QQQaQQQSCqr5AA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "stage": "year-change-current-record",
+      "year": "1405",
+      "record": {
+        "id": 11653,
+        "financialPeriodEnd": "1405-06-31",
+        "storedPeriodEnd": "2026-09-22",
+        "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+        "publishedAt": "1405/07/29 20:50:26",
+        "capturedAtRaw": "2026-10-25T10:15:56.894105+00:00",
+        "capturedAt": "2026-10-25T10:15:56.894Z",
+        "amendment": true
+      },
+      "tooltip": [
+        {
+          "text": "شهریور\nمنشأ سال ۱۴۰۵\nپایان دورهٔ گزارش: ۱۴۰۵-۰۶-۳۱\nواحد مبلغ گزارش: میلیون ریال\nانتشار در کدال (زمان محلی): ۱۴۰۵/۰۷/۲۹ ۲۰:۵۰:۲۶\nدریافت رکورد (متن اصلی): 2026-10-25T10:15:56.894105+00:00\nدریافت رکورد (UTC): 2026-10-25T10:15:56.894Z\nپایان دورهٔ ذخیره‌شده: ۲۰۲۶-۰۹-۲۲\nاصلاحیهٔ گزارش\nاطلاعیهٔ همین رکورد\n\nسال ۱۴۰۵ : ۶۳٫۹ همت",
+          "links": [
+            {
+              "text": "اطلاعیهٔ همین رکورد",
+              "href": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+              "target": "_blank",
+              "rel": "noopener noreferrer"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "navigationCount": 1,
+  "documentStatus": 200,
+  "publicRscReadback": {
+    "recordCount": 10,
+    "selected": [
+      {
+        "id": 11664,
+        "financialPeriodEnd": "1403-03-31",
+        "storedPeriodEnd": "2024-06-20",
+        "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=J0mjKEgN1oGvJ8QQQaQQQSCqr5AA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+        "publishedAt": "1403/04/30 22:38:27",
+        "capturedAtRaw": "2026-10-25T10:16:24.513528+00:00",
+        "capturedAt": "2026-10-25T10:16:24.513Z",
+        "amendment": true
+      }
+    ],
+    "domSourceHrefExact": true,
+    "noNewNetworkRequest": true
+  },
+  "mobile": {
+    "width": 375,
+    "scrollWidth": 375,
+    "tooltip": [
+      {
+        "text": "شهریور\nمنشأ سال ۱۴۰۵\nپایان دورهٔ گزارش: ۱۴۰۵-۰۶-۳۱\nواحد مبلغ گزارش: میلیون ریال\nانتشار در کدال (زمان محلی): ۱۴۰۵/۰۷/۲۹ ۲۰:۵۰:۲۶\nدریافت رکورد (متن اصلی): 2026-10-25T10:15:56.894105+00:00\nدریافت رکورد (UTC): 2026-10-25T10:15:56.894Z\nپایان دورهٔ ذخیره‌شده: ۲۰۲۶-۰۹-۲۲\nاصلاحیهٔ گزارش\nاطلاعیهٔ همین رکورد\n\nسال ۱۴۰۵ : ۶۳٫۹ همت",
+        "rect": {
+          "x": 64.45833587646484,
+          "y": 436.203125,
+          "width": 280,
+          "height": 263
+        },
+        "scrollWidth": 280,
+        "links": [
+          {
+            "text": "اطلاعیهٔ همین رکورد",
+            "href": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+            "target": "_blank",
+            "rel": "noopener noreferrer"
+          }
+        ]
+      }
+    ]
+  },
+  "sourceLinkClick": {
+    "attemptedAt": "2026-11-04T12:01:41.862Z",
+    "forced": false,
+    "outcome": "NOT_CONFIRMED",
+    "errorClass": "TimeoutError",
+    "message": "browserContext.waitForEvent: Timeout 12000ms exceeded while waiting for event \"page\"",
+    "openPages": [
+      "https://portfolio-platform-o5x992jx0-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=decision&monthlyYear=1405&quarters=8#fundamental"
+    ]
+  },
+  "completedAt": "2026-11-04T12:08:56.808Z",
+  "finalProbe": {
+    "badge": "preview · f7efa2e",
+    "width": 375,
+    "scrollWidth": 375
+  },
+  "linkAcceptance": "NOT_CONFIRMED",
+  "fullAcceptance": "INCOMPLETE",
+  "limitations": [
+    "source link ordinary click produced no observed popup; cause unproven",
+    "502 observed at /api/symbol-detail; upstream cause not yet bound",
+    "point source clocks are historical October 25, not proof of latest full financial cycle",
+    "human visual approval and Production release remain open"
+  ],
+  "ownedContextClosed": true,
+  "ownedBrowserClosed": true
+}

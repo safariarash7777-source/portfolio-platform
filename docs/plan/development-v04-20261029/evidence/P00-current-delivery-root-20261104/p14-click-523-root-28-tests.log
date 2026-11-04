@@ -1,0 +1,36 @@
+✔ Preview period/rate selection uses existing models without changing totals, gaps or unknown units (476.368ms)
+✔ Preview rate selection cannot identify ambiguous market series as one verified product (43.2595ms)
+✔ Preview monthly and cumulative tooltips bind current/prior point identities after year selection (54.0241ms)
+✔ Preview tooltip keeps reported zero and null metadata distinct from missing point and unsafe link (73.7045ms)
+✔ non-Preview monthly charts ignore supplied point records and retain original tooltip/data shape (42.3067ms)
+✔ Preview source charts pin pointer selection with click trigger, while ordinary tooltips remain unchanged (66.9396ms)
+✔ source frame preserves keyboard-to-link focus and isolates native pointer movement without cancelling defaults (6.7167ms)
+✔ actual Recharts reducer and selector keep clicked point on movement and support the isolated keyboard lane (2.633ms)
+✔ source label stops chart click/focus/Enter handlers without suppressing anchor navigation or Escape (7.704ms)
+✔ monthly charts render declared units, actual values, calendar gaps and unit-bearing tooltips (59.7886ms)
+✔ different valid rate denominators get separate axes and an unknown series cannot erase valid peers (30.3542ms)
+✔ mixed units within the main product keep valid market rates but cannot certify a quantity sum (30.3611ms)
+✔ unit changes split the existing calendar into separate plots and suppress cross-unit rate narrative (34.8979ms)
+✔ unknown numerator leaves valid quantity visible but cannot label a rate as rial (30.2421ms)
+✔ reported quantity zero stays zero, while missing quantities stay gaps (31.5366ms)
+✔ legacy, services, explicit null and out-of-catalog units remain honest unavailable states (133.5067ms)
+✔ real Recharts SSR retains unit labels, source and explicit unavailable state without chart mocks (63.1262ms)
+✔ actual archived HTML through parser, quantity gate, core and UI renders goods markets separately while rates stay unknown (122.7419ms)
+✔ a failed scoped witness cannot turn into a goods-and-service aggregate or erase a healthy market (35.9537ms)
+✔ scoped UI preserves the existing calendar gaps and never borrows a witness from an older amendment (37.0484ms)
+✔ paired monthly projection keeps original timestamps, units and records without mutation (2.2196ms)
+✔ swapped, truncated or absent record projections cannot inherit an apparently matching date (0.3029ms)
+✔ duplicate period or record identity stays unknown instead of selecting provenance independently (0.2087ms)
+✔ existing zero-total monthly dedup selects the same report and its paired metadata (0.9909ms)
+✔ reported zero remains traceable but a missing calendar month never gets a record (0.3301ms)
+✔ same month label across current and prior year retains separate source identities (0.2533ms)
+✔ null row fields and unknown amount units are preserved without bundle defaults (0.1561ms)
+✔ missing identities or malformed full periods cannot certify metadata (0.1403ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3140.3903

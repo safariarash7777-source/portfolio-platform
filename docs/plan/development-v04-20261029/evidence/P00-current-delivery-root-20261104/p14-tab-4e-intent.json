@@ -1,0 +1,27 @@
+{
+  "schema": "p14-source-tab-order-preview-intent.v1",
+  "source": "4e4765bdef751b99047ac12996208c0f2b85c5de",
+  "tree": "6dd9c7977473efe6e70d3b4d751df766ec4752a1",
+  "base": "52336c9a17cf8a9e8f3c4b5096b2525bf3fa25c7",
+  "project": "prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp",
+  "slug": "safariarash7777-4463s-projects",
+  "existingDeployment": "dpl_C6KZmqBRFp2sGwTthCCooyPeXmEi",
+  "fromBranch": "codex/media-archive-filters-20261103",
+  "snapshotBranch": "codex/p14-company-views-20261104",
+  "envIds": [
+    "9NEamcg9U7e4wcSX",
+    "rbwHDphHrW3rf8Hk"
+  ],
+  "onlyEnvFieldChanged": "gitBranch",
+  "decryptValues": false,
+  "valueReadOrChanged": false,
+  "productionChange": false,
+  "automaticRetry": false,
+  "packetVerifiedFiles": 53,
+  "rootTargetedTests": {
+    "passed": 29,
+    "failed": 0,
+    "lint": "PASS"
+  },
+  "acceptance": "PENDING_NEW_BROWSER_NOT_TRANSFERRED_FROM_523"
+}

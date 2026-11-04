@@ -1,0 +1,5 @@
+--- a/overlay/scripts/testing/consultation-tickets/composition-member-phase.mjs
++++ b/overlay/scripts/testing/consultation-tickets/composition-member-phase.mjs
+@@ -105,1 +105,1 @@
+-   const card=page.locator('article[aria-label="جمع‌بندی نسخهٔ ۱"]');await card.locator('details summary').click();
++   const card=page.locator('article[aria-label="جمع‌بندی نسخهٔ ۱"]');check(await card.count()===1,'feedback_session_article_not_unique');const feedbackHistory=card.locator('summary').filter({hasText:'سابقهٔ مشاهده و اقدام‌ها ('});check(await feedbackHistory.count()===1,'feedback_history_summary_not_unique');await feedbackHistory.click();

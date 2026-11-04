@@ -1,0 +1,26 @@
+{
+  "schema": "root-p03-history-selector-source-adoption.v1",
+  "atUtc": "2026-11-04T12:11:38.070706+00:00",
+  "base": "7122a56519d7ae3f34202bb0f9575573143dc80e",
+  "packetManifest": "4080e28d064bf8e2749ad07c9e35c56a1624757cff211385a9f3ecab02502880",
+  "peer": "ca218f821f0151ad18f515eaa2e07e00d1209918e3ba830f383bd9bc8646e32f",
+  "actualE0JsonModulesComparedToGit": 14,
+  "activeProductTypeScriptCopiesAdded": 0,
+  "capsuleChangedMembers": [
+    "overlay/scripts/testing/consultation-tickets/assembled-overlay.json",
+    "overlay/scripts/testing/consultation-tickets/composition-member-phase.mjs"
+  ],
+  "onlyPhaseDelta": "same article count1; semantic history summary count1; click; all other bytes preserved",
+  "capsuleSha256": "c3bbd84d308774e2775f7fa267b652e90036e52be9794450275bd52aae5b1e90",
+  "driverSha256": "9d58d2714bca03aea2808bbf5fa413a0508b1e788344e2395bc5bdbf4a5a5b8d",
+  "awaitRegression": "original unchanged CJS/fixtures tested against frozen f41; new live-capsule test proves exact reviewed selector-only delta and preserves await",
+  "projectionDelta": [
+    "p03_composition_feedback_session_article_not_unique",
+    "p03_composition_feedback_history_summary_not_unique"
+  ],
+  "workflowSqlAppAuthBudgetsAcceptanceChanged": false,
+  "nativeCauseExactLine": "UNPROVEN",
+  "nativeAfterFix": "NOT_RUN",
+  "primaryInstall": "NOT_APPLIED",
+  "productRight": "NOT_CONNECTED"
+}
