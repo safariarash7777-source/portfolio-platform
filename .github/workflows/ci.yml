@@ -126,6 +126,9 @@ jobs:
       - name: Deploy gate tests
         run: npm run test:deploy
 
+      - name: Single-report archive source tests (offline)
+        run: node --test relay/codal-reinterpretation.test.mjs
+
       # build آخر است: گران‌ترین گام، بعد از ارزان‌ترین بازخوردها.
       - name: Build
         run: npm run build
@@ -203,6 +206,9 @@ jobs:
 
       - name: نصبِ کلاینتِ psql
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends postgresql-client
+
+      - name: Single-report archive CAS and readback (isolated Postgres)
+        run: node node_modules/tsx/dist/cli.mjs --test --test-concurrency=1 lib/fundamental/codal-reinterpretation.integration.test.ts
 
       # `CI=true` را خودِ GitHub Actions ست می‌کند و تست روی همان تکیه می‌کند:
       # اگر Postgres یا psql نباشد، به‌جای skip **خطا می‌دهد**.
