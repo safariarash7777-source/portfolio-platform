@@ -12,6 +12,12 @@ name: Relay health
 on:
   workflow_dispatch:
     inputs:
+      operation:
+        description: "Read-only operation (discovery remains source-closed)"
+        type: choice
+        options: [health, discovery]
+        default: health
+        required: true
       note:
         description: "یادداشت برای این بررسی (اختیاری)"
         required: false
@@ -31,6 +37,7 @@ env:
 
 jobs:
   check:
+    if: ${{ (inputs.operation == 'health' || inputs.operation == '') }}
     name: Relay health → arsadata
     runs-on: ubuntu-latest
     steps:
@@ -138,3 +145,71 @@ jobs:
             echo ""
             echo "این اجرا **هیچ چیزی منتشر نکرده** و هیچ پرچمی را تغییر نداده."
           } >> "$GITHUB_STEP_SUMMARY"
+
+  discovery:
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.run_attempt == 1 && inputs.operation == 'discovery' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout immutable control
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          path: control
+          persist-credentials: false
+      - name: Checkout reviewed source
+        uses: actions/checkout@v4
+        with:
+          ref: 72878684de0aaeb352a0e062740b580f03e775a9
+          path: reviewed
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify independent source pins and closed preflight
+        id: preflight
+        env:
+          DISCOVERY_OPERATION: ${{ inputs.operation }}
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          import {createHash} from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          const deny=()=>{throw Error('source_identity_rejected');};
+          try {
+            const git=(cwd,args)=>execFileSync('git',args,{cwd,encoding:'utf8',stdio:['ignore','pipe','ignore'],timeout:1000,maxBuffer:4096}).trim();
+            const read=(path,cap)=>{
+              const parts=path.split('/');for(let i=1;i<parts.length;i++)if(!fs.lstatSync(parts.slice(0,i).join('/')).isDirectory()||fs.lstatSync(parts.slice(0,i).join('/')).isSymbolicLink())deny();
+              const fd=fs.openSync(path,fs.constants.O_RDONLY|fs.constants.O_NOFOLLOW|fs.constants.O_NONBLOCK);
+              try{const a=fs.fstatSync(fd);if(!a.isFile()||a.size>cap)deny();const b=Buffer.alloc(a.size+1);const n=fs.readSync(fd,b,0,b.length,0),z=fs.fstatSync(fd);if(n!==a.size||a.size!==z.size||a.ino!==z.ino||a.mtimeMs!==z.mtimeMs||a.ctimeMs!==z.ctimeMs)deny();return b.subarray(0,n);}finally{fs.closeSync(fd);}
+            };
+            const control=git('control',['rev-parse','HEAD']);
+            if(!/^[a-f0-9]{40}$/.test(control)||control!==process.env.GITHUB_WORKFLOW_SHA||control!==process.env.GITHUB_SHA||process.env.GITHUB_REPOSITORY!=='safariarash7777-source/portfolio-platform'||process.env.GITHUB_REF!=='refs/heads/main'||process.env.GITHUB_EVENT_NAME!=='workflow_dispatch'||process.env.GITHUB_RUN_ATTEMPT!=='1'||process.env.DISCOVERY_OPERATION!=='discovery')deny();
+            const manifestPath='scripts/ops/liara-discovery-source.json';
+            const raw=read('control/'+manifestPath,8192);
+            const blob=b=>createHash('sha1').update('blob '+b.length+'\0').update(b).digest('hex');
+            if(blob(raw)!==git('control',['rev-parse','HEAD:'+manifestPath]))deny();
+            const m=JSON.parse(raw.toString('utf8'));
+            const paths=['scripts/ops/liara-binding-discovery-command.mjs','scripts/ops/liara-binding-discovery.mjs','scripts/ops/liara-discovery-websocket.mjs','scripts/ops/liara-binding-discovery-runner.mjs'];
+            if(m.version!==1||Object.keys(m).sort().join(',')!=='files,sourceCommit,version'||m.sourceCommit!=='72878684de0aaeb352a0e062740b580f03e775a9'||git('reviewed',['rev-parse','HEAD'])!==m.sourceCommit||Object.keys(m.files).sort().join(',')!==[...paths].sort().join(','))deny();
+            for(const p of paths){if(!/^[a-f0-9]{40}$/.test(m.files[p])||git('reviewed',['rev-parse','HEAD:'+p])!==m.files[p]||blob(read('reviewed/'+p,131072))!==m.files[p])deny();}
+            execFileSync(process.execPath,['reviewed/scripts/ops/liara-binding-discovery-runner.mjs','--preflight'],{stdio:['ignore','inherit','ignore'],timeout:5000});
+          }catch{console.log('{"state":"source_identity_rejected","authorized":false,"remoteHalt":"not_started"}');process.exitCode=1;}
+          NODE
+      - name: Single authorized discovery receipt
+        if: steps.preflight.outputs.authorized == 'true'
+        env:
+          DISCOVERY_OPERATION: ${{ inputs.operation }}
+          LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
+        run: node reviewed/scripts/ops/liara-binding-discovery-runner.mjs --execute > liara-binding-discovery-receipt.json
+      - name: Upload sanitized discovery receipt
+        if: always() && steps.preflight.outputs.authorized == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: liara-binding-discovery-receipt
+          path: liara-binding-discovery-receipt.json
+          if-no-files-found: error
+          retention-days: 14

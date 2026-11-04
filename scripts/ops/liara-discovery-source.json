@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "sourceCommit": "72878684de0aaeb352a0e062740b580f03e775a9",
+  "files": {
+    "scripts/ops/liara-binding-discovery-command.mjs": "9944646ecc4f63f6aad6d35b25d2467b1c70043b",
+    "scripts/ops/liara-binding-discovery.mjs": "7192ffd1126bac023ad11794bec8117e6708593d",
+    "scripts/ops/liara-discovery-websocket.mjs": "175ddbb20146baff1b212c86e7beb115c7de13a8",
+    "scripts/ops/liara-binding-discovery-runner.mjs": "3fded71a50107f9dd049cd860dbb715274a59bcd"
+  }
+}
