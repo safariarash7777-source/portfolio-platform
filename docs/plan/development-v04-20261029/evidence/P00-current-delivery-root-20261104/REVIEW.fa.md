@@ -1,3 +1,10 @@
+## خروجی‌های تازهٔ قابل بررسی
+
+- [پیش‌نمایش کاربرگ و History نسخه960](https://portfolio-platform-15n4cyzhy-safariarash7777-4463s-projects.vercel.app/admin/research#research-workbook)، [رسید READY و guest/API401](p09-preview-960.json). CI/شش PG journal موفق‌اند؛ نشست واقعی/بستن صفحه روی این snapshot NOT_RUN و SQL مقصد NOT_APPLIED است.
+- [کد پشتیبان در Draft PR405](https://github.com/safariarash7777-source/portfolio-platform/pull/405)، [۶۳ source pin و حدود انتقال](p15-canonical-source-integration-pr405.json). کد از بسته وارد repo شد؛ CI در اجراست. اولین تبدیل CRLF متوقف و با تطبیق دقیق SHA بازیابی شد. هنوز namespace/authority/native/archive جدید نداریم؛ harnessهای V3 در CI ثبت نشده‌اند.
+- [سه P2 نسخه۱ مشاوره](p03-composition-v1-source-review.json) در [source نسخه۲b بسته شدند](p03-composition-v2b-source-review.json)؛ runtime و receipt تازه هنوز پذیرفته نیستند. رسید۱۴/۹ قبلی ثابت است.
+- [review مالی metadata همان گزارش](p07-report-metadata-proposal-review.json) فقط scope مستقل و B تجمعی شش‌ماهه را پشتیبانی می‌کند؛ parser/caller/DB فعال نشده‌اند. فصل مستقل، prior duration، سرمایه و hidden همچنان گیت جدا دارند.
+
 ## ادغام پژوهش و اصلاح شواهد محلی
 
 [P09/source960903](p09-current-source-integration.json) از همان journal پذیرفته‌شده a2 و با حفظ کد e0 ترکیب شد؛ ۱۰۹ آزمون مرتبط محلی، پذیرش CI یا مقصد نیست. CI قبلی41766554604 شش cancelled داشت؛ ثبت suite و dependency تاریخی SQL در نسخه جدید اصلاح شدند و [CI41767243456 هر پنج job موفق شد](p09-root-ci-final-review.json). شش آزمون واقعی journal در PG با پروفایل‌های legacy/explicit اجرا شدند؛ [۱۹ فایل مربوطه برابر و tree کل متفاوت است](p09-root-ci-source-binding.json). SQL اصلی، migration و native اجرا نشده‌اند. [raw لاگ محلی dirty-first بازنویسی شده](p09-local-log-preservation-correction.json)؛ هش و خلاصه جای آن را نمی‌گیرند، لاگ رسمی failedCI محفوظ است. نتیجهٔ تاریخی بازیابی P09 به snapshot تازه منتقل نمی‌شود.

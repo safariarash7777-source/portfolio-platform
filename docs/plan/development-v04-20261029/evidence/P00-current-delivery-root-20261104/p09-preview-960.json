@@ -1,0 +1,64 @@
+{
+  "deploymentId": "dpl_DB55VyzyH8XwojNf3BgEUXzWPQNe",
+  "url": "https://portfolio-platform-15n4cyzhy-safariarash7777-4463s-projects.vercel.app",
+  "head": "960903ca8390bd9767c2d87a309dbb48c815cedb",
+  "state": "READY",
+  "target": null,
+  "projectId": "prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp",
+  "workbenchPath": "/admin/research#research-workbook",
+  "metadataIndependentlyReadByRoot": true,
+  "anonymousReadbackByOwner": [
+    {
+      "path": "/dashboard",
+      "status": 307,
+      "redirectPath": "/login",
+      "sameOrigin": true,
+      "next": "/dashboard",
+      "loginStatus": 200,
+      "htmlPersian": true
+    },
+    {
+      "path": "/dashboard/consultation/requests",
+      "status": 307,
+      "redirectPath": "/login",
+      "sameOrigin": true,
+      "next": "/dashboard/consultation/requests",
+      "loginStatus": 200,
+      "htmlPersian": true
+    },
+    {
+      "path": "/admin/consultation/requests",
+      "status": 307,
+      "redirectPath": "/login",
+      "sameOrigin": true,
+      "next": "/admin/consultation/requests",
+      "loginStatus": 200,
+      "htmlPersian": true
+    },
+    {
+      "path": "/admin/research",
+      "status": 307,
+      "redirectPath": "/login",
+      "sameOrigin": true,
+      "next": "/admin/research",
+      "loginStatus": 200,
+      "htmlPersian": true
+    },
+    {
+      "path": "/api/admin/intelligence/workbooks",
+      "status": 401,
+      "redirectPath": null,
+      "sameOrigin": null,
+      "next": null,
+      "loginStatus": null,
+      "htmlPersian": null
+    }
+  ],
+  "createPosts": 1,
+  "environmentChanges": false,
+  "primaryJournalSql": "NOT_APPLIED",
+  "productServiceRight": "NOT_CONNECTED",
+  "authenticatedUse": "NOT_ACCEPTED",
+  "currentSnapshotRealBrowserCloseReopen": "NOT_RUN",
+  "arashAcceptance": "UNOBSERVED"
+}

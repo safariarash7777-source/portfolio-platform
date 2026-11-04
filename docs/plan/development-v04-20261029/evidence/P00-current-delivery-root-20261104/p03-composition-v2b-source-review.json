@@ -1,0 +1,24 @@
+{
+  "schema": "source-review.v2b",
+  "patchSha256": "8bfc8e8bc8f5c6e5a80d892c3b3157756424f783410cd36d05ffa85f5881ef93",
+  "retainedHelperDeltaSha256": "b2439cba5d292abb9442c15494c0b5ae7db73aca31737eb0350f2e2be4ce2028",
+  "sourceReview": "SOURCE_PASS_LIMITED",
+  "priorThreeP2Closed": true,
+  "actorBoundary": "Closed scenario callers; not public input",
+  "rootRuntimeAdopted": false,
+  "nativeExecuted": false,
+  "actualAuthCounters": null,
+  "actualSqlApplyCount": null,
+  "proposedSqlApplyCount": 19,
+  "proposedMarker": "Existing consultation-ticket lifecycle actual marker; parent assembled marker unchanged",
+  "trackedBrowserSource": "Must remain exact e0; generated function provenance required in retained overlay",
+  "historical14ChecksAndCapsuleUnchanged": true,
+  "remaining": [
+    "actual source/runtime/actor binding",
+    "auth mutation and product admission projection",
+    "exact owned SQL19 scope",
+    "derived sealed capsule with generated provenance",
+    "hard deadline and independent cleanup",
+    "strict new receipt"
+  ]
+}

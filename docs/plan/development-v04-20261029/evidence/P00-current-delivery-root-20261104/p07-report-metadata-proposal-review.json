@@ -1,0 +1,39 @@
+{
+  "schema": "report-metadata-source-review.v1",
+  "proposalZipSha256": "010bce411d698895ebe0fc9c76cf0d397320825f44c34de48bfc49f291bd3e8d",
+  "bridgeZipSha256": "ca2008d5a334eb34dbf85d6421158b10a3e3f30d8b06400c8954f24c113c370c",
+  "independentReview": "SOURCE_PROPOSAL_PASS_LIMITED",
+  "p1": 0,
+  "p2": 0,
+  "scope": "Exact official report/sheet1/table904/meta3220/context0/currentB specimen",
+  "metadataBasis": [
+    "explicit report metadata",
+    "official visible title",
+    "same source identity",
+    "unique income table",
+    "matching B1/B2"
+  ],
+  "interpretation": {
+    "scope": "standalone",
+    "calendar": "jalali",
+    "periodKind": "cumulative",
+    "months": 6,
+    "periodEnd": "1405/06/31"
+  },
+  "notEstablished": [
+    "independent quarter",
+    "monthly profit",
+    "C duration",
+    "D values",
+    "equity capital",
+    "33 hidden cells",
+    "full numerical equality"
+  ],
+  "blankPercentageCellsRemainNull": 4,
+  "hardcodedIdsAndHashes": "Specimen only; not generic production exceptions",
+  "parserCurrentAdmission": "scope_unknown",
+  "runtimeActivated": false,
+  "newReportStored": false,
+  "implementationOwner": "A",
+  "nextAction": "Source-only generic conflict guards and typed cumulative/Jalali contract with existing resolver/consumer; full output contract must not accept incomplete report"
+}
