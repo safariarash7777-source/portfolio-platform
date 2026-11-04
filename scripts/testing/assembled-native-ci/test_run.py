@@ -1207,6 +1207,50 @@ class M1SourceContracts(unittest.TestCase):
         spec=importlib.util.spec_from_file_location('m1_offline_adapter',path)
         cls.adapter=importlib.util.module_from_spec(spec);spec.loader.exec_module(cls.adapter)
 
+    def test_phase_evidence_names_use_real_validator_without_filesystem(self):
+        validator=self.adapter.OwnedPrivateStore.__new__(self.adapter.OwnedPrivateStore)
+        expected={'controller_binding','allocation','initial_roles','bootstrap','backup','restore_copy','restore_third','prewrite_inverse','apply_history','result','cleanup'}
+        self.assertEqual(runner.M1_PHASES,expected)
+        names=runner.M1_PHASE_EVIDENCE_NAMES
+        self.assertEqual(set(names),expected)
+        self.assertEqual(len(set(names.values())),len(expected))
+        with self.assertRaisesRegex(RuntimeError,'^m1_evidence_name$'):
+            validator.name('m1-phase-controller_binding.json')
+        for phase,name in names.items():
+            with self.subTest(phase=phase):
+                self.assertEqual(name,'m1-phase-'+phase.replace('_','-')+'.json')
+                self.assertEqual(validator.name(name),name)
+                self.assertNotIn('_',name)
+        for unknown in ('controller-binding','restore-copy','../backup','backup.json',None,True):
+            with self.subTest(unknown=unknown),self.assertRaises(KeyError):
+                names[unknown]
+
+    def test_execute_phase_names_reach_allocation_with_real_name_validation(self):
+        validator=self.adapter.OwnedPrivateStore.__new__(self.adapter.OwnedPrivateStore)
+        binding={'executionAllocationId':'00000000-0000-4000-8000-000000000001','runId':'123','workflowCommit':'a'*40}
+        recipe=runner.m1_recipe(binding,self.adapter)
+        records={'m1-recipe.json':recipe,'m1-controller-binding.json':{'binding':binding,'stage':'PREPARED','adapterSha256':runner.M1_ADAPTER_SHA,'recipeSha256':hashlib.sha256(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode()).hexdigest()}}
+        events=[]
+        class Store:
+            def read(self,name):return records[name]
+            def exists(self,name):return name in records
+            def lock_exclusive(self):return contextlib.nullcontext()
+            def write_exclusive(self,name,value):
+                validator.name(name)
+                if name in records:raise FileExistsError(name)
+                records[name]=value;events.append(name)
+            def close(self):events.append('closed')
+        module=SimpleNamespace(M1_IMAGE=self.adapter.M1_IMAGE,M1_IMAGE_CONTRACT=self.adapter.M1_IMAGE_CONTRACT,OwnedPrivateStore=lambda p:Store(),capacity=lambda p:None)
+        with patch.object(runner,'paths',return_value=(Path('.'),Path('.'),Path('.'),Path('.'))),patch.object(runner,'m1_module',return_value=(module,None)),patch.object(runner,'m1_allocate',side_effect=RuntimeError('m1_deadline')) as allocate:
+            with self.assertRaisesRegex(RuntimeError,'^m1_deadline$'):runner.m1_execute(binding)
+            allocate.assert_called_once()
+        self.assertEqual(records['m1-phase-controller-binding.json']['phase'],'controller_binding')
+        self.assertEqual(records['m1-phase-allocation.json']['phase'],'allocation')
+        self.assertEqual(records['m1-failure.json'],{'binding':binding,'phase':'allocation','code':'m1_deadline'})
+        self.assertLess(events.index('m1-failure.json'),events.index('closed'))
+        self.assertNotIn('m1-phase-controller_binding.json',records)
+
+
     def test_dispatch_routes_before_legacy_side_effects(self):
         for name in ('prepare','execute','finalize'):
             with self.subTest(action=name),patch.object(runner,'actual_context',return_value={'test':'binding'}),patch.object(runner,'SELECTED_PROFILE',runner.OWNED_START_A),patch.object(runner,'m1_'+name,return_value='M1_ONLY') as child,patch.object(runner,'paths',side_effect=AssertionError('legacy path reached')):

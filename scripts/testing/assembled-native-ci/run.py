@@ -514,6 +514,7 @@ def m1_allocate(module,store,recipe,deadline):
 
 
 M1_PHASES=frozenset({'controller_binding','allocation','initial_roles','bootstrap','backup','restore_copy','restore_third','prewrite_inverse','apply_history','result','cleanup'})
+M1_PHASE_EVIDENCE_NAMES={phase:'m1-phase-'+phase.replace('_','-')+'.json' for phase in M1_PHASES}
 M1_FAILURE_CODES=frozenset({'m1_controller_binding_changed','m1_deadline','m1_create_unknown_no_replay','m1_start_unknown_no_replay','m1_database_not_ready','m1_image_provenance_changed','m1_initial_roles_changed','m1_db_role_settings_unsupported','m1_source_not_empty','m1_restore_target_not_empty','m1_result_not_accepted','m1_public_evidence_unconfirmed','m1_full_restore_mismatch','owned_query_failed','m1_image_inspect_failed','m1_cleanup_unknown','m1_cleanup_not_confirmed','m1_cleanup_unconfirmed','m1_execution_not_confirmed'})
 
 
@@ -537,7 +538,7 @@ def m1_execute(binding):
     def observe_phase(value):
         nonlocal phase
         phase=value
-        store.write_exclusive('m1-phase-'+value+'.json',{'binding':binding,'phase':value})
+        store.write_exclusive(M1_PHASE_EVIDENCE_NAMES[value],{'binding':binding,'phase':value})
     try:
         observe_phase('controller_binding')
         authority=store.read('m1-controller-binding.json');recipe=store.read('m1-recipe.json')
