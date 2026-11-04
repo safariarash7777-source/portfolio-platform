@@ -847,7 +847,16 @@ export function setCodalBudgetPorts(ports) {
 }
 export function codalBudgetPorts() { return budgetPorts; }
 
+// Opt-in direct official search. No fallback to the metered provider on failure.
+// Lazy construction keeps existing parser-only/offline callers independent.
+let officialAnnouncements;
+async function readOfficialAnnouncements(params) {
+  officialAnnouncements ??= import('./codal-direct.mjs').then(m => m.createOfficialAnnouncements());
+  return (await officialAnnouncements)(params);
+}
+
 async function fetchAnnouncements(symbol, category) {
+  if (process.env.CODAL_ANNOUNCEMENT_SOURCE === 'official') return readOfficialAnnouncements({ l18: symbol, category });
   // only_subsidiaries=false: گزارش شرکت‌های زیرمجموعه (مثل «بهساز مشارکت‌های ملت») قاطی نشود.
   const qs = new URLSearchParams({
     key: BRSAPI_KEY, l18: symbol, category: String(category), page: "1",
@@ -1042,6 +1051,7 @@ export const existingUrlsFor = existingUrls;
  * (جدیدترین‌ها اول، ۲۰تایی). موتور v3 برای واترمارک فید و بک‌فیل نمادی
  * از همین استفاده می‌کند. */
 export async function fetchAnnouncementsPage({ l18, category, page = 1, date_start } = {}) {
+  if (process.env.CODAL_ANNOUNCEMENT_SOURCE === 'official') return readOfficialAnnouncements({ l18, category, page, date_start });
   const qs = new URLSearchParams({
     key: BRSAPI_KEY, page: String(page),
     only_main_company: "true", only_subsidiaries: "false",
