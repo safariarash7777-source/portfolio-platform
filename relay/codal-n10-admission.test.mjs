@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import * as codal from "./codal.mjs";
 import { meta, industrial, bank, container } from "./fixtures/n10-admission-fixtures.mjs";
+// Keep metadata binding regressions in the existing CI admission entrypoint.
+import "./codal-report-metadata.test.mjs";
 // Baseline uses the real former admission path, not a fabricated implementation.
 const admit = (html, m = meta) => codal.admitN10Html
   ? codal.admitN10Html(html, m)

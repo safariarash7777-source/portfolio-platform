@@ -75,6 +75,20 @@ test("حلقهٔ غایب: بدون ۶ماهه، Q2 و Q3 هر دو null — ه�
   assert.equal(q4.revenue, 1500); // ۱۲م−۹م مستقل از گپ قبلی
 });
 
+test("six-month cumulative report is not a standalone quarter or monthly profit", () => {
+  const six = rep({ period_end: "1405-06-31", period_months: 6, revenue: 600, net_profit: 120 });
+  const missing = deriveQuarters([six]).find(q => q.q === 2)!;
+  assert.equal(missing.revenue, null);
+  assert.equal(missing.netProfit, null);
+  const three = rep({ period_end: "1405-03-31", period_months: 3, revenue: 250, net_profit: 50 });
+  const valid = deriveQuarters([three, six]).find(q => q.q === 2)!;
+  assert.equal(valid.revenue, 350);
+  assert.equal(valid.netProfit, 70);
+  const incompatible = deriveQuarters([{ ...three, scope: undefined }, six]).find(q => q.q === 2)!;
+  assert.equal(incompatible.revenue, null);
+  assert.equal(incompatible.netProfit, null);
+});
+
 test("دو نسخه از یک دوره: حسابرسی‌شده مقدم است", () => {
   const a = rep({ period_end: "1403-03-31", period_months: 3, revenue: 900, audited: false });
   const b = rep({ period_end: "1403-03-31", period_months: 3, revenue: 950, audited: true });
