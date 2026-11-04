@@ -1,0 +1,79 @@
+{
+  "atUtc": "2026-11-04T00:44:56.868Z",
+  "commit": "af0441bb51ab2a3b388c6fcec5d39641c0686efe",
+  "tree": "da8cf08e39a1984297de14905f3a8f82c50eee8c",
+  "parent": "a5f32317a5fc3441478b5e96260f793acd920654",
+  "clean": true,
+  "files": {
+    "scripts/ops/liara-binding-discovery.mjs": {
+      "gitSha256": "ea089e2a9644da27d1df1d5c4c07418c1b25f28ee2b13137fec7ed3953ba8101",
+      "workingSha256": "6e6b2302d2b4dbe26a8d2ccfed70175f1fd5b4da4ab92f63423c152267d96dd8"
+    },
+    "scripts/ops/liara-binding-discovery-command.mjs": {
+      "gitSha256": "db4ba0ece7140108b8ad4d3ccf9a166b040423cf40dc21ce7255509369b6a058",
+      "workingSha256": "db4ba0ece7140108b8ad4d3ccf9a166b040423cf40dc21ce7255509369b6a058"
+    },
+    "scripts/ops/liara-binding-discovery.test.mjs": {
+      "gitSha256": "c1194b5eca2839704d908ed0e355baa71363ca5fcb1d6bf2c5c647b4b2c06b37",
+      "workingSha256": "c1194b5eca2839704d908ed0e355baa71363ca5fcb1d6bf2c5c647b4b2c06b37"
+    }
+  },
+  "localReviewOnlyCommandTemplateSha256": "2924dd3f973182164f8f60e31cbf38c2d00c0d012a7a97c2e6fd767d33d0028f",
+  "validation": {
+    "targetedTests": "10/10 PASS fail0 skip0;275.8562ms; mock only",
+    "lint": "3 new files PASS",
+    "stagedSecrets": "3 new files PASS",
+    "diffCheck": "PASS",
+    "frozenAttestationFilesUnchanged": true,
+    "oldAttestationTestsRerun": false
+  },
+  "closed": true,
+  "liveRequests": 0,
+  "pushed": true,
+  "discoveryReceiptFields": [
+    "version",
+    "nonce",
+    "state",
+    "reason",
+    "count",
+    "pid",
+    "startTicks",
+    "exeKind",
+    "cwdKind",
+    "entryKind"
+  ],
+  "countSemantics": "Exact matching hypothesis candidate count only after complete bounded census; null on ambiguity. Count1 and PID/startTicks/enums only for unique rechecked stable candidate.",
+  "protocol": {
+    "futureGetCount": 2,
+    "endpoint": "same fixed arsadata releases endpoint pre/post",
+    "maximumWebSockets": 1,
+    "maximumStartFrames": 1,
+    "deadlineMs": 15000,
+    "maximumFrameAndTotalBytes": 8192,
+    "maximumIdentityBodyBytes": 1048576,
+    "commandElapsedBudgetMs": 1000,
+    "maximumDirectoryEntries": 4096
+  },
+  "limitations": [
+    "No actual binding is established. Exe/cwd lists are explicitly approved hypotheses, not assumed runtime paths.",
+    "Only exact self PID skipped. Readable non-node executable excluded; node/nodejs and deleted executables outside allowlist remain unresolved. This does not prove absence of disguised Node or global collector uniqueness.",
+    "argv read only in RAM; no argv/path/env/code/hash fields in discovery receipt. Source/template hashes only in local review manifest.",
+    "No environment or application-code file reads, imports, network or process control in fixed command. Only proc stat/cmdline/readlink metadata.",
+    "Closed gate before options getters: no default native transports, no workflow/entrypoint or automatic adoption. Discovery never enables frozen attestation.",
+    "Remote halt unknown; sync kernel operations and PTY quoting/frame behavior unverified. No retry/kill/watchdog.",
+    "No package test registration added; root owns integration/review/CI before any separately authorized operation."
+  ],
+  "updatedAtUtc": "2026-11-04T00:51:15.366Z",
+  "publication": {
+    "checkout": "C:/Users/Asus/Documents/Codex/2026-10-13/x20/work/agent-tooling-20261103",
+    "branch": "codex/liara-control-plane-receipt-20261104",
+    "head": "af0441bb51ab2a3b388c6fcec5d39641c0686efe",
+    "remoteRef": "refs/heads/codex/liara-control-plane-receipt-20261104",
+    "nonforce": true,
+    "ancestorVerified": "a5f32317a5fc3441478b5e96260f793acd920654",
+    "readbackCommand": "git -c http.proxy= ls-remote --heads origin refs/heads/codex/liara-control-plane-receipt-20261104",
+    "readbackHead": "af0441bb51ab2a3b388c6fcec5d39641c0686efe",
+    "cleanAfter": true,
+    "bothGatesClosed": true
+  }
+}
