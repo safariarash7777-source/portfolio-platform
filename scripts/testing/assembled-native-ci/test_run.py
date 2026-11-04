@@ -17,7 +17,8 @@ import tempfile
 import tarfile
 import unittest
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import patch, Mock
+import contextlib
 
 sys.dont_write_bytecode = True
 HERE = Path(__file__).resolve().parent
@@ -1198,6 +1199,237 @@ class SummaryHistorySelector(unittest.TestCase):
             output=result.stdout.decode('utf8')+result.stderr.decode('utf8')
             self.assertEqual(result.returncode,0,output)
             self.assertTrue(valid_guarded_pure_output(output,8),output)
+
+class M1SourceContracts(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        path=HERE.parents[2]/'scripts/testing/consultation-feedback/install-feedback.py'
+        spec=importlib.util.spec_from_file_location('m1_offline_adapter',path)
+        cls.adapter=importlib.util.module_from_spec(spec);spec.loader.exec_module(cls.adapter)
+
+    def test_dispatch_routes_before_legacy_side_effects(self):
+        for name in ('prepare','execute','finalize'):
+            with self.subTest(action=name),patch.object(runner,'actual_context',return_value={'test':'binding'}),patch.object(runner,'SELECTED_PROFILE',runner.OWNED_START_A),patch.object(runner,'m1_'+name,return_value='M1_ONLY') as child,patch.object(runner,'paths',side_effect=AssertionError('legacy path reached')):
+                self.assertEqual(getattr(runner,name)(),'M1_ONLY');child.assert_called_once_with({'test':'binding'})
+
+    def test_explicit_profile_and_independent_controller_recipe(self):
+        saved={k:getattr(runner,k) for k in ('SELECTED_PROFILE','CANDIDATE','TREE')}
+        try:
+            with self.assertRaises(ValueError):runner.select_profile({'acceptance_profile':runner.OWNED_START_A})
+            self.assertEqual(runner.select_profile({'acceptance_profile':runner.OWNED_START_A,'candidate_sha':runner.M1_BASE}),runner.OWNED_START_A)
+            binding={'executionAllocationId':'00000000-0000-4000-8000-000000000001','runId':'123','workflowCommit':'a'*40}
+            recipe=runner.m1_recipe(binding,self.adapter)
+            self.assertEqual(set(recipe['resources']),{'source','copy','restore'})
+            self.assertEqual(len({r['name'] for r in recipe['resources'].values()}),3)
+            self.assertTrue(all('id' not in r for r in recipe['resources'].values()))
+            self.assertEqual(recipe['sourceCommit'],runner.M1_BASE)
+            self.assertNotIn('expectedAllocationSha256',recipe)
+        finally:
+            for key,value in saved.items():setattr(runner,key,value)
+
+    def test_process_is_bounded_redacts_stderr_and_drops_credentials(self):
+        import types
+        class Child:
+            def __init__(self,out=b'ok',err=b'',code=0):self.stdin=io.BytesIO();self.stdout=io.BytesIO(out);self.stderr=io.BytesIO(err);self.code=code;self.killed=False
+            def poll(self):return self.code
+            def wait(self,timeout=None):return self.code
+            def kill(self):self.killed=True
+        captured={};child=Child(err=b'PRIVATE_CANARY')
+        def create(*args,**kw):captured.update(kw);return child
+        with patch.dict(os.environ,{'OPENAI_API_KEY':'PRIVATE_CANARY','DOCKER_HOST':'tcp://forbidden.invalid'}):
+            result=self.adapter.bounded_owned_process(['docker','inspect','fixed'],popen=create,max_stdout_bytes=32)
+        self.assertEqual(result,{'exitCode':0,'stdout':b'ok','sqlstate':None})
+        self.assertNotIn('OPENAI_API_KEY',captured['env']);self.assertEqual(captured['env']['DOCKER_HOST'],'unix:///var/run/docker.sock')
+        self.assertNotIn('PRIVATE_CANARY',repr(result))
+        overflow=Child(out=b'x'*20)
+        with self.assertRaisesRegex(RuntimeError,'m1_process_incomplete'):self.adapter.bounded_owned_process(['docker','inspect','fixed'],popen=lambda *a,**k:overflow,max_stdout_bytes=8)
+        self.assertTrue(overflow.killed)
+        state=Child(err=b'ERROR:  PT409: PRIVATE_CANARY\n',code=1)
+        result=self.adapter.bounded_owned_process(['docker','exec','fixed'],popen=lambda *a,**k:state)
+        self.assertEqual(result['sqlstate'],'PT409');self.assertNotIn('PRIVATE_CANARY',repr(result))
+
+    def test_store_walk_is_descriptor_relative_for_every_component(self):
+        from pathlib import PurePosixPath
+        from types import SimpleNamespace
+        fake=SimpleNamespace(O_RDONLY=1,O_DIRECTORY=2,O_NOFOLLOW=4,getuid=lambda:7,open=Mock(side_effect=[10,11,12]),close=Mock(),fstat=lambda fd:SimpleNamespace(st_mode=stat.S_IFDIR|0o700,st_uid=7))
+        with patch.object(self.adapter,'os',fake),patch.object(self.adapter,'Path',PurePosixPath):
+            store=self.adapter.OwnedPrivateStore('/private/evidence')
+        self.assertEqual(fake.open.call_args_list[0].args,('/',7))
+        self.assertEqual(fake.open.call_args_list[1].kwargs,{'dir_fd':10})
+        self.assertEqual(fake.open.call_args_list[2].kwargs,{'dir_fd':11})
+        self.assertEqual(store.fd,12)
+        fake.open=Mock(side_effect=[10,OSError('symlink')]);fake.close.reset_mock()
+        with patch.object(self.adapter,'os',fake),patch.object(self.adapter,'Path',PurePosixPath),self.assertRaises(OSError):self.adapter.OwnedPrivateStore('/private/evidence')
+        fake.close.assert_called_with(10)
+
+    def test_store_exclusive_write_fsyncs_file_then_directory(self):
+        from types import SimpleNamespace
+        store=object.__new__(self.adapter.OwnedPrivateStore);store.fd=12
+        writes=[];sync=[]
+        fake=SimpleNamespace(O_WRONLY=1,O_CREAT=2,O_EXCL=4,O_NOFOLLOW=8,open=Mock(return_value=20),close=Mock(),fstat=lambda fd:SimpleNamespace(st_mode=stat.S_IFREG|0o600,st_nlink=1),write=lambda fd,v:(writes.append(bytes(v[:2])) or min(2,len(v))),fsync=lambda fd:sync.append(fd))
+        with patch.object(self.adapter,'os',fake):store.write_blob_exclusive('intent.json',b'abcdef')
+        self.assertEqual(b''.join(writes),b'abcdef');self.assertEqual(sync,[20,12]);self.assertEqual(fake.open.call_args.args[1],15)
+        fake.open=Mock(side_effect=FileExistsError('existing'))
+        with patch.object(self.adapter,'os',fake),self.assertRaises(FileExistsError):store.write_blob_exclusive('intent.json',b'new')
+        with self.assertRaises(RuntimeError):store.name('../outside')
+
+    def test_restore_rejects_role_drift_before_role_write(self):
+        e=object.__new__(self.adapter.M1Exercise);e.binding={'test':'binding'}
+        archive=b'PGDMPfixture';digest=lambda b:hashlib.sha256(b).hexdigest()
+        e.guard=type('Guard',(),{'digest':staticmethod(digest)})();calls=[]
+        proof={'binding':e.binding,'state':'BASELINE_ARCHIVED','archiveSha256':digest(archive)}
+        class Store:
+            def lock_exclusive(self):return contextlib.nullcontext()
+            def exists(self,name):return False
+            def read(self,name):return proof if name=='m1-backup-readback.json' else {'binding':e.binding,'rolesAndDatabase':{'roles':'initial'}}
+            def read_blob(self,*args):return archive
+            def write_exclusive(self,*args):raise AssertionError('must not write')
+        e.io=Store()
+        def query(sql,role):
+            calls.append(sql)
+            if sql==self.adapter.M1_EMPTY_CATALOG_QUERY:return 't'
+            if self.adapter.M1_RELATIONS_QUERY in sql:return '[]'
+            return json.dumps({'roles':'changed'})
+        e.query=query
+        with self.assertRaisesRegex(RuntimeError,'m1_initial_roles_changed'):e.restore_target('copy')
+        self.assertNotIn(self.adapter.M1_ROLE_SQL,calls)
+        self.assertTrue(self.adapter.M1_ROLE_SQL.startswith('BEGIN;') and self.adapter.M1_ROLE_SQL.endswith('COMMIT;'))
+
+    def test_restore_view_only_target_is_rejected_before_writes(self):
+        e=object.__new__(self.adapter.M1Exercise);e.binding={};e.guard=type('Guard',(),{'digest':staticmethod(lambda b:'a'*64)})()
+        class Store:
+            def lock_exclusive(self):return contextlib.nullcontext()
+            def exists(self,n):return False
+            def read(self,n):return {'binding':{},'state':'BASELINE_ARCHIVED','archiveSha256':'a'*64}
+            def read_blob(self,*a):return b'PGDMP'
+            def write_exclusive(self,*a):raise AssertionError('no writes')
+        e.io=Store();e.query=lambda *a:json.dumps([{'schema':'public','name':'foreign_view','kind':'v'}])
+        with self.assertRaisesRegex(RuntimeError,'m1_restore_target_not_empty'):e.restore_target('restore')
+        self.assertIn("'v'",self.adapter.M1_RELATIONS_QUERY)
+
+    def test_schema_nonce_normalization_preserves_acl_null_and_empty(self):
+        a=b'-- PostgreSQL database dump\n\\restrict ABC123\nALTER TABLE public.t OWNER TO postgres;\n-- PostgreSQL database dump complete\n\\unrestrict ABC123\n'
+        normalized=self.adapter.m1_schema_bytes(a)
+        self.assertIn(b'OWNER TO postgres',normalized);self.assertNotIn(b'ABC123',normalized)
+        with self.assertRaises(RuntimeError):self.adapter.m1_schema_bytes(a.replace(b'unrestrict ABC123',b'unrestrict OTHER'))
+        self.assertNotEqual(self.adapter.m1_schema_bytes(b'GRANT SELECT ON t TO anon;\n'),self.adapter.m1_schema_bytes(b'REVOKE ALL ON t FROM anon;\n'))
+
+    def test_io_binds_three_ids_and_rejects_foreign_target_before_transport(self):
+        binding={'executionAllocationId':'00000000-0000-4000-8000-000000000001','runId':'123','workflowCommit':'a'*40}
+        recipe=runner.m1_recipe(binding,self.adapter);allocation={k:recipe[k] for k in ('purpose','contractVersion','runId','attempt','controllerCommit','sourceCommit','allocationId','databaseMarker')}
+        for i,role in enumerate(('source','copy','restore'),1):allocation[role]={**recipe['resources'][role],'id':str(i)*64}
+        calls=[]
+        def process(argv,body=None,**kw):
+            if argv[:3]==['docker','image','inspect']:
+                return {'exitCode':0,'stdout':json.dumps([{'Id':self.adapter.M1_IMAGE,'Os':'linux','Architecture':'amd64','RepoDigests':[self.adapter.M1_REPO_DIGEST]}]).encode()}
+            calls.append((argv,body));object_id=argv[2] if argv[1]=='inspect' else argv[5];role=next(r for r in ('source','copy','restore') if allocation[r]['id']==object_id);a=allocation[role]
+            if argv[1]=='inspect':
+                row={'Id':object_id,'Name':'/'+a['name'],'Image':a['image'],'State':{'Running':True,'Health':{'Status':'healthy'}},'HostConfig':{'NetworkMode':'none'},'NetworkSettings':{'Ports':{},'Networks':{'none':{}}},'Config':{'Labels':a['labels'],'Env':['PGDATA=/var/lib/postgresql/data']},'Mounts':[{'Type':'tmpfs','Destination':'/var/lib/postgresql/data','RW':True}]}
+                return {'exitCode':0,'stdout':json.dumps([row]).encode(),'sqlstate':None}
+            return {'exitCode':0,'stdout':(allocation['databaseMarker'] if body and b'current_setting' in body else 'ok').encode(),'sqlstate':None}
+        expected=hashlib.sha256(json.dumps(allocation,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+        io_adapter=self.adapter.OwnedDockerIO(object(),allocation,expected,process)
+        prefix=['docker','exec','-i','-e','PGOPTIONS=-c lock_timeout=5s -c statement_timeout=60s']
+        command=prefix+[allocation['copy']['id'],'psql','-XqAt','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1']
+        self.assertEqual(io_adapter.execute(command,b'SELECT 1;')['stdout'],b'ok')
+        self.assertEqual(sum(body is not None and b'current_setting' in body for _,body in calls),3)
+        calls.clear()
+        with self.assertRaises(RuntimeError):io_adapter.execute(prefix+['f'*64]+command[6:],b'SELECT 1;')
+        self.assertEqual(calls,[])
+        with self.assertRaises(RuntimeError):self.adapter.OwnedDockerIO(object(),allocation,'0'*64,process)
+
+    def test_database_role_settings_require_observed_empty_before_bootstrap(self):
+        a=self.adapter
+        a.m1_require_supported_settings({'dbRoleSettings':[]})
+        for metadata in ({},{'dbRoleSettings':None},{'dbRoleSettings':[{'database':'postgres','role':None,'settings':['private=value']}]}):
+            with self.subTest(metadata=metadata),self.assertRaisesRegex(RuntimeError,'m1_db_role_settings_unsupported'):a.m1_require_supported_settings(metadata)
+        self.assertIn('pg_db_role_setting',a.M1_ROLES_QUERY)
+        self.assertIn("'database',d.datname,'role',r.rolname",a.M1_ROLES_QUERY)
+        e=SimpleNamespace(io=SimpleNamespace(lock_exclusive=contextlib.nullcontext,exists=lambda n:False),query=lambda *args:json.dumps({'roles':[{'name':'postgres'}],'dbRoleSettings':[{'database':'postgres','role':None,'settings':[]}]}),persist=Mock())
+        with self.assertRaisesRegex(RuntimeError,'m1_db_role_settings_unsupported'):a.m1_capture_initial_roles(e)
+        e.persist.assert_not_called()
+
+    def test_failure_projection_is_literal_typed_and_bound_not_raw_cause(self):
+        self.assertEqual(runner.m1_failure_projection('backup',RuntimeError('m1_deadline')),{'phase':'backup','code':'m1_deadline'})
+
+        for code in ('m1_full_restore_mismatch','owned_query_failed','m1_image_inspect_failed'):
+            self.assertEqual(runner.m1_failure_projection('restore_copy',RuntimeError(code)),{'phase':'restore_copy','code':code})
+            self.assertEqual(runner.m1_failure_projection('restore_copy',RuntimeError(code+' PRIVATE_SQL_BODY')),{'phase':'restore_copy','code':None})
+        for error in (RuntimeError('PRIVATE token SQL https://secret'),ValueError({'private':'secret'}),Exception('m1_deadline')):
+            result=runner.m1_failure_projection('apply_history',error)
+            self.assertEqual(result,{'phase':'apply_history','code':None})
+            self.assertNotIn('PRIVATE',json.dumps(result))
+        binding={'runId':'1'}
+        for record in ({'binding':{},'phase':'backup','code':'m1_deadline'},{'binding':binding,'phase':[],'code':None},{'binding':binding,'phase':'backup','code':'PRIVATE'},{'binding':binding,'phase':'backup','code':None,'raw':'secret'}):
+            self.assertEqual(runner.m1_failure_readback(record,binding),{'phase':None,'code':None})
+        self.assertEqual(runner.m1_failure_readback({'binding':binding,'phase':'backup','code':None},binding),{'phase':'backup','code':None})
+
+    def test_execute_failure_records_first_phase_before_store_close(self):
+        binding={'executionAllocationId':'00000000-0000-4000-8000-000000000001','runId':'123','workflowCommit':'a'*40}
+        recipe=runner.m1_recipe(binding,self.adapter);records={'m1-recipe.json':recipe,'m1-controller-binding.json':{'binding':binding,'stage':'PREPARED','recipeSha256':hashlib.sha256(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode()).hexdigest()}};events=[]
+        class Store:
+            def read(self,n):return records[n]
+            def exists(self,n):return n in records
+            def lock_exclusive(self):return contextlib.nullcontext()
+            def write_exclusive(self,n,v):
+                if n in records:raise FileExistsError(n)
+                records[n]=v;events.append(n)
+            def close(self):events.append('closed')
+        module=SimpleNamespace(M1_IMAGE=self.adapter.M1_IMAGE,M1_IMAGE_CONTRACT=self.adapter.M1_IMAGE_CONTRACT,OwnedPrivateStore=lambda p:Store(),capacity=lambda p:None)
+        with patch.object(runner,'paths',return_value=(Path('.'),Path('.'),Path('.'),Path('.'))),patch.object(runner,'m1_module',return_value=(module,None)),patch.object(runner,'m1_allocate',side_effect=RuntimeError('PRIVATE SQL token')):
+            with self.assertRaisesRegex(RuntimeError,'PRIVATE'):runner.m1_execute(binding)
+        self.assertEqual(records['m1-failure.json'],{'binding':binding,'phase':'allocation','code':None})
+        self.assertLess(events.index('m1-failure.json'),events.index('closed'))
+        self.assertNotIn('m1-phase-bootstrap.json',records)
+        self.assertNotIn('PRIVATE',json.dumps(records))
+
+    def test_controller_adapter_pin_matches_actual_source(self):
+        adapter_path=Path(__file__).resolve().parents[1]/'consultation-feedback'/'install-feedback.py'
+        self.assertEqual(runner.M1_ADAPTER_SHA,hashlib.sha256(adapter_path.read_bytes()).hexdigest())
+
+    def test_image_index_config_platform_and_provenance_are_distinct(self):
+        a=self.adapter
+        valid={'Id':a.M1_IMAGE,'Os':'linux','Architecture':'amd64','RepoDigests':[a.M1_REPO_DIGEST]}
+        calls=[]
+        def process(argv,**kwargs):
+            calls.append(argv)
+            return {'exitCode':0,'stdout':json.dumps([row]).encode()}
+        row=dict(valid);a.m1_verify_image(process,dict(a.M1_IMAGE_CONTRACT))
+        for change in ({'Id':a.M1_IMAGE_INDEX},{'RepoDigests':[]},{'Architecture':'arm64'},{'Os':'windows'}):
+            row={**valid,**change}
+            with self.subTest(change=change),self.assertRaises(RuntimeError):a.m1_verify_image(process,dict(a.M1_IMAGE_CONTRACT))
+        calls.clear()
+        with self.assertRaises(RuntimeError):a.m1_verify_image(process,{**a.M1_IMAGE_CONTRACT,'configId':a.M1_IMAGE_INDEX})
+        self.assertEqual(calls,[])
+        self.assertNotEqual(a.M1_IMAGE_INDEX,a.M1_IMAGE)
+
+    def test_cleanup_attempts_other_bound_resources_after_first_failure(self):
+        from types import SimpleNamespace
+        binding={'executionAllocationId':'00000000-0000-4000-8000-000000000001','runId':'123','workflowCommit':'a'*40}
+        recipe=runner.m1_recipe(binding,self.adapter);pin=hashlib.sha256(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+        rows={'m1-recipe.json':recipe,'m1-execution-result.json':{'binding':binding,'deadlineMet':True,'result':{'state':'PASS_M1_SQL_COPY_ONLY'}}}
+        for i,role in enumerate(('source','copy','restore'),1):rows['m1-'+role+'-identity.json']={'role':role,'actual':{'id':str(i)*64},'recipeSha256':pin}
+        class Store:
+            def read(self,n):return rows[n]
+            def exists(self,n):return n in rows
+            def write_exclusive(self,n,v):
+                if n in rows:raise FileExistsError(n)
+                rows[n]=v
+            def close(self):pass
+        removed=[]
+        def process(argv,**kw):
+            if argv[1]=='rm':removed.append(argv[-1]);return {'exitCode':1 if argv[-1]=='1'*64 else 0,'stdout':b'','sqlstate':None}
+            return {'exitCode':0,'stdout':b'','sqlstate':None}
+        module=SimpleNamespace(M1_IMAGE_CONTRACT=self.adapter.M1_IMAGE_CONTRACT,M1_IMAGE=self.adapter.M1_IMAGE,OwnedPrivateStore=lambda p:Store(),bounded_owned_process=process)
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder)
+            with patch.object(runner,'paths',return_value=(root,root,root/'private',root/'app')),patch.object(runner,'m1_module',return_value=(module,None)),patch.object(runner,'m1_inspect_planned',return_value={}),patch.object(runner,'private_json') as public:
+                with self.assertRaises(ValueError):runner.m1_finalize(binding)
+        self.assertEqual(removed,['1'*64,'2'*64,'3'*64])
+        self.assertEqual(public.call_args.args[1]['status'],'FAIL_M1_NOT_ACCEPTED')
+        self.assertEqual(public.call_args.args[1]['cleanup'],'UNCONFIRMED')
+        self.assertEqual(public.call_args.args[1]['cleanupFailedRoles'],['source'])
+
 
 if __name__ == '__main__':
     unittest.main()

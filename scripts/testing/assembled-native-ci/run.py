@@ -424,10 +424,219 @@ def composition_json(raw):
     return json.loads(raw.decode('utf-8'), object_pairs_hook=unique, parse_constant=invalid)
 
 
+# Existing controller, M1 purpose only. No separate runner, native Auth or browser.
+OWNED_START_A = 'owned-start-a-copy'
+M1_BASE = '0d63a8b64e4975a3c9dab3f1f579f91302602b01'
+M1_TREE = '15cc4ab8315e6c1a2594a5d3eda24b2bb375619a'
+M1_ADAPTER_SHA = '88da3b8b1699e0bfb0655d0fbba49bac0220aa8069abea0a654faa074788f353'
+
+
+def m1_module(app):
+    path=CONTROL/'scripts/testing/consultation-feedback/install-feedback.py'
+    need(sha(path.read_bytes())==M1_ADAPTER_SHA,'m1_adapter_pin_changed')
+    spec=importlib.util.spec_from_file_location('reviewed_owned_start_a',path)
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    helper=module.load_safety(app/'scripts/testing/consultation-next/install-native.py')
+    return module,helper
+
+
+def m1_recipe(binding,module):
+    # Issued HERE from independently verified actual_context; never adapter JSON.
+    prefix='start-a-owned-'+uuid.UUID(binding['executionAllocationId']).hex
+    labels={'portfolio.owned.runId':binding['runId'],'portfolio.owned.attempt':'1','portfolio.owned.sourceCommit':M1_BASE,'portfolio.owned.allocationId':binding['executionAllocationId'],'portfolio.owned.controller':binding['workflowCommit'],'portfolio.owned.purpose':OWNED_START_A}
+    return {'purpose':OWNED_START_A,'contractVersion':'GHA-owned-copy.v1','runId':binding['runId'],'attempt':'1','controllerCommit':binding['workflowCommit'],'sourceCommit':M1_BASE,'allocationId':binding['executionAllocationId'],'image':module.M1_IMAGE,'imageContract':module.M1_IMAGE_CONTRACT,'databaseMarker':prefix,'resources':{r:{'name':prefix+'-'+r,'image':module.M1_IMAGE,'imageContract':module.M1_IMAGE_CONTRACT,'labels':{**labels,'portfolio.owned.role':r}} for r in ('source','copy','restore')}}
+
+
+def m1_prepare(binding):
+    _,_,private,app=paths()
+    need(git(app,'rev-parse','HEAD')==M1_BASE and git(app,'rev-parse','HEAD^{tree}')==M1_TREE and git(app,'status','--porcelain','--untracked-files=no')=='','m1_baseline_checkout_changed')
+    module,helper=m1_module(app)
+    for name,pin in module.M1_BASELINE_PINS:
+        need(sha((app/name).read_bytes())==pin,'m1_baseline_bytes_changed')
+    for paths_and_pins in module.ARTIFACTS.values():
+        for name,pin in paths_and_pins:need(sha((app/name).read_bytes())==pin,'m1_sql_bytes_changed')
+    module.capacity(private.parent)
+    private.mkdir(mode=0o700);owned(private,True)
+    store=module.OwnedPrivateStore(private)
+    try:
+        recipe=m1_recipe(binding,module)
+        store.write_exclusive('m1-recipe.json',recipe)
+        store.write_exclusive('m1-controller-binding.json',{'binding':binding,'recipeSha256':sha(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode()),'adapterSha256':M1_ADAPTER_SHA,'stage':'PREPARED'})
+    finally:store.close()
+    return 'PREPARED_M1_NOT_EXECUTED'
+
+
+def m1_inspect_planned(module,object_id,planned,*,running=None):
+    need(isinstance(object_id,str) and re.fullmatch(r'[a-f0-9]{64}',object_id),'m1_full_container_id_required')
+    result=module.bounded_owned_process(['docker','inspect',object_id],timeout=10,max_stdout_bytes=262144)
+    need(result['exitCode']==0,'m1_inspect_failed');rows=json.loads(result['stdout']);need(isinstance(rows,list) and len(rows)==1,'m1_inspect_shape')
+    row=rows[0]
+    module.m1_verify_image(module.bounded_owned_process,planned.get('imageContract'))
+    need(row['Id']==object_id and row['Name']=='/'+planned['name'] and row['Image']==planned['image'] and all((row['Config'].get('Labels') or {}).get(k)==v for k,v in planned['labels'].items()),'m1_planned_identity_changed')
+    need(row['HostConfig']['NetworkMode']=='none' and not row['HostConfig'].get('PortBindings') and not any((row['NetworkSettings'].get('Ports') or {}).values()),'m1_planned_network_changed')
+    if running is not None:need(row['State']['Running'] is running,'m1_planned_state_changed')
+    return row
+
+
+def m1_allocate(module,store,recipe,deadline):
+    module.m1_verify_image(module.bounded_owned_process,recipe.get('imageContract'))
+    actual={}
+    for role in ('source','copy','restore'):
+        planned=recipe['resources'][role]
+        need(time.monotonic()<deadline,'m1_deadline')
+        prior=module.bounded_owned_process(['docker','container','ls','-aq','--filter','name=^/'+planned['name']+'$'],timeout=10,max_stdout_bytes=1024)
+        need(prior['exitCode']==0 and not prior['stdout'].strip(),'m1_resource_name_already_exists')
+        store.write_exclusive('m1-'+role+'-create-intent.json',{'recipe':recipe,'role':role,'automaticReplay':False})
+        args=['docker','create','--pull','never','--name',planned['name'],'--network','none','--memory','768m','--cpus','1','--mount','type=tmpfs,destination=/var/lib/postgresql/data,tmpfs-size=536870912','--env','PGDATA=/var/lib/postgresql/data','--env','POSTGRES_HOST_AUTH_METHOD=trust','--health-cmd','pg_isready -U postgres','--health-interval','1s','--health-timeout','1s','--health-retries','30']
+        for key,value in sorted(planned['labels'].items()):args+=['--label',key+'='+value]
+        args+=[planned['image'],'postgres','-c','cron.launch_active_jobs=off','-c','portfolio.owned_copy_marker='+recipe['databaseMarker']]
+        result=module.bounded_owned_process(args,timeout=30,max_stdout_bytes=1024)
+        need(result['exitCode']==0,'m1_create_unknown_no_replay');object_id=result['stdout'].decode().strip()
+        row=m1_inspect_planned(module,object_id,planned,running=False)
+        actual[role]={**planned,'id':row['Id']}
+        store.write_exclusive('m1-'+role+'-identity.json',{'role':role,'actual':actual[role],'recipeSha256':sha(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode())})
+        store.write_exclusive('m1-'+role+'-start-intent.json',{'id':object_id,'automaticReplay':False})
+        started=module.bounded_owned_process(['docker','start',object_id],timeout=30,max_stdout_bytes=1024)
+        need(started['exitCode']==0,'m1_start_unknown_no_replay')
+        for _ in range(45):
+            need(time.monotonic()<deadline,'m1_deadline')
+            observed=m1_inspect_planned(module,object_id,planned,running=True)
+            if observed['State'].get('Health',{}).get('Status')=='healthy':break
+            time.sleep(1)
+        else:raise RuntimeError('m1_database_not_ready')
+    allocation={k:recipe[k] for k in ('purpose','contractVersion','runId','attempt','controllerCommit','sourceCommit','allocationId','databaseMarker')}
+    allocation.update(actual)
+    store.write_exclusive('m1-actual-allocation.json',allocation)
+    # Caller-issued pin binds BOTH independently observed IDs and reviewed recipe.
+    expected=sha(json.dumps(allocation,sort_keys=True,separators=(',',':')).encode())
+    store.write_exclusive('m1-actual-binding.json',{'allocationSha256':expected,'recipeSha256':sha(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode())})
+    return allocation,expected
+
+
+M1_PHASES=frozenset({'controller_binding','allocation','initial_roles','bootstrap','backup','restore_copy','restore_third','prewrite_inverse','apply_history','result','cleanup'})
+M1_FAILURE_CODES=frozenset({'m1_controller_binding_changed','m1_deadline','m1_create_unknown_no_replay','m1_start_unknown_no_replay','m1_database_not_ready','m1_image_provenance_changed','m1_initial_roles_changed','m1_db_role_settings_unsupported','m1_source_not_empty','m1_restore_target_not_empty','m1_result_not_accepted','m1_full_restore_mismatch','owned_query_failed','m1_image_inspect_failed','m1_cleanup_unknown','m1_cleanup_not_confirmed','m1_cleanup_unconfirmed','m1_execution_not_confirmed'})
+
+
+def m1_failure_projection(phase,error):
+    # Never stringify exceptions: only exact reviewed literal args are eligible.
+    code=error.args[0] if type(error) in (RuntimeError,ValueError) and len(error.args)==1 else None
+    return {'phase':phase if type(phase) is str and phase in M1_PHASES else None,'code':code if type(code) is str and code in M1_FAILURE_CODES else None}
+
+
+def m1_failure_readback(record,binding):
+    if not isinstance(record,dict) or set(record)!={'binding','phase','code'} or record.get('binding')!=binding:return {'phase':None,'code':None}
+    phase,code=record.get('phase'),record.get('code')
+    if type(phase) is not str or phase not in M1_PHASES or (code is not None and (type(code) is not str or code not in M1_FAILURE_CODES)):return {'phase':None,'code':None}
+    return {'phase':phase,'code':code}
+
+
+def m1_execute(binding):
+    _,_,private,app=paths();module,helper=m1_module(app);store=module.OwnedPrivateStore(private)
+    deadline=time.monotonic()+22*60
+    phase='controller_binding'
+    def observe_phase(value):
+        nonlocal phase
+        phase=value
+        store.write_exclusive('m1-phase-'+value+'.json',{'binding':binding,'phase':value})
+    try:
+        observe_phase('controller_binding')
+        authority=store.read('m1-controller-binding.json');recipe=store.read('m1-recipe.json')
+        need(authority['binding']==binding and authority['stage']=='PREPARED' and recipe==m1_recipe(binding,module) and sha(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode())==authority['recipeSha256'],'m1_controller_binding_changed')
+        module.capacity(private)
+        with store.lock_exclusive():
+            need(not store.exists('m1-execution-intent.json'),'m1_execution_no_replay')
+            store.write_exclusive('m1-execution-intent.json',{'binding':binding,'recipeSha256':authority['recipeSha256'],'automaticReplay':False})
+            observe_phase('allocation')
+            allocation,expected=m1_allocate(module,store,recipe,deadline)
+        def bounded(args,body=None,**options):
+            remaining=int(deadline-time.monotonic());need(remaining>0,'m1_deadline')
+            options['timeout']=min(options.get('timeout',90),remaining)
+            return module.bounded_owned_process(args,body,**options)
+        io=module.OwnedDockerIO(store,allocation,expected,process=bounded)
+        guard=module.M1BoundSafety(helper,allocation,expected)
+        exercise=module.M1Exercise(guard,io,app)
+        observe_phase('initial_roles')
+        module.m1_capture_initial_roles(exercise)
+        observe_phase('bootstrap')
+        module.m1_bootstrap_source(exercise)
+        module.capacity(private)
+        observe_phase('backup')
+        exercise.archive_baseline()
+        observe_phase('restore_copy')
+        exercise.restore_target('copy')
+        observe_phase('restore_third')
+        exercise.restore_target('restore')
+        observe_phase('prewrite_inverse')
+        module.m1_prewrite_inverse_on_third(exercise)
+        observe_phase('apply_history')
+        result=module.m1_apply_and_history(exercise)
+        observe_phase('result')
+        need(result['state']=='PASS_M1_SQL_COPY_ONLY','m1_result_not_accepted')
+        store.write_exclusive('m1-execution-result.json',{'binding':binding,'result':result,'deadlineMet':time.monotonic()<deadline})
+        return 'M1_SQL_COPY_EXECUTED_PENDING_CLEANUP'
+    except Exception as error:
+        try:
+            if not store.exists('m1-failure.json'):store.write_exclusive('m1-failure.json',{'binding':binding,**m1_failure_projection(phase,error)})
+        except Exception:pass  # Missing diagnostic is unknown, never acceptance.
+        raise
+    finally:store.close()
+
+
+def m1_finalize(binding):
+    workspace,_,private,app=paths();module,_=m1_module(app);store=module.OwnedPrivateStore(private)
+    report={'schemaVersion':'owned-start-a-copy.v1','binding':binding,'status':'FAIL_M1_NOT_ACCEPTED','targetInstall':'NOT_APPLIED','fullConsumer':'NOT_WIRED','authBrowserAcceptance':False,'automaticReplay':False,'cleanup':'UNCONFIRMED','failurePhase':None,'failureCode':None}
+    phase='cleanup';failure=None
+    try:
+        if store.exists('m1-failure.json'):
+            try:failure=m1_failure_readback(store.read('m1-failure.json'),binding)
+            except Exception:failure={'phase':None,'code':None}
+        recipe=store.read('m1-recipe.json');need(recipe==m1_recipe(binding,module),'m1_recipe_changed')
+        unknown=False;failed=[]
+        for role,planned in recipe['resources'].items():
+            try:
+                identity='m1-'+role+'-identity.json'
+                if not store.exists(identity):
+                    if store.exists('m1-'+role+'-create-intent.json'):unknown=True
+                    continue
+                record=store.read(identity);need(record['role']==role and record['recipeSha256']==sha(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode()),'m1_cleanup_binding_changed')
+                object_id=record['actual']['id'];m1_inspect_planned(module,object_id,planned)
+                store.write_exclusive('m1-'+role+'-cleanup-intent.json',{'id':object_id,'recipeSha256':record['recipeSha256']})
+                result=module.bounded_owned_process(['docker','rm','-f','-v',object_id],timeout=30,max_stdout_bytes=1024)
+                need(result['exitCode']==0,'m1_cleanup_unknown')
+                left=module.bounded_owned_process(['docker','container','ls','-aq','--no-trunc','--filter','id='+object_id],timeout=10,max_stdout_bytes=1024)
+                need(left['exitCode']==0 and not left['stdout'].strip(),'m1_cleanup_not_confirmed')
+            except Exception as error:
+                if failure is None:failure=m1_failure_projection('cleanup',error)
+                failed.append(role)  # Continue other independently bound IDs once.
+        report['cleanupFailedRoles']=failed
+        need(not unknown and not failed,'m1_cleanup_unconfirmed')
+        report['cleanup']='CONFIRMED'
+        phase='result'
+        execution=store.read('m1-execution-result.json')
+        need(execution['binding']==binding and execution['deadlineMet'] is True and execution['result']['state']=='PASS_M1_SQL_COPY_ONLY','m1_execution_not_confirmed')
+        need(failure is None,'m1_prior_failure_record_present')
+        report['status']='PASS_M1_SQL_COPY_ONLY'
+    except Exception as error:
+        if failure is None:failure=m1_failure_projection(phase,error)
+        report['failurePhase']=failure['phase'];report['failureCode']=failure['code']
+        report['writeOutcomeUnknown']=True if store.exists('apply-intent.json') or store.exists('m1-history-intent.json') else None
+    finally:
+        store.write_exclusive('m1-public-receipt.json',report);store.close()
+    public=workspace/'assembled-native-artifact';public.mkdir(exist_ok=True);need(not public.is_symlink(),'m1_artifact_path')
+    private_json(public/'receipt.json',report,True)
+    need(report['status']=='PASS_M1_SQL_COPY_ONLY','m1_not_accepted_see_receipt')
+    return report['status']
+
+
+
 def select_profile(inputs):
     global SELECTED_PROFILE, CANDIDATE, TREE, CAPSULE, DRIVER, PREFIX, CAPSULE_FILE, NATIVE_GLOB, OVERLAY_NAMES
     profile = inputs.get('acceptance_profile', 'assembled-member-admin-v1')
     extra = [inputs.get(key, '') for key in ('candidate_sha', 'capsule_sha256', 'driver_sha256')]
+    if profile == 'owned-start-a-copy':
+        need(extra == [M1_BASE, '', ''], 'm1_explicit_baseline_input_required')
+        SELECTED_PROFILE, CANDIDATE, TREE = profile, M1_BASE, M1_TREE
+        return profile
     if profile == 'assembled-member-admin-v1':
         need(extra == ['', '', ''] and SELECTED_PROFILE == profile, 'assembled_composition_invalid')
         return profile
@@ -842,6 +1051,8 @@ def expected_sql(private):
 
 def prepare():
     binding = actual_context()
+    if SELECTED_PROFILE == OWNED_START_A:
+        return m1_prepare(binding)
     _, temp, private, app = paths()
     private.mkdir(mode=0o700)
     owned(private, True)
@@ -918,6 +1129,8 @@ def claim_execution(private, binding, state):
 
 def execute():
     binding = actual_context()
+    if SELECTED_PROFILE == OWNED_START_A:
+        return m1_execute(binding)
     _, _, private, app = paths()
     state = load_state(binding, private)
     claim_execution(private, binding, state)
@@ -1281,6 +1494,8 @@ def failure_observation(state, temp, private):
 
 def finalize():
     binding = actual_context()
+    if SELECTED_PROFILE == OWNED_START_A:
+        return m1_finalize(binding)
     workspace, temp, private, app = paths()
     state = load_state(binding, private)
     public = workspace / 'assembled-native-artifact'
