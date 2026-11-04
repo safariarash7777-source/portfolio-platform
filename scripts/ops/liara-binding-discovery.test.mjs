@@ -98,7 +98,7 @@ test('CRLF stays single-frame candidate-only; split frames and truncated UTF8 fa
   for(const mode of ['split-frame','truncated-utf8']){const failed=await protocol(mode);assert.equal(failed.r.state,'protocol_rejected');assert.equal(failed.gets,1);assert.equal(failed.ws,1);assert.equal(failed.starts,1);}
 });
 
-const diagnosticKeys=['phase','bodyBytesCapped1048577','fetchCalls','fetchReturns','httpStatusClass','connectCalls','connectReturns','wsOpenEventsCapped2','startSendCalls','startSendReturned','frameCountCapped2','lastFrameBytesCapped8193','closeCode','receiptCheck'];
+const diagnosticKeys=['phase','bodyBytesCapped1048577','fetchCalls','fetchReturns','httpStatusClass','connectCalls','connectReturns','wsOpenEventsCapped2','startSendCalls','startSendReturned','frameCountCapped2','lastFrameBytesCapped8193','closeCode','receiptCheck','firstControlFamily','firstControlOffsetUtf16','controlCountCapped32'];
 test('failure diagnostics distinguish request/body/schema/socket/send/frame/close/post phases without raw details',async()=>{
   const modes={ 'get-throw':'pre_release_fetch',http:'pre_release_fetch','body-throw':'pre_release_body','bad-json':'pre_release_validate','connect-throw':'ws_connect','send-throw':'start_send','duplicate-open':'ws_open','frame-limit':'frame_read',nonce:'frame_validate',unclean:'ws_close','post-throw':'post_release_fetch','release-change':'post_release_validate'};
   for(const [mode,phase] of Object.entries(modes)){
@@ -157,7 +157,9 @@ test('receipt check reports only the first rejecting predicate with one full JSO
   for(const [raw,check,fullParses] of cases){
     const f=framingFixture(),diagnostic={receiptCheck:null};
     assert.throws(()=>f.read(raw,nonce,diagnostic),error=>error.message==='rejected');
-    assert.deepEqual(diagnostic,{receiptCheck:check});assert.equal(f.fullParses(raw),fullParses);
+    const expected={receiptCheck:check};
+    if(check==='framing_control')Object.assign(expected,{firstControlFamily:raw.startsWith('\x1b')?'escape':'lf',firstControlOffsetUtf16:raw.startsWith('\x1b')?0:canonicalReceipt.length,controlCountCapped32:1});
+    assert.deepEqual(diagnostic,expected);assert.equal(f.fullParses(raw),fullParses);
     assert.equal(JSON.stringify(diagnostic).includes(secret),false);
   }
   const f=framingFixture(),checks=[];
@@ -185,4 +187,40 @@ test('receipt checks are failure-only, null outside receipt rejection and immuta
     const diagnostic={receiptCheck:null};assert.equal(framingFixture().read(raw,nonce,diagnostic).version,1);assert.equal(diagnostic.receiptCheck,null);
   }
   for(const mode of ['ok','valid-unresolved'])assert.equal((await protocol(mode)).r.diagnostics,undefined);
+});
+
+test('framing control observations expose only first family, UTF16 offset and capped count',()=>{
+  for(const [control,family] of [['\0','nul'],['\x1b','escape'],['\r','cr'],['\n','lf'],['\t','tab'],['\x7f','delete'],['\x01','other_c0']]){
+    const diagnostic={receiptCheck:null};const raw='😀'+control+secret;
+    assert.throws(()=>framingFixture().read(raw,nonce,diagnostic),/rejected/);
+    assert.deepEqual(diagnostic,{receiptCheck:'framing_control',firstControlFamily:family,firstControlOffsetUtf16:2,controlCountCapped32:1});
+    assert.equal(JSON.stringify(diagnostic).includes(secret),false);
+    assert.deepEqual(Object.keys(diagnostic).sort(),['controlCountCapped32','firstControlFamily','firstControlOffsetUtf16','receiptCheck']);
+  }
+  for(const [raw,family,offset,count] of [['prefix\t\0\r\n\x1b\x7f'+secret,'tab',6,6],['x'.repeat(8191)+'\0','nul',8191,1],['\0'.repeat(31),'nul',0,31],['\0'.repeat(32),'nul',0,32],['\0'.repeat(8192),'nul',0,32]]){
+    const d={};assert.throws(()=>framingFixture().read(raw,nonce,d),/rejected/);
+    assert.deepEqual(d,{receiptCheck:'framing_control',firstControlFamily:family,firstControlOffsetUtf16:offset,controlCountCapped32:count});
+  }
+});
+
+test('raw bound, allowed terminator, canonical success and other rejections keep control observations absent',async()=>{
+  for(const raw of ['\0'.repeat(8193),'{',canonicalReceipt.replace(nonce,'d'.repeat(32))]){
+    const d={};assert.throws(()=>framingFixture().read(raw,nonce,d),/rejected/);
+    assert.equal(d.firstControlFamily,undefined);assert.equal(d.firstControlOffsetUtf16,undefined);assert.equal(d.controlCountCapped32,undefined);
+  }
+  for(const ending of ['','\n','\r\n']){
+    const d={};assert.equal(framingFixture().read(canonicalReceipt+ending,nonce,d).state,'discovered_candidate');assert.deepEqual(d,{});
+  }
+  for(const mode of ['frame-limit','truncated-utf8','post-late-reject','bad-json']){
+    const {r}=await protocol(mode);
+    assert.equal(r.diagnostics.firstControlFamily,null);assert.equal(r.diagnostics.firstControlOffsetUtf16,null);assert.equal(r.diagnostics.controlCountCapped32,null);
+  }
+});
+
+test('first control failure observations stay frozen after extra frame and close events',async()=>{
+  const {r,gets,starts,ws}=await protocol('extra-frame','xx\x1b'+secret+'\0'.repeat(50));
+  assert.equal(r.state,'protocol_rejected');assert.equal(gets,1);assert.equal(starts,1);assert.equal(ws,1);
+  assert.equal(r.diagnostics.firstControlFamily,'escape');assert.equal(r.diagnostics.firstControlOffsetUtf16,2);assert.equal(r.diagnostics.controlCountCapped32,32);
+  assert.equal(r.diagnostics.frameCountCapped2,1);assert.equal(r.diagnostics.closeCode,null);assert.equal(r.diagnostics.phase,'frame_validate');
+  assert.ok(Object.isFrozen(r.diagnostics));assert.equal(JSON.stringify(r).includes(secret),false);
 });

@@ -29,7 +29,23 @@ function receipt(raw, nonce, diagnostic) {
   if(typeof raw!=='string' || Buffer.byteLength(raw)>8192)reject('framing_control');
   // Exactly one optional LF or CRLF terminator, never generic trimming.
   const framed=raw.endsWith('\r\n')?raw.slice(0,-2):raw.endsWith('\n')?raw.slice(0,-1):raw;
-  if(/[\u0000-\u001f\u007f]/.test(framed))reject('framing_control');
+  if(/[\u0000-\u001f\u007f]/.test(framed)){
+    // Failure-only structural observations, after the unchanged 8KiB bound and
+    // optional single terminator removal. No raw characters or frame fragments.
+    if(diagnostic){
+      let first=-1,count=0,family=null;
+      for(let i=0;i<framed.length;i++){
+        const code=framed.charCodeAt(i);
+        if(code>31 && code!==127)continue;
+        if(first<0){first=i;family=code===0?'nul':code===27?'escape':code===13?'cr':code===10?'lf':code===9?'tab':code===127?'delete':'other_c0';}
+        count=Math.min(count+1,32);
+      }
+      diagnostic.firstControlFamily=family;
+      diagnostic.firstControlOffsetUtf16=first;
+      diagnostic.controlCountCapped32=count;
+    }
+    reject('framing_control');
+  }
   const x=strictJson(framed,reject);
   if(JSON.stringify(x)!==framed)reject('canonical');
   if(!exactKeys(x,['version','nonce','state','reason','count','pid','startTicks','exeKind','cwdKind','entryKind']) || x.version!==1)reject('envelope_schema');
@@ -83,7 +99,7 @@ export async function discoverBinding(options={}) {
   if(typeof token!=='string' || !token || !/^[a-f0-9]{32}$/.test(nonce||'') || typeof fetchImpl!=='function' || typeof connect!=='function')return {state:'invalid_input'};
   const controller=new AbortController();let timer,socket;
   // Observations only: returned send is not a server ACK; null means unobserved.
-  const diagnostic={phase:'pre_release_fetch',bodyBytesCapped1048577:null,fetchCalls:null,fetchReturns:null,httpStatusClass:null,connectCalls:null,connectReturns:null,wsOpenEventsCapped2:null,startSendCalls:null,startSendReturned:null,frameCountCapped2:null,lastFrameBytesCapped8193:null,closeCode:null,receiptCheck:null};
+  const diagnostic={phase:'pre_release_fetch',bodyBytesCapped1048577:null,fetchCalls:null,fetchReturns:null,httpStatusClass:null,connectCalls:null,connectReturns:null,wsOpenEventsCapped2:null,startSendCalls:null,startSendReturned:null,frameCountCapped2:null,lastFrameBytesCapped8193:null,closeCode:null,receiptCheck:null,firstControlFamily:null,firstControlOffsetUtf16:null,controlCountCapped32:null};
   let failureDiagnostic;
   const captureFailure=()=>failureDiagnostic??=(Object.freeze({...diagnostic}));
   const work=async()=>{
