@@ -13,11 +13,14 @@
 // واحد مبالغ: میلیون ریال (مطابق موتور پارس کدال). eps بر حسب ریال.
 
 import { isMillionRialUnit } from "../fundamental/units";
-import type { ReportScope } from "../fundamental/types";
+import type { ReportRecord, ReportScope } from "../fundamental/types";
+import { createQuarterSourceResolver, type QuarterProvenance, type QuarterReportSource, type TtmProvenance } from "./quarterly-provenance";
 
 export interface QuarterInput {
   /** شناسهٔ یکتای ردیف در codal_reports — برای تقدم اصلاحیهٔ متأخر. */
   id: number;
+  /** Optional metadata from this exact input row; never used for selection/math. */
+  record?: ReportRecord | null;
   /** پایان دورهٔ جلالی مثل "1404-06-31". */
   period_end: string;
   /** طول دورهٔ تجمیعی: ۳ | ۶ | ۹ | ۱۲. */
@@ -36,6 +39,8 @@ export interface QuarterInput {
 
 /** یک فصل مشتق‌شده؛ مقادیر null یعنی زنجیرهٔ لازم موجود نبود. */
 export interface DerivedQuarter {
+  /** Absent for legacy callers; null/mismatched metadata never changes values. */
+  provenance?: QuarterProvenance;
   /** سال جلالیِ شروع زنجیره؛ در سال مالی غیرتقویمی با سال پایان متفاوت است. */
   fy: number;
   /** شمارهٔ فصل ۱..۴. */
@@ -59,6 +64,8 @@ export interface DerivedQuarter {
 }
 
 export interface TtmPoint {
+  /** Four actual profit windows plus the last capital input; no price clock. */
+  provenance?: TtmProvenance;
   /** برچسب فصل انتهایی پنجره مثل "Q2 1404". */
   label: string;
   /** پایان دورهٔ فصل انتهایی (جلالی) — قیمت پایانی همین تاریخ ملاک است. */
@@ -129,6 +136,7 @@ function toQuarter(
   q: 1 | 2 | 3 | 4,
   cur: QuarterInput | undefined,
   prev: QuarterInput | undefined,
+  sourceOf?: (input: QuarterInput) => QuarterReportSource,
 ): DerivedQuarter {
   const label = `Q${q} ${fy}`;
   const empty: DerivedQuarter = {
@@ -146,15 +154,26 @@ function toQuarter(
     adjusted: false,
     capital: comparable(cur) && finiteNumber(cur.capital) && cur.capital > 0 ? cur.capital : null,
   };
+  if (sourceOf) empty.provenance = {
+    amounts: { operation: "unavailable", contributors: [] },
+    capital: cur && empty.capital !== null ? sourceOf(cur) : null,
+  };
   if (!comparable(cur)) return empty;
   if (q === 1) {
     // Q1 مستقیم از گزارش ۳ماهه
+    if (sourceOf && empty.provenance) empty.provenance.amounts = {
+      operation: "reported", contributors: [{ role: "current", report: sourceOf(cur) }],
+    };
     return finalize(empty, cur.revenue, cur.gross_profit, cur.operating_profit, cur.net_profit);
   }
   if (!comparable(prev)) return empty; // حلقهٔ غایب/ناسازگار → null
+  if (sourceOf && empty.provenance) empty.provenance.amounts = {
+    operation: "difference", contributors: [{ role: "current", report: sourceOf(cur) }, { role: "previous", report: sourceOf(prev) }],
+  };
   const rev = difference(cur.revenue, prev.revenue);
   if (rev !== null && rev < 0) {
     // تعدیل گزارش قبلی — فصل نامعتبر است؛ پرچم بزنیم و null بدهیم.
+    if (empty.provenance) empty.provenance.amounts.operation = "rejected_difference";
     return { ...empty, adjusted: true };
   }
   return finalize(
@@ -191,6 +210,10 @@ function finalize(
 /** فصل‌سازی همهٔ سال‌های مالی موجود؛ خروجی مرتب از قدیم به جدید. */
 export function deriveQuarters(reports: QuarterInput[]): DerivedQuarter[] {
   const byPeriod = dedupePeriods(reports);
+  // Opt-in preserves the complete legacy output shape. Missing metadata in an
+  // otherwise tracked chain remains explicit, rather than borrowing a neighbor.
+  const sourceOf = reports.some(report => report && Object.hasOwn(report, "record"))
+    ? createQuarterSourceResolver(reports) : undefined;
   const chains = new Set<string>();
   for (const key of byPeriod.keys()) chains.add(key.split("|")[0]);
   const out: DerivedQuarter[] = [];
@@ -201,10 +224,10 @@ export function deriveQuarters(reports: QuarterInput[]): DerivedQuarter[] {
     const m9 = byPeriod.get(`${chain}|9`);
     const m12 = byPeriod.get(`${chain}|12`);
     if (!m3 && !m6 && !m9 && !m12) continue;
-    out.push(toQuarter(fy, 1, m3, undefined));
-    out.push(toQuarter(fy, 2, m6, m3));
-    out.push(toQuarter(fy, 3, m9, m6));
-    out.push(toQuarter(fy, 4, m12, m9));
+    out.push(toQuarter(fy, 1, m3, undefined, sourceOf));
+    out.push(toQuarter(fy, 2, m6, m3, sourceOf));
+    out.push(toQuarter(fy, 3, m9, m6, sourceOf));
+    out.push(toQuarter(fy, 4, m12, m9, sourceOf));
   }
   // فصل‌های انتهایی که هنوز گزارش ندارند (آیندهٔ سال جاری) حذف می‌شوند:
   // از انتها تا اولین فصل دارای دادهٔ واقعی یا پرچم adjusted، فصل‌های تمام-null بدون گزارش حذف.
@@ -252,6 +275,10 @@ export function ttmSeries(quarters: DerivedQuarter[]): TtmPoint[] {
       // سرمایه میلیون ریال، سهم ۱۰۰۰ریالی → تعداد سهم = capital×۱۰۰۰؛
       // EPS = سود(میلیون ریال)×۱۰^۶ ÷ (capital×۱۰۰۰) = سود×۱۰۰۰÷capital (ریال).
       epsTtm,
+      ...(win.some(w => w.provenance !== undefined) ? { provenance: {
+        netProfit: win.map(w => ({ fy: w.fy, q: w.q, periodEnd: w.periodEnd, amounts: w.provenance?.amounts ?? null })),
+        capital: last.provenance?.capital ?? null,
+      } } : {}),
     });
   }
   return out;

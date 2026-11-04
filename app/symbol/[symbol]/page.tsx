@@ -157,6 +157,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
   // T3: فصل‌سازی ن-۱۰ با تفاضل زنجیره‌ای + P/E دوازده‌ماهه
   const quarterInputs: QuarterInput[] = (fundamentals?.n10Periods ?? []).map((p) => ({
     id: p.id,
+    ...(previewView ? { record: p.record ?? null } : {}),
     period_end: p.data.period_end,
     period_months: p.data.period_months,
     audited: p.data.audited,
