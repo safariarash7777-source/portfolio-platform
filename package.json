@@ -26,7 +26,9 @@
     "test:auth-ui": "node --import ./scripts/testing/b2-offline-guard.mjs scripts/testing/auth-offline-tests.cjs",
     "test:payment": "node --test lib/zarinpal.test.mjs",
     "test:research-provenance": "tsx --test lib/intelligence/research-provenance.test.ts",
-    "test:fund-comparison": "tsx --test lib/core/fundComparison.test.ts components/market/FundComparisonPanel.test.tsx lib/core/fundReturns.test.ts lib/core/bulkReturns.test.ts app/market/funds/page.test.ts"
+    "test:fund-comparison": "tsx --test lib/core/fundComparison.test.ts components/market/FundComparisonPanel.test.tsx lib/core/fundReturns.test.ts lib/core/bulkReturns.test.ts app/market/funds/page.test.ts",
+    "test:codal-reinterpretation": "node --test relay/codal-reinterpretation.test.mjs",
+    "test:codal-reinterpretation:db": "tsx --test --test-concurrency=1 lib/fundamental/codal-reinterpretation.integration.test.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",

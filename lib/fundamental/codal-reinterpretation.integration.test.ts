@@ -12,8 +12,11 @@ import { withKnownMonthlyQuantities } from "../core/monthly-quantity";
 import { buildMonthlySales } from "../core/monthlyReport";
 
 const DB = "codal_reinterpretation_isolated_test";
-const ENV = { ...process.env, PGHOST: "127.0.0.1", PGHOSTADDR: "127.0.0.1", PGPORT: "5433", PGUSER: "postgres",
-  PGPASSWORD: "postgres", PGSERVICE: "", PGSERVICEFILE: "", PGOPTIONS: "-c statement_timeout=5000" };
+// Omit inherited libpq settings entirely: an empty PGSERVICEFILE is still a
+// filename to libpq. Keep only the explicit disposable-runner connection below.
+const ENV = { ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !/^PG/i.test(key))),
+  PGHOST: "127.0.0.1", PGHOSTADDR: "127.0.0.1", PGPORT: "5433", PGUSER: "postgres",
+  PGPASSWORD: "postgres", PGOPTIONS: "-c statement_timeout=5000" };
 const lit = (value: unknown) => `'${JSON.stringify(value).replaceAll("'", "''")}'::jsonb`;
 function sql(query: string, db = DB): string {
   return execFileSync("psql", ["-X", "-qAt", "-v", "ON_ERROR_STOP=1", "-d", db, "-c", query],
