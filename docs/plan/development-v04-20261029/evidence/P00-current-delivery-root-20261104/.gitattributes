@@ -81,3 +81,6 @@ p06-public-hop-* -text -whitespace
 p03-reader-map-* -text -whitespace
 
 p06-responsibility-* -text -whitespace
+
+p06-physical-* -text -whitespace
+p06-current-capacity-* -text -whitespace

@@ -10,6 +10,8 @@ FX: SCI پیش از رسیدن STOP commit شد و [readback](plan/development-v
 
 بعدی: root/C بستهٔ migration/rollout موجود با هویت/backup؛ C/root یک rejectedreportرسمی و scope/layout؛ root دوچرخهٔ طبیعی پیاپی و بازخوانی مصرف‌کننده. تمام۱۶بسته/۸۵تعهد محفوظ‌اند؛ وضعیت تاریخی پایین مجوز ازسرگیری کارهای متوقف نیست.
 
+**بازخوانی۲۰:۰۴–۲۰:۰۵تهران:** [aliasمسیرproxy→gatewayو۱۱اتصالRESTبهDBواقعی](plan/development-v04-20261029/evidence/P00-current-delivery-root-20261104/p06-physical-hop-alias-backup-metadata.json) تأییدشد؛ mountedconfigجایtraceHTTPنیست. [ظرفیتکوتاهVPS](plan/development-v04-20261029/evidence/P00-current-delivery-root-20261104/p06-current-capacity-2005-tehran.json):۴core/CPU۲۰٫۹۷٪یک‌ثانیه/RAMavailable۵٫۴۷GiB/rootfree۱۳٫۳۵GiB؛ ظرفیتپااس/هزینهیاپایداریاثباتنیست. metadatabackupقدیمیجایarchiveجاری/restoreنیست؛ backupمقصدهنوزUNCONFIRMED. CهمانwriterمالکsourcebudgetbaselineUNKNOWN→failclosed،rootمالکعملیات؛ SQL/flags/resetusage/نصبزندهانجام‌نشده.
+
 ### سوابق قبل از تغییر اولویت
 
 ## ادامهٔ اجرایی ۴ نوامبر ۲۰۲۶ تهران — وضعیت جاری

@@ -1,3 +1,17 @@
+# اتصال فیزیکی و ظرفیت جاری بازخوانی شد؛ نصب بودجه هنوز انجام نشده
+
+[تطبیق۲۰:۰۴تهران](p06-physical-hop-alias-backup-metadata.json): مسیر mountedCaddyِ proxy343 برایliara-preview بهportfolio-liara-preview-gateway:8080 می‌رود؛ alias به gateway10d8 تطبیق دارد و mountedconfig آن rest/v1→rest:3000 است. **۱۱اتصال authenticator از IPکانتینر REST703c به همان DB9193/image694 و databaseموردبررسی مشاهده شد**؛ DBقبل/بعدhealthy/restart0. نه env/credential خوانده شد، نه provider/RPC/SQLwrite/servicechange. فایل config، attestationتنظیم زنده Caddy یا trace یک درخواست مشخص HTTP نیست؛ با این محدودیت هویت hopرا محدود می‌کند.
+
+[projectionاول](p06-physical-hop-initial-projection.json) باclient_addr::text تطبیق۰داد؛ آن را عدم اتصال قلمداد نکردیم. inet می‌تواند maskداشته باشد؛ [پروجکشن اصلاح‌شده host(client_addr)](p06-physical-hop-canonical-address.json) ۱۱اتصال داد. رسید اولیه محفوظ و نتیجهٔ اصلاح‌شده مبناست.
+
+**پشتیبان مقصد هنوز تأیید نشده:** فقطmetadataمحدود در سه مسیر موجود/opt/portfolio-staging،/opt/arsadata-backup-tools،/opt/portfolio-operational خوانده شد. فایل‌های قدیمیrestore-summary/run-restore و ابزار دیده شد، اما archiveجاری با restoreپذیرفتهٔ این DB اثبات نشد؛ این به معنی نبودنbackupدرکلسرور نیست. تمرین مصنوعیM1جایbackupمقصد نیست؛ ساختbackup/restoreزنده دراینمرحلهانجام نشد.
+
+[ظرفیت۲۰:۰۵تهران](p06-current-capacity-2005-tehran.json):۴هسته،CPUbusyیک‌ثانیه۲۰٫۹۷٪،RAMکل۷٫۷۱GiB/available۵٫۴۷GiB،دیسکrootآزاد۱۳٫۳۵GiB. مصرفRAMنمونه:DB۴۴۱٫۸MiB،FX۴۰۷٫۴MiB،Storage۱۱۸٫۴MiB،REST۸۱٫۸۹MiB؛ همهstatsدررسیداست. CPUداکرمعادلدرصدیکcore است و باbusyکلhostجمع/مقایسهٔ مستقیم نمی‌شود. این نمونهٔ کوتاه، ظرفیت رزروشده یا پایداری نیست؛ منابع VPS است، نه پلن/هزینه پااس لیارا. Hermes/model اجرا یا نصب نشد.
+
+**گام اصلاح با مالک روشن:** C و همانwriterموجود تنها مالک candidateبودجه خارجcheckout هستند؛ rootsourceمشترک را هم‌زمان ویرایش نمی‌کند. baselineمصرف نامعلوم بایدfailclosedبماند،نهصفر. قرارداد lease/release،ACLصریح،مصرف‌کنندگان فعال و نصبschemaبایدجدا باهم‌بندی معتبر مرور شوند. PR394اصلاحsourceاست و خودشRPCنصب نمی‌کند؛ rawphase28/فعال‌سازیflag یاresetروز انجام نشد. rootمالک binding/backup/عملیات، Cمالکsource/Codal؛ feature/deployنامرتبطمتوقفاست.
+
+### تشخیص پیشین با ساعت و دامنهٔ خودش
+
 # تشخیص جاری Production؛ مسئولیت خرابی روشن‌تر شد، رفع کامل هنوز پذیرفته نیست
 
 آخرین دستور آرش بر توقف توسعه و انتشارهای نامرتبط و تشخیص کل مسیر داده مقدم است. همین هماهنگ‌کننده مالک عملیات و این مرجع است؛ C مرور مستقل source را ادامه می‌دهد. P03/M1، P09R2، P14 و انتشارهای تازه متوقف‌اند؛ سرویس‌ها و زمان‌بندی‌های سالم خاموش نشده‌اند. هیچ درخواست مستقیم تشخیصی به BRSAPI، SQL write، restart، ارتقا یا هزینهٔ تازه در این بررسی انجام نشد.

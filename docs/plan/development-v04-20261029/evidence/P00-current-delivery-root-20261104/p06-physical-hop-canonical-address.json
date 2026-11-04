@@ -1,0 +1,89 @@
+{
+  "schema": "production-physical-hop-readonly.v1",
+  "atUtc": "2026-11-04T16:33:13.200434+00:00",
+  "providerRequests": 0,
+  "sqlWrites": false,
+  "environmentValuesRead": false,
+  "serviceOrScheduleChanged": false,
+  "before": {
+    "idMatched": true,
+    "imageMatched": true,
+    "healthy": true,
+    "restartCount": 0
+  },
+  "containers": [
+    {
+      "name": "fx-dashboard-proxy",
+      "idMatched": true,
+      "image": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+      "configMounts": [
+        {
+          "destination": "/etc/caddy/Caddyfile",
+          "source": "/opt/fx-dashboard/config/Caddyfile",
+          "readOnly": true,
+          "liaraPreviewPathPresent": true,
+          "restPathPresent": false,
+          "upstreamTargets": [
+            "finance-dashboard-20261028-v12-130524:8080",
+            "fx-dashboard:8501",
+            "portfolio-liara-preview-gateway:8080",
+            "finance-dashboard-20261028-v12-130524:8080",
+            "fx-dashboard:8501"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "portfolio-stage-gateway-1",
+      "idMatched": true,
+      "image": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+      "configMounts": [
+        {
+          "destination": "/etc/caddy/Caddyfile",
+          "source": "/opt/portfolio-staging/Preview.Caddyfile",
+          "readOnly": true,
+          "liaraPreviewPathPresent": true,
+          "restPathPresent": true,
+          "upstreamTargets": [
+            "auth:9999",
+            "rest:3000"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "portfolio-stage-rest-1",
+      "idMatched": true,
+      "image": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+      "configMounts": []
+    }
+  ],
+  "restConnectionsToPinnedDb": {
+    "matchingConnections": 11,
+    "toExpectedDatabase": true,
+    "authenticatorSeen": true
+  },
+  "authenticatorConnectionsToPinnedDb": {
+    "connections": 11,
+    "toExpectedDatabase": true,
+    "restAddressMatches": 11
+  },
+  "status": "READ_ONLY_PHYSICAL_HOP_METADATA_OBSERVED",
+  "limitations": [
+    "Mounted config is file evidence, not running Caddy config attestation.",
+    "Existing PostgREST connections to the pinned database do not identify a specific HTTP request.",
+    "No database credential or environment value was read."
+  ],
+  "after": {
+    "idMatched": true,
+    "imageMatched": true,
+    "healthy": true,
+    "restartCount": 0
+  },
+  "completedAtUtc": "2026-11-04T16:33:14.088296+00:00",
+  "authenticatedObserved": true,
+  "commandSentObserved": true,
+  "observedAtUtc": "2026-11-04T16:33:13.422830+00:00",
+  "automaticRetry": false,
+  "deliberateRemoteWrites": false
+}

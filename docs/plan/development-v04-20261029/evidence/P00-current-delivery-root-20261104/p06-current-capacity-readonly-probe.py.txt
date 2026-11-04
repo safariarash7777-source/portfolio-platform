@@ -1,0 +1,17 @@
+import datetime,json,os,shutil,subprocess,time
+def cpu():
+ parts=open('/proc/stat').readline().split()[1:9];v=[int(x) for x in parts]
+ return sum(v),v[3]+v[4]
+out={'schema':'production-current-capacity-readonly.v1','atUtc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'providerRequests':0,'sqlWrites':False,'servicesChanged':False,'environmentValuesRead':False}
+try:
+ first=cpu();time.sleep(1);last=cpu();total=last[0]-first[0]
+ mem={l.split(':')[0]:int(l.split()[1])*1024 for l in open('/proc/meminfo') if l.startswith(('MemTotal:','MemAvailable:'))}
+ disk=shutil.disk_usage('/')
+ out['host']={'cpuCores':os.cpu_count(),'cpuBusyPercentOneSecond':round(100*(1-(last[1]-first[1])/total),2) if total>0 else None,'loadAverage1_5_15':os.getloadavg(),'memoryTotalBytes':mem['MemTotal'],'memoryAvailableBytes':mem['MemAvailable'],'rootDiskTotalBytes':disk.total,'rootDiskFreeBytes':disk.free}
+ p=subprocess.run(['docker','stats','--no-stream','--format','{{json .}}'],capture_output=True,text=True,timeout=8)
+ if p.returncode or len(p.stdout.encode())>131072:raise ValueError('CONTAINER_STATS_UNCONFIRMED')
+ out['containerStats']=[{k:v for k,v in json.loads(line).items() if k in ('Name','CPUPerc','MemUsage','MemPerc')} for line in p.stdout.splitlines()]
+ out['limitations']=['One-second host sample and one Docker stats sample; not sustained capacity or a reservation.','These are VPS resources, not Liara PaaS project plan or billing.','No Hermes/model process was started or tested.']
+ out['status']='READ_ONLY_CURRENT_CAPACITY_SAMPLE'
+except Exception as e:out.update(status='READ_ONLY_CAPACITY_INCOMPLETE',errorClass=type(e).__name__)
+out['completedAtUtc']=datetime.datetime.now(datetime.timezone.utc).isoformat();print(json.dumps(out))

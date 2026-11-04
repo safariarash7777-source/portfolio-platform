@@ -1,0 +1,68 @@
+import datetime,ipaddress,json,os,re,signal,subprocess
+signal.alarm(20)
+SOURCE='9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c'
+IMAGE='sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb'
+EXPECTED={'fx-dashboard-proxy':'3433552f37e1ef3d3718aa00ff56a18d4066fce7ceb956abd09c426cb3d02f65','portfolio-stage-gateway-1':'10d8dd93463e5dfbdfd1f43bea9bec95e52def0654c0ffe1d840bca449b643be','portfolio-stage-rest-1':'703c0d4a0273aa257df593633629936bad6703e74b2e4b9da87d82e7580cab41'}
+def run(args,body=None):
+ p=subprocess.run(args,input=body,capture_output=True,text=True,timeout=5)
+ if p.returncode or len(p.stdout.encode())>131072:raise RuntimeError('BOUNDED_READ_UNCONFIRMED')
+ return p.stdout
+def inspect(name):
+ return json.loads(run(['docker','inspect','--format','{"id":{{json .Id}},"image":{{json .Image}},"running":{{json .State.Running}},"health":{{json .State.Health.Status}},"restartCount":{{json .RestartCount}},"mounts":{{json .Mounts}},"networks":{{json .NetworkSettings.Networks}}}',name]))
+def dbhealth():
+ # DB has a health check. Other containers need not have one.
+ r=inspect(SOURCE);assert r['id']==SOURCE and r['image']==IMAGE and r['health']=='healthy'
+ return {'idMatched':True,'imageMatched':True,'healthy':True,'restartCount':r['restartCount']}
+def sql(q):
+ return json.loads(run(['docker','exec','-i',SOURCE,'psql','-XqAt','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1'],"BEGIN READ ONLY;SET LOCAL statement_timeout='3s';SET LOCAL lock_timeout='1s';"+q+';ROLLBACK;'))
+out={'schema':'production-physical-hop-readonly.v1','atUtc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'providerRequests':0,'sqlWrites':False,'environmentValuesRead':False,'serviceOrScheduleChanged':False}
+try:
+ out['before']=dbhealth();out['containers']=[];rest_ips=[]
+ for name,expected in EXPECTED.items():
+  # No Config.Env or process argv is read.
+  fmt='{"id":{{json .Id}},"image":{{json .Image}},"running":{{json .State.Running}},"mounts":{{json .Mounts}},"networks":{{json .NetworkSettings.Networks}}}'
+  r=json.loads(run(['docker','inspect','--format',fmt,name]));assert r['id']==expected and r['running']
+  row={'name':name,'idMatched':True,'image':r['image'],'configMounts':[]}
+  if name=='portfolio-stage-gateway-1':
+   row['proxyUpstreamAliasMatches']=any('portfolio-liara-preview-gateway' in (n.get('Aliases') or []) for n in r['networks'].values())
+  if name=='portfolio-stage-rest-1':
+   rest_ips=[str(ipaddress.ip_address(v['IPAddress'])) for v in r['networks'].values() if v.get('IPAddress')]
+  for mount in r['mounts']:
+   dest=mount.get('Destination','');src=mount.get('Source','')
+   if dest not in ('/etc/caddy/Caddyfile','/etc/caddy') :continue
+   path=src if dest.endswith('/Caddyfile') else os.path.join(src,'Caddyfile')
+   item={'destination':dest,'source':src,'readOnly':not mount.get('RW',True)}
+   if os.path.isfile(path) and os.path.getsize(path)<=65536:
+    with open(path,encoding='utf8') as f:text=f.read(65537)
+    targets=re.findall(r'\breverse_proxy\s+([^\s{]+)',text)
+    item.update(liaraPreviewPathPresent='/liara-preview' in text,restPathPresent='/rest/v1' in text,upstreamTargets=[t if re.fullmatch(r'[A-Za-z0-9_.-]+:[0-9]{2,5}',t) else 'OTHER_REDACTED' for t in targets])
+   row['configMounts'].append(item)
+  out['containers'].append(row)
+ assert rest_ips
+ values=','.join("'"+x+"'" for x in rest_ips)
+ out['restConnectionsToPinnedDb']=sql("SELECT json_build_object('matchingConnections',count(*),'toExpectedDatabase',coalesce(bool_and(datname=current_database()),false),'authenticatorSeen',coalesce(bool_or(usename='authenticator'),false)) FROM pg_stat_activity WHERE host(client_addr) IN ("+values+")")
+ out['authenticatorConnectionsToPinnedDb']=sql("SELECT json_build_object('connections',count(*),'toExpectedDatabase',coalesce(bool_and(datname=current_database()),false),'restAddressMatches',count(*) FILTER (WHERE host(client_addr) IN ("+values+"))) FROM pg_stat_activity WHERE usename='authenticator'")
+ out['backupMetadataOnly']=[]
+ for root in ('/opt/portfolio-staging','/opt/arsadata-backup-tools','/opt/portfolio-operational'):
+  item={'root':root,'exists':os.path.isdir(root),'matchingEntries':[],'restoreValidated':False}
+  if item['exists']:
+   pending=[(root,0)];visited=0
+   while pending and visited<300 and len(item['matchingEntries'])<60:
+    directory,depth=pending.pop(0)
+    for e in os.scandir(directory):
+     visited+=1
+     if visited>300:break
+     if e.is_symlink() or re.search(r'env|secret|token|credential',e.name,re.I):continue
+     matched=bool(re.search(r'backup|checkpoint|receipt|restore|manifest|archive|\.dump$|\.tar|\.sql\.gz$',e.name,re.I))
+     if matched:
+      st=e.stat(follow_symlinks=False)
+      item['matchingEntries'].append({'path':e.path,'isDirectory':e.is_dir(follow_symlinks=False),'bytes':st.st_size,'modifiedAtUtc':datetime.datetime.fromtimestamp(st.st_mtime,datetime.timezone.utc).isoformat()})
+     if e.is_dir(follow_symlinks=False) and depth<1 and matched:pending.append((e.path,depth+1))
+   item['boundedEntriesVisited']=visited
+  out['backupMetadataOnly'].append(item)
+ out['status']='READ_ONLY_PHYSICAL_HOP_METADATA_OBSERVED'
+ out['limitations']=['Mounted config is file evidence, not running Caddy config attestation.','Existing PostgREST connections to the pinned database do not identify a specific HTTP request.','No database credential or environment value was read.']
+except Exception as e:out.update(status='READ_ONLY_PHYSICAL_HOP_INCOMPLETE',errorClass=type(e).__name__)
+try:out['after']=dbhealth()
+except Exception:out['after']=None
+out['completedAtUtc']=datetime.datetime.now(datetime.timezone.utc).isoformat();print(json.dumps(out))

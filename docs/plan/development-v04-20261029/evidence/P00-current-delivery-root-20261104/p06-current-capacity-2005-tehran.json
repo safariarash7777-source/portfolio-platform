@@ -1,0 +1,185 @@
+{
+  "schema": "production-current-capacity-readonly.v1",
+  "atUtc": "2026-11-04T16:35:04.133491+00:00",
+  "providerRequests": 0,
+  "sqlWrites": false,
+  "servicesChanged": false,
+  "environmentValuesRead": false,
+  "host": {
+    "cpuCores": 4,
+    "cpuBusyPercentOneSecond": 20.97,
+    "loadAverage1_5_15": [
+      1.00244140625,
+      1.3369140625,
+      1.37451171875
+    ],
+    "memoryTotalBytes": 8276856832,
+    "memoryAvailableBytes": 5870403584,
+    "rootDiskTotalBytes": 81839546368,
+    "rootDiskFreeBytes": 14331793408
+  },
+  "containerStats": [
+    {
+      "CPUPerc": "26.50%",
+      "MemPerc": "13.42%",
+      "MemUsage": "51.54MiB / 384MiB",
+      "Name": "finance-dashboard-20261028-v12-130524"
+    },
+    {
+      "CPUPerc": "0.69%",
+      "MemPerc": "5.16%",
+      "MemUsage": "407.4MiB / 7.708GiB",
+      "Name": "fx-dashboard"
+    },
+    {
+      "CPUPerc": "0.00%",
+      "MemPerc": "8.25%",
+      "MemUsage": "10.56MiB / 128MiB",
+      "Name": "portfolio-auth219-20261002-auth"
+    },
+    {
+      "CPUPerc": "0.00%",
+      "MemPerc": "34.88%",
+      "MemUsage": "89.29MiB / 256MiB",
+      "Name": "portfolio-auth219-20261002-storage"
+    },
+    {
+      "CPUPerc": "0.17%",
+      "MemPerc": "7.18%",
+      "MemUsage": "9.188MiB / 128MiB",
+      "Name": "portfolio-auth219-20261002-rest"
+    },
+    {
+      "CPUPerc": "0.07%",
+      "MemPerc": "11.31%",
+      "MemUsage": "10.86MiB / 96MiB",
+      "Name": "portfolio-auth219-20261002-sink"
+    },
+    {
+      "CPUPerc": "0.00%",
+      "MemPerc": "2.87%",
+      "MemUsage": "14.7MiB / 512MiB",
+      "Name": "portfolio-auth219-20261002-db"
+    },
+    {
+      "CPUPerc": "0.00%",
+      "MemPerc": "0.00%",
+      "MemUsage": "0B / 0B",
+      "Name": "portfolio-demo844-app"
+    },
+    {
+      "CPUPerc": "0.00%",
+      "MemPerc": "16.69%",
+      "MemUsage": "10.68MiB / 64MiB",
+      "Name": "portfolio-demo844-gateway"
+    },
+    {
+      "CPUPerc": "0.00%",
+      "MemPerc": "34.68%",
+      "MemUsage": "88.77MiB / 256MiB",
+      "Name": "portfolio-demo844-storage"
+    },
+    {
+      "CPUPerc": "0.16%",
+      "MemPerc": "6.90%",
+      "MemUsage": "8.828MiB / 128MiB",
+      "Name": "portfolio-demo844-rest"
+    },
+    {
+      "CPUPerc": "0.00%",
+      "MemPerc": "5.22%",
+      "MemUsage": "6.684MiB / 128MiB",
+      "Name": "portfolio-demo844-auth"
+    },
+    {
+      "CPUPerc": "0.01%",
+      "MemPerc": "1.80%",
+      "MemUsage": "9.195MiB / 512MiB",
+      "Name": "portfolio-demo844-db"
+    },
+    {
+      "CPUPerc": "0.00%",
+      "MemPerc": "0.00%",
+      "MemUsage": "0B / 0B",
+      "Name": "portfolio-accept195-app"
+    },
+    {
+      "CPUPerc": "0.00%",
+      "MemPerc": "31.63%",
+      "MemUsage": "20.25MiB / 64MiB",
+      "Name": "portfolio-accept195-gateway"
+    },
+    {
+      "CPUPerc": "0.00%",
+      "MemPerc": "35.10%",
+      "MemUsage": "89.85MiB / 256MiB",
+      "Name": "portfolio-accept195-storage"
+    },
+    {
+      "CPUPerc": "0.14%",
+      "MemPerc": "6.74%",
+      "MemUsage": "8.625MiB / 128MiB",
+      "Name": "portfolio-accept195-rest"
+    },
+    {
+      "CPUPerc": "0.03%",
+      "MemPerc": "5.51%",
+      "MemUsage": "7.051MiB / 128MiB",
+      "Name": "portfolio-accept195-auth"
+    },
+    {
+      "CPUPerc": "0.00%",
+      "MemPerc": "1.95%",
+      "MemUsage": "9.992MiB / 512MiB",
+      "Name": "portfolio-accept195-db"
+    },
+    {
+      "CPUPerc": "10.97%",
+      "MemPerc": "0.17%",
+      "MemUsage": "13.44MiB / 7.708GiB",
+      "Name": "portfolio-stage-gateway-1"
+    },
+    {
+      "CPUPerc": "0.00%",
+      "MemPerc": "0.18%",
+      "MemUsage": "14.16MiB / 7.708GiB",
+      "Name": "portfolio-stage-auth-1"
+    },
+    {
+      "CPUPerc": "0.30%",
+      "MemPerc": "1.04%",
+      "MemUsage": "81.89MiB / 7.708GiB",
+      "Name": "portfolio-stage-rest-1"
+    },
+    {
+      "CPUPerc": "0.00%",
+      "MemPerc": "1.50%",
+      "MemUsage": "118.4MiB / 7.708GiB",
+      "Name": "portfolio-stage-storage-1"
+    },
+    {
+      "CPUPerc": "12.43%",
+      "MemPerc": "5.60%",
+      "MemUsage": "441.8MiB / 7.708GiB",
+      "Name": "portfolio-stage-db-1"
+    },
+    {
+      "CPUPerc": "0.00%",
+      "MemPerc": "0.33%",
+      "MemUsage": "26.26MiB / 7.708GiB",
+      "Name": "fx-dashboard-proxy"
+    }
+  ],
+  "limitations": [
+    "One-second host sample and one Docker stats sample; not sustained capacity or a reservation.",
+    "These are VPS resources, not Liara PaaS project plan or billing.",
+    "No Hermes/model process was started or tested."
+  ],
+  "status": "READ_ONLY_CURRENT_CAPACITY_SAMPLE",
+  "completedAtUtc": "2026-11-04T16:35:07.815993+00:00",
+  "authenticatedObserved": true,
+  "commandSentObserved": true,
+  "observedAtUtc": "2026-11-04T16:35:07.148336+00:00",
+  "automaticRetry": false,
+  "deliberateRemoteWrites": false
+}
