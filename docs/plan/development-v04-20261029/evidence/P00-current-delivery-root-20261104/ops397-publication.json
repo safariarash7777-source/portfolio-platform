@@ -1,0 +1,23 @@
+{
+  "status": "ACTUAL_CI_MAIN_PRODUCTION_IDENTITY_NOT_NEW_PRODUCT_ACCEPTANCE",
+  "pr": 397,
+  "reviewedHead": "1bc3763dc0615aca331e1ed38a6e8a7468ecb0f7",
+  "ciRun": 41743079852,
+  "ciCheckout": "1f6409daaa3512b0101ae89d73a8f30ee59a26a7",
+  "tree": "f6bdc19fddb3874661e62fb325b7e0854c344073",
+  "allFiveNormalJobs": "SUCCESS",
+  "optionalNative": "SKIPPED_NOT_ACCEPTANCE",
+  "main": "74011b57af11051b605a504054e6afad3bd89ff6",
+  "productionDeployment": "dpl_DN8yRusEsRbmErjFzqzy7xEGU7FE",
+  "productionUrl": "https://portfolio-platform-h8c7wk18x-safariarash7777-4463s-projects.vercel.app",
+  "alias": "https://portfolio-platform-fawn.vercel.app",
+  "target": "production",
+  "state": "READY",
+  "aliasReadbackMatches": true,
+  "productPathsEqualAcceptedMediaA42": true,
+  "newBrowserRunClaimed": false,
+  "installerV2NativeModeExecuted": false,
+  "sqlApply": false,
+  "captureApplyProfileChanged": false,
+  "releaseAuthorizedByRestoreAdapter": false
+}

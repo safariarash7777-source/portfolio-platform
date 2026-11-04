@@ -5,7 +5,7 @@ import MediaHub from "@/components/insights/MediaHub";
 import { type ContentItem, isPlatform, isKind } from "@/lib/content-hub";
 import { readSiteAppearance } from "@/lib/appearance/site-layout-server";
 import { pageMetadata } from "@/lib/metadata";
-import { withDeadline } from "@/lib/deadline";
+import { readMediaContent } from "@/lib/media/content-read.server";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -24,7 +24,7 @@ export default async function InsightsPage({
   const search = searchParams ? await searchParams : {};
   const supabase = await createClient();
   const [{ data, error: contentError }, setting] = await Promise.all([
-    withDeadline(async (signal) => await supabase
+    readMediaContent(async (signal) => await supabase
       .from("content_hub")
       .select(
         "id, platform, kind, content_url, title, description, published_at",
@@ -33,7 +33,7 @@ export default async function InsightsPage({
       .not("published_at", "is", null)
       .order("published_at", { ascending: false })
       .limit(60)
-      .abortSignal(signal), 4000).catch(() => ({ data: null, error: true })),
+      .abortSignal(signal)),
     readSiteAppearance(supabase, search),
   ]);
   const items: ContentItem[] = (data ?? [])

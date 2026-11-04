@@ -1,0 +1,27 @@
+{
+  "status": "ACTUAL_PRODUCTION_IDENTITY_READBACK_ONLY",
+  "source": "d34ad352c0124cbf07442db3e136ca51f0f52729",
+  "reviewedHead": "4d1ed3e4900f8f710aee5b028c90b77a3c1361ed",
+  "tree": "a95c9bd9568c99f2039216df5074b4b9dd69263a",
+  "actualCiCheckout": "146d278f8cc6b86ed3d5b467f4b3f206d6baa344",
+  "ciRun": 41735870860,
+  "ordinaryJobs": "ALL_FIVE_SUCCESS",
+  "pr": 395,
+  "deployment": "dpl_CZzqiK7RuJQx7zfmbMpe9Fb98nK5",
+  "url": "https://portfolio-platform-4a6cmkvck-safariarash7777-4463s-projects.vercel.app",
+  "alias": "https://portfolio-platform-fawn.vercel.app",
+  "target": "production",
+  "state": "READY",
+  "readbackDateUtc": "2026-11-03",
+  "productPathsUnchangedFromPreviousMarketRelease": [
+    "app",
+    "components",
+    "lib",
+    "relay",
+    "next.config.js"
+  ],
+  "newBrowserAcceptanceClaimed": false,
+  "collector394Merged": false,
+  "media390Merged": false,
+  "primarySqlInstall": "NOT_APPLIED"
+}

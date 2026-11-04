@@ -2,6 +2,7 @@
   "git": {
     "deploymentEnabled": {
       "codex/p07-recurring-prefix-20261104": false,
+      "codex/media-archive-filters-20261103": false,
       "codex/member-financial-input-release-20261103": false,
       "codex/p01-member-ledger-risk-release-20261103": false,
       "codex/p07-quantity-only-20261031": false,
@@ -13,7 +14,9 @@
       "codex/p08-funds-stored-binding-20261031": false,
       "codex/handoff-v04-20261029": false,
       "codex/consultation-list-recovery-20261103": false,
-      "codex/relay-health-codal-reasons-20261104": false
+      "codex/relay-health-codal-reasons-20261104": false,
+      "codex/assembled-native-ci-20261104": false,
+      "codex/liara-control-plane-receipt-20261104": false
     }
   },
   "crons": [

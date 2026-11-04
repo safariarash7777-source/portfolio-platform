@@ -74,16 +74,35 @@ function pendingReadFixture(path: typeof publicReaders[number], pending: boolean
     return query;
   } };
   const exports: Record<string, (...args: unknown[]) => Promise<unknown>> = {};
+  const boundedDeadline = (load: (signal: AbortSignal) => Promise<unknown>, ms: number) => {
+    budgets.push(ms); assert.equal(ms, 4000, 'production budget is unchanged; only test clock is shortened');
+    return withDeadline(load, 20);
+  };
+  const serverModule = (filename: string, imports: Record<string, unknown>) => {
+    const actual: Record<string, unknown> = {};
+    const compiled = ts.transpileModule(readFileSync(filename, 'utf8'), {
+      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+    }).outputText;
+    vm.runInNewContext(compiled, {
+      exports: actual, Buffer, URLSearchParams, process: { env: { VERCEL_ENV: 'production' } },
+      require(name: string) { assert.ok(Object.hasOwn(imports, name), `unexpected server dependency: ${name}`); return imports[name]; },
+    });
+    return actual;
+  };
   const code = ts.transpileModule(readFileSync(path, 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
   }).outputText;
   vm.runInNewContext(code, { exports, URLSearchParams, require(name: string) {
     if (name === 'server-only') return {};
     if (name === '@/lib/supabase/server') return { createClient: async () => client };
-    if (name === '@/lib/deadline') return { withDeadline: (load: (signal: AbortSignal) => Promise<unknown>, ms: number) => {
-      budgets.push(ms); assert.equal(ms, 4000, 'production budget is unchanged; only test clock is shortened');
-      return withDeadline(load, 20);
-    } };
+    if (name === '@/lib/deadline') return { withDeadline: boundedDeadline };
+    if (name === '@/lib/media/content-read.server') return serverModule('lib/media/content-read.server.ts', {
+      'server-only': {}, '../deadline': { withDeadline: boundedDeadline },
+      '../content-hub': require('../../lib/content-hub'),
+      '../fundamental/read-config.server': serverModule('lib/fundamental/read-config.server.ts', {
+        'server-only': {}, '../liara-public-env.js': require('../../lib/liara-public-env.js'),
+      }),
+    });
     if (name === '@/lib/appearance/site-layout-server') return { readSiteAppearance: async () => ({ state: 'ready', globalLayout: 2, previewLayout: null }) };
     if (name === '@/lib/metadata') return { pageMetadata: () => ({}) };
     if (name === '@/components/insights/MediaHub') return { __esModule: true, default: (props: { initialMode: string; items: unknown[] }) => React.createElement('output', { 'data-mode': props.initialMode, 'data-count': props.items.length }) };

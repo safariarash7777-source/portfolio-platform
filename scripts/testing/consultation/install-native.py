@@ -47,6 +47,27 @@ def review_corrected_checkpoint():
     return module.review('install-native.review-corrected.v1',
                          {'gate': packet['gate'], 'binding': packet['binding']})
 
+REVIEW_CONSUMER_V2_SHA = '1a55c28349182d1b52461ef85871a9d03f4cc480c7b0fed5c463bb7f3e40d2af'
+
+def review_corrected_checkpoint_v2():
+    """Explicit read-only mode, independent of the frozen old apply checkpoint.
+
+    Only a pinned in-memory bundle is accepted on stdin. It cannot authorize or
+    reach the SQL/container mutation branches below. It writes no receipt file.
+    """
+    raw = sys.stdin.buffer.read(131073)
+    check(len(raw) <= 131072, 'review_payload_size')
+    packet = json.loads(raw)
+    check(type(packet) is dict and set(packet) == {'consumer', 'gate', 'binding'}, 'review_payload_keys')
+    check(isinstance(packet['consumer'], str) and len(packet['consumer']) <= 65536,
+          'review_consumer_size')
+    code = base64.b64decode(packet['consumer'], validate=True)
+    check(digest(code) == REVIEW_CONSUMER_V2_SHA, 'review_consumer_changed')
+    module = types.ModuleType('reviewed_checkpoint_consumer')
+    exec(compile(code, '/in-memory/corrected-checkpoint-consumer.py', 'exec'), module.__dict__)
+    return module.review_v2('install-native.review-corrected.v2',
+                         {'gate': packet['gate'], 'binding': packet['binding']})
+
 # Full preexisting definitions/ACL inventory, excluding ONLY this package's
 # separately collision-checked namespace and public objects. No table row data.
 INVENTORY = r"""
@@ -145,6 +166,9 @@ def digest(value):
 
 
 def main():
+    if sys.argv[1:] == ['--review-corrected-checkpoint-v2']:
+        print(json.dumps(review_corrected_checkpoint_v2()))
+        return
     if sys.argv[1:] == ['--review-corrected-checkpoint']:
         print(json.dumps(review_corrected_checkpoint()))
         return
