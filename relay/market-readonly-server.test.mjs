@@ -7,6 +7,16 @@ for (const enabled of ['0', '1']) for (const scenario of ['cold', 'warm', 'stale
     const source = new URL('./server.mjs', import.meta.url).href;
     const program = `
       import http from 'node:http';
+      import { performance } from 'node:perf_hooks';
+      import timers from 'node:timers/promises';
+      import { syncBuiltinESMExports } from 'node:module';
+      // Fake timing is restricted to this offline child with mocked fetch.
+      let transportClock = 0;
+      Object.defineProperty(performance, 'now', { value: () => transportClock });
+      timers.setTimeout = async (ms, value, options = {}) => {
+        options.signal?.throwIfAborted(); transportClock += ms; options.signal?.throwIfAborted(); return value;
+      };
+      syncBuiltinESMExports();
       const scenario=${JSON.stringify(scenario)};
       let now=Date.parse('2026-10-11T06:00:00Z'), upstream=0, writes=0, dbReads=0;
       const RealDate=Date;

@@ -36,6 +36,7 @@ async function fixture(options = {}) {
   let rejectSave = !!options.rejectSave;
   codal.setCodalBudgetPorts({ client: { request: async (job) => {
     calls.pages.push(Number(job.params.page));
+    if (options.announcementErrorCode) throw Object.assign(new Error(options.announcementErrorCode), { code: options.announcementErrorCode });
     if (options.backfillPages && job.params.l18) {
       return { announcement: job.params.category === "1" ? options.backfillPages : [] };
     }
@@ -45,6 +46,7 @@ async function fixture(options = {}) {
     const url = new URL(input);
     if (url.hostname === "excel.invalid") {
       calls.excel.push(url.pathname);
+      if (options.excelErrorCode) throw Object.assign(new Error(options.excelErrorCode), { code: options.excelErrorCode });
       if (options.excelError) throw new Error(options.excelError);
       return new Response(options.excelHtml ?? mockIncomeHtml);
     }
@@ -114,6 +116,21 @@ async function fixture(options = {}) {
 test.afterEach(() => {
   globalThis.fetch = originalFetch;
   codal.setCodalBudgetPorts(null);
+});
+test('local announcement deferral keeps watermark and failure ledger and does not retry', async () => {
+  const f = await fixture({ announcementErrorCode: 'brs_transport_queue_full' });
+  await f.engine.runEngineCycle();
+  assert.equal(f.calls.pages.length, 1); assert.equal(f.engine.engineStatus.feed.parseFailed, 0);
+  assert.equal(f.engine.engineStatus.feed.incompleteReason, 'local_deferred');
+  assert.deepEqual(f.persisted.watermark, watermark); assert.deepEqual(f.persisted.fails, {});
+});
+test('local report deferral is not a parse failure or a blocked report', async () => {
+  const a = financial(1);
+  const f = await fixture({ pages: [[a, boundary], []], excelErrorCode: 'brs_transport_aborted' });
+  await f.engine.runEngineCycle();
+  assert.equal(f.calls.excel.length, 1); assert.equal(f.engine.engineStatus.feed.parseFailed, 0);
+  assert.equal(f.engine.engineStatus.feed.incompleteReason, 'local_deferred');
+  assert.deepEqual(f.persisted.watermark, watermark); assert.deepEqual(f.persisted.fails, {});
 });
 
 test("503 feed write keeps the watermark and retries the same announcement", async () => {

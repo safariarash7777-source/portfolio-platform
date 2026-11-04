@@ -671,6 +671,15 @@ t("makeSupabaseLeaseStore خطای HTTP را خطا می‌کند، نه صفر"
 });
 
 /* ── اجرا ────────────────────────────────────────────────────────────────── */
+for (const code of ['brs_transport_aborted', 'brs_transport_queue_full', 'brs_transport_wait_failed', 'brs_transport_clock_invalid']) {
+  t(`local deferral ${code} is neither retried nor counted as a provider network error`, async () => {
+    const { client, calls } = mk({ responder: () => { throw Object.assign(new Error(code), { code }); } });
+    await assert.rejects(client.request({ endpoint: 'A.php', params: {} }), e => e.code === code);
+    assert.equal(calls.length, 1); assert.equal(client.metrics().retries, 0);
+    assert.equal(client.metrics().networkErr, 0); assert.equal(client.metrics().timeout, 0);
+    assert.equal(client.budget.snapshot().used, 1, 'unknown prior reservation is never guessed/refunded');
+  });
+}
 console.log("brsapi-client:");
 for (const [name, fn] of tests) {
   try { await fn(); pass++; console.log(`  ✓ ${name}`); }

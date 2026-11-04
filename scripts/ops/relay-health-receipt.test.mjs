@@ -14,7 +14,10 @@ function debug() {
   return { now: 1793066400000, warmedUp: true, lastRefresh: 1793066300000, ageSec: 100,
     historySections: { written: ['gold', 'currency'], missing: [] },
     brsapiClient: { enabled: false }, brsapiLegacy: { enforced: false, used: { privateProducer: 12 }, budget: { persistent: true, used: 12, remaining: 88, store: { healthy: false, errors: 1, lastError: 'HTTP 404 PGRST202 ' + secret } } },
-    brsapiTransport: { enabled: true, scope: 'process', spacingMs: 100, sent: 6508, pending: 0, minStartGapMs: 109.6578 },
+    brsapiTransport: { enabled: true, scope: 'process', spacingMs: 300, sent: 6508, pending: 0, minStartGapMs: 309.6578,
+      rollingWindowMs: 300000, rollingLimit: 300, ipWindowMs: 1000, ipLimit: 20,
+      policy: 'conservative_unverified_plan', windowScope: 'process_lifetime', priorProcessWindow: 'unknown',
+      coldStartPolicy: 'full_window_defer', globalEnforced: false, clockValid: true },
     supabase: { enabled: true, ok: false, status: 500, at: 1793066300000, error: 'HTTP 500 ' + secret },
     snapshotQuality: { state: 'partial', attemptedAt: 1793066300000, families: { stocks: { state: 'retained', receivedAt: 1793000000000, retained: true, error: 'timeout ' + secret } } },
     codalEngine: { ok: false, lastRun: 1793066300000, lastError: 'timeout ' + secret, feed: { inserted: 0, complete: false, incompleteReason: secret }, backfill: { symbols: [secret], queueSize: 12 } },
@@ -105,7 +108,7 @@ test('workflow preserves existing gates and adds one receipt invocation with san
   assert.match(workflow, /for i in \$\(seq 1 12\)/);
   assert.match(workflow, /relay-gate.mjs accept/);
   assert.match(workflow, /i < 3/);
-  assert.match(workflow, /minStartGapMs < 100/);
+  assert.match(workflow, /observedBrsTransportPolicy\(t\)/);
   assert.equal((workflow.match(/node scripts\/ops\/relay-health-receipt.mjs/g) ?? []).length, 1);
   assert.match(workflow, /path: relay-health-receipt.json/);
   assert.match(workflow, /contents: read/);
