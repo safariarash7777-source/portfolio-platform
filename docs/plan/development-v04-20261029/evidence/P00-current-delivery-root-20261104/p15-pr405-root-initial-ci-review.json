@@ -1,0 +1,75 @@
+{
+  "schema": "p15-independent-initial-ci-review.v1",
+  "head": "918e6840a5ed0f6f69c14737ccbda218346cdb76",
+  "headTree": "802b56394a79891e5ed560549c654f8e264255ac",
+  "actualCiCheckout": "d85959a27bdf44b0d829e3f1a0276d804918a646",
+  "actualCiTree": "802b56394a79891e5ed560549c654f8e264255ac",
+  "treeEqualsHead": true,
+  "parents": [
+    "06e7f0c7746c57645235854d160f267fdc41e0c7",
+    "918e6840a5ed0f6f69c14737ccbda218346cdb76"
+  ],
+  "runId": 41769289877,
+  "jobs": [
+    {
+      "id": 126374942687,
+      "name": "Typecheck · Lint · Tests · Build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126374942819,
+      "name": "Dependencies",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126374942835,
+      "name": "Secret scan · SQL validation",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126374942912,
+      "name": "Database RLS · Integrity (Postgres)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126376533522,
+      "name": "CI Gate",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126376562247,
+      "name": "Assembled native · explicit allocation only",
+      "status": "completed",
+      "conclusion": "skipped"
+    }
+  ],
+  "logReview": [
+    {
+      "jobId": 126374942687,
+      "fullLogsRead": true,
+      "characters": 1278415,
+      "checkout": "d85959a27bdf44b0d829e3f1a0276d804918a646",
+      "nonzeroFailures": 0
+    },
+    {
+      "jobId": 126374942912,
+      "fullLogsRead": true,
+      "characters": 3280792,
+      "checkout": "d85959a27bdf44b0d829e3f1a0276d804918a646",
+      "nonzeroFailures": 0
+    }
+  ],
+  "sourceMockV3HarnessesRegisteredInCi": false,
+  "nativeExecuted": false,
+  "sourceIntegration": true,
+  "namespaceProvisioned": false,
+  "authorityIssued": false,
+  "backupCurrentDatabase": false,
+  "releaseAuthorized": false,
+  "remaining": "Commit versioned source/mock harnesses; separately attest authorized native flow before captureVerify acceptance"
+}

@@ -1,7 +1,7 @@
 ## خروجی‌های تازهٔ قابل بررسی
 
 - [پیش‌نمایش کاربرگ و History نسخه960](https://portfolio-platform-15n4cyzhy-safariarash7777-4463s-projects.vercel.app/admin/research#research-workbook)، [رسید READY و guest/API401](p09-preview-960.json). CI/شش PG journal موفق‌اند؛ نشست واقعی/بستن صفحه روی این snapshot NOT_RUN و SQL مقصد NOT_APPLIED است.
-- [کد پشتیبان در Draft PR405](https://github.com/safariarash7777-source/portfolio-platform/pull/405)، [۶۳ source pin و حدود انتقال](p15-canonical-source-integration-pr405.json). کد از بسته وارد repo شد؛ CI در اجراست. اولین تبدیل CRLF متوقف و با تطبیق دقیق SHA بازیابی شد. هنوز namespace/authority/native/archive جدید نداریم؛ harnessهای V3 در CI ثبت نشده‌اند.
+- [کد پشتیبان در Draft PR405](https://github.com/safariarash7777-source/portfolio-platform/pull/405)، [۶۳ source pin و حدود انتقال](p15-canonical-source-integration-pr405.json). کد از بسته وارد repo شد؛ [پنج CI و بررسی مستقل root موفق‌اند](p15-pr405-root-initial-ci-review.json). اولین تبدیل CRLF متوقف و با تطبیق دقیق SHA بازیابی شد. هنوز namespace/authority/native/archive جدید نداریم؛ harnessهای V3 در CI ثبت نشده‌اند.
 - [سه P2 نسخه۱ مشاوره](p03-composition-v1-source-review.json) در [source نسخه۲b بسته شدند](p03-composition-v2b-source-review.json)؛ runtime و receipt تازه هنوز پذیرفته نیستند. رسید۱۴/۹ قبلی ثابت است.
 - [review مالی metadata همان گزارش](p07-report-metadata-proposal-review.json) فقط scope مستقل و B تجمعی شش‌ماهه را پشتیبانی می‌کند؛ parser/caller/DB فعال نشده‌اند. فصل مستقل، prior duration، سرمایه و hidden همچنان گیت جدا دارند.
 
