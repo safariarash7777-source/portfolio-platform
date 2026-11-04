@@ -6,6 +6,7 @@ import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
+import { V2, V2_INPUTS, selectAssemblyScope, verifyV2Inputs, verifyV2Deployment } from './assembly-source-scope.mjs';
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 const read = file => readFileSync(resolve(root, file), 'utf8').replaceAll('\r\n', '\n');
 const hash = text => createHash('sha256').update(text).digest('hex');
@@ -13,14 +14,21 @@ const hash = text => createHash('sha256').update(text).digest('hex');
 // Actual semantic readers stay on this working tree. Historical packaging
 // assertions read the complete immutable member export through Git objects.
 // Whole actual-tree identity is a separate detached, reviewed contract gate.
-const sourceScope = process.env.P03_SOURCE_SCOPE ?? '';
-assert.ok(sourceScope === '' || sourceScope === 'root928-member6ccb-v1', 'unknown source test scope');
-const assemblyScope = sourceScope === 'root928-member6ccb-v1';
+const isAncestor = ref => {
+  try { execFileSync('git', ['merge-base', '--is-ancestor', ref, 'HEAD'], { cwd: root, stdio: 'pipe', windowsHide: true }); return true; }
+  catch { return false; }
+};
+const sourceScope = selectAssemblyScope(process.env.P03_SOURCE_SCOPE ?? '', isAncestor(V2_INPUTS.integration.commit));
+const assemblyScope = sourceScope !== '';
 const frozenExport = '6ccb106ace4711be7359c7fc8c8d6ab33670f719';
 const frozenRoot = '928609f0b92703b6b1671cb22bea9c227af08eae';
 const objectRead = (ref,path) => execFileSync('git',['show',ref+':'+path],{cwd:root,encoding:'utf8',windowsHide:true}).replaceAll('\r\n','\n');
 if (assemblyScope) {
   assert.equal(execFileSync('git',['status','--porcelain','--untracked-files=no'],{cwd:root,encoding:'utf8',windowsHide:true}).trim(),'','assembly tracked source is dirty');
+  if (sourceScope === V2) verifyV2Inputs({
+    treeOf: ref => execFileSync('git', ['rev-parse', ref+'^{tree}'], { cwd: root, encoding: 'utf8', windowsHide: true }).trim(),
+    isAncestor,
+  });
   for (const [ref,tree] of [[frozenExport,'ffbc97fc8a7aa639dd9025b4eecf4aeb92efd509'],[frozenRoot,'9e412e0c9d4973185fe5480ddcaf56220e133169']]) {
     assert.equal(execFileSync('git',['rev-parse',ref+'^{tree}'],{cwd:root,encoding:'utf8',windowsHide:true}).trim(),tree,'reviewed input changed');
     execFileSync('git',['merge-base','--is-ancestor',ref,'HEAD'],{cwd:root,stdio:'pipe',windowsHide:true});
@@ -61,7 +69,9 @@ test('release control is server-only and deployment stop names only the candidat
     assert.doesNotMatch(read(file), /consultationWriteRelease|CONSULTATION_P03_WRITES_RELEASE/);
   }
   const config = JSON.parse(read('vercel.json'));
-  if (assemblyScope) {
+  if (sourceScope === V2) {
+    verifyV2Deployment(config, JSON.parse(objectRead(V2_INPUTS.root.commit, 'vercel.json')), JSON.parse(objectRead(V2_INPUTS.member.commit, 'vercel.json')));
+  } else if (assemblyScope) {
     const rootConfig=JSON.parse(objectRead(frozenRoot,'vercel.json')),memberConfig=JSON.parse(objectRead(frozenExport,'vercel.json'));
     const stops={...rootConfig.git.deploymentEnabled,...memberConfig.git.deploymentEnabled,'codex/p01-p03-member-assembly-20261031':false};
     assert.equal(Object.keys(stops).length,12);assert.ok(Object.values(stops).every(value=>value===false));
