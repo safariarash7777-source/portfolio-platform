@@ -15,6 +15,7 @@ import {
   FUND_SORT_KEYS,
   type MarketSearchEntry,
 } from "./market-nav";
+import { fundSelectionHref } from "./core/fund-comparison-selection";
 
 test("a delayed real URL hook writer preserves a comparison selected after its render", () => {
   const source = readFileSync(new URL("./useUrlState.ts", import.meta.url), "utf8");
@@ -23,7 +24,9 @@ test("a delayed real URL hook writer preserves a comparison selected after its r
   const location = { pathname: "/market/funds", search: "?sort=faName" };
   const hookModule = { exports: {} as { useUrlState: () => { set: (updates: Record<string, string | null>) => void } } };
   runInNewContext(output, {
-    module: hookModule, exports: hookModule.exports, URLSearchParams, window: { location },
+    module: hookModule, exports: hookModule.exports, URLSearchParams, window: { location, history: {
+      replaceState: (state: unknown, _title: string, href: string) => { assert.equal(state, null); targets.push(href); },
+    } },
     require: (name: string) => {
       if (name === "react") return { useCallback: (fn: unknown) => fn };
       if (name === "next/navigation") return {
@@ -41,6 +44,120 @@ test("a delayed real URL hook writer preserves a comparison selected after its r
   assert.equal(result.searchParams.get("compare"), selection);
   assert.equal(result.searchParams.get("q"), "طلا");
   assert.equal(result.searchParams.get("sort"), "faName");
+});
+
+test("fund filters commit immediately and merge subsequent search/selection writes without RSC navigation", () => {
+  const source = readFileSync(new URL("./useUrlState.ts", import.meta.url), "utf8");
+  const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
+  const location = new URL("https://site.test/market/funds?sort=faName#comparison");
+  const hookModule = { exports: {} as { useUrlState: () => { set: (updates: Record<string, string | null>) => void } } };
+  let routerCalls = 0, historyCalls = 0;
+  const history = { state: { __NA: true }, replaceState(state: unknown, _title: string, href: string) {
+    assert.equal(state, null, "Next must receive an external write, not its reserved internal state");
+    location.href = new URL(href, location).href; historyCalls++;
+  } };
+  runInNewContext(output, {
+    module: hookModule, exports: hookModule.exports, URLSearchParams, window: { location, history },
+    require: (name: string) => {
+      if (name === "react") return { useCallback: (fn: unknown) => fn };
+      if (name === "next/navigation") return {
+        useRouter: () => ({ replace: () => { routerCalls++; } }),
+        usePathname: () => "/market/funds", useSearchParams: () => new URLSearchParams(location.search),
+      };
+      throw new Error(`unexpected import: ${name}`);
+    },
+  });
+  const write = hookModule.exports.useUrlState().set;
+  const ids = ["اهرم", "موج", "نارنج اهرم", "توان", "جهش"];
+  history.replaceState(null, "", fundSelectionHref(location.href, ids));
+  write({ q: "اهرم", type: "اهرم" });
+  assert.equal(location.searchParams.get("q"), "اهرم", "URL is committed before any server promise can complete");
+  assert.deepEqual(JSON.parse(location.searchParams.get("compare")!), ids);
+  write({ dir: "asc" });
+  history.replaceState(null, "", fundSelectionHref(location.href, ids.slice(0, 4).concat("")));
+  assert.equal(location.searchParams.get("q"), "اهرم");
+  assert.equal(location.searchParams.get("sort"), "faName");
+  assert.equal(location.searchParams.get("dir"), "asc");
+  assert.equal(location.hash, "#comparison");
+  write({ q: null });
+  assert.equal(location.searchParams.has("q"), false);
+  assert.equal(location.searchParams.get("compare"), JSON.stringify(ids.slice(0, 4).concat("")));
+  assert.equal(routerCalls, 0);
+  assert.equal(historyCalls, 5);
+  location.pathname = "/market/stocks";
+  write({ q: "stale-timer" });
+  assert.equal(historyCalls, 5, "a writer from an unmounted page cannot overwrite the next page");
+});
+
+test("non-fund URL writers keep their existing server navigation", () => {
+  const source = readFileSync(new URL("./useUrlState.ts", import.meta.url), "utf8");
+  const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
+  const targets: string[] = [];
+  const hookModule = { exports: {} as { useUrlState: () => { set: (updates: Record<string, string | null>) => void } } };
+  runInNewContext(output, { module: hookModule, exports: hookModule.exports, URLSearchParams,
+    window: { location: { pathname: "/market/stocks", search: "?sort=faName", hash: "#table" } },
+    require: (name: string) => name === "react" ? { useCallback: (fn: unknown) => fn } : {
+      useRouter: () => ({ replace: (href: string) => targets.push(href) }),
+      usePathname: () => "/market/stocks", useSearchParams: () => new URLSearchParams(),
+    },
+  });
+  hookModule.exports.useUrlState().set({ q: "فولاد" });
+  assert.equal(new URL(targets[0], "https://site.test").searchParams.get("q"), "فولاد");
+  assert.match(targets[0], /#table$/);
+});
+
+test("Back cancels pending typing even when the restored query value did not change", () => {
+  const source = readFileSync(new URL("./useUrlState.ts", import.meta.url), "utf8");
+  const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
+  const listeners = new Map<string, () => void>(), timers = new Map<number, () => void>();
+  const localValues: string[] = [], cleanup: (() => void)[] = [];
+  const location = { pathname: "/market/funds", search: "?sort=faName" };
+  let writes = 0, nextTimer = 0;
+  const hookModule = { exports: {} as { useUrlBackedText: (key: string) => [string, (value: string) => void] } };
+  runInNewContext(output, { module: hookModule, exports: hookModule.exports, URLSearchParams,
+    setTimeout: (fn: () => void) => { timers.set(++nextTimer, fn); return nextTimer; }, clearTimeout: (id: number) => timers.delete(id),
+    window: { location, history: { replaceState: () => { writes++; } },
+      addEventListener: (name: string, fn: () => void) => listeners.set(name, fn), removeEventListener: (name: string) => listeners.delete(name) },
+    require: (name: string) => name === "react" ? {
+      useCallback: (fn: unknown) => fn, useRef: (value: unknown) => ({ current: value }),
+      useState: (value: string) => [value, (next: string) => localValues.push(next)],
+      useEffect: (fn: () => (() => void) | undefined) => { const done = fn(); if (done) cleanup.push(done); },
+    } : { useRouter: () => ({ replace: () => { writes++; } }), usePathname: () => location.pathname, useSearchParams: () => new URLSearchParams(location.search) },
+  });
+  const [, update] = hookModule.exports.useUrlBackedText("q");
+  update("اهرم");
+  assert.equal(timers.size, 1);
+  location.search = "?sort=price";
+  listeners.get("popstate")!();
+  assert.equal(localValues.at(-1), "");
+  assert.equal(timers.size, 0);
+  for (const fn of timers.values()) fn();
+  assert.equal(writes, 0);
+  cleanup.forEach(fn => fn());
+});
+
+test("the funds account link follows and validates the current client URL", () => {
+  const source = readFileSync(new URL("../components/market/FundsAccountBridge.tsx", import.meta.url), "utf8");
+  const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX } }).outputText;
+  const ids = JSON.stringify(["اهرم", "موج", "", "", ""]);
+  let current = `/market/funds?q=اهرم&compare=${encodeURIComponent(ids)}&sort=faName&unsafe=discard`;
+  const bridge = { exports: {} as { default: (props: { access: unknown }) => { props: { access: unknown; returnTo: string } } } };
+  runInNewContext(output, { module: bridge, exports: bridge.exports, require: (name: string) => {
+    if (name === "react/jsx-runtime") return { jsx: (type: unknown, props: unknown) => ({ type, props }) };
+    if (name === "@/lib/market-nav") return { resolveBackTarget };
+    if (name === "@/lib/useUrlState") return { useCurrentHref: () => current };
+    if (name === "@/components/account/AccountBridge") return { default: "actual-account-bridge" };
+    throw new Error(`unexpected import: ${name}`);
+  } });
+  const access = { level: "visitor" };
+  const tree = bridge.exports.default({ access });
+  const next = new URL(tree.props.returnTo, "https://site.test");
+  assert.equal(tree.props.access, access);
+  assert.equal(next.searchParams.get("q"), "اهرم");
+  assert.equal(next.searchParams.get("compare"), ids);
+  assert.equal(next.searchParams.has("unsafe"), false);
+  current = "/market/funds?sort=price";
+  assert.equal(bridge.exports.default({ access }).props.returnTo, current);
 });
 
 test("fund comparison selections survive the existing validated symbol/account return path", () => {

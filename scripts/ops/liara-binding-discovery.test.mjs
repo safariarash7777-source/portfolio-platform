@@ -5,7 +5,6 @@ import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {EventEmitter} from 'node:events';
 import {FIXED_DISCOVERY_SOURCE} from './liara-binding-discovery-command.mjs';
-import {discoverBinding} from './liara-binding-discovery.mjs';
 const nonce='a'.repeat(32),secret='NEVER_EMIT_PRIVATE_VALUE',release='b'.repeat(24);
 const node=(extra={})=>({exe:'/usr/bin/node',cwd:'/app',argv:['node','server.mjs'],...extra});
 function command(processes={},mode='ok'){
@@ -49,24 +48,179 @@ test('incremental census is capped and closed on elapsed deadline without app/en
   assert.ok(command({'7':node()}).reads.every(p=>/^\/proc\/7\/(stat|cmdline)$/.test(p)));
 });
 test('public discovery gate is closed before getters, with no activation options',async()=>{
-  const r=await discoverBinding(new Proxy({},{get(){throw Error(secret);}}));assert.equal(r.state,'discovery_not_adopted');assert.equal(r.remoteHalt,'not_started');
+  const r=await offline(false)(new Proxy({},{get(){throw Error(secret);}}));assert.equal(r.state,'discovery_not_adopted');assert.equal(r.remoteHalt,'not_started');
 });
 test('fixed reasons identify failure categories without raw messages or candidate identity',()=>{
   for(const [processes,mode,reason] of [[{},'proc-unavailable','proc_unavailable'],[{'7':node({unreadable:true})},'ok','identity_unreadable'],[{'7':node({exe:'/other/nodejs'})},'ok','node_exe_outside_allowlist'],[{'7':node({cwd:'/other'})},'ok','node_cwd_outside_allowlist'],[{'7':node({argv:['node','bad.mjs']})},'ok','node_entry_outside_allowlist'],[{},'ok','zero_candidate'],[{'7':node(),'8':node()},'ok','multiple_candidates']]){
     const r=command(processes,mode).receipt;assert.equal(r.reason,reason);assert.equal(r.state,'unresolved');for(const k of ['pid','startTicks','exeKind','cwdKind','entryKind'])assert.equal(r[k],null);
   }
 });
-function offline(){const s=readFileSync(new URL('./liara-binding-discovery.mjs',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ','').replace('const DISCOVERY_ADOPTED = false','const DISCOVERY_ADOPTED = true').replace('},15000)','},20)');const c=vm.createContext({createHash,FIXED_DISCOVERY_SOURCE,Buffer,URL,URLSearchParams,TextDecoder,AbortController,setTimeout,clearTimeout});vm.runInContext(s,c);return vm.runInContext('discoverBinding',c);}
-async function protocol(mode='ok'){
-  let gets=0,ws=0,starts=0;
-  const r=await offline()({token:secret,nonce,fetchImpl:async(url,init)=>{gets++;assert.equal(url,'https://api.liara.ir/v1/projects/arsadata/releases?page=1&count=100');assert.equal(init.method,'GET');assert.equal(init.redirect,'error');if(mode==='get-stall'||(mode==='post-stall'&&gets===2))return new Promise(()=>{});if(mode==='http')return new Response(secret,{status:401});const id=mode==='release-change'&&gets===2?'c'.repeat(24):release;let text=JSON.stringify({currentRelease:id,releases:[{_id:id,state:'READY'}]});if(mode==='duplicate-release')text=text.replace('"currentRelease":','"currentRelease":"'+release+'","currentRelease":');return new Response(mode==='body-limit'?'x'.repeat(1048577):text);},connect:url=>{
-    ws++;const u=new URL(url);assert.equal(u.origin,'wss://api.iran.liara.ir');assert.equal(u.searchParams.get('project_id'),'arsadata');assert.equal(u.searchParams.get('token'),secret);assert.equal(u.searchParams.get('cmd').includes(secret),false);
-    const socket=new EventEmitter();socket.close=()=>{};socket.send=text=>{starts++;assert.equal(JSON.parse(text).action,'start');queueMicrotask(()=>{if(mode==='ws-stall')return;if(mode==='empty'){socket.emit('close',1000);return;}let text=JSON.stringify({version:1,nonce,state:'discovered_candidate',reason:'stable_candidate',count:1,pid:7,startTicks:'123',exeKind:'node_usr',cwdKind:'app',entryKind:'relative_server'});
-      if(mode==='nonce')text=text.replace(nonce,'d'.repeat(32));if(mode==='duplicate-frame-key')text=text.replace('"version":1','"version":1,"version":1');if(mode==='secret-field')text=text.replace('"version":1','"version":1,"argv":"'+secret+'"');if(mode==='ansi')text='\u001b[0m'+text;if(mode==='frame-limit')text='x'.repeat(8193);
-      socket.emit('message',text);if(mode==='extra-frame')socket.emit('message',text);if(mode==='socket-error')socket.emit('error',Error(secret));socket.emit('close',mode==='unclean'?1006:1000);
-    });};queueMicrotask(()=>socket.emit('open'));return socket;
-  }});assert.equal(JSON.stringify(r).includes(secret),false);assert.equal(JSON.stringify(r).includes('Sha256'),false);assert.equal(r.remoteHalt,'unknown');assert.ok(gets<=2&&ws<=1&&starts<=1);return {r,gets,ws,starts};
+function offline(adopted=true){const s=readFileSync(new URL('./liara-binding-discovery.mjs',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ','').replace(/const DISCOVERY_ADOPTED = (?:false|true)/,'const DISCOVERY_ADOPTED = '+adopted).replace('},15000)','},20)');const c=vm.createContext({createHash,FIXED_DISCOVERY_SOURCE,Buffer,URL,URLSearchParams,TextDecoder,AbortController,setTimeout,clearTimeout});vm.runInContext(s,c);return vm.runInContext('discoverBinding',c);}
+async function protocol(mode='ok',rawFrame){
+  let gets=0,ws=0,starts=0,lastSocket,statusReads=0;
+  const r=await offline()({token:secret,nonce,fetchImpl:async(url,init)=>{gets++;if(mode==='post-late-reject'&&gets===2){lastSocket.emit('open');lastSocket.emit('message','late');throw Error(secret);}assert.equal(url,'https://api.liara.ir/v1/projects/arsadata/releases?page=1&count=100');assert.equal(init.method,'GET');assert.equal(init.redirect,'error');if(mode==='get-throw'||(mode==='post-throw'&&gets===2))throw Error(secret);if(mode==='get-stall'||(mode==='post-stall'&&gets===2))return new Promise(()=>{});if(mode==='body-throw')return {ok:true,status:200,body:{getReader:()=>({read:async()=>{throw Error(secret);},cancel:async()=>{}})}};if(mode==='bad-json')return new Response(secret);if(mode==='http')return new Response(secret,{status:401});const id=mode==='release-change'&&gets===2?'c'.repeat(24):release;let text=JSON.stringify({currentRelease:id,releases:[{_id:id,state:'READY'}]});if(mode==='duplicate-release')text=text.replace('"currentRelease":','"currentRelease":"'+release+'","currentRelease":');const response=new Response(mode==='body-limit'?'x'.repeat(1048577):text);if(mode==='status-throws')return {ok:true,body:response.body,get status(){statusReads++;throw Error(secret);}};return response;},connect:url=>{
+    ws++;if(mode==='connect-throw')throw Error(secret);const u=new URL(url);assert.equal(u.origin,'wss://api.iran.liara.ir');assert.equal(u.searchParams.get('project_id'),'arsadata');assert.equal(u.searchParams.get('token'),secret);assert.equal(u.searchParams.get('cmd').includes(secret),false);
+    const socket=new EventEmitter();lastSocket=socket;socket.close=()=>{};socket.send=text=>{starts++;if(mode==='send-throw')throw Error(secret);assert.equal(JSON.parse(text).action,'start');queueMicrotask(()=>{if(mode==='ws-stall')return;if(mode==='empty'){socket.emit('close',1000);return;}let text=JSON.stringify({version:1,nonce,state:'discovered_candidate',reason:'stable_candidate',count:1,pid:7,startTicks:'123',exeKind:'node_usr',cwdKind:'app',entryKind:'relative_server'});
+      if(mode==='valid-unresolved')text=JSON.stringify({version:1,nonce,state:'unresolved',reason:'zero_candidate',count:0,pid:null,startTicks:null,exeKind:null,cwdKind:null,entryKind:null});if(mode==='nonce')text=text.replace(nonce,'d'.repeat(32));if(mode==='duplicate-frame-key')text=text.replace('"version":1','"version":1,"version":1');if(mode==='secret-field')text=text.replace('"version":1','"version":1,"argv":"'+secret+'"');if(mode==='crlf')text+='\r\n';if(mode==='ansi')text='\u001b[0m'+text;if(mode==='frame-limit')text='x'.repeat(8193);
+      if(rawFrame!==undefined)text=rawFrame;
+      if(mode==='split-frame'){socket.emit('message',text.slice(0,10));socket.emit('message',text.slice(10));}else if(mode==='truncated-utf8')socket.emit('message',new Uint8Array([0xc3]));else socket.emit('message',text);if(mode==='extra-frame')socket.emit('message',text);if(mode==='socket-error')socket.emit('error',Error(secret));socket.emit('close',mode==='unclean'?1006:mode==='bad-close'?999999:1000);
+    });};queueMicrotask(()=>{socket.emit('open');if(mode==='duplicate-open')socket.emit('open');});return socket;
+  }});assert.equal(JSON.stringify(r).includes(secret),false);assert.equal(JSON.stringify(r).includes('Sha256'),false);assert.equal(r.remoteHalt,'unknown');assert.ok(gets<=2&&ws<=1&&starts<=1);return {r,gets,ws,starts,statusReads};
 }
-test('offline protocol has exactly two release GETs, one socket/start and no automatic adoption',async()=>{const p=await protocol();assert.equal(p.r.state,'candidate_only_not_adopted');assert.equal(p.gets,2);assert.equal(p.ws,1);assert.equal(p.starts,1);assert.equal((await discoverBinding()).state,'discovery_not_adopted');});
+test('offline protocol has exactly two release GETs, one socket/start and no automatic adoption',async()=>{const p=await protocol();assert.equal(p.r.state,'candidate_only_not_adopted');assert.equal(p.gets,2);assert.equal(p.ws,1);assert.equal(p.starts,1);assert.equal((await offline()()).state,'invalid_input');});
 test('protocol adversarial schema/frames/identity/errors are redacted and fail closed',async()=>{for(const mode of ['http','body-limit','duplicate-release','release-change','nonce','duplicate-frame-key','secret-field','ansi','frame-limit','extra-frame','socket-error','empty','unclean'])assert.equal((await protocol(mode)).r.state,'protocol_rejected',mode);});
 test('deadline covers preflight, socket and postflight, no remote stop claim or retry',async()=>{for(const mode of ['get-stall','ws-stall','post-stall'])assert.ok(['deadline','protocol_rejected'].includes((await protocol(mode)).r.state));});
+
+// Pure framing evaluation: no native transport, CLI entry or credential lookup.
+function framingFixture(){
+  let parses=0;const parseInputs=[];
+  const source=readFileSync(new URL('./liara-binding-discovery.mjs',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export /gm,'');
+  const context=vm.createContext({Buffer,createHash,FIXED_DISCOVERY_SOURCE,JSON:{stringify:JSON.stringify,parse:s=>{parses++;parseInputs.push(s);return JSON.parse(s);}}});
+  vm.runInContext(source,context);
+  return {read:vm.runInContext('receipt',context),readJson:vm.runInContext('strictJson',context),parses:()=>parses,fullParses:raw=>parseInputs.filter(input=>input===raw).length};
+}
+const canonicalReceipt=JSON.stringify({version:1,nonce,state:'discovered_candidate',reason:'stable_candidate',count:1,pid:7,startTicks:'123',exeKind:'node_usr',cwdKind:'app',entryKind:'relative_server'});
+test('framing accepts exactly no terminator or one LF/CRLF and rejects whitespace/control/text extras',()=>{
+  for(const raw of [canonicalReceipt,canonicalReceipt+'\n',canonicalReceipt+'\r\n'])assert.equal(framingFixture().read(raw,nonce).reason,'stable_candidate');
+  for(const raw of [canonicalReceipt+'\n\n',canonicalReceipt+'\r\n\r\n',canonicalReceipt+'\r',canonicalReceipt.replace('stable_candidate','stable\rcandidate'),'prompt>'+canonicalReceipt,canonicalReceipt+'prompt>',canonicalReceipt+canonicalReceipt,' '+canonicalReceipt,canonicalReceipt+' ','\x1b[0m'+canonicalReceipt])assert.throws(()=>framingFixture().read(raw,nonce));
+});
+test('raw8192 UTF8-byte cap precedes terminator removal and strict nonce/schema validation',()=>{
+  for(const bytes of [8192,8193]){
+    const f=framingFixture(),prefix=canonicalReceipt.slice(0,-1)+',"extra":"',suffix='"}\r\n',raw=prefix+'x'.repeat(bytes-Buffer.byteLength(prefix+suffix))+suffix;
+    assert.equal(Buffer.byteLength(raw),bytes);assert.throws(()=>f.read(raw,nonce));assert.equal(f.parses()>0,bytes===8192);
+  }
+  const f=framingFixture();assert.throws(()=>f.read('é'.repeat(4096)+'\r\n',nonce));assert.equal(f.parses(),0);
+  assert.throws(()=>framingFixture().read(canonicalReceipt+'\r\n','c'.repeat(32)));
+  assert.throws(()=>framingFixture().read(canonicalReceipt.replace('"version":1','"version":1,"version":1')+'\r\n',nonce));
+});
+test('CRLF stays single-frame candidate-only; split frames and truncated UTF8 fail without retry',async()=>{
+  const ok=await protocol('crlf');assert.equal(ok.r.state,'candidate_only_not_adopted');assert.equal(ok.gets,2);assert.equal(ok.r.remoteHalt,'unknown');
+  for(const mode of ['split-frame','truncated-utf8']){const failed=await protocol(mode);assert.equal(failed.r.state,'protocol_rejected');assert.equal(failed.gets,1);assert.equal(failed.ws,1);assert.equal(failed.starts,1);}
+});
+
+const diagnosticKeys=['phase','bodyBytesCapped1048577','fetchCalls','fetchReturns','httpStatusClass','connectCalls','connectReturns','wsOpenEventsCapped2','startSendCalls','startSendReturned','frameCountCapped2','lastFrameBytesCapped8193','closeCode','receiptCheck','firstControlFamily','firstControlOffsetUtf16','controlCountCapped32'];
+test('failure diagnostics distinguish request/body/schema/socket/send/frame/close/post phases without raw details',async()=>{
+  const modes={ 'get-throw':'pre_release_fetch',http:'pre_release_fetch','body-throw':'pre_release_body','bad-json':'pre_release_validate','connect-throw':'ws_connect','send-throw':'start_send','duplicate-open':'ws_open','frame-limit':'frame_read',nonce:'frame_validate',unclean:'ws_close','post-throw':'post_release_fetch','release-change':'post_release_validate'};
+  for(const [mode,phase] of Object.entries(modes)){
+    const {r}=await protocol(mode);assert.equal(r.state,'protocol_rejected');assert.equal(r.diagnostics.phase,phase,mode);assert.deepEqual(Object.keys(r.diagnostics),diagnosticKeys);assert.equal(JSON.stringify(r).includes(secret),false);assert.equal(JSON.stringify(r).includes('wss:'),false);
+  }
+});
+test('diagnostics expose only observed attempts/returns, null unobserved, and capped sizes',async()=>{
+  const get=(await protocol('get-throw')).r.diagnostics;assert.equal(get.fetchCalls,1);for(const k of diagnosticKeys.filter(k=>!['phase','fetchCalls'].includes(k)))assert.equal(get[k],null,k);
+  const connect=(await protocol('connect-throw')).r.diagnostics;assert.equal(connect.connectCalls,1);assert.equal(connect.connectReturns,null);assert.equal(connect.wsOpenEventsCapped2,null);
+  const send=(await protocol('send-throw')).r.diagnostics;assert.equal(send.connectReturns,1);assert.equal(send.wsOpenEventsCapped2,1);assert.equal(send.startSendCalls,1);assert.equal(send.startSendReturned,null);
+  const frame=(await protocol('frame-limit')).r.diagnostics;assert.equal(frame.startSendReturned,1);assert.equal(frame.lastFrameBytesCapped8193,8193);
+  const body=(await protocol('body-limit')).r.diagnostics;assert.equal(body.bodyBytesCapped1048577,1048577);assert.equal(body.httpStatusClass,'2xx');
+  assert.equal((await protocol('http')).r.diagnostics.httpStatusClass,'4xx');assert.equal((await protocol('bad-close')).r.diagnostics.closeCode,null);assert.equal((await protocol('unclean')).r.diagnostics.closeCode,1006);
+});
+test('first failure snapshot survives subsequent frame/close/abort; candidate contract unchanged',async()=>{
+  const nonceFailure=(await protocol('nonce')).r.diagnostics;assert.equal(nonceFailure.phase,'frame_validate');assert.equal(nonceFailure.closeCode,null);assert.equal(nonceFailure.frameCountCapped2,1);
+  const duplicate=(await protocol('extra-frame')).r.diagnostics;assert.equal(duplicate.phase,'frame_read');assert.equal(duplicate.frameCountCapped2,2);assert.equal(duplicate.closeCode,null);
+  const candidate=(await protocol()).r;assert.deepEqual(Object.keys(candidate),['state','remoteHalt','releaseId','receipt']);assert.equal(candidate.diagnostics,undefined);const unresolved=(await protocol('valid-unresolved')).r;assert.equal(unresolved.state,'unresolved');assert.deepEqual(Object.keys(unresolved),['state','remoteHalt','releaseId','receipt']);
+  for(const mode of ['get-stall','ws-stall','post-stall']){const d=(await protocol(mode)).r.diagnostics;assert.ok(d);assert.equal(d.closeCode,mode==='post-stall'?1000:null);}
+});
+
+test('late settled socket events cannot replace post-fetch failure phase',async()=>{
+  const p=await protocol('post-late-reject');assert.equal(p.r.state,'protocol_rejected');assert.equal(p.r.diagnostics.phase,'post_release_fetch');assert.equal(p.r.diagnostics.fetchCalls,2);assert.equal(p.r.diagnostics.frameCountCapped2,1);assert.equal(p.r.diagnostics.wsOpenEventsCapped2,1);
+  const duplicate=await protocol('duplicate-open');assert.equal(duplicate.r.diagnostics.wsOpenEventsCapped2,2);
+});
+test('throwing diagnostic-only HTTP status getter is read once and cannot reject valid transport',async()=>{
+  const p=await protocol('status-throws');assert.equal(p.r.state,'candidate_only_not_adopted');assert.deepEqual(Object.keys(p.r),['state','remoteHalt','releaseId','receipt']);assert.equal(p.statusReads,2);
+});
+
+test('pre/post body read failure captures first observation before failure-triggered cancellation',async()=>{
+  const source=readFileSync(new URL('./liara-binding-discovery.mjs',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replace(/^export /gm,'');
+  const context=vm.createContext({Buffer,createHash,FIXED_DISCOVERY_SOURCE});vm.runInContext(source,context);const readIdentity=vm.runInContext('identity',context);
+  for(const prefix of ['pre','post'])for(const mode of ['read-failure','body-limit']){
+    const order=[],diagnostic={phase:prefix+'_release_fetch',fetchCalls:null,fetchReturns:null,httpStatusClass:null,bodyBytesCapped1048577:null};let captured;
+    const response={ok:true,status:200,body:{getReader:()=>({read:async()=>{if(mode==='read-failure')throw Error(secret);return {done:false,value:new Uint8Array(1048577)};},cancel:async()=>{order.push('cancel');diagnostic.phase='late_cleanup';}})}};
+    await assert.rejects(readIdentity(async()=>response,'fixture',new AbortController().signal,diagnostic,()=>{order.push('capture');captured={...diagnostic};}));
+    assert.deepEqual(order,['capture','cancel']);assert.equal(captured.phase,prefix+'_release_body');assert.equal(captured.bodyBytesCapped1048577,mode==='read-failure'?null:1048577);assert.equal(JSON.stringify(captured).includes(secret),false);
+  }
+});
+
+test('receipt check reports only the first rejecting predicate with one full JSON parse',()=>{
+  const cases=[
+    [canonicalReceipt+'\n\n','framing_control',0],
+    ['\x1b'+secret,'framing_control',0],
+    ['{"private":"'+secret+'"','json_syntax',1],
+    [canonicalReceipt.replace('"version":1','"version":1,"vers\\u0069on":1'),'json_integrity',1],
+    ['['.repeat(65)+'0'+']'.repeat(65),'json_integrity',1],
+    [' '+canonicalReceipt,'canonical',1],
+    [canonicalReceipt.replace('"version":1','"version":2'),'envelope_schema',1],
+    [canonicalReceipt.replace('"version":1','"version":1,"'+secret+'":true'),'envelope_schema',1],
+    [canonicalReceipt.replace(nonce,'d'.repeat(32)),'nonce',1],
+    [canonicalReceipt.replace('"count":1','"count":2'),'semantic',1],
+    // Earlier failure wins even when nonce and semantics are also invalid.
+    [canonicalReceipt.replace('"version":1','"version":2').replace(nonce,'d'.repeat(32)).replace('"count":1','"count":2'),'envelope_schema',1],
+  ];
+  for(const [raw,check,fullParses] of cases){
+    const f=framingFixture(),diagnostic={receiptCheck:null};
+    assert.throws(()=>f.read(raw,nonce,diagnostic),error=>error.message==='rejected');
+    const expected={receiptCheck:check};
+    if(check==='framing_control')Object.assign(expected,{firstControlFamily:raw.startsWith('\x1b')?'escape':'lf',firstControlOffsetUtf16:raw.startsWith('\x1b')?0:canonicalReceipt.length,controlCountCapped32:1});
+    assert.deepEqual(diagnostic,expected);assert.equal(f.fullParses(raw),fullParses);
+    assert.equal(JSON.stringify(diagnostic).includes(secret),false);
+  }
+  const f=framingFixture(),checks=[];
+  // Token-budget rejection shares integrity with depth and duplicate keys;
+  // this direct parser fixture is larger than the unchanged WS frame cap.
+  assert.throws(()=>f.readJson('['+'0,'.repeat(50001)+'0]',check=>{checks.push(check);throw Error('rejected');}));
+  assert.deepEqual(checks,['json_integrity']);
+});
+
+test('receipt checks are failure-only, null outside receipt rejection and immutable after later events',async()=>{
+  for(const [raw,check] of [[canonicalReceipt+'\n\n','framing_control'],['{"private":"'+secret+'"','json_syntax'],
+    [canonicalReceipt.replace('"version":1','"version":1,"version":1'),'json_integrity'],
+    [' '+canonicalReceipt,'canonical'],[canonicalReceipt.replace('"version":1','"version":2'),'envelope_schema'],
+    [canonicalReceipt.replace(nonce,'d'.repeat(32)),'nonce'],[canonicalReceipt.replace('"count":1','"count":2'),'semantic']]){
+    const p=await protocol('extra-frame',raw);
+    assert.equal(p.r.state,'protocol_rejected');assert.equal(p.gets,1);assert.equal(p.ws,1);assert.equal(p.starts,1);
+    assert.equal(p.r.diagnostics.receiptCheck,check);assert.equal(p.r.diagnostics.phase,'frame_validate');
+    assert.equal(p.r.diagnostics.frameCountCapped2,1);assert.equal(p.r.diagnostics.closeCode,null);
+    assert.ok(Object.isFrozen(p.r.diagnostics));assert.equal(JSON.stringify(p.r).includes(secret),false);
+  }
+  for(const mode of ['bad-json','duplicate-release','frame-limit','truncated-utf8','empty','unclean','post-throw','post-late-reject','get-stall','ws-stall','post-stall']){
+    assert.equal((await protocol(mode)).r.diagnostics.receiptCheck,null,mode);
+  }
+  for(const raw of [canonicalReceipt,canonicalReceipt+'\n',canonicalReceipt+'\r\n']){
+    const diagnostic={receiptCheck:null};assert.equal(framingFixture().read(raw,nonce,diagnostic).version,1);assert.equal(diagnostic.receiptCheck,null);
+  }
+  for(const mode of ['ok','valid-unresolved'])assert.equal((await protocol(mode)).r.diagnostics,undefined);
+});
+
+test('framing control observations expose only first family, UTF16 offset and capped count',()=>{
+  for(const [control,family] of [['\0','nul'],['\x1b','escape'],['\r','cr'],['\n','lf'],['\t','tab'],['\x7f','delete'],['\x01','other_c0']]){
+    const diagnostic={receiptCheck:null};const raw='😀'+control+secret;
+    assert.throws(()=>framingFixture().read(raw,nonce,diagnostic),/rejected/);
+    assert.deepEqual(diagnostic,{receiptCheck:'framing_control',firstControlFamily:family,firstControlOffsetUtf16:2,controlCountCapped32:1});
+    assert.equal(JSON.stringify(diagnostic).includes(secret),false);
+    assert.deepEqual(Object.keys(diagnostic).sort(),['controlCountCapped32','firstControlFamily','firstControlOffsetUtf16','receiptCheck']);
+  }
+  for(const [raw,family,offset,count] of [['prefix\t\0\r\n\x1b\x7f'+secret,'tab',6,6],['x'.repeat(8191)+'\0','nul',8191,1],['\0'.repeat(31),'nul',0,31],['\0'.repeat(32),'nul',0,32],['\0'.repeat(8192),'nul',0,32]]){
+    const d={};assert.throws(()=>framingFixture().read(raw,nonce,d),/rejected/);
+    assert.deepEqual(d,{receiptCheck:'framing_control',firstControlFamily:family,firstControlOffsetUtf16:offset,controlCountCapped32:count});
+  }
+});
+
+test('raw bound, allowed terminator, canonical success and other rejections keep control observations absent',async()=>{
+  for(const raw of ['\0'.repeat(8193),'{',canonicalReceipt.replace(nonce,'d'.repeat(32))]){
+    const d={};assert.throws(()=>framingFixture().read(raw,nonce,d),/rejected/);
+    assert.equal(d.firstControlFamily,undefined);assert.equal(d.firstControlOffsetUtf16,undefined);assert.equal(d.controlCountCapped32,undefined);
+  }
+  for(const ending of ['','\n','\r\n']){
+    const d={};assert.equal(framingFixture().read(canonicalReceipt+ending,nonce,d).state,'discovered_candidate');assert.deepEqual(d,{});
+  }
+  for(const mode of ['frame-limit','truncated-utf8','post-late-reject','bad-json']){
+    const {r}=await protocol(mode);
+    assert.equal(r.diagnostics.firstControlFamily,null);assert.equal(r.diagnostics.firstControlOffsetUtf16,null);assert.equal(r.diagnostics.controlCountCapped32,null);
+  }
+});
+
+test('first control failure observations stay frozen after extra frame and close events',async()=>{
+  const {r,gets,starts,ws}=await protocol('extra-frame','xx\x1b'+secret+'\0'.repeat(50));
+  assert.equal(r.state,'protocol_rejected');assert.equal(gets,1);assert.equal(starts,1);assert.equal(ws,1);
+  assert.equal(r.diagnostics.firstControlFamily,'escape');assert.equal(r.diagnostics.firstControlOffsetUtf16,2);assert.equal(r.diagnostics.controlCountCapped32,32);
+  assert.equal(r.diagnostics.frameCountCapped2,1);assert.equal(r.diagnostics.closeCode,null);assert.equal(r.diagnostics.phase,'frame_validate');
+  assert.ok(Object.isFrozen(r.diagnostics));assert.equal(JSON.stringify(r).includes(secret),false);
+});

@@ -162,7 +162,7 @@ jobs:
       - name: Checkout reviewed source
         uses: actions/checkout@v4
         with:
-          ref: 72878684de0aaeb352a0e062740b580f03e775a9
+          ref: 6e53c0f5b76fe543741b6166131c6e57dd2e37de
           path: reviewed
           persist-credentials: false
       - uses: actions/setup-node@v4
@@ -194,7 +194,7 @@ jobs:
             if(blob(raw)!==git('control',['rev-parse','HEAD:'+manifestPath]))deny();
             const m=JSON.parse(raw.toString('utf8'));
             const paths=['scripts/ops/liara-binding-discovery-command.mjs','scripts/ops/liara-binding-discovery.mjs','scripts/ops/liara-discovery-websocket.mjs','scripts/ops/liara-binding-discovery-runner.mjs'];
-            if(m.version!==1||Object.keys(m).sort().join(',')!=='files,sourceCommit,version'||m.sourceCommit!=='72878684de0aaeb352a0e062740b580f03e775a9'||git('reviewed',['rev-parse','HEAD'])!==m.sourceCommit||Object.keys(m.files).sort().join(',')!==[...paths].sort().join(','))deny();
+            if(m.version!==1||Object.keys(m).sort().join(',')!=='files,sourceCommit,version'||m.sourceCommit!=='6e53c0f5b76fe543741b6166131c6e57dd2e37de'||git('reviewed',['rev-parse','HEAD'])!==m.sourceCommit||Object.keys(m.files).sort().join(',')!==[...paths].sort().join(','))deny();
             for(const p of paths){if(!/^[a-f0-9]{40}$/.test(m.files[p])||git('reviewed',['rev-parse','HEAD:'+p])!==m.files[p]||blob(read('reviewed/'+p,131072))!==m.files[p])deny();}
             execFileSync(process.execPath,['reviewed/scripts/ops/liara-binding-discovery-runner.mjs','--preflight'],{stdio:['ignore','inherit','ignore'],timeout:5000});
           }catch{console.log('{"state":"source_identity_rejected","authorized":false,"remoteHalt":"not_started"}');process.exitCode=1;}

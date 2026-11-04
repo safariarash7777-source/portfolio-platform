@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
-import { runDiscovery, verifySourceIdentity, SOURCE_FILES, receiptExitCode } from './liara-binding-discovery-runner.mjs';
+import { verifySourceIdentity, SOURCE_FILES, receiptExitCode } from './liara-binding-discovery-runner.mjs';
 import { createDiscoveryConnect } from './liara-discovery-websocket.mjs';
 const secret = 'PRIVATE_DO_NOT_EMIT';
 function fixture() {
@@ -11,15 +11,15 @@ function fixture() {
   return {context:{repository:'safariarash7777-source/portfolio-platform',event:'workflow_dispatch',ref:'refs/heads/main',attempt:'1',operation:'discovery',workflowSha:'a'.repeat(40),sha:'a'.repeat(40)},manifest:{version:1,sourceCommit:'b'.repeat(40),files:Object.fromEntries(SOURCE_FILES.map(p=>[p,blob]))},controlHead:'a'.repeat(40),sourceHead:'b'.repeat(40),readSource:()=>bytes,sourceBlob:()=>blob};
 }
 test('closed caller rejects before any option getter or credential/transport access',async()=>{
-  assert.deepEqual(await runDiscovery(new Proxy({},{get(){throw Error(secret);}})),{state:'caller_not_adopted',authorized:false,remoteHalt:'not_started'});
+  const r=await offlineCaller(()=>{throw Error(secret);},false)(new Proxy({},{get(){throw Error(secret);}}));assert.equal(r.state,'caller_not_adopted');assert.equal(r.authorized,false);assert.equal(r.remoteHalt,'not_started');
 });
 test('independent control/source identity, event, attempt and byte pins are required',()=>{
   assert.equal(verifySourceIdentity(fixture()).state,'source_identity_verified');
   const mutations=[f=>f.context.ref='refs/heads/other',f=>f.context.event='push',f=>f.context.attempt='2',f=>f.context.operation='health',f=>f.context.repository='other/repo',f=>f.context.sha='c'.repeat(40),f=>f.controlHead='c'.repeat(40),f=>f.sourceHead='c'.repeat(40),f=>f.readSource=()=>Buffer.from(secret),f=>f.sourceBlob=()=> 'd'.repeat(40),f=>f.manifest.files.extra='a'.repeat(40),f=>f.manifest.extra=secret,f=>f.readSource=()=>{throw Error(secret);}];
   for(const mutate of mutations){const f=fixture();mutate(f);assert.deepEqual(verifySourceIdentity(f),{state:'source_identity_rejected'});}
 });
-function offlineCaller(protocol) {
-  const text=readFileSync(new URL('./liara-binding-discovery-runner.mjs',import.meta.url),'utf8').split('// No import-time transport')[0].replace(/^import .*;\n/gm,'').replaceAll('export ','').replace('const CALLER_ADOPTED = false','const CALLER_ADOPTED = true');
+function offlineCaller(protocol, adopted=true) {
+  const text=readFileSync(new URL('./liara-binding-discovery-runner.mjs',import.meta.url),'utf8').split('// No import-time transport')[0].replace(/^import .*;\r?\n/gm,'').replaceAll('export ','').replace(/const CALLER_ADOPTED = (?:false|true)/,'const CALLER_ADOPTED = '+adopted);
   const context=vm.createContext({Buffer,createHash,randomBytes:n=>{assert.equal(n,16);return Buffer.alloc(n,5);},discoverBinding:protocol,createDiscoveryConnect});
   vm.runInContext(text,context);return vm.runInContext('runDiscovery',context);
 }
@@ -62,7 +62,7 @@ test('candidate-only success exit is strict; unresolved and protocol failures re
   for(const value of [{state:'unresolved'},{state:'protocol_rejected'},{...valid,remoteHalt:'stopped'},{...valid,receipt:{...valid.receipt,extra:secret}},{...valid,receipt:{...valid.receipt,count:2}}])assert.equal(receiptExitCode(value),1);
 });
 test('bounded source reader rejects symlink, oversized/nonregular and drifting files before acceptance',()=>{
-  const text=readFileSync(new URL('./liara-binding-discovery-runner.mjs',import.meta.url),'utf8').split('// No import-time transport')[0].replace(/^import .*;\n/gm,'').replaceAll('export ','');
+  const text=readFileSync(new URL('./liara-binding-discovery-runner.mjs',import.meta.url),'utf8').split('// No import-time transport')[0].replace(/^import .*;\r?\n/gm,'').replaceAll('export ','');
   for(const mode of ['ok','symlink','large','fifo','drift']){
     let reads=0,closed=0,stats=0;
     const ctx=vm.createContext({Buffer,resolve:x=>x,constants:{O_RDONLY:0,O_NOFOLLOW:1,O_NONBLOCK:2},lstatSync:()=>({isDirectory:()=>true,isSymbolicLink:()=>mode==='symlink'}),openSync:(p,flags)=>{assert.equal(flags,3);return 1;},fstatSync:()=>({isFile:()=>mode!=='fifo',size:mode==='large'?1000:2,ino:1,mtimeMs:mode==='drift'?stats++:1,ctimeMs:1}),readSync:(fd,b)=>{reads++;b.write('ok');return 2;},closeSync:()=>{closed++;}});
