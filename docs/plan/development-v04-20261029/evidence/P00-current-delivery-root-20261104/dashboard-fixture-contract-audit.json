@@ -1,0 +1,252 @@
+{
+  "schema": "frozen-dashboard-fixture-source-audit.v1",
+  "status": "READ_ONLY_CONTRACT_AUDIT_NOT_RUNTIME_CAUSE_ACCEPTANCE",
+  "receiptBinding": {
+    "run": 41745964437,
+    "receiptSha256": "edfdf9da9938d6257a5bd0f9bb2d001fc63cd356a63b78e4f92d2fa0de4e1873",
+    "readbackSha256": "d7d44cbcad709d30dbc9845de7b5278f4fbc3e86a072ddfac2c4d39ca3f5845e",
+    "lastStage": "member-consultation-link",
+    "edge": "before",
+    "stageMalformed": false
+  },
+  "frozenSource": "4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a",
+  "capsuleSha256": "57d35ddc07e2883bb2dd5b0a7e051625a235c1294e3c5283e06ecec4438ccd81",
+  "profileContract": {
+    "runtimeSourceSha256": "61481ac04076e46a9bd1d66dd25a05cfd567f89f94c5f9a3011b9f15196cf2b5",
+    "runtimeProvisionLine": 163,
+    "facts": [
+      "Actual GoTrue users are created first; profiles(id,role) inserted with exactly that auth user id.",
+      "Actors a/b are user; owner/admin are admin.",
+      "supabase_bootstrap.sql:83-103 supplies full_name/contact nullable fields, role constraint, RLS and own-profile SELECT using id=auth.uid().",
+      "prepareMemberFixture writes holdings/cashflow and consent; it creates no risk assessment or commercial right."
+    ],
+    "actualBrowserProfileReadStatusInReceipt": null
+  },
+  "riskFixtureContract": {
+    "path": "scripts/testing/consultation-tickets/bootstrap-fixture.sql",
+    "lines": [
+      3,
+      15
+    ],
+    "facts": [
+      "Empty risk_assessments and risk_revalidations tables are intentional prerequisites.",
+      "RLS is enabled and all table privileges are revoked from PUBLIC/anon/authenticated/service_role.",
+      "No later explicit GRANT referencing risk_assessments occurs in the eighteen actual bootstrap files.",
+      "config.sql is a broader apply allowlist, not the executed list; runtime line128 applies config.bootstrap.",
+      "No assessment, model output, score zero or service right should be invented to make the dashboard healthy."
+    ],
+    "actualRiskResponseOrErrorCodeInReceipt": null
+  },
+  "actualBootstrapPins": [
+    {
+      "path": "sql/test/supabase_bootstrap.sql",
+      "sha256": "90547ffbcecedbb4dd4c5b33740b8d300b7dee726ee681365204bf789a7912c9",
+      "riskGrantStatements": []
+    },
+    {
+      "path": "sql/test/profile_explicit_grants.sql",
+      "sha256": "02be92d59318897ebdd8c1b5a5fa6b7f9b53da51291e3c2deb42ea8b1b852fe3",
+      "riskGrantStatements": []
+    },
+    {
+      "path": "sql/test/portfolio_precondition.sql",
+      "sha256": "5addf0e685d33468b492f47644e8817f5b57363ee0c1341f2f825de674343a5b",
+      "riskGrantStatements": []
+    },
+    {
+      "path": "sql/phase32_member_holdings.sql",
+      "sha256": "12c40070fb9eeb918d83b8227565e7369be62fe3dcc845ac29a6a0a87ac6f780",
+      "riskGrantStatements": []
+    },
+    {
+      "path": "supabase/migrations/20261003094257_recovery_personal_balance_sheet_core.sql",
+      "sha256": "9954c8b0c7f01f8c39f1a90e67439368fdc1694941058e6d7293a94a12c0937f",
+      "riskGrantStatements": []
+    },
+    {
+      "path": "supabase/migrations/20261019215549_personal_cash_flow_versions.sql",
+      "sha256": "d02837f317acacff3cf2bd602430149382019266265bef8fb7ec79ffa7de144d",
+      "riskGrantStatements": []
+    },
+    {
+      "path": "sql/member_goals_versions_20261023.sql",
+      "sha256": "d4959780f909fee5f5c3a22285bc778de19b3370bdb949ac55434b2cbc622dc6",
+      "riskGrantStatements": []
+    },
+    {
+      "path": "sql/phase34_research_workbook_versions.sql",
+      "sha256": "d3193cac78f70b4d0a25372cf8927aace9933b5e117b2e2ebe7806110cdc4148",
+      "riskGrantStatements": []
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/bootstrap-fixture.sql",
+      "sha256": "86d4eb01b3101d26942a9d99b09b07b0d32a0b205af9ac2ba84cd5d55b3b0777",
+      "riskGrantStatements": []
+    },
+    {
+      "path": "sql/consultation_workflow.sql",
+      "sha256": "4e389c57b98827a8297f8bc0cfa26a43e0570ab4b125ec92f9844f970b27e236",
+      "riskGrantStatements": []
+    },
+    {
+      "path": "sql/consultation_roster.sql",
+      "sha256": "03ccf7c622640ca508d8f60f6b1e8825de959ab038679c8cd798b87f331b5523",
+      "riskGrantStatements": []
+    },
+    {
+      "path": "sql/consultation_replies.sql",
+      "sha256": "57702c0090d643fa3eacd765ac19aecb36acd7254a161524dbe6b9326da4f49a",
+      "riskGrantStatements": []
+    },
+    {
+      "path": "sql/consultation_ticket_requests.sql",
+      "sha256": "87a7a02774c8e215e2e72ae68de57a0083efa7de1420952275f43d5fcb20cbaa",
+      "riskGrantStatements": []
+    },
+    {
+      "path": "sql/consultation_ticket_prepared_intents.sql",
+      "sha256": "60b66a3b52f76f4d3866b59a3a8e1fcf9ef823702a47200be0f17b0f929212e1",
+      "riskGrantStatements": []
+    },
+    {
+      "path": "supabase/migrations/20261029142010_consultation_feedback_states.sql",
+      "sha256": "32f928eac23f02c1412301932f7a58ebe1707b987d9b78d09ba67b1117913dda",
+      "riskGrantStatements": []
+    },
+    {
+      "path": "supabase/migrations/20261029160723_consultation_feedback_rollout_guard.sql",
+      "sha256": "5b3538d2a4526c91ac0af092b86a81b3e7bb140dab88ad20aef30abff2ff03e2",
+      "riskGrantStatements": []
+    },
+    {
+      "path": "sql/phase11_access_tiers.sql",
+      "sha256": "5e17a04a76d70c91b6080145308711c7964371de3383ed33c2a7bdfd08d9c1dc",
+      "riskGrantStatements": []
+    },
+    {
+      "path": "supabase/migrations/20261003094327_member_investment_scope_reviews.sql",
+      "sha256": "488de1fa2f2d26514d6a60d90b1b8ef73e9ea313efab22de38f1729a4c3a3067",
+      "riskGrantStatements": []
+    }
+  ],
+  "frozenDashboardContract": {
+    "path": "app/(protected)/dashboard/page.tsx",
+    "queries": [
+      {
+        "lines": [
+          46,
+          46
+        ],
+        "table": "profiles",
+        "read": "own user maybeSingle"
+      },
+      {
+        "lines": [
+          48,
+          53
+        ],
+        "table": "risk_assessments",
+        "read": "latest own assessment"
+      },
+      {
+        "lines": [
+          91,
+          94
+        ],
+        "table": "risk_assessments",
+        "read": "own score history"
+      }
+    ],
+    "criticalGuardLine": 125,
+    "criticalGuard": "profileRes.error || !profileRes.data || assessmentRes.error || scoreHistoryRes.error",
+    "errorBranchLines": [
+      125,
+      139
+    ],
+    "errorBranchAnchors": [
+      "dashboard retry",
+      "holdings"
+    ],
+    "consultationAnchorInErrorBranch": false,
+    "normalComponentsAfterGuard": [
+      "AccessStatusCard",
+      "DashboardClient"
+    ],
+    "normalConsultationAnchorSites": [
+      "components/dashboard/AccessStatusCard.tsx:41",
+      "app/(protected)/dashboard/DashboardClient.tsx:382"
+    ],
+    "navbarCanonicalConsultationAnchorFound": false
+  },
+  "publishedFaultIsolationComparison": {
+    "snapshot": "74011b57af11051b605a504054e6afad3bd89ff6",
+    "reviewedChangeCommit": "ffa8aea5a5fb268470aa3d63ec3eadbf57249ccb",
+    "facts": [
+      "Critical risk/profile errors still show a warning, but PersonalFinance is mounted in that branch at dashboard/page.tsx:140.",
+      "PersonalFinance.tsx:65 contains the canonical consultation anchor.",
+      "This implementation is not part of frozen app4dc and cannot be attributed to its runtime."
+    ]
+  },
+  "sourcePins": [
+    {
+      "commit": "4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a",
+      "path": "app/(protected)/dashboard/page.tsx",
+      "blob": "325e684c7bba04813b9092e5d029ae0f2822cc05",
+      "sha256": "dab4e739470b6ea1771fba46a3b160b19940d47fc42409613d6c3ec2c277814c"
+    },
+    {
+      "commit": "4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a",
+      "path": "app/(protected)/dashboard/DashboardClient.tsx",
+      "blob": "95c3a37ce4dc83219d72c36228d0fa60ed395831",
+      "sha256": "3521a67ff543462ca5304142190fc64f4ee052436ce7a3c58deb55ee7a314175"
+    },
+    {
+      "commit": "4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a",
+      "path": "components/dashboard/AccessStatusCard.tsx",
+      "blob": "6210157660adff0fa5ba1673468957cbe13e5fec",
+      "sha256": "e0355db608d4a25f3e9d0822e61bd2749fad1d7dc9b1db7cd287825897310092"
+    },
+    {
+      "commit": "4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a",
+      "path": "sql/test/supabase_bootstrap.sql",
+      "blob": "2d33ea0ab8c20ca942999ce7c11dc99e8555a31e",
+      "sha256": "90547ffbcecedbb4dd4c5b33740b8d300b7dee726ee681365204bf789a7912c9"
+    },
+    {
+      "commit": "4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a",
+      "path": "scripts/testing/consultation-tickets/bootstrap-fixture.sql",
+      "blob": "c66fcc16b14f06efe0e6009d935258b43313529f",
+      "sha256": "86d4eb01b3101d26942a9d99b09b07b0d32a0b205af9ac2ba84cd5d55b3b0777"
+    },
+    {
+      "commit": "74011b57af11051b605a504054e6afad3bd89ff6",
+      "path": "app/(protected)/dashboard/page.tsx",
+      "blob": "3055f2bdb9abfb699b821055b8f4a1eb2f3ee7cd",
+      "sha256": "8920621256f1509f62993449d8ac5fad3f3936fb669e549fb826884f5067429c"
+    },
+    {
+      "commit": "74011b57af11051b605a504054e6afad3bd89ff6",
+      "path": "components/dashboard/PersonalFinance.tsx",
+      "blob": "554046264caf966358d17ab4c89bfb285947fa5f",
+      "sha256": "50d94373b06e6e23b74446a957a7a7a67fc0674c0225ce672e6ea999ef250897"
+    }
+  ],
+  "diagnosisBoundary": "The closed risk-read fixture and the frozen dashboard critical-read branch are a concrete contract mismatch compatible with missing consultation anchors. Receipt does not observe route, DOM state, profile/risk HTTP status or a particular error, so exact runtime cause remains unconfirmed.",
+  "recommendedNextScopeForRoot": [
+    "Do not claim or fix a hidden-navigation selector without runtime/source support.",
+    "Do not add grants, fabricated assessment data or service rights merely to force the anchor.",
+    "If the goal is current fault-isolated behavior, prepare a separately reviewed fresh assembled candidate incorporating the approved product fix while preserving P03 contracts; do not silently retarget4dc.",
+    "A future diagnostic can record only route enum/anchor count/visible count/known critical-fallback visibility if runtime discrimination is still needed; missing genuine anchor must continue to fail.",
+    "Any future actual-anchor selection must prove dashboard route and canonical href and use a real click; no synthetic link or direct target goto."
+  ],
+  "actions": {
+    "sourcePatch": false,
+    "newCapsule": false,
+    "native": false,
+    "dispatch": false,
+    "SQL": false,
+    "grant": false,
+    "model": false,
+    "install": false
+  }
+}
