@@ -284,14 +284,16 @@ test("actual symbol caller sends each selected N30 and N10 record with its own i
 
 function clientComponent(name: string, hooks: unknown, globals: Record<string, unknown> = {}) {
   const exported = {} as { default: (props: Record<string, unknown>) => React.ReactElement };
-  const js = ts.transpileModule(readFileSync(new URL(`../../../components/symbol/${name}.tsx`, import.meta.url), "utf8"), {
+  const componentUrl = new URL(`../../../components/symbol/${name}.tsx`, import.meta.url);
+  const componentRequire = createRequire(componentUrl);
+  const js = ts.transpileModule(readFileSync(componentUrl, "utf8"), {
     compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText;
   vm.runInNewContext(js, { exports: exported, ...globals, require: (id: string) => {
     if (id === "react") return hooks;
     if (id.endsWith(".module.css")) return cssModule;
     if (id === "../market/MarketAutoRefresh") return { __esModule: true, default: () => null };
-    return require(id.startsWith("@/") ? `../../../${id.slice(2)}` : id);
+    return id.startsWith("@/") ? require(`../../../${id.slice(2)}`) : componentRequire(id);
   } });
   return exported.default;
 }
