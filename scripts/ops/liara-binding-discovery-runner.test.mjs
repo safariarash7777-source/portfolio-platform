@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
-import { runDiscovery, verifySourceIdentity, SOURCE_FILES } from './liara-binding-discovery-runner.mjs';
+import { runDiscovery, verifySourceIdentity, SOURCE_FILES, receiptExitCode } from './liara-binding-discovery-runner.mjs';
 import { createDiscoveryConnect } from './liara-discovery-websocket.mjs';
 const secret = 'PRIVATE_DO_NOT_EMIT';
 function fixture() {
@@ -55,4 +55,19 @@ test('adapter rejects Blob, oversize, native errors and construction failure wit
   assert.throws(()=>createDiscoveryConnect(class{constructor(){throw Error(secret);}})('wss://api.iran.liara.ir/v1/exec'),/^Error: transport_rejected$/);
   assert.throws(()=>createDiscoveryConnect(class{})('wss://other.invalid/v1/exec'),/^Error: transport_rejected$/);
   for(const endpoint of [secret,'wss://user:password@api.iran.liara.ir/v1/exec']) assert.throws(()=>createDiscoveryConnect(class{})(endpoint),/^Error: transport_rejected$/);
+});
+test('candidate-only success exit is strict; unresolved and protocol failures remain failure',()=>{
+  const valid={state:'candidate_only_not_adopted',remoteHalt:'unknown',releaseId:'b'.repeat(24),receipt:{version:1,nonce:'c'.repeat(32),state:'discovered_candidate',reason:'stable_candidate',count:1,pid:7,startTicks:'123',exeKind:'node_usr',cwdKind:'app',entryKind:'relative_server'}};
+  assert.equal(receiptExitCode(valid),0);
+  for(const value of [{state:'unresolved'},{state:'protocol_rejected'},{...valid,remoteHalt:'stopped'},{...valid,receipt:{...valid.receipt,extra:secret}},{...valid,receipt:{...valid.receipt,count:2}}])assert.equal(receiptExitCode(value),1);
+});
+test('bounded source reader rejects symlink, oversized/nonregular and drifting files before acceptance',()=>{
+  const text=readFileSync(new URL('./liara-binding-discovery-runner.mjs',import.meta.url),'utf8').split('// No import-time transport')[0].replace(/^import .*;\n/gm,'').replaceAll('export ','');
+  for(const mode of ['ok','symlink','large','fifo','drift']){
+    let reads=0,closed=0,stats=0;
+    const ctx=vm.createContext({Buffer,resolve:x=>x,constants:{O_RDONLY:0,O_NOFOLLOW:1,O_NONBLOCK:2},lstatSync:()=>({isDirectory:()=>true,isSymbolicLink:()=>mode==='symlink'}),openSync:(p,flags)=>{assert.equal(flags,3);return 1;},fstatSync:()=>({isFile:()=>mode!=='fifo',size:mode==='large'?1000:2,ino:1,mtimeMs:mode==='drift'?stats++:1,ctimeMs:1}),readSync:(fd,b)=>{reads++;b.write('ok');return 2;},closeSync:()=>{closed++;}});
+    vm.runInContext(text,ctx);const read=vm.runInContext('readBoundedCode',ctx);
+    if(mode==='ok')assert.equal(read('/reviewed/file',8).toString(),'ok');else assert.throws(()=>read('/reviewed/file',8));
+    assert.equal(closed,mode==='symlink'?0:1);assert.equal(reads,['ok','drift'].includes(mode)?1:0);
+  }
 });

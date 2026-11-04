@@ -71,6 +71,11 @@ function localIdentity() {
     readSource:path => readBoundedCode(resolve(source,path),131072), sourceBlob:path => git(source,['rev-parse','HEAD:'+path]),
   };
 }
+export function receiptExitCode(result) {
+  if (['caller_not_adopted','discovery_not_adopted','source_identity_verified'].includes(result.state)) return 0;
+  const r=result.receipt;
+  return exact(result,['state','remoteHalt','releaseId','receipt']) && result.state==='candidate_only_not_adopted' && result.remoteHalt==='unknown' && /^[a-f0-9]{24}$/.test(result.releaseId) && exact(r,['version','nonce','state','reason','count','pid','startTicks','exeKind','cwdKind','entryKind']) && r.version===1 && /^[a-f0-9]{32}$/.test(r.nonce) && r.state==='discovered_candidate' && r.reason==='stable_candidate' && r.count===1 && Number.isSafeInteger(r.pid) && r.pid>0 && r.pid<=999999999 && /^[0-9]{1,20}$/.test(r.startTicks) && ['node_usr_local','node_usr'].includes(r.exeKind) && ['app','usr_src_app','usr_src_relay'].includes(r.cwdKind) && ['relative_server','absolute_server'].includes(r.entryKind) ? 0 : 1;
+}
 // No import-time transport, credential lookup or execution. Fixed workflow entry only.
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const preflight = process.argv.length === 3 && process.argv[2] === '--preflight';
@@ -78,5 +83,5 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
   const result = preflight || execute ? await runDiscovery({preflight,identity:localIdentity,readToken:() => process.env.LIARA_API_TOKEN,get fetchImpl(){return globalThis.fetch;},get WebSocketClass(){return globalThis.WebSocket;}}) : {state:'caller_rejected',authorized:false,remoteHalt:'not_started'};
   process.stdout.write(JSON.stringify(result)+'\n');
   if (preflight && process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT,'authorized='+(result.authorized === true ? 'true':'false')+'\n');
-  if (!['caller_not_adopted','discovery_not_adopted','source_identity_verified'].includes(result.state)) process.exitCode = 1;
+  process.exitCode = receiptExitCode(result);
 }
