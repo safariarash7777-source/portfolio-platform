@@ -1,0 +1,28 @@
+import datetime,json,signal,subprocess
+signal.alarm(20)
+SOURCE='9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c'
+IMAGE='sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb'
+def run(args,body=None):
+ r=subprocess.run(args,input=body,capture_output=True,text=True,timeout=5)
+ if r.returncode or len(r.stdout.encode())>65536:raise RuntimeError('BOUNDED_READ_UNCONFIRMED')
+ return r.stdout
+def health():
+ r=json.loads(run(['docker','inspect','--format','{"id":{{json .Id}},"image":{{json .Image}},"health":{{json .State.Health.Status}},"restartCount":{{json .RestartCount}}}',SOURCE]))
+ assert r['id']==SOURCE and r['image']==IMAGE and r['health']=='healthy'
+ return r
+def sql(q):
+ return json.loads(run(['docker','exec','-i',SOURCE,'psql','-XqAt','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1'],"BEGIN READ ONLY;SET LOCAL statement_timeout='3s';SET LOCAL lock_timeout='1s';"+q+';ROLLBACK;'))
+out={'schema':'production-history-consumer-readonly.v1','atUtc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'providerRequests':0,'sqlWrites':False,'serviceOrScheduleChanged':False,'environmentValuesRead':False}
+try:
+ out['before']=health()
+ out['catalog']=sql("SELECT coalesce(json_agg(json_build_object('table',c.relname,'column',a.attname,'type',format_type(a.atttypid,a.atttypmod)) ORDER BY c.relname,a.attnum),'[]') FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace JOIN pg_attribute a ON a.attrelid=c.oid AND a.attnum>0 AND NOT a.attisdropped WHERE n.nspname='public' AND c.relkind='r' AND c.relname IN ('symbol_history','index_history')")
+ out['symbolHistoryRecent5000']=sql("SELECT coalesce(json_agg(json_build_object('symbol',symbol,'latestTradeDate',latest,'source',source,'rowsInWindow',n)),'[]') FROM (SELECT symbol,source,max(trade_date) latest,count(*) n FROM (SELECT symbol,source,trade_date FROM public.symbol_history ORDER BY id DESC LIMIT 5000) t GROUP BY symbol,source ORDER BY latest DESC,symbol LIMIT 25) s")
+ out['selectedHistory']=sql("SELECT coalesce(json_agg(json_build_object('symbol',symbol,'source',source,'tradeDate',trade_date,'id',id,'navPresent',CASE WHEN jsonb_typeof(raw->'nav_toman')='number' THEN true ELSE false END) ORDER BY trade_date DESC,id DESC),'[]') FROM (SELECT id,symbol,source,trade_date,raw FROM public.symbol_history WHERE symbol IN ('فولاد','اهرم') ORDER BY trade_date DESC,id DESC LIMIT 20) s")
+ out['indexHistoryLastRows']=sql("SELECT coalesce(json_agg(json_build_object('id',id,'jdate',jdate) ORDER BY id DESC),'[]') FROM (SELECT id,jdate FROM public.index_history ORDER BY id DESC LIMIT 5) s")
+ out['lastN10ByCapture']=sql("SELECT coalesce(json_agg(json_build_object('id',id,'symbol',symbol,'kind',report_kind,'periodEnd',period_end,'publishedAt',published_at,'capturedAt',captured_at) ORDER BY captured_at DESC,id DESC),'[]') FROM (SELECT id,symbol,report_kind,period_end,published_at,captured_at FROM public.codal_reports WHERE report_kind IN ('ن-۱۰','ن-10','N10','n10') ORDER BY captured_at DESC,id DESC LIMIT 3) s")
+ out['status']='READ_ONLY_CONSUMER_HISTORY_OBSERVED'
+except Exception as e:out.update(status='READ_ONLY_CONSUMER_HISTORY_INCOMPLETE',errorClass=type(e).__name__)
+try:out['after']=health()
+except Exception:out['after']=None
+out['completedAtUtc']=datetime.datetime.now(datetime.timezone.utc).isoformat()
+print(json.dumps(out))

@@ -1,0 +1,31 @@
+from pathlib import Path
+# Reuse reviewed bounded read-only SQL and exact DB identity helpers only.
+# The inventory module's execution block is not evaluated.
+base=Path('/dev/null')
+import datetime,json,signal,subprocess
+signal.alarm(20)
+SOURCE='9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c'
+IMAGE='sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb'
+def run(args,body=None):
+ r=subprocess.run(args,input=body,capture_output=True,text=True,timeout=5)
+ if r.returncode or len(r.stdout.encode())>65536:raise RuntimeError('BOUNDED_READ_UNCONFIRMED')
+ return r.stdout
+def health():
+ r=json.loads(run(['docker','inspect','--format','{"id":{{json .Id}},"image":{{json .Image}},"health":{{json .State.Health.Status}},"restartCount":{{json .RestartCount}}}',SOURCE]))
+ assert r['id']==SOURCE and r['image']==IMAGE and r['health']=='healthy'
+ return r
+def sql(q):
+ return json.loads(run(['docker','exec','-i',SOURCE,'psql','-XqAt','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1'],"BEGIN READ ONLY;SET LOCAL statement_timeout='3s';SET LOCAL lock_timeout='1s';"+q+';ROLLBACK;'))
+out={'schema':'production-storage-targeted-readonly.v1','atUtc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'providerRequests':0,'sqlWrites':False,'serviceOrScheduleChanged':False,'environmentValuesRead':False,'naturalCyclesAccepted':0}
+try:
+ out['before']=health()
+ out['market']=sql("SELECT json_build_object('key',key,'updatedAt',updated_at,'fetchedAt',payload->'fetchedAt','quality',json_build_object('state',payload->'snapshotQuality'->'state','attemptedAt',payload->'snapshotQuality'->'attemptedAt','families',(SELECT jsonb_object_agg(k,jsonb_build_object('state',v->'state','receivedAt',v->'receivedAt','retained',v->'retained','hasError',CASE WHEN v->>'error' IS NULL OR v->>'error'='' THEN false ELSE true END)) FROM jsonb_each(payload->'snapshotQuality'->'families') e(k,v) WHERE k IN ('gold','currency','crypto','stocks','funds','options','indices'))),'stockRows',jsonb_array_length(payload->'stocks'),'fundRows',jsonb_array_length(payload->'funds')) FROM public.ir_market_snapshots WHERE key='latest'")
+ out['recentReports']=sql("SELECT coalesce(json_agg(json_build_object('id',id,'symbol',symbol,'kind',report_kind,'periodEnd',period_end,'publishedAt',published_at,'capturedAt',captured_at) ORDER BY id DESC),'[]') FROM (SELECT id,symbol,report_kind,period_end,published_at,captured_at FROM public.codal_reports ORDER BY id DESC LIMIT 12) x")
+ out['foladReports']=sql("SELECT coalesce(json_agg(json_build_object('id',id,'kind',report_kind,'periodEnd',period_end,'publishedAt',published_at,'capturedAt',captured_at) ORDER BY id DESC),'[]') FROM (SELECT id,report_kind,period_end,published_at,captured_at FROM public.codal_reports WHERE symbol='فولاد' ORDER BY id DESC LIMIT 6) x")
+ out['historyRecent5000']=sql("SELECT coalesce(json_agg(json_build_object('section',section,'latestCapturedAt',latest,'rowsInBoundedWindow',n)),'[]') FROM (SELECT section,max(captured_at) latest,count(*) n FROM (SELECT section,captured_at FROM public.ir_market_history ORDER BY id DESC LIMIT 5000) t GROUP BY section) x")
+ out['status']='READ_ONLY_STORED_DATA_OBSERVED'
+except Exception as e:out.update(status='READ_ONLY_STORED_DATA_INCOMPLETE',errorClass=type(e).__name__)
+try:out['after']=health()
+except Exception:out['after']=None
+out['completedAtUtc']=datetime.datetime.now(datetime.timezone.utc).isoformat()
+print(json.dumps(out))

@@ -1,5 +1,17 @@
 # Arash Digital Platform — Command Center
 
+## اولویت جاری ۴ نوامبر — فقط تشخیص Production، توقف توسعه و انتشار نامرتبط
+
+دستور تازهٔ آرش بر ادامه‌های پایین مقدم است. root مالک عملیات/پذیرش و C مرور source؛ A، P09R2، P14، M1/reader و انتشار تازه متوقف‌اند. سرویس‌ها/زمان‌بندی‌های سالم خاموش نشده‌اند. [گزارش مسئولیت و ماتریس همهٔ خانواده‌ها](plan/development-v04-20261029/evidence/P00-current-delivery-root-20261104/p06-responsibility-REPORT.fa.md) و [رسید مستقل](plan/development-v04-20261029/evidence/P00-current-delivery-root-20261104/p06-responsibility-root-review.json): فعلاً شاهد خرابی عمومی BRSAPI یا لیارا نداریم؛ دریافت بازار/ذخیره فعال است، schema/rollout سهمیه و سقف/پوشش پردازش کدال از سمت خودمان‌اند، نه مدرک رد حساب vendor.
+
+نمونهٔ رله۱۸:۵۰تهران: آخرین دریافت۱۸:۴۶:۵۲،۷family received،۷۶۴سهم/۳۴۵صندوق،storage200. SSH/SQLجدید۱۹:۵۵ اسنپ‌شات۱۹:۵۱:۵۲ را تأیید کرد؛ [تاریخچهٔ واقعی مصرف‌شده](plan/development-v04-20261029/evidence/P00-current-delivery-root-20261104/p06-responsibility-history-consumer-readback.json) فولاد/اهرم/indexتاامروز موجود است. رکود stocks/funds درir_market_history عمدی و بدون consumer است. آخرین ن۱۰بانک۱۳اکتبر، ن۳۰چهارinsertجدیدامروز با دوره‌های قدیمی؛ completeمالی و دوچرخهٔ پیاپیِ تاصفحه هنوز پذیرفته نیستند. دفتر سهمیه404 وenforcementخاموش، باقی‌ماندهٔ واقعی حساب نامعلوم؛ هیچprovidercallتشخیصی یاSQLwrite/restart/هزینهٔ تازه انجام نشد. نصب و تغییر live هنوزانجام‌نشده.
+
+FX: SCI پیش از رسیدن STOP commit شد و [readback](plan/development-v04-20261029/evidence/P00-current-delivery-root-20261104/p06-responsibility-fx-stop-readback.json) hash/مهر۱۴۰۵ را تأیید کرد؛ IFB/FRED/Tindex publisher شروع‌نشده، retry/rollbackنشده، نمایش نهایی پذیرفته نیست. این اثر را «هیچ writeدرکلجلسه» گزارش نمی‌کنیم.
+
+بعدی: root/C بستهٔ migration/rollout موجود با هویت/backup؛ C/root یک rejectedreportرسمی و scope/layout؛ root دوچرخهٔ طبیعی پیاپی و بازخوانی مصرف‌کننده. تمام۱۶بسته/۸۵تعهد محفوظ‌اند؛ وضعیت تاریخی پایین مجوز ازسرگیری کارهای متوقف نیست.
+
+### سوابق قبل از تغییر اولویت
+
 ## ادامهٔ اجرایی ۴ نوامبر ۲۰۲۶ تهران — وضعیت جاری
 
 همان برنامهٔ مصوب۰٫۴،۱۶بسته و۸۵تعهد ادامه دارد. root تنها مالک این مرجع و پذیرش مقصد است؛ A شرکت/P14 و قرارداد مالی، B عضو/مدیر و پژوهش، C منشأ/runtime، P15 پشتیبان‌اند. B/P15 فعلاً usage-limit دارند؛ root و C با همان مجریان داخلی موجود source مستقل را ادامه می‌دهند. [شواهد جاری](plan/development-v04-20261029/evidence/P00-current-delivery-root-20261104/REVIEW.fa.md) کد، CI، Preview و پذیرش محصول را جدا ثبت می‌کند.

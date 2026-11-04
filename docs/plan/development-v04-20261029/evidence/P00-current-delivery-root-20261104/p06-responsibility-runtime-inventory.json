@@ -1,0 +1,592 @@
+{
+  "schema": "production-natural-cycles-readonly-inventory.v1",
+  "atUtc": "2026-11-04T15:09:44.336424+00:00",
+  "readOnly": true,
+  "providerRequests": 0,
+  "sqlWrites": false,
+  "serviceOrScheduleChanged": false,
+  "environmentValuesRead": false,
+  "naturalCyclesAccepted": 0,
+  "before": {
+    "identityMatched": true,
+    "healthy": true,
+    "restartCount": 0
+  },
+  "runningContainers": [
+    {
+      "name": "finance-dashboard-20261028-v12-130524",
+      "id": "eb410df96316dd2f381ef2906e50ffb2c1d17220b6643667c52ce1983979c303",
+      "image": "sha256:a258f0761090b3621f17e32d6fe953496f10b2786b75a08c53418b7747075c31",
+      "running": true,
+      "health": "healthy",
+      "startedAt": "2026-10-28T13:06:42.755467429Z",
+      "restartCount": 0,
+      "workingDir": "/app/finance",
+      "executableBasename": "python",
+      "sourceMounts": []
+    },
+    {
+      "name": "fx-dashboard",
+      "id": "86b36fd6c88e7e13063a1ff127982cc7fb3f108972a021a2fc0a4fbee7c6b7dd",
+      "image": "sha256:f30408d1ed8c3197edff66ca4192106f1e8a924ba15aebedd05ca6e2f6c8e71d",
+      "running": true,
+      "health": "healthy",
+      "startedAt": "2026-10-27T09:30:23.911965398Z",
+      "restartCount": 0,
+      "workingDir": "/app",
+      "executableBasename": "streamlit",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-auth219-20261002-auth",
+      "id": "1d5a241e4abc0385e70b895964cc0a0d2d59f27637bd8fa7f537369651313e4d",
+      "image": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+      "running": true,
+      "health": null,
+      "startedAt": "2026-10-27T09:30:23.478582747Z",
+      "restartCount": 0,
+      "workingDir": "/",
+      "executableBasename": "auth",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-auth219-20261002-storage",
+      "id": "0bda5b6e655be081ac155d1a1402dcfe2e61732dfae011b989d09d02cd7b470a",
+      "image": "sha256:c99920016d603cfb9d11ee6f37844f6fd432aab950785b3bf6147c953164ad08",
+      "running": true,
+      "health": null,
+      "startedAt": "2026-10-27T09:30:23.802523043Z",
+      "restartCount": 0,
+      "workingDir": "/app",
+      "executableBasename": "docker-entrypoint.sh",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-auth219-20261002-rest",
+      "id": "40ee88070d97c65ae95550ba78a2126151a4d08ed41ea49bd249abf4d7a515de",
+      "image": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+      "running": true,
+      "health": null,
+      "startedAt": "2026-10-27T09:30:23.02024331Z",
+      "restartCount": 0,
+      "workingDir": "",
+      "executableBasename": "postgrest",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-auth219-20261002-sink",
+      "id": "f95ac1c3f5296eff739dd278b66db09dd87a7fe5982dbb6dd1eab868d65080df",
+      "image": "sha256:f77ac9e44ae96ef2c90b8053ea08c31f8be030f824196b0ae4db6d462c84e51f",
+      "running": true,
+      "health": null,
+      "startedAt": "2026-10-27T09:30:24.121533784Z",
+      "restartCount": 0,
+      "workingDir": "",
+      "executableBasename": "python",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-auth219-20261002-db",
+      "id": "bc5659d6ed1e5b0eb52327c5b0cfa3eb37abd9d2080e7bc007305298c149eda1",
+      "image": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+      "running": true,
+      "health": null,
+      "startedAt": "2026-10-27T09:30:22.95208978Z",
+      "restartCount": 0,
+      "workingDir": "/",
+      "executableBasename": "docker-entrypoint.sh",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-demo844-app",
+      "id": "e169f944e6ef5219bd41dd474a1f22253deb7d84110a5c21d6505d92b8f9f817",
+      "image": "sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c",
+      "running": true,
+      "health": null,
+      "startedAt": "2026-11-04T15:08:53.25797965Z",
+      "restartCount": 11363,
+      "workingDir": "/app",
+      "executableBasename": "docker-entrypoint.sh",
+      "sourceMounts": [
+        "/opt/portfolio-demo844/source-next-cfa4e21"
+      ]
+    },
+    {
+      "name": "portfolio-demo844-gateway",
+      "id": "81e25e71e292d89e5553c724dd839729dd8872c29a4e367acd055e333a09ff11",
+      "image": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+      "running": true,
+      "health": null,
+      "startedAt": "2026-10-27T09:30:23.191351378Z",
+      "restartCount": 0,
+      "workingDir": "/srv",
+      "executableBasename": "caddy",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-demo844-storage",
+      "id": "dc97a9f2fa456ebcf0eee40f125abe69e41838635a9ad7f9377092e30a334085",
+      "image": "sha256:c99920016d603cfb9d11ee6f37844f6fd432aab950785b3bf6147c953164ad08",
+      "running": true,
+      "health": null,
+      "startedAt": "2026-10-27T09:30:23.098954125Z",
+      "restartCount": 0,
+      "workingDir": "/app",
+      "executableBasename": "docker-entrypoint.sh",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-demo844-rest",
+      "id": "589bb20f155034c533890d2ebbb8edf8fe1d0b4870112023e736ea0264ddb53f",
+      "image": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+      "running": true,
+      "health": null,
+      "startedAt": "2026-10-27T09:30:23.238087004Z",
+      "restartCount": 0,
+      "workingDir": "",
+      "executableBasename": "postgrest",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-demo844-auth",
+      "id": "d5e1bd7888db941179d9eaae139a91030f9e5fb6ab6c54b3dd907a46d7ae982d",
+      "image": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+      "running": true,
+      "health": null,
+      "startedAt": "2026-10-27T09:30:23.814162909Z",
+      "restartCount": 0,
+      "workingDir": "/",
+      "executableBasename": "auth",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-demo844-db",
+      "id": "621e728807b042b5f801af8f94e96617efa017dbc938de4451b7970d94f368f7",
+      "image": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+      "running": true,
+      "health": null,
+      "startedAt": "2026-10-27T09:30:23.981451261Z",
+      "restartCount": 0,
+      "workingDir": "/",
+      "executableBasename": "docker-entrypoint.sh",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-accept195-app",
+      "id": "706bdb909bc4415677eb8ffe13b3c0ab77f84091c5196d88faee4ff865d8fd80",
+      "image": "sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c",
+      "running": true,
+      "health": null,
+      "startedAt": "2026-11-04T15:08:50.914152941Z",
+      "restartCount": 11363,
+      "workingDir": "/app",
+      "executableBasename": "docker-entrypoint.sh",
+      "sourceMounts": [
+        "/opt/portfolio-accept195/source"
+      ]
+    },
+    {
+      "name": "portfolio-accept195-gateway",
+      "id": "54e56f79d27d1ae01eca3a5a8f2548ff0d240c4f79114817b4c2c2b7bc9087ac",
+      "image": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+      "running": true,
+      "health": null,
+      "startedAt": "2026-10-27T09:30:22.83819321Z",
+      "restartCount": 0,
+      "workingDir": "/srv",
+      "executableBasename": "caddy",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-accept195-storage",
+      "id": "7aa46e2a59e3ff9fde0f19f3640b14a99c00fd760fc762eb5e379b53cfee3191",
+      "image": "sha256:c99920016d603cfb9d11ee6f37844f6fd432aab950785b3bf6147c953164ad08",
+      "running": true,
+      "health": null,
+      "startedAt": "2026-10-27T09:30:22.750797851Z",
+      "restartCount": 0,
+      "workingDir": "/app",
+      "executableBasename": "docker-entrypoint.sh",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-accept195-rest",
+      "id": "40e5edf87a6ba429db281b869c09c3a1ad1d2063dd1627095248842e2e6c52e1",
+      "image": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+      "running": true,
+      "health": null,
+      "startedAt": "2026-10-27T09:30:23.342865774Z",
+      "restartCount": 0,
+      "workingDir": "",
+      "executableBasename": "postgrest",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-accept195-auth",
+      "id": "1cab06fa6b45b5990dc473db88a93ea05d526bdf9cdf77b681c4590cdca5c813",
+      "image": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+      "running": true,
+      "health": null,
+      "startedAt": "2026-10-27T09:30:24.099307137Z",
+      "restartCount": 0,
+      "workingDir": "/",
+      "executableBasename": "auth",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-accept195-db",
+      "id": "b96b02607143553452f3226a76f77eb2b691d14dd40e392fdf5e1864995560d8",
+      "image": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+      "running": true,
+      "health": null,
+      "startedAt": "2026-10-27T09:30:23.927208443Z",
+      "restartCount": 0,
+      "workingDir": "/",
+      "executableBasename": "docker-entrypoint.sh",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-stage-gateway-1",
+      "id": "10d8dd93463e5dfbdfd1f43bea9bec95e52def0654c0ffe1d840bca449b643be",
+      "image": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+      "running": true,
+      "health": "healthy",
+      "startedAt": "2026-10-27T09:30:23.882516391Z",
+      "restartCount": 0,
+      "workingDir": "/srv",
+      "executableBasename": "caddy",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-stage-auth-1",
+      "id": "d18e72a1f11e1e26c1bdce50584c41dd58870691bcde35d0de70f6fbf1280216",
+      "image": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+      "running": true,
+      "health": "healthy",
+      "startedAt": "2026-10-27T09:31:02.900862847Z",
+      "restartCount": 1,
+      "workingDir": "/",
+      "executableBasename": "auth",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-stage-rest-1",
+      "id": "703c0d4a0273aa257df593633629936bad6703e74b2e4b9da87d82e7580cab41",
+      "image": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+      "running": true,
+      "health": "healthy",
+      "startedAt": "2026-10-27T09:30:23.786720439Z",
+      "restartCount": 0,
+      "workingDir": "",
+      "executableBasename": "postgrest",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-stage-storage-1",
+      "id": "f44d402babd38a075567715e21a66397ec4439863d978e43df03112847afb9a1",
+      "image": "sha256:c99920016d603cfb9d11ee6f37844f6fd432aab950785b3bf6147c953164ad08",
+      "running": true,
+      "health": "healthy",
+      "startedAt": "2026-10-27T09:30:23.83505757Z",
+      "restartCount": 0,
+      "workingDir": "/app",
+      "executableBasename": "docker-entrypoint.sh",
+      "sourceMounts": []
+    },
+    {
+      "name": "portfolio-stage-db-1",
+      "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+      "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+      "running": true,
+      "health": "healthy",
+      "startedAt": "2026-10-27T09:30:23.760313979Z",
+      "restartCount": 0,
+      "workingDir": "/",
+      "executableBasename": "sh",
+      "sourceMounts": []
+    },
+    {
+      "name": "fx-dashboard-proxy",
+      "id": "3433552f37e1ef3d3718aa00ff56a18d4066fce7ceb956abd09c426cb3d02f65",
+      "image": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+      "running": true,
+      "health": null,
+      "startedAt": "2026-10-27T09:30:23.966055926Z",
+      "restartCount": 0,
+      "workingDir": "/srv",
+      "executableBasename": "caddy",
+      "sourceMounts": []
+    }
+  ],
+  "nodePythonProcesses": [
+    {
+      "pid": 3194,
+      "comm": "python",
+      "cwd": "/",
+      "scriptBasenames": [
+        "sink.py"
+      ],
+      "collectorHint": false
+    },
+    {
+      "pid": 3386769,
+      "comm": "python",
+      "cwd": "/app/finance/src/content/finance_backend",
+      "scriptBasenames": [],
+      "collectorHint": false
+    },
+    {
+      "pid": 3963376,
+      "comm": "python",
+      "cwd": "/app/finance/src/content/finance_backend",
+      "scriptBasenames": [],
+      "collectorHint": false
+    },
+    {
+      "pid": 4012305,
+      "comm": "python",
+      "cwd": "/app/finance/src/content/finance_backend",
+      "scriptBasenames": [],
+      "collectorHint": false
+    },
+    {
+      "pid": 4096628,
+      "comm": "python3",
+      "cwd": "/root",
+      "scriptBasenames": [],
+      "collectorHint": false
+    }
+  ],
+  "rootCronStatus": "UNAVAILABLE_OR_EMPTY",
+  "matchingRootCron": [],
+  "matchingTimers": [
+    {
+      "next": 1793805000000000,
+      "left": 1793805000000000,
+      "last": 1793804400105704,
+      "passed": 711007994333,
+      "unit": "sysstat-collect.timer",
+      "activates": "sysstat-collect.service"
+    },
+    {
+      "next": 1793805008287515,
+      "left": 1793805008287515,
+      "last": 1793804401145543,
+      "passed": 711009034176,
+      "unit": "portfolio-operational.timer",
+      "activates": "portfolio-operational.service"
+    },
+    {
+      "next": 1793807992805023,
+      "left": 1793807992805023,
+      "last": 1793804392787131,
+      "passed": 711000675763,
+      "unit": "fx-data-health.timer",
+      "activates": "fx-data-health.service"
+    }
+  ],
+  "timerReadStatus": "READ",
+  "snapshotMetadata": [
+    {
+      "key": "candle_backfill_state",
+      "updatedAt": "2026-11-04T08:41:46.251+00:00",
+      "payloadAt": null,
+      "fetchedAt": null,
+      "qualityState": null,
+      "stockRows": null,
+      "fundRows": null,
+      "foladAt": null
+    },
+    {
+      "key": "codal_archive_state",
+      "updatedAt": "2026-11-04T14:26:42.085+00:00",
+      "payloadAt": null,
+      "fetchedAt": null,
+      "qualityState": null,
+      "stockRows": null,
+      "fundRows": null,
+      "foladAt": null
+    },
+    {
+      "key": "codal_debug",
+      "updatedAt": "2026-07-16T13:37:56.976014+00:00",
+      "payloadAt": null,
+      "fetchedAt": null,
+      "qualityState": null,
+      "stockRows": null,
+      "fundRows": null,
+      "foladAt": null
+    },
+    {
+      "key": "codal_engine_state",
+      "updatedAt": "2026-11-04T12:12:09.916+00:00",
+      "payloadAt": null,
+      "fetchedAt": null,
+      "qualityState": null,
+      "stockRows": null,
+      "fundRows": null,
+      "foladAt": null
+    },
+    {
+      "key": "codal_fetch_request",
+      "updatedAt": "2026-07-17T06:34:13.157208+00:00",
+      "payloadAt": null,
+      "fetchedAt": null,
+      "qualityState": null,
+      "stockRows": null,
+      "fundRows": null,
+      "foladAt": null
+    },
+    {
+      "key": "codal_fetch_result",
+      "updatedAt": "2026-07-17T06:34:57.092868+00:00",
+      "payloadAt": 1793093485874,
+      "fetchedAt": null,
+      "qualityState": null,
+      "stockRows": null,
+      "fundRows": null,
+      "foladAt": null
+    },
+    {
+      "key": "latest",
+      "updatedAt": "2026-11-04T15:06:52.409+00:00",
+      "payloadAt": null,
+      "fetchedAt": 1793804812128,
+      "qualityState": "complete",
+      "stockRows": 764,
+      "fundRows": 345,
+      "foladAt": null
+    },
+    {
+      "key": "nav_blacklist",
+      "updatedAt": "2026-11-04T06:47:34.533+00:00",
+      "payloadAt": null,
+      "fetchedAt": null,
+      "qualityState": null,
+      "stockRows": null,
+      "fundRows": null,
+      "foladAt": null
+    },
+    {
+      "key": "symbol_details",
+      "updatedAt": "2026-11-04T15:06:54.909+00:00",
+      "payloadAt": 1793804813799,
+      "fetchedAt": null,
+      "qualityState": null,
+      "stockRows": null,
+      "fundRows": null,
+      "foladAt": 1793803914080
+    }
+  ],
+  "pipelineCatalog": [
+    {
+      "table": "codal_reports",
+      "column": "id",
+      "type": "bigint"
+    },
+    {
+      "table": "codal_reports",
+      "column": "symbol",
+      "type": "text"
+    },
+    {
+      "table": "codal_reports",
+      "column": "company_name",
+      "type": "text"
+    },
+    {
+      "table": "codal_reports",
+      "column": "report_kind",
+      "type": "text"
+    },
+    {
+      "table": "codal_reports",
+      "column": "period_end",
+      "type": "date"
+    },
+    {
+      "table": "codal_reports",
+      "column": "title",
+      "type": "text"
+    },
+    {
+      "table": "codal_reports",
+      "column": "source_url",
+      "type": "text"
+    },
+    {
+      "table": "codal_reports",
+      "column": "published_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "table": "codal_reports",
+      "column": "data",
+      "type": "jsonb"
+    },
+    {
+      "table": "codal_reports",
+      "column": "raw",
+      "type": "jsonb"
+    },
+    {
+      "table": "codal_reports",
+      "column": "captured_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "table": "ir_market_history",
+      "column": "id",
+      "type": "bigint"
+    },
+    {
+      "table": "ir_market_history",
+      "column": "captured_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "table": "ir_market_history",
+      "column": "section",
+      "type": "text"
+    },
+    {
+      "table": "ir_market_history",
+      "column": "payload",
+      "type": "jsonb"
+    },
+    {
+      "table": "ir_market_snapshots",
+      "column": "key",
+      "type": "text"
+    },
+    {
+      "table": "ir_market_snapshots",
+      "column": "payload",
+      "type": "jsonb"
+    },
+    {
+      "table": "ir_market_snapshots",
+      "column": "updated_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "budgetRpcSignatures": [],
+  "capacity": {
+    "cpuCores": 4,
+    "memoryTotalBytes": 8276856832,
+    "memoryAvailableBytes": 5914275840,
+    "rootDiskFreeBytes": 14347202560
+  },
+  "status": "READ_ONLY_RUNTIME_SCHEDULE_METADATA_OBSERVED",
+  "after": {
+    "identityMatched": true,
+    "healthy": true,
+    "restartCount": 0
+  },
+  "finishedAtUtc": "2026-11-04T15:09:47.810264+00:00",
+  "authenticatedObserved": true,
+  "commandSentObserved": true,
+  "observedAtUtc": "2026-11-04T15:09:47.300056+00:00",
+  "automaticRetry": false,
+  "deliberateRemoteWrites": false
+}

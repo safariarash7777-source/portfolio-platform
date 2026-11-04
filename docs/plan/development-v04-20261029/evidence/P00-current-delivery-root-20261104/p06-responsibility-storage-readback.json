@@ -1,0 +1,247 @@
+{
+  "schema": "production-storage-targeted-readonly.v1",
+  "atUtc": "2026-11-04T16:25:06.398751+00:00",
+  "providerRequests": 0,
+  "sqlWrites": false,
+  "serviceOrScheduleChanged": false,
+  "environmentValuesRead": false,
+  "naturalCyclesAccepted": 0,
+  "before": {
+    "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+    "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+    "health": "healthy",
+    "restartCount": 0
+  },
+  "market": {
+    "key": "latest",
+    "updatedAt": "2026-11-04T16:21:52.51+00:00",
+    "fetchedAt": 1793809312196,
+    "quality": {
+      "state": "complete",
+      "attemptedAt": 1793809312196,
+      "families": {
+        "gold": {
+          "state": "received",
+          "hasError": false,
+          "retained": false,
+          "receivedAt": 1793809312196
+        },
+        "funds": {
+          "state": "received",
+          "hasError": false,
+          "retained": false,
+          "receivedAt": 1793809312196
+        },
+        "crypto": {
+          "state": "received",
+          "hasError": false,
+          "retained": false,
+          "receivedAt": 1793809312196
+        },
+        "stocks": {
+          "state": "received",
+          "hasError": false,
+          "retained": false,
+          "receivedAt": 1793809312196
+        },
+        "indices": {
+          "state": "received",
+          "hasError": false,
+          "retained": false,
+          "receivedAt": 1793809312196
+        },
+        "options": {
+          "state": "received",
+          "hasError": false,
+          "retained": false,
+          "receivedAt": 1793809312196
+        },
+        "currency": {
+          "state": "received",
+          "hasError": false,
+          "retained": false,
+          "receivedAt": 1793809312196
+        }
+      }
+    },
+    "stockRows": 764,
+    "fundRows": 345
+  },
+  "recentReports": [
+    {
+      "id": 12292,
+      "symbol": "\u0644\u062e\u0632\u0631",
+      "kind": "\u0646-\u06f3\u06f0",
+      "periodEnd": "2026-09-22",
+      "publishedAt": null,
+      "capturedAt": "2026-11-04T15:11:58.337588+00:00"
+    },
+    {
+      "id": 12291,
+      "symbol": "\u0634\u062a\u0628\u0631\u06cc\u0632",
+      "kind": "\u0646-\u06f3\u06f0",
+      "periodEnd": "2026-09-22",
+      "publishedAt": null,
+      "capturedAt": "2026-11-04T15:11:56.083093+00:00"
+    },
+    {
+      "id": 12290,
+      "symbol": "\u0634\u0647\u0631 \u0641\u0631\u0634",
+      "kind": "\u0646-\u06f3\u06f0",
+      "periodEnd": "2026-09-22",
+      "publishedAt": null,
+      "capturedAt": "2026-11-04T15:11:55.526429+00:00"
+    },
+    {
+      "id": 12289,
+      "symbol": "\u0622\u0648\u0627\u067e\u0632\u0634\u06a9",
+      "kind": "\u0646-\u06f3\u06f0",
+      "periodEnd": "2026-04-20",
+      "publishedAt": null,
+      "capturedAt": "2026-11-04T15:11:53.935127+00:00"
+    },
+    {
+      "id": 12288,
+      "symbol": "\u062e\u0631\u06cc\u0646\u06af",
+      "kind": "\u0646-\u06f3\u06f0",
+      "periodEnd": "2026-10-22",
+      "publishedAt": null,
+      "capturedAt": "2026-11-04T12:12:00.065229+00:00"
+    },
+    {
+      "id": 12287,
+      "symbol": "\u063a\u06af\u0631\u062c\u06cc",
+      "kind": "\u0646-\u06f3\u06f0",
+      "periodEnd": "2026-10-22",
+      "publishedAt": null,
+      "capturedAt": "2026-11-04T12:11:59.792513+00:00"
+    },
+    {
+      "id": 12286,
+      "symbol": "\u0644\u0627\u0628\u0633\u0627",
+      "kind": "\u0646-\u06f3\u06f0",
+      "periodEnd": "2026-10-22",
+      "publishedAt": null,
+      "capturedAt": "2026-11-04T12:11:59.538505+00:00"
+    },
+    {
+      "id": 12285,
+      "symbol": "\u06a9\u0627\u0633\u067e\u06cc\u0646",
+      "kind": "\u0646-\u06f3\u06f0",
+      "periodEnd": "2026-10-22",
+      "publishedAt": null,
+      "capturedAt": "2026-11-04T11:26:43.968538+00:00"
+    },
+    {
+      "id": 12284,
+      "symbol": "\u0641\u0633\u067e\u0627",
+      "kind": "\u0646-\u06f3\u06f0",
+      "periodEnd": "2023-08-22",
+      "publishedAt": null,
+      "capturedAt": "2026-11-04T10:42:01.541517+00:00"
+    },
+    {
+      "id": 12283,
+      "symbol": "\u0641\u0633\u067e\u0627",
+      "kind": "\u0646-\u06f3\u06f0",
+      "periodEnd": "2023-09-22",
+      "publishedAt": null,
+      "capturedAt": "2026-11-04T10:42:00.543708+00:00"
+    },
+    {
+      "id": 12282,
+      "symbol": "\u0641\u0633\u067e\u0627",
+      "kind": "\u0646-\u06f3\u06f0",
+      "periodEnd": "2023-09-22",
+      "publishedAt": null,
+      "capturedAt": "2026-11-04T10:41:59.562325+00:00"
+    },
+    {
+      "id": 12281,
+      "symbol": "\u0641\u0633\u067e\u0627",
+      "kind": "\u0646-\u06f3\u06f0",
+      "periodEnd": "2023-10-22",
+      "publishedAt": null,
+      "capturedAt": "2026-11-04T10:41:58.572627+00:00"
+    }
+  ],
+  "foladReports": [
+    {
+      "id": 11722,
+      "kind": "\u0646-\u06f3\u06f0",
+      "periodEnd": "2023-12-21",
+      "publishedAt": null,
+      "capturedAt": "2026-10-27T15:57:01.846099+00:00"
+    },
+    {
+      "id": 11721,
+      "kind": "\u0646-\u06f3\u06f0",
+      "periodEnd": "2024-01-20",
+      "publishedAt": null,
+      "capturedAt": "2026-10-27T15:57:00.702644+00:00"
+    },
+    {
+      "id": 11720,
+      "kind": "\u0646-\u06f3\u06f0",
+      "periodEnd": "2024-02-19",
+      "publishedAt": null,
+      "capturedAt": "2026-10-27T15:56:59.716597+00:00"
+    },
+    {
+      "id": 11719,
+      "kind": "\u0646-\u06f3\u06f0",
+      "periodEnd": "2024-03-19",
+      "publishedAt": null,
+      "capturedAt": "2026-10-27T15:56:58.629412+00:00"
+    },
+    {
+      "id": 11718,
+      "kind": "\u0646-\u06f3\u06f0",
+      "periodEnd": "2024-03-19",
+      "publishedAt": null,
+      "capturedAt": "2026-10-27T15:56:56.691258+00:00"
+    },
+    {
+      "id": 11717,
+      "kind": "\u0646-\u06f3\u06f0",
+      "periodEnd": "2024-03-19",
+      "publishedAt": null,
+      "capturedAt": "2026-10-27T15:56:55.662922+00:00"
+    }
+  ],
+  "historyRecent5000": [
+    {
+      "section": "gold",
+      "latestCapturedAt": "2026-11-04T16:06:53.475254+00:00",
+      "rowsInBoundedWindow": 2086
+    },
+    {
+      "section": "currency",
+      "latestCapturedAt": "2026-11-04T16:06:53.475254+00:00",
+      "rowsInBoundedWindow": 2086
+    },
+    {
+      "section": "stocks",
+      "latestCapturedAt": "2026-09-15T09:42:35.617203+00:00",
+      "rowsInBoundedWindow": 414
+    },
+    {
+      "section": "funds",
+      "latestCapturedAt": "2026-09-15T09:42:35.617203+00:00",
+      "rowsInBoundedWindow": 414
+    }
+  ],
+  "status": "READ_ONLY_STORED_DATA_OBSERVED",
+  "after": {
+    "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+    "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+    "health": "healthy",
+    "restartCount": 0
+  },
+  "completedAtUtc": "2026-11-04T16:25:07.899666+00:00",
+  "authenticatedObserved": true,
+  "commandSentObserved": true,
+  "observedAtUtc": "2026-11-04T16:25:07.615332+00:00",
+  "automaticRetry": false,
+  "deliberateRemoteWrites": false
+}

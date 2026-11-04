@@ -79,3 +79,5 @@ p09-gateway-* -text -whitespace
 p08-prod-5ec-* -text -whitespace
 p06-public-hop-* -text -whitespace
 p03-reader-map-* -text -whitespace
+
+p06-responsibility-* -text -whitespace

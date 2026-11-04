@@ -1,0 +1,45 @@
+{
+  "schema": "production-responsibility-root-review.v1",
+  "atUtc": "2026-11-04T16:29:30.423777+00:00",
+  "observerRun": 41856505670,
+  "observerAttempt": 1,
+  "observerSource": "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+  "artifactId": 13337084259,
+  "artifactZipSha256": "ecef6fa23a3b45df5a30cbc2b42a463fac88eabf1d05d8f75e87ebbe57abb0e6",
+  "artifactReceiptSha256": "5d57fd632eb4a16df9200403f83eddc71facff47e7082d91b81f654346874c11",
+  "runAssociation": "Unique dispatch note, one attempt, expected observer source, created-before-receipt/artifact-after-receipt and independent GitHub artifact digest match; receipt is passive schema v1, not a cryptographic runtime-code attestation.",
+  "diagnosticDirectProviderRequests": 0,
+  "rootSqlWrites": false,
+  "rootServiceScheduleCostChanges": false,
+  "runtimeReleaseGitCommit": null,
+  "providerAccountUsage": null,
+  "twoConsecutiveEndToEndCyclesAccepted": false,
+  "conclusions": {
+    "marketCollectionAndStorage": "OBSERVED_WORKING_IN_BOUNDED_SAMPLES",
+    "providerWideOutage": "NOT_ESTABLISHED",
+    "liaraWideOutage": "NOT_ESTABLISHED",
+    "budgetStoreRpc404": "OUR_SCHEMA_OR_ROUTING_ROLLOUT_GAP",
+    "codalCycle": "INCOMPLETE_OWN_DOWNLOAD_LIMIT_AND_ADMISSION_COVERAGE",
+    "stockFundIrMarketHistoryStale": "INTENTIONAL_UNUSED_FAMILY_NOT_PRODUCT_HISTORY_FAILURE",
+    "productSymbolHistory": "FOLAD_AND_AHRAM_2026_11_04_OBSERVED",
+    "n10LatestStoredCaptureInExaminedDatabase": "2026-10-13T19:41:20.258230Z",
+    "preview402": "SEPARATE_FROM_WORKING_PRODUCTION_STORED_READ"
+  },
+  "sourceMetadata": {
+    "relay/server.mjs": "67a71c3569455c5a76b97b892c5756e49f7c829e1dbe3aeda90fa1730240a452",
+    "relay/codal.mjs": "a0c2a680c588065891e37e25da364307c0ab5423de94824c7e029f5c8631fd4a",
+    "relay/codal-engine.mjs": "9a7f04b7e3975a4287050a851c4fe485bc75fab3f963f8952f9a1b0001875a3b",
+    "lib/core/history.ts": "c626bb4c055be280b0510615583d2c9360841d6f7e0dd97e8007a579556774f4",
+    "lib/core/navHistory.ts": "a77c888ae408fdbad994025d890e48e88eebb7f60747c567d0f61d771c63922b",
+    "app/api/codal-list/route.ts": "8e599e2d687d090ce93d64f903fc0027454cb2bdd36ab211723246502a552f11",
+    "scripts/ops/relay-health-receipt.mjs": "445e55b6f088b0c2d8c159cefd07f1a0ce271b6e7e1a287b2e544ed12cfb5dca",
+    ".github/workflows/relay-health.yml": "14591b6489fa9282959c84dbfb67ecb388464138f0f271725648b20cfa3c8a75"
+  },
+  "frozenUnrelatedWork": [
+    "P03/M1 reader-consumer development",
+    "P09 R2 feature/native acceptance",
+    "P14 UI and new release",
+    "Hermes installation/move/upgrade/new cost"
+  ],
+  "fxStop": "SCI remote file commit started before stop and is confirmed by readback; IFB/FRED/Tindex publisher not started, no retry/rollback; final display acceptance remains open."
+}

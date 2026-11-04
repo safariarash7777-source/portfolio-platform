@@ -1,0 +1,536 @@
+{
+  "schema": "production-history-consumer-readonly.v1",
+  "atUtc": "2026-11-04T16:27:17.513955+00:00",
+  "providerRequests": 0,
+  "sqlWrites": false,
+  "serviceOrScheduleChanged": false,
+  "environmentValuesRead": false,
+  "before": {
+    "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+    "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+    "health": "healthy",
+    "restartCount": 0
+  },
+  "catalog": [
+    {
+      "table": "index_history",
+      "column": "id",
+      "type": "bigint"
+    },
+    {
+      "table": "index_history",
+      "column": "jdate",
+      "type": "text"
+    },
+    {
+      "table": "index_history",
+      "column": "total_index",
+      "type": "numeric"
+    },
+    {
+      "table": "index_history",
+      "column": "total_change",
+      "type": "numeric"
+    },
+    {
+      "table": "index_history",
+      "column": "equal_weight_index",
+      "type": "numeric"
+    },
+    {
+      "table": "index_history",
+      "column": "equal_weight_change",
+      "type": "numeric"
+    },
+    {
+      "table": "index_history",
+      "column": "market_value",
+      "type": "numeric"
+    },
+    {
+      "table": "index_history",
+      "column": "trade_value",
+      "type": "numeric"
+    },
+    {
+      "table": "index_history",
+      "column": "trade_volume",
+      "type": "numeric"
+    },
+    {
+      "table": "index_history",
+      "column": "trades",
+      "type": "numeric"
+    },
+    {
+      "table": "index_history",
+      "column": "source",
+      "type": "text"
+    },
+    {
+      "table": "index_history",
+      "column": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "table": "symbol_history",
+      "column": "id",
+      "type": "bigint"
+    },
+    {
+      "table": "symbol_history",
+      "column": "symbol",
+      "type": "text"
+    },
+    {
+      "table": "symbol_history",
+      "column": "isin",
+      "type": "text"
+    },
+    {
+      "table": "symbol_history",
+      "column": "trade_date",
+      "type": "date"
+    },
+    {
+      "table": "symbol_history",
+      "column": "captured_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "table": "symbol_history",
+      "column": "open",
+      "type": "numeric"
+    },
+    {
+      "table": "symbol_history",
+      "column": "high",
+      "type": "numeric"
+    },
+    {
+      "table": "symbol_history",
+      "column": "low",
+      "type": "numeric"
+    },
+    {
+      "table": "symbol_history",
+      "column": "close",
+      "type": "numeric"
+    },
+    {
+      "table": "symbol_history",
+      "column": "last_price",
+      "type": "numeric"
+    },
+    {
+      "table": "symbol_history",
+      "column": "volume",
+      "type": "numeric"
+    },
+    {
+      "table": "symbol_history",
+      "column": "value_traded",
+      "type": "numeric"
+    },
+    {
+      "table": "symbol_history",
+      "column": "individual_buy_value",
+      "type": "numeric"
+    },
+    {
+      "table": "symbol_history",
+      "column": "individual_sell_value",
+      "type": "numeric"
+    },
+    {
+      "table": "symbol_history",
+      "column": "individual_buy_count",
+      "type": "integer"
+    },
+    {
+      "table": "symbol_history",
+      "column": "individual_sell_count",
+      "type": "integer"
+    },
+    {
+      "table": "symbol_history",
+      "column": "legal_buy_value",
+      "type": "numeric"
+    },
+    {
+      "table": "symbol_history",
+      "column": "legal_sell_value",
+      "type": "numeric"
+    },
+    {
+      "table": "symbol_history",
+      "column": "buyer_power",
+      "type": "numeric"
+    },
+    {
+      "table": "symbol_history",
+      "column": "raw",
+      "type": "jsonb"
+    },
+    {
+      "table": "symbol_history",
+      "column": "source",
+      "type": "text"
+    }
+  ],
+  "symbolHistoryRecent5000": [
+    {
+      "symbol": "\u0622\u0628\u0627\u062f",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 4
+    },
+    {
+      "symbol": "\u0622\u0628\u0627\u062f\u0627",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 4
+    },
+    {
+      "symbol": "\u0622\u0628\u0646\u0648\u0633",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    },
+    {
+      "symbol": "\u0622\u0628\u06cc",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    },
+    {
+      "symbol": "\u0622\u0628\u06cc\u0646",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 4
+    },
+    {
+      "symbol": "\u0622\u067e",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    },
+    {
+      "symbol": "\u0622\u062a\u0634",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    },
+    {
+      "symbol": "\u0622\u062a\u06cc\u0645\u0633",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    },
+    {
+      "symbol": "\u0622\u062a\u06cc\u0647 \u0645\u0644\u062a",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    },
+    {
+      "symbol": "\u0622\u0630\u0631\u06cc\u0646",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    },
+    {
+      "symbol": "\u0622\u0631\u0627\u0645",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    },
+    {
+      "symbol": "\u0622\u0631\u0627\u0645\u0634",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    },
+    {
+      "symbol": "\u0622\u0631\u062a\u0627\u0646",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 2
+    },
+    {
+      "symbol": "\u0622\u0631\u062f\u06cc\u0646\u0647",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    },
+    {
+      "symbol": "\u0622\u0631\u0645\u0627\u0646",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    },
+    {
+      "symbol": "\u0622\u0631\u06cc\u0627",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 4
+    },
+    {
+      "symbol": "\u0622\u0633",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    },
+    {
+      "symbol": "\u0622\u0633\u0627",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    },
+    {
+      "symbol": "\u0622\u0633\u0627\u0633",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    },
+    {
+      "symbol": "\u0622\u0633\u0627\u0644",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    },
+    {
+      "symbol": "\u0622\u0633\u0627\u0645",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    },
+    {
+      "symbol": "\u0622\u0633\u0627\u0646",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    },
+    {
+      "symbol": "\u0622\u0633\u0648\u062f",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    },
+    {
+      "symbol": "\u0622\u0633\u06cc\u0627",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 4
+    },
+    {
+      "symbol": "\u0622\u0641\u0627\u0642",
+      "latestTradeDate": "2026-11-04",
+      "source": "relay_eod",
+      "rowsInWindow": 5
+    }
+  ],
+  "selectedHistory": [
+    {
+      "symbol": "\u0627\u0647\u0631\u0645",
+      "source": "relay_eod",
+      "tradeDate": "2026-11-04",
+      "id": 5848050,
+      "navPresent": true
+    },
+    {
+      "symbol": "\u0641\u0648\u0644\u0627\u062f",
+      "source": "relay_eod",
+      "tradeDate": "2026-11-04",
+      "id": 5847292,
+      "navPresent": false
+    },
+    {
+      "symbol": "\u0627\u0647\u0631\u0645",
+      "source": "relay_eod",
+      "tradeDate": "2026-11-03",
+      "id": 5845700,
+      "navPresent": true
+    },
+    {
+      "symbol": "\u0641\u0648\u0644\u0627\u062f",
+      "source": "relay_eod",
+      "tradeDate": "2026-11-03",
+      "id": 5844910,
+      "navPresent": false
+    },
+    {
+      "symbol": "\u0627\u0647\u0631\u0645",
+      "source": "relay_eod",
+      "tradeDate": "2026-11-02",
+      "id": 5843748,
+      "navPresent": true
+    },
+    {
+      "symbol": "\u0641\u0648\u0644\u0627\u062f",
+      "source": "relay_eod",
+      "tradeDate": "2026-11-02",
+      "id": 5842978,
+      "navPresent": false
+    },
+    {
+      "symbol": "\u0627\u0647\u0631\u0645",
+      "source": "relay_eod",
+      "tradeDate": "2026-11-01",
+      "id": 5834984,
+      "navPresent": true
+    },
+    {
+      "symbol": "\u0641\u0648\u0644\u0627\u062f",
+      "source": "relay_eod",
+      "tradeDate": "2026-11-01",
+      "id": 5834222,
+      "navPresent": false
+    },
+    {
+      "symbol": "\u0627\u0647\u0631\u0645",
+      "source": "relay_eod",
+      "tradeDate": "2026-10-31",
+      "id": 5822847,
+      "navPresent": true
+    },
+    {
+      "symbol": "\u0641\u0648\u0644\u0627\u062f",
+      "source": "relay_eod",
+      "tradeDate": "2026-10-31",
+      "id": 5822075,
+      "navPresent": false
+    },
+    {
+      "symbol": "\u0627\u0647\u0631\u0645",
+      "source": "relay_eod",
+      "tradeDate": "2026-10-28",
+      "id": 5806561,
+      "navPresent": true
+    },
+    {
+      "symbol": "\u0641\u0648\u0644\u0627\u062f",
+      "source": "relay_eod",
+      "tradeDate": "2026-10-28",
+      "id": 5805807,
+      "navPresent": false
+    },
+    {
+      "symbol": "\u0627\u0647\u0631\u0645",
+      "source": "relay_eod",
+      "tradeDate": "2026-10-27",
+      "id": 5789763,
+      "navPresent": true
+    },
+    {
+      "symbol": "\u0641\u0648\u0644\u0627\u062f",
+      "source": "relay_eod",
+      "tradeDate": "2026-10-27",
+      "id": 5789006,
+      "navPresent": false
+    },
+    {
+      "symbol": "\u0627\u0647\u0631\u0645",
+      "source": "relay_eod",
+      "tradeDate": "2026-10-25",
+      "id": 5788668,
+      "navPresent": true
+    },
+    {
+      "symbol": "\u0641\u0648\u0644\u0627\u062f",
+      "source": "relay_eod",
+      "tradeDate": "2026-10-25",
+      "id": 5787920,
+      "navPresent": false
+    },
+    {
+      "symbol": "\u0627\u0647\u0631\u0645",
+      "source": "relay_eod",
+      "tradeDate": "2026-10-24",
+      "id": 5778535,
+      "navPresent": true
+    },
+    {
+      "symbol": "\u0641\u0648\u0644\u0627\u062f",
+      "source": "relay_eod",
+      "tradeDate": "2026-10-24",
+      "id": 5777797,
+      "navPresent": false
+    },
+    {
+      "symbol": "\u0627\u0647\u0631\u0645",
+      "source": "relay_eod",
+      "tradeDate": "2026-10-21",
+      "id": 5777473,
+      "navPresent": true
+    },
+    {
+      "symbol": "\u0641\u0648\u0644\u0627\u062f",
+      "source": "relay_eod",
+      "tradeDate": "2026-10-21",
+      "id": 5776717,
+      "navPresent": false
+    }
+  ],
+  "indexHistoryLastRows": [
+    {
+      "id": 77,
+      "jdate": "1405-08-13"
+    },
+    {
+      "id": 76,
+      "jdate": "1405-08-12"
+    },
+    {
+      "id": 75,
+      "jdate": "1405-08-11"
+    },
+    {
+      "id": 74,
+      "jdate": "1405-08-10"
+    },
+    {
+      "id": 73,
+      "jdate": "1405-08-09"
+    }
+  ],
+  "lastN10ByCapture": [
+    {
+      "id": 10942,
+      "symbol": "\u0641\u0631\u0648\u062f",
+      "kind": "\u0646-\u06f1\u06f0",
+      "periodEnd": "2025-09-22",
+      "publishedAt": null,
+      "capturedAt": "2026-10-13T19:41:20.25823+00:00"
+    },
+    {
+      "id": 10941,
+      "symbol": "\u0641\u0631\u0648\u062f",
+      "kind": "\u0646-\u06f1\u06f0",
+      "periodEnd": "2025-09-22",
+      "publishedAt": null,
+      "capturedAt": "2026-10-13T19:41:19.877027+00:00"
+    },
+    {
+      "id": 10940,
+      "symbol": "\u0641\u0631\u0648\u062f",
+      "kind": "\u0646-\u06f1\u06f0",
+      "periodEnd": "2025-09-22",
+      "publishedAt": null,
+      "capturedAt": "2026-10-13T19:41:19.568668+00:00"
+    }
+  ],
+  "status": "READ_ONLY_CONSUMER_HISTORY_OBSERVED",
+  "after": {
+    "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+    "image": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+    "health": "healthy",
+    "restartCount": 0
+  },
+  "completedAtUtc": "2026-11-04T16:27:19.475149+00:00",
+  "authenticatedObserved": true,
+  "commandSentObserved": true,
+  "observedAtUtc": "2026-11-04T16:27:18.825670+00:00",
+  "automaticRetry": false,
+  "deliberateRemoteWrites": false
+}
