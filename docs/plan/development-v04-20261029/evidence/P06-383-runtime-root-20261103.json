@@ -1,0 +1,25 @@
+{
+  "observedOn": "2026-11-03",
+  "source": "Vercel get_runtime_logs, exact deployment, since 30m",
+  "deploymentId": "dpl_Gsv51HKNbxDcYFGN8YTx8SK7n7WM",
+  "sourceSha": "b387d4807953b4294f686be816bea8190211986e",
+  "environment": "preview",
+  "observations": [
+    {"at": "2026-11-03T11:46:27.936Z", "route": "symbol-detail", "event": "stored_read_failed", "phase": "headers", "upstreamStatus": 402, "elapsedMs": 60},
+    {"at": "2026-11-03T11:46:28.546Z", "route": "symbol-detail", "event": "stored_read_failed", "phase": "headers", "upstreamStatus": 402, "elapsedMs": 62},
+    {"at": "2026-11-03T11:46:25.566Z", "route": "symbol SSR", "event": "fundamental_read_failed", "phase": "request-or-body", "reason": "TimeoutError"}
+  ],
+  "limits": {
+    "fundamentalTimeoutCause": "UNATTRIBUTED",
+    "market402Cause": "UNATTRIBUTED",
+    "metadataBrowserAcceptance": "NOT_PASSED",
+    "productionRelease": "NOT_PERFORMED",
+    "lastCompleteFinancialIngestion": "UNKNOWN"
+  },
+  "diagnosticToolFailures": [
+    {"operation": "get_runtime_logs since 3h", "status": 400, "reason": "outside Hobby retention; corrected to 30m without upgrade"},
+    {"operation": "web_fetch_vercel_url", "result": "deployment not found or connection access unavailable; no reauthorization or repeated request"}
+  ],
+  "nextOwner": "existing root coordinator",
+  "nextAction": "Distinguish the fundamental read transport failure from the separate market upstream response; restore actual report read before accepting the metadata UI."
+}

@@ -102,8 +102,29 @@ export type ReportScope = "company" | "consolidated_ambiguous" | "unknown";
 export interface ReportSource {
   title: string; // مثل «صورت‌های مالی ۱۲ماههٔ حسابرسی‌شدهٔ ۱۴۰۴»
   source_url: string | null; // URL اطلاعیهٔ codal.ir؛ تا نیامده null می‌ماند
-  /** Publication clock from the selected stored Codal disclosure, in Tehran local time. */
+  /** Source Jalali date/time text, not a verified UTC publication instant. */
   publishedAt?: string | null;
+  /** Selected immutable rows only; storage capture never proves source freshness or job success. */
+  records?: Array<{
+    /** Never synthesize an ID when a malformed row has no valid database identity. */
+    id: number | null;
+    sourceUrl: string | null;
+    storedPeriodEnd: string | null;
+    financialPeriodEnd: string | null;
+    /** Existing normalized source-local Jalali text; no UTC conversion. */
+    publishedAt: string | null;
+    publishedDateRaw: string | null;
+    publishedTimeRaw: string | null;
+    publishedAtUtc: null;
+    publicationUtcConfidence: "unknown";
+    /** Valid source timestamp verbatim, retaining its offset and fractional precision. */
+    capturedAtRaw: string | null;
+    /** UTC normalization at JavaScript millisecond precision; use raw for source precision. */
+    capturedAt: string | null;
+    parserVersion: number | null;
+    parserVersionSource: "raw" | "source_url" | null;
+    amendment: boolean;
+  }>;
   verified: boolean; // اعتبارسنجی حسابی انجام شده؟ جزئیات در verification_note.
   verification_note?: string;
   /**

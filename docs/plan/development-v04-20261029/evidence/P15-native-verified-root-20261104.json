@@ -1,0 +1,44 @@
+{
+  "observedAtUtc": "2026-11-03T20:57:23.910569+00:00",
+  "checkpoint": "20261030T215307Z",
+  "attemptId": "4c7c327a2ccf4d1ca3e9b90deb942c72",
+  "state": "VERIFIED_NATIVE_BACKUP_ONLY",
+  "independentFinalReadback": "VERIFIED_NATIVE_BACKUP_ONLY",
+  "manifestSha256": "73a75e95ae71861d76d1b7c89a811314d5ed065528b8fe69d0a4255e95a6a1d8",
+  "authorizationSha256": "245d31a02b5a6ec9e3bf95548f8a98352371910bff4f164b6c4a9fd0fbbcdb9b",
+  "codeZipSha256": "0a53c00219ff7803871ecf17abe195f549b57c01e2c758f256acd56b04529643",
+  "recordCount": 17,
+  "encryptedStreamCount": 16,
+  "explicitAbsentRoleCount": 1,
+  "originalDumpBytes": 2406546295,
+  "originalDumpSha256": "87434f8c53cca9910cdbd953415ffed5e01d3aacb0db8c0702a4e164253c8c17",
+  "externalSignedReceiptSha256": {
+    "capture-start": "f6d0499b49f2ba244f003c8b1ca1204a4e4419d70270e0ea18622bbb48def5fc",
+    "bound": "f11191f01734cc573cb29772a01533fd7fc943c5f2eef1c65d2aa91eda15a7d2",
+    "verify-start": "2de01c378425f28898ed3a4fca3770948bfa2b129ca897695a4e0fa2fc8ace8a",
+    "verified": "6b0de9761d2456a3f8dfc7aa8158732de7bb3197e065514a32f37bec87083f15"
+  },
+  "reconciliation": {
+    "id": "5eedbf730eb942349503bc3275d0894f",
+    "state": "CURRENT_ARCHIVE_EXCLUSIVELY_QUIESCENT",
+    "historicalWriter": "UNKNOWN",
+    "historicalFailureRetained": true,
+    "oldPartialPreserved": true
+  },
+  "cryptoVerification": {
+    "authenticatedBeforeDecrypt": true,
+    "exactHeadersLengthsAndPlaintextHashes": true,
+    "separateFreshVerifyProcess": true,
+    "separateFreshReadbackProcess": true
+  },
+  "installAuthorized": false,
+  "nativeConsultationAuthorized": false,
+  "freshCurrentDatabaseBackup": false,
+  "freshCurrentDatabaseRestore": false,
+  "storageBinaryProof": false,
+  "remaining": [
+    "Fresh consistent current backup/restore before primary migration.",
+    "Data-preserving compaction requires caller materialization gate and actual measured capacity.",
+    "No legacy consumer may assume a compacted raw path is still present."
+  ]
+}

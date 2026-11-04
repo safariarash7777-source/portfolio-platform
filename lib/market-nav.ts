@@ -13,6 +13,8 @@
  * صریح می‌کند تا نما نتواند لنگر را مثلِ یک تبِ صفحه‌ای نشان دهد.
  */
 
+import { isFundSelectionValue } from "./core/fund-comparison-selection";
+
 export type MarketSectionKey = "overview" | "stocks" | "funds" | "gold" | "map" | "options";
 
 export interface MarketSection {
@@ -270,6 +272,7 @@ const BACK_TARGETS: ReadonlyArray<BackTargetSpec> = [
       ...SHELL_SEARCH,
       q: isFreeText(SEARCH_MAX_LEN),
       type: isEnum(FUND_TYPE_VALUES),
+      compare: isFundSelectionValue,
       sort: isEnum(FUND_SORT_KEYS),
       dir: isEnum(SORT_DIRS),
     },

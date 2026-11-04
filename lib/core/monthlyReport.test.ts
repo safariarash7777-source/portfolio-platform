@@ -16,7 +16,147 @@ import {
   meaningfulRate,
 } from "./monthlyReport";
 import type { CodalN30Data, N30ProductRow } from "@/lib/fundamental/types";
-import { withKnownMonthlyQuantities } from "./monthly-quantity";
+import { withKnownMonthlyQuantities, hasThousandTonneQuantityWitness, type QuantityWitnessedReport, type QuantityWitnessedProduct } from "./monthly-quantity";
+import { foladQuantityFixture } from "../../relay/fixtures/codal-offline.mjs";
+
+test('actual byte-bound Folad quantity preserves goods rows while report coverage and all new-unit rates remain unknown', () => {
+  const fixture = foladQuantityFixture();
+  const raw = fixture.report as QuantityWitnessedReport;
+  const before = JSON.stringify(raw), checked = withKnownMonthlyQuantities(raw);
+  assert.equal(raw.quantity_source!.htmlSha256, '11c089fae22de79e4986b37677e3ce2af3f594642cff0f546b2bc0feb84c2a62');
+  assert.equal(checked.qty_unit, null, 'Service rows cannot donate to a report-wide goods denominator');
+  assert.equal(checked.products[0].production_qty, 128); assert.equal(checked.products[0].sales_qty, 138);
+  assert.equal(checked.products.find(p => p.market === 'صادراتی')!.production_qty, 0);
+  assert.ok(checked.products.every(p => p.sales_rate === null));
+  assert.equal(raw.products[0].sales_rate, 1084861500000, 'Raw reported rate retained without certifying its denominator');
+  const service = checked.products.find(p => p.market === 'خدمات')!;
+  assert.equal(service.production_qty, null); assert.equal(service.sales_qty, null);
+  assert.equal(checked.period_total_amount, raw.period_total_amount); assert.equal(checked.fy_cumulative_amount, raw.fy_cumulative_amount);
+  assert.deepEqual(withKnownMonthlyQuantities(checked), checked, 'Quantity filtering is idempotent');
+  assert.equal(JSON.stringify(raw), before); assert.equal(fixture.counts.network, 0);
+  assert.ok(!JSON.stringify(raw.quantity_source).includes('htmlBytes'), 'Raw HTML bytes never leave the internal parse hand-off');
+});
+
+test('quantity witness rejects every mismatched or absent source, row, column, unit and cell instead of falling back to a legacy rate', () => {
+  const initial = foladQuantityFixture().report as QuantityWitnessedReport;
+  const one: QuantityWitnessedReport = { ...initial, products: [initial.products[0]] };
+  assert.equal(withKnownMonthlyQuantities(one).qty_unit, 'هزار تن');
+  type Mutate = (r: QuantityWitnessedReport, p: QuantityWitnessedProduct) => void;
+  const cases: Array<[string, Mutate]> = [
+    ['source absence', r => { delete r.quantity_source; }], ['row witness absence', (_, p) => { delete p.quantity_witness; }],
+    ['source ref', (_, p) => { p.quantity_witness!.sourceId += '?different'; }],
+    ['hash', (_, p) => { p.quantity_witness!.htmlSha256 = 'a'.repeat(64); }],
+    ['malformed hash', r => { r.quantity_source!.htmlSha256 = 'not-a-hash'; }],
+    ['symbol', r => { r.symbol = 'دیگر'; }], ['period', r => { r.period_end = '1405-05-31'; }],
+    ['all symbol fields absent', r => { (r as unknown as { symbol?: string }).symbol = undefined;(r.quantity_source as unknown as { symbol?: string }).symbol = undefined; }],
+    ['all symbol fields blank', r => { r.symbol = ' ';r.quantity_source!.symbol = ' '; }],
+    ['all period fields absent', (r, p) => { (r as unknown as { period_end?: string }).period_end = undefined;(r.quantity_source as unknown as { periodEnd?: string }).periodEnd = undefined;(p.quantity_witness as unknown as { periodEnd?: string }).periodEnd = undefined; }],
+    ['all period fields malformed', (r, p) => { r.period_end = 'not-a-period';r.quantity_source!.periodEnd = r.period_end;p.quantity_witness!.periodEnd = r.period_end; }],
+    ['row period', (_, p) => { p.quantity_witness!.periodEnd = '1405-05-31'; }],
+    ['table', (_, p) => { p.quantity_witness!.tableIndex++; }], ['row', (_, p) => { p.quantity_witness!.rowIndex = 999; }],
+    ['row points at header', (r, p) => { p.quantity_witness!.rowIndex = r.quantity_source!.headerRowIndex; }],
+    ['unit column', (_, p) => { (p.quantity_witness as unknown as { unitColumn: number }).unitColumn = 2; }],
+    ['production column', r => { (r.quantity_source as unknown as { productionColumn: number }).productionColumn = 12; }],
+    ['sales column', r => { (r.quantity_source as unknown as { salesColumn: number }).salesColumn = 15; }],
+    ['unit header', r => { r.quantity_source!.unitHeader = 'نرخ'; }],
+    ['missing production header', r => { (r.quantity_source as unknown as { productionHeader?: string }).productionHeader = undefined; }],
+    ['sales header', r => { r.quantity_source!.salesHeader = 'نرخ فروش'; }],
+    ['unit cannot relabel huge rate as per tonne', (_, p) => { p.qty_unit = 'تن'; }],
+    ['explicit unit null', (_, p) => { p.qty_unit = null; }], ['explicit unit undefined', (_, p) => { p.qty_unit = undefined; }],
+    ['product name', (_, p) => { p.product_name += ' دیگر'; }],
+    ['production value', (_, p) => { p.production_qty!++; }], ['sales value', (_, p) => { p.sales_qty!++; }],
+    ['market provenance', (_, p) => { delete p.market_basis; }],
+    ['missing observed row', r => { r.quantity_source!.rows = []; }],
+    ['duplicate observed row', r => { r.quantity_source!.rows.push({ ...r.quantity_source!.rows[0] }); }],
+    ['unadmitted observed row', r => { r.quantity_source!.rows[0].admitted = false; }],
+  ];
+  for (const [name, mutate] of cases) {
+    const r = structuredClone(one);mutate(r, r.products[0]);
+    assert.equal(hasThousandTonneQuantityWitness(r, r.products[0]), false, name);
+    const checked = withKnownMonthlyQuantities(r);
+    assert.equal(checked.qty_unit, null, name); assert.equal(checked.products[0].production_qty, null, name);
+    assert.equal(checked.products[0].sales_qty, null, name); assert.equal(checked.products[0].sales_rate, null, name);
+  }
+});
+
+test('quantity-only scopes separate the main goods markets from same-name services without replacing the existing aggregate', () => {
+  const raw = foladQuantityFixture().report as QuantityWitnessedReport;
+  const checked = withKnownMonthlyQuantities(raw);
+  const model = buildMonthlySales([checked])!;
+  assert.equal(model.mainProductName, 'محصولات گرم');
+  assert.equal(model.prodVsSales[0].production, null); assert.equal(model.prodVsSales[0].sales, null);
+  assert.equal(model.prodVsSales[0].unavailableReason, 'incomplete-quantity');
+  assert.equal(narrativeProdVsSales(model), null);
+  assert.deepEqual(model.quantitySeries!.map(s => [s.market, s.scope, s.points[0].production, s.points[0].sales, s.points[0].quantityUnit]), [
+    ['داخلی', 'main-product-goods-market', 279, 238, 'هزار تن'],
+    ['صادراتی', 'main-product-goods-market', 0, 66, 'هزار تن'],
+  ]);
+  for (const s of model.quantitySeries!) {
+    assert.ok(s.label.includes('کالای'));assert.equal(s.points[0].scopeUnavailableReason, null);
+    const row = raw.products.find(p => p.product_name === model.mainProductName && p.market === s.market)!;
+    assert.deepEqual(s.points[0].witnesses, [row.quantity_witness]);
+  }
+  assert.ok(model.rateSeries.every(s => s.points.every(p => p.rate === null && p.rateUnit === null)));
+  assert.equal(model.avgCurrent, raw.period_total_amount);
+  assert.equal(model.cumulativeCurrent, raw.fy_cumulative_amount);
+});
+
+test('scoped quantity coverage fails closed for duplicate, dropped, unknown and incomplete rows while healthy peers retain their own scope', () => {
+  const initial = foladQuantityFixture().report as QuantityWitnessedReport;
+  const domestic = (r: QuantityWitnessedReport) => r.products.find(p => p.product_name === 'محصولات گرم' && p.market === 'داخلی')!;
+  const observation = (r: QuantityWitnessedReport) => r.quantity_source!.rows.find(p => p.rowIndex === domestic(r).quantity_witness!.rowIndex)!;
+  const cases: Array<[string, (r: QuantityWitnessedReport) => void, string, boolean]> = [
+    ['duplicate product', r => { r.products.push({ ...domestic(r) }); }, 'ambiguous-row', true],
+    ['duplicate observed row', r => { r.quantity_source!.rows.push({ ...observation(r) }); }, 'ambiguous-row', true],
+    ['dropped source row', r => { r.quantity_source!.rows.push({ ...observation(r), rowIndex: 999, admitted: false }); }, 'incomplete-source-coverage', true],
+    ['dropped product', r => { r.products = r.products.filter(p => p !== domestic(r)); }, 'incomplete-source-coverage', true],
+    ['unknown same-name market', r => { r.products.find(p => p.market === 'خدمات')!.market_basis = 'unknown'; }, 'unverified-market', false],
+    ['unknown observed same-name row', r => { r.quantity_source!.rows.push({ ...observation(r), rowIndex: 999, market: 'نامشخص' }); }, 'unverified-market', false],
+    ['missing quantity', r => { domestic(r).production_qty = null; }, 'incomplete-quantity', true],
+    ['wrong unit', r => { domestic(r).qty_unit = 'تن'; }, 'incomplete-quantity', true],
+    ['missing witness', r => { delete domestic(r).quantity_witness; }, 'incomplete-source-coverage', true],
+    ['wrong hash', r => { domestic(r).quantity_witness!.htmlSha256 = '0'.repeat(64); }, 'incomplete-quantity', true],
+  ];
+  for (const [name, mutate, reason, healthyExport] of cases) {
+    const r = structuredClone(initial);mutate(r);
+    const before = JSON.stringify(r), model = buildMonthlySales([withKnownMonthlyQuantities(r)])!;
+    const domesticPoint = model.quantitySeries!.find(s => s.market === 'داخلی')!.points[0];
+    assert.equal(domesticPoint.scopeUnavailableReason, reason, name);
+    assert.equal(domesticPoint.production, null, name);assert.equal(domesticPoint.sales, null, name);
+    assert.equal(domesticPoint.quantityUnit, null, name);assert.deepEqual(domesticPoint.witnesses, [], name);
+    const exportPoint = model.quantitySeries!.find(s => s.market === 'صادراتی')!.points[0];
+    assert.equal(exportPoint.sales, healthyExport ? 66 : null, name);
+    assert.equal(JSON.stringify(r), before, name);
+  }
+});
+
+test('scoped quantity shares the existing calendar and amendment selection without borrowing a missing witness', () => {
+  const raw = foladQuantityFixture().report as QuantityWitnessedReport;
+  // Earlier month is a synthetic copy solely to test calendar and report selection.
+  const earlier = structuredClone(raw);earlier.period_end = '1405-04-31';
+  earlier.quantity_source!.periodEnd = earlier.period_end;
+  for (const p of earlier.products) p.quantity_witness!.periodEnd = earlier.period_end;
+  const latestWithoutProof = structuredClone(raw);
+  delete latestWithoutProof.products.find(p => p.product_name === 'محصولات گرم' && p.market === 'داخلی')!.quantity_witness;
+  const m = buildMonthlySales([latestWithoutProof, raw, earlier].map(withKnownMonthlyQuantities))!;
+  assert.equal(m.reportCount, 2);
+  const points = m.quantitySeries!.find(s => s.market === 'داخلی')!.points;
+  assert.deepEqual(points.map(p => p.monthKey), ['1405-04', '1405-05', '1405-06']);
+  assert.deepEqual(points.map(p => p.sales), [238, null, null]);
+  assert.equal(points[1].scopeUnavailableReason, 'missing-report');
+  assert.equal(points[2].scopeUnavailableReason, 'incomplete-source-coverage');
+  assert.deepEqual(points[2].witnesses, []);
+  assert.equal(buildMonthlySales([report('1405-06-31', 10, [prod({ product_name: 'قدیمی' })])])!.quantitySeries, undefined);
+});
+
+test('fourteen legacy rate-unit cases preserve the exact prior gate independently of new quantity-only eligibility', () => {
+  const legacyUnits = ['تن','کیلوگرم','گرم','عدد','هزار عدد','متر','هزار متر','متر مربع','متر مکعب','لیتر','هزار لیتر','کیلووات ساعت','مگاوات ساعت'];
+  for (const unit of [...legacyUnits, ' تن ']) {
+    const input = { ...report('1405-06-31', 10, [prod({ product_name: 'قدیمی', qty_unit: unit, production_qty: 0, sales_qty: 1, sales_rate: 20, sales_amount: 10 })]), unit: 'میلیون ریال' };
+    const checked = withKnownMonthlyQuantities(input);
+    assert.equal(checked.qty_unit, unit.trim());assert.equal(checked.products[0].production_qty, 0);assert.equal(checked.products[0].sales_rate, 20);
+  }
+});
 
 function prod(p: Partial<N30ProductRow> & { product_name: string }): N30ProductRow {
   // `sales_qty` پیش‌فرضِ ۱ دارد، نه null.

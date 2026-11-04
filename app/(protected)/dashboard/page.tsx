@@ -8,7 +8,8 @@ import { withDeadline } from "@/lib/deadline";
 import ReadError from "@/components/dashboard/ReadError";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import DashboardClient, { type MemberFinanceSummary } from "./DashboardClient";
+import DashboardClient from "./DashboardClient";
+import PersonalFinance, { type MemberFinanceSummary } from "@/components/dashboard/PersonalFinance";
 import AccessStatusCard from "@/components/dashboard/AccessStatusCard";
 import { getAccess } from "@/lib/access";
 import { loadPortfolioSnapshot, loadVersionDebts } from "@/lib/portfolio/service";
@@ -121,24 +122,6 @@ export default async function DashboardPage() {
     loadPortfolioSnapshot(undefined, async () => supabase),
   ]);
 
-  // A failed read is not a new member or an empty risk history.
-  if (profileRes.error || !profileRes.data || assessmentRes.error || scoreHistoryRes.error) {
-    return (
-      <>
-        <Navbar />
-        <main className="mx-auto w-full max-w-3xl px-5 py-10">
-          <div role="alert" className="card p-6 space-y-4">
-            <p>اطلاعات پروفایل یا سابقهٔ ارزیابی ریسک دریافت نشد. برای جلوگیری از نمایش نتیجهٔ ناقص، داشبورد فعلاً باز نمی‌شود.</p>
-            <a href="/dashboard" className="btn btn-outline">تلاش دوباره</a>
-            <Link href="/dashboard/holdings" className="btn btn-outline">دارایی و بدهی من</Link>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
-  }
-
-  const access = await getAccess();
   const [memberDebts, memberScope] = await Promise.all([
     memberSnapshot.ready && memberSnapshot.holdings
       ? loadVersionDebts(memberSnapshot.holdings.id).catch(() => ({ ready: false, debts: [] }))
@@ -158,6 +141,25 @@ export default async function DashboardPage() {
     scopeState: assetsState === "empty" ? "empty" : memberScope.status === "error" ? "error" : memberScope.review ? "confirmed" : "unconfirmed",
     targetState: memberSnapshot.targetState ?? "error",
   };
+
+  // A failed read is not a new member or an empty risk history.
+  if (profileRes.error || !profileRes.data || assessmentRes.error || scoreHistoryRes.error) {
+    return (
+      <>
+        <Navbar />
+        <main id="main-content" dir="rtl" className="mx-auto w-full max-w-6xl px-5 py-10 space-y-6">
+          <div role="alert" className="card p-6 space-y-4">
+            <p>اطلاعات پروفایل یا سابقهٔ ارزیابی ریسک دریافت نشد. بخش ارزیابی ریسک تا بازیابی اطلاعات نمایش داده نمی‌شود؛ دفتر مالی شما در ادامه در دسترس است.</p>
+            <a href="/dashboard" className="btn btn-outline">تلاش دوباره</a>
+          </div>
+          <PersonalFinance summary={memberFinance} />
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  const access = await getAccess();
 
   const seenSet = new Set((seenRes.data ?? []).map((d) => d.announcement_id));
   const announcements = (announcementsRes.data ?? []).map((a) => ({

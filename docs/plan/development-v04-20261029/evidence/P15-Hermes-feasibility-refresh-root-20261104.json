@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "scope": "READ_ONLY_FEASIBILITY_REFRESH",
+  "checkedDateTehran": "2026-11-04",
+  "installedWindowsSource": {
+    "commit": "f42f579cf8bac4918ac9599bece71618afadd846",
+    "launcherSha256": "b15b47ded5cba8149e30683a0222d01b184fcdf46449b6e5d01a092e94d4210e",
+    "selectedAuthCodexSourceSha256": "85c4644c052f5f5b3d4dc0f862592b5f13f286bf48d4d239015c3c74ae3f8e91",
+    "selectedCodexTransportSha256": "60e0bce12901552186e374ab48a5a7c39b06ac22cdc450290a03b3e652bb83c1",
+    "executed": false,
+    "credentialsRead": false
+  },
+  "officialSourcesRead": [
+    "https://hermes-agent.nousresearch.com/docs/integrations/providers",
+    "https://hermes-agent.nousresearch.com/docs/getting-started/installation"
+  ],
+  "supportedByHermesDocumentation": "OpenAI Codex provider with ChatGPT/Codex subscription OAuth; Linux CLI distribution exists; source installer can omit browser and computer-use dependencies.",
+  "notProven": [
+    "This exact installed revision supports every contract in current documentation",
+    "The account, region and configured model are eligible on the existing Linux server",
+    "Subscription allowance or actual cost",
+    "No paid API fallback will occur without a separate verified runtime gate",
+    "Linux runtime footprint or actual Hermes peak resource consumption"
+  ],
+  "proposedInitialLimits": {
+    "concurrentMissions": 1,
+    "cpuCores": 1,
+    "memoryHighMiB": 1024,
+    "memoryMaxMiB": 1536,
+    "pidsMax": 128,
+    "maxTurns": 1,
+    "timeoutSeconds": 210,
+    "browserOrLocalModel": false,
+    "additionalFootprintBudgetGiB": 2,
+    "reserveForExistingServicesGiB": 2,
+    "baselineDiskGuardGiB": 10
+  },
+  "deploymentDecision": "NO_INSTALL_NOW; preserve exact version, choose a compatible Linux runtime only after footprint and authentication/bridge acceptance. Single owner of ledger/locks and unknown-write recovery before any Windows/Linux cutover.",
+  "capacityReference": "P15-capacity-sample-root-20261104.json",
+  "historicalSourceAndSchedulerReference": "P15-Hermes-local-source-root-20261031.json and P15-Hermes-local-scheduler-root-20261031.json; scheduler state is historical and not reattested here.",
+  "installedOrTransferredOrUpgraded": false,
+  "modelCalled": false,
+  "newServiceOrCostAuthorized": false,
+  "capacityLimit": "Disk available17.71GiB/RAMavailable5.58GiB is a short sample. Do not allocate the proposed2GiB Hermes footprint before fresh backup/restore and a new peak-capacity budget;17.25GiB backup start guard still applies."
+}

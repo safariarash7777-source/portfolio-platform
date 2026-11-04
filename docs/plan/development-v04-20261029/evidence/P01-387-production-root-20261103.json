@@ -1,0 +1,48 @@
+{
+  "observedOn": "2026-11-03",
+  "pullRequest": 387,
+  "scope": "Preserve the existing independent financial card when risk/profile reads fail; healthy markup and current main auth unchanged",
+  "head": "ffa8aea5a5fb268470aa3d63ec3eadbf57249ccb",
+  "testedMerge": "347ce75dcc58ab11e5dcf37b942a5d9141c10a83",
+  "productionSha": "56c9818ccb9a546391c500efb9199f01b9ea4091",
+  "treeOfHeadTestedMergeAndProduction": "33818b5cb004e2c48ead29869737d2ae61f76b4e",
+  "previousProductionSha": "c68ae44d05acdff016846dcb7998c56d7cc6d679",
+  "validation": {
+    "ownerTargetedTests": 49,
+    "ownerLintAndTypecheck": "PASS",
+    "rootProductAndMainAdaptationReview": "PASS_LIMITED_SOURCE",
+    "run": 41633848140,
+    "allFiveJobs": "success",
+    "rootReadCompleteCoreAndDatabaseLogs": true,
+    "actualCheckoutMatchesTestedMerge": true,
+    "coreFirstGroupTests": 2065,
+    "databaseTests": [400, 38],
+    "nonzeroFailCounts": 0
+  },
+  "preview": {
+    "id": "dpl_5sAut4NJT3hazmbZaR6a7oAuMJpf",
+    "url": "https://portfolio-platform-2wrvinti3-safariarash7777-4463s-projects.vercel.app/dashboard",
+    "state": "READY",
+    "target": null,
+    "guestRead": "HTTP200 after redirect to /login",
+    "authenticatedInteraction": "NOT_TESTED"
+  },
+  "production": {
+    "id": "dpl_CSNKqJfd1AJwYkPKdYSSqYe5uk2a",
+    "state": "READY",
+    "target": "production",
+    "alias": "portfolio-platform-fawn.vercel.app",
+    "rootAliasReadbackMatchesIdAndSha": true,
+    "home": "HTTP200",
+    "guestDashboard": "HTTP200 after redirect to /login",
+    "trigger": "Existing Git main deployment; no manual duplicate deployment or alias change"
+  },
+  "limits": {
+    "authenticatedFinancialWriteReadback": "NOT_TESTED",
+    "fullConsultationJourney": "NOT_ACCEPTED",
+    "serviceRight": "NOT_CONNECTED",
+    "primaryMigration": "NOT_PERFORMED",
+    "browserAutomation": "Stopped by URL-confidence guard; not bypassed",
+    "ownedActiveTestAccount": "Not identified in reviewed receipts; old accounts retired, fresh-run helper preparation in progress"
+  }
+}

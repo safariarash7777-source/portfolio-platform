@@ -1,6 +1,7 @@
 /** Passive, fixed-destination receipt. Raw /debug is kept in memory only. */
 import { appendFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
+import { ADMISSION_REASONS } from '../../relay/codal-admission-diagnostics.mjs';
 import { evaluateDebug } from '../deploy/relay-gate.mjs';
 
 const DEBUG = 'https://arsadata.liara.run/debug';
@@ -39,8 +40,49 @@ export function errorCategory(value) {
   if (/fetch|network|connect|socket/i.test(text)) return 'network';
   return 'other';
 }
+// Decode only fixed producer templates; never scan arbitrary messages for codes.
+const httpCodes = [400, 401, 402, 403, 404, 408, 409, 422, 429, 500, 502, 503, 504];
+const sqlCodes = ['42501', '42P01', '42703', '23505', 'PGRST202', 'PGRST204', 'PGRST205', 'PGRST301'];
+function safeErrorCodes(value) {
+  const unknown = { httpStatus: null, sqlCode: null };
+  if (typeof value !== 'string' || value.length > 1000) return unknown;
+  for (const prefix of ['rpc brsapi_budget_lease → ', 'rpc brsapi_budget_release → ', 'codal_feed HTTP ']) {
+    for (const status of httpCodes) {
+      const header = prefix + status + ': ';
+      if (!value.startsWith(header)) continue;
+      let sqlCode = null;
+      try { const body = JSON.parse(value.slice(header.length)); sqlCode = choice(body?.code, sqlCodes); } catch { /* Truncated body stays unknown. */ }
+      return { httpStatus: status, sqlCode };
+    }
+  }
+  return unknown;
+}
+const integer = x => Number.isSafeInteger(x) && x >= 0 ? x : null;
+const integerCounts = (value, names) => Object.fromEntries(names.map(name => [name, integer(value?.[name])]));
+const incompleteReasons = ['page_limit', 'invalid_order_or_identity', 'feed_write_failure', 'blocked_report', 'download_limit', 'report_failure', 'feed_failure'];
+function diagnostics(value, shape) {
+  const valid = value?.version === 1;
+  const project = name => Object.fromEntries(Object.entries(shape).map(([group, names]) =>
+    [group, integerCounts(valid ? value?.[name]?.[group] : null, names)]));
+  return { version: valid ? 1 : null, totals: project('totals'), lastCycle: project('lastCycle') };
+}
+function codalDetails(engine, archive) {
+  return {
+    // Attempt clocks are not successful ingestion receipts.
+    lastAttemptStartedAt: clock(engine?.lastRun),
+    failureDiagnostics: diagnostics(engine?.failureDiagnostics, { download: ['exception'], admission: ['rejected', 'exception'], persistence: ['exception'] }),
+    admissionDiagnostics: diagnostics(engine?.admissionDiagnostics, ADMISSION_REASONS),
+    archive: {
+      ok: boolean(archive?.ok), lastAttemptFinishedAt: clock(archive?.lastRun), error: errorCategory(archive?.lastError),
+      budgetDate: date(archive?.budgetDate), ...integerCounts(archive, ['dailyCap', 'usedToday', 'cursor', 'queueSize', 'doneSymbols']),
+      lastCycle: integerCounts(archive?.lastCycle, ['pages', 'downloaded', 'inserted', 'parseFailed', 'persistenceUnconfirmed']),
+      coverage: { ...integerCounts(archive?.coverage, ['n30Symbols', 'n10Symbols']), lastChecked: clock(archive?.coverage?.lastChecked) },
+    },
+  };
+}
+
 const operation = x => ({ ok: boolean(x?.ok), lastRun: clock(x?.lastRun), lastDate: date(x?.lastDate ?? x?.lastJdate), rows: number(x?.rows), error: errorCategory(x?.error ?? x?.lastError), skipped: x?.skipped == null ? null : true });
-const budget = x => ({ available: boolean(x?.available), persistent: boolean(x?.persistent), day: date(x?.day), ...counts(x, ['softBudget', 'hardCeiling', 'used', 'remaining', 'rejectedByBudget']), softExhausted: boolean(x?.softExhausted), store: { healthy: boolean(x?.store?.healthy), errors: number(x?.store?.errors), error: errorCategory(x?.store?.lastError) } });
+const budget = x => ({ available: boolean(x?.available), persistent: boolean(x?.persistent), day: date(x?.day), ...counts(x, ['softBudget', 'hardCeiling', 'used', 'remaining', 'rejectedByBudget']), softExhausted: boolean(x?.softExhausted), store: { healthy: boolean(x?.store?.healthy), errors: number(x?.store?.errors), error: errorCategory(x?.store?.lastError), ...safeErrorCodes(x?.store?.lastError) } });
 
 // IME scheduling days are Gregorian Tehran days, not timestamps. Target
 // disclosure dates are Jalali days. Preserve both precisions explicitly.
@@ -82,7 +124,7 @@ export function sanitizeDebug(d) {
     baseline: { state: choice(d?.baseline?.state, ['unknown', 'loaded', 'absent', 'failed']), error: errorCategory(d?.baseline?.error) },
     sources: Object.fromEntries(sources.map(k => [k, { ok: boolean(d?.sources?.[k]?.ok), ...counts(d?.sources?.[k], ['gold', 'currency', 'stocks', 'funds', 'cached', 'updated', 'failed']), error: errorCategory(d?.sources?.[k]?.error) }])),
     storage: { enabled: boolean(d?.supabase?.enabled), ok: boolean(d?.supabase?.ok), httpStatus: number(d?.supabase?.status), at: clock(d?.supabase?.at), error: errorCategory(d?.supabase?.error) },
-    codal: { ...operation(d?.codalEngine), feed: { ...counts(d?.codalEngine?.feed, ['pages', 'seen', 'matched', 'downloaded', 'inserted', 'parseFailed']), complete: boolean(d?.codalEngine?.feed?.complete), incompleteReason: errorCategory(d?.codalEngine?.feed?.incompleteReason) }, feedTable: { ...counts(d?.codalEngine?.feedTable, ['attempted', 'inserted', 'duplicates']), error: errorCategory(d?.codalEngine?.feedTable?.lastError) }, backfill: counts(d?.codalEngine?.backfill, ['queueSize', 'inserted', 'parseFailed', 'skippedCovered']) },
+    codal: { ...operation(d?.codalEngine), ...codalDetails(d?.codalEngine, d?.codalArchive), feed: { ...counts(d?.codalEngine?.feed, ['pages', 'seen', 'matched', 'downloaded', 'inserted', 'parseFailed']), complete: boolean(d?.codalEngine?.feed?.complete), incompleteReason: errorCategory(d?.codalEngine?.feed?.incompleteReason), incompleteReasonCode: choice(d?.codalEngine?.feed?.incompleteReason, incompleteReasons) }, feedTable: { ...counts(d?.codalEngine?.feedTable, ['attempted', 'inserted', 'duplicates']), error: errorCategory(d?.codalEngine?.feedTable?.lastError), ...safeErrorCodes(d?.codalEngine?.feedTable?.lastError) }, backfill: counts(d?.codalEngine?.backfill, ['queueSize', 'inserted', 'parseFailed', 'skippedCovered']) },
     history: Object.fromEntries(['eodHistory', 'indexHistory', 'marketBreadth', 'historyPrune'].map(k => [k, operation(d?.[k])])),
     commodity: { enabled: boolean(d?.commodity?.enabled), ...counts(d?.commodity, ['rows', 'reqToday', 'dailyCap', 'remaining']), lastFetchAt: clock(d?.commodity?.lastFetchAt), counterScope: choice(d?.commodity?.counterScope, ['process']), dayKey: date(d?.commodity?.dayKey), error: errorCategory(d?.commodity?.lastError) },
     ime: imeReceipt(d?.ime),
@@ -105,7 +147,79 @@ async function readBounded(response, maxBytes) {
     return Buffer.concat(chunks).toString('utf8');
   } finally { await reader.cancel().catch(() => {}); }
 }
-export async function collectReceipt({ token, fetchImpl = fetch, now = () => new Date().toISOString() } = {}) {
+// CLI 9.5.1: env/list.js project.envs; app/logs.js releases/currentRelease.
+// The API sends env values too: memory only, never serialized or logged here.
+const CONTROL_PROJECT = 'https://api.liara.ir/v1/projects/arsadata';
+const CONTROL_RELEASES = CONTROL_PROJECT + '/releases?page=1&count=100';
+const releaseId = x => typeof x === 'string' && /^[a-f0-9]{24}$/.test(x) ? x : null;
+const releaseState = x => choice(x, ['READY', 'FAILED', 'UNHEALTHY', 'CANCELED', 'TIMEDOUT', 'DEPLOYING', 'BUILDING', 'QUEUED']);
+// Single approved value inspection in RAM. No URL normalization is accepted as
+// an exact match: whitespace, trailing slash, port aliases and dot paths differ.
+function reviewedBackendBinding(envs, namesComplete) {
+  const result = { present: false, parseValid: false, noCredentialsQueryHash: false, exactReviewedBackendMatch: false, duplicateNameRejected: false, reason: 'invalid_env_schema' };
+  if (!namesComplete) return result;
+  const matches = envs.filter(e => e.key === 'SUPABASE_URL');
+  result.present = matches.length > 0;
+  if (matches.length > 1) return { ...result, duplicateNameRejected: true, reason: 'duplicate_name' };
+  if (!matches.length) return { ...result, reason: 'missing' };
+  const value = matches[0].value;
+  if (typeof value !== 'string' || value !== value.trim() || /[\u0000-\u0020\u007f]/.test(value)) return { ...result, reason: 'invalid_url' };
+  let parsed;
+  try { parsed = new URL(value); } catch { return { ...result, reason: 'invalid_url' }; }
+  result.parseValid = true;
+  result.noCredentialsQueryHash = !parsed.username && !parsed.password && !value.includes('?') && !value.includes('#') && !value.slice(value.indexOf('://') + 3).split('/')[0].includes('@');
+  if (!result.noCredentialsQueryHash) return { ...result, reason: 'credentials_query_or_hash' };
+  result.exactReviewedBackendMatch = value === 'https://62.60.191.24/liara-preview';
+  return { ...result, reason: result.exactReviewedBackendMatch ? 'exact_match' : 'different_url' };
+}
+function projectMetadata(body) {
+  const p = body?.project;
+  if (!p || p.project_id !== 'arsadata') throw new Error('invalid_schema');
+  const envNamesComplete = Array.isArray(p.envs) && p.envs.every(e => typeof e?.key === 'string' && /^[A-Z][A-Z0-9_]{0,79}$/.test(e.key));
+  return { projectId: 'arsadata', status: choice(p.status, ['running', 'stopped', 'starting', 'stopping', 'ready', 'failed']),
+    // No verified CPU/RAM response contract in the installed CLI.
+    cpuLimit: null, ramLimit: null,
+    reviewedBackendBinding: reviewedBackendBinding(p.envs, envNamesComplete),
+    envNames: envNamesComplete ? [...new Set(p.envs.map(e => e.key))].sort() : null, envNamesComplete };
+}
+function releaseMetadata(body) {
+  if (!body || !Array.isArray(body.releases) || body.releases.length > 100) throw new Error('invalid_schema');
+  const currentReleaseId = releaseId(body.currentRelease);
+  const matched = currentReleaseId ? body.releases.filter(r => r?._id === currentReleaseId) : [];
+  const r = matched.length === 1 ? matched[0] : null;
+  return { currentReleaseId, match: r ? 'exact' : currentReleaseId ? 'unresolved' : 'unknown',
+    release: r ? { id: currentReleaseId, state: releaseState(r.state), createdAt: clock(r.createdAt), finishedAt: clock(r.finishedAt),
+      commit: typeof r.gitInfo?.commit === 'string' && /^[a-f0-9]{40}$/.test(r.gitInfo.commit) ? r.gitInfo.commit : null,
+      branch: typeof r.gitInfo?.branch === 'string' && /^(?:main|master|codex\/[a-z0-9-]{1,100})$/.test(r.gitInfo.branch) ? r.gitInfo.branch : null } : null };
+}
+export async function collectControlPlane({ token, fetchImpl = fetch, timeoutMs = 10000 } = {}) {
+  const request = async (url, project) => {
+    if (!token) return { status: 'missing_credential', httpStatus: null, data: null };
+    const controller = new AbortController(); let timer;
+    const work = async () => {
+      const response = await fetchImpl(url, { method: 'GET', redirect: 'error', signal: controller.signal, headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' } });
+      if (!response.ok) {
+        void response.body?.cancel().catch(() => {});
+        return { status: response.status === 401 || response.status === 403 ? 'endpoint_authorization_rejected' : response.status === 404 ? 'endpoint_not_found' : 'endpoint_http_error', httpStatus: response.status, data: null };
+      }
+      const raw = await readBounded(response, 1024 * 1024);
+      let data;
+      try { const parsed = JSON.parse(raw); data = project ? projectMetadata(parsed) : releaseMetadata(parsed); }
+      catch { return { status: 'invalid_schema', httpStatus: response.status, data: null }; }
+      return { status: 'read', httpStatus: response.status, data };
+    };
+    try {
+      return await Promise.race([work(), new Promise(resolve => { timer = setTimeout(() => { controller.abort(); resolve({ status: 'timeout', httpStatus: null, data: null }); }, timeoutMs); })]);
+    } catch (error) {
+      return { status: error?.message === 'response_limit' ? 'response_too_large' : 'request_or_body_failed', httpStatus: null, data: null };
+    } finally { clearTimeout(timer); controller.abort(); }
+  };
+  const [project, releases] = await Promise.all([request(CONTROL_PROJECT, true), request(CONTROL_RELEASES, false)]);
+  return { project, releases, identity: project.status === 'read' && releases.status === 'read' && releases.data.match === 'exact' ? 'matched_control_plane_metadata' : 'unconfirmed',
+    limitations: ['Environment values arrive in API memory only; names and booleans for one reviewed backend URL comparison are emitted.', 'Control-plane metadata is not proof of running process code, collector exclusion, budget or ingestion success.'] };
+}
+
+export async function collectReceipt({ token, controlPlaneToken, fetchImpl = fetch, now = () => new Date().toISOString() } = {}) {
   const request = async (url, kind) => {
     if (kind === 'debug' && !token) return { status: 'missing_credential', httpStatus: null, error: null };
     try {
@@ -131,13 +245,13 @@ export async function collectReceipt({ token, fetchImpl = fetch, now = () => new
     } catch (error) { return { status: 'connection_error', httpStatus: null, error: transportError(error) }; }
   };
   const startedAt = now();
-  const [health, debug, backend, storedRead] = await Promise.all([request(HEALTH, 'health'), request(DEBUG, 'debug'), request(BACKEND, 'backend'), request(STORED_READ, 'storedRead')]);
-  return { schemaVersion: 1, startedAt, completedAt: now(), sampleCount: 1, mode: 'passive', health, debug, backend, storedRead,
+  const [health, debug, backend, storedRead, controlPlane] = await Promise.all([request(HEALTH, 'health'), request(DEBUG, 'debug'), request(BACKEND, 'backend'), request(STORED_READ, 'storedRead'), collectControlPlane({ token: controlPlaneToken, fetchImpl })]);
+  return { schemaVersion: 1, startedAt, completedAt: now(), sampleCount: 1, mode: 'passive', health, debug, backend, storedRead, controlPlane,
     limitations: ['No source quote clocks are exposed by this debug contract; receipt time is not source time.', 'Process counters are not provider account usage or Liara billing.', 'Backend root HTTP 401 is an expected authentication challenge; HTTP 2xx or 401 alone do not prove database health. A successful stored Codal read proves that bounded public read only, may be cached, and does not prove all database services, deployed identity or fresh/complete reports.'] };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
-    const receipt = await collectReceipt({ token: process.env.RELAY_TOKEN });
+    const receipt = await collectReceipt({ token: process.env.RELAY_TOKEN, controlPlaneToken: process.env.LIARA_API_TOKEN });
     await writeFile('relay-health-receipt.json', JSON.stringify(receipt, null, 2) + '\n', { mode: 0o600 });
     console.log(JSON.stringify(receipt));
     if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, '```json\n' + JSON.stringify(receipt, null, 2) + '\n```\n');

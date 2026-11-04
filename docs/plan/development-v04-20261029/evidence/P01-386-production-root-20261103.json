@@ -1,0 +1,46 @@
+{
+  "observedOn": "2026-11-03",
+  "scope": "Independent localized financial input fix; no PR385 ancestry, SQL, entitlement, auth, layout or environment changes",
+  "pullRequest": "https://github.com/safariarash7777-source/portfolio-platform/pull/386",
+  "previousProductionSha": "f93dbdce73ef9e57b8e5eb84af13c4a20034d5bc",
+  "sourceHead": "39210dd7bd53dcda547ca031b738587ba88b2a91",
+  "testedMerge": "e4e3b9225ab15769e7320bc34aef63e1ba91cf1a",
+  "productionSha": "c68ae44d05acdff016846dcb7998c56d7cc6d679",
+  "treeOfHeadTestedMergeAndProduction": "58f115e2f764306cd23af8a4953337b481addfd6",
+  "changedFiles": ["lib/portfolio/financialInput.ts", "lib/portfolio/financialHttp.test.ts", "vercel.json"],
+  "vercelChange": "Only the exact feature branch automatic Preview hold; both cron schedules unchanged",
+  "localValidation": {"tests": 74, "passed": 74, "failed": 0, "skipped": 0, "scope": "financial HTTP and actual form regressions, main-based source, after rounding fix"},
+  "ci": {
+    "run": 41632586876,
+    "allFiveJobs": "success",
+    "coreJob": 125905622758,
+    "databaseJob": 125905622821,
+    "rootReadCompleteOfficialLogs": true,
+    "actualCheckoutMatchesTestedMerge": true,
+    "threeAddedCases": "each appears once as Subtest and once as ok in the Core job",
+    "coreFirstGroupTests": 2057,
+    "nonzeroFailCounts": 0
+  },
+  "deployment": {
+    "id": "dpl_GbovmNyeHbSyKiaLHXXCf7TKHaZF",
+    "state": "READY",
+    "target": "production",
+    "projectId": "prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp",
+    "teamId": "team_yXFLU0BNAbLNZhWKcwpSpJxA",
+    "alias": "portfolio-platform-fawn.vercel.app",
+    "rootReadbackAliasMatchesIdAndSha": true,
+    "trigger": "Existing Git main deployment; no additional manual deployment or alias reassignment"
+  },
+  "httpReadback": [
+    {"path": "/", "status": 200, "finalPath": "/"},
+    {"path": "/dashboard/holdings", "status": 200, "finalPath": "/login", "identity": "guest"}
+  ],
+  "limits": {
+    "authenticatedProductionWrite": "NOT_TESTED",
+    "fullMemberConsultationJourney": "NOT_ACCEPTED",
+    "serviceRight": "NOT_CONNECTED",
+    "primaryMigration": "NOT_PERFORMED"
+  },
+  "rollback": "Previous production deployment dpl_6CWEMaNbPMD7i6r89GriNdhgNMWo retained; rollback not exercised",
+  "next": "Existing B owner adapts independent ledger fallback to current main; root owns preview QA and release."
+}

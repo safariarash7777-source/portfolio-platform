@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "workflowRunUrl": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41729546426",
+  "nativeJobId": 126245693663,
+  "safeArtifactId": 13275854694,
+  "safeArtifactSha256": "e9b400e1cf2ee883bae75132c109980ffdadc18daa72671b6c3810afa11ddb41",
+  "exactReceiptSha256": "f9a9894c127c1a23dccb0660ef574d930ea88ffab6718a5c528c88e7158b63f6",
+  "receipt": {
+    "arashAcceptance": "UNOBSERVED",
+    "automaticReplay": false,
+    "binding": {
+      "allocationId": "541cc16d-66e0-4da6-80c8-cbc246588152",
+      "attempt": 1,
+      "executionAllocationId": "9af041c7-25cb-538b-85c4-5ab521ac892d",
+      "repository": "safariarash7777-source/portfolio-platform",
+      "runId": "41729546426",
+      "workflowCommit": "e4deff7810b28119ade5eaf643a6c93d2116cb7c"
+    },
+    "failureCode": "assembled_native_not_confirmed",
+    "failureDiagnostics": {
+      "actualExitCode": null,
+      "duplicatePassRecords": null,
+      "fallbackUsed": false,
+      "lastObservedPassedCheck": null,
+      "logReadback": "MISSING",
+      "malformedLogRecords": null,
+      "nativeFailureCode": null,
+      "observedConsentPostIntents": null,
+      "observedFinancialPostIntents": null,
+      "observedOtherProductPostIntents": null,
+      "observedPassedChecks": null,
+      "observedProductPostIntents": null,
+      "observedSqlAppliedCount": null,
+      "timedOutOrInterrupted": null
+    },
+    "nativeAttempted": false,
+    "ownedCleanupReadback": "CONFIRMED",
+    "privateArtifactsUploaded": false,
+    "privateLogSha256": null,
+    "schemaVersion": "assembled-native-ci.v1",
+    "source": {
+      "capsuleSha256": "f5020a6afebcc685b2e713a7f895646f2a5718ee04b72c846edccec41adb86fc",
+      "commit": "4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a",
+      "driverContractSha256": "4c661f7d3cf8aa75f1185e7496c35a4ca766501af9be25d227fbab2e75160a9c",
+      "tree": "c96d462d72505f2471c54c8e7e5293fe2b39b3d1"
+    },
+    "status": "FAIL_NATIVE_NOT_ACCEPTED",
+    "targetInstall": "NOT_APPLIED",
+    "writeOutcomeUnknown": false
+  },
+  "publicJobLogObservation": {
+    "stage": "Bind allocation, verify sealed capsule and prepare the exact copy",
+    "failureEnum": "assembled_existing_chrome_pin_required",
+    "dependencyInstallAndScenarioSteps": "SKIPPED",
+    "firstRunImage": "ubuntu-24.04 / 20261025.353.1",
+    "thisRunImage": "ubuntu-24.04 / 20261101.360.1",
+    "expectedChromeSha256": "95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72",
+    "observedChromeSha256": null,
+    "observedChromeVersion": null
+  },
+  "limits": [
+    "The guard combines file presence and exact hash; the failed enum alone does not separate missing file from changed bytes.",
+    "The changed runner image is attested in job logs; its software manifest is not a runtime Chrome hash.",
+    "Missing diagnostic counts remain null, not zero. No application-flow acceptance or primary installation.",
+    "An observation-only job is being prepared before any new native allocation; no automatic retry or browser installation."
+  ]
+}

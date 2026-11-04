@@ -11,7 +11,7 @@ import type { IrMarket, IrStockRow } from "../../../lib/market-ir";
 import { withValidNav, marketQualityLabel } from "../../../lib/market-quality";
 import { formatRialAsToman, formatJalali, formatTehranClock, toPersianDigits } from "../../../lib/format";
 import { deriveQuarters, ttmSeries, peOf, type QuarterInput, type DerivedQuarter, type TtmPoint } from "../../../lib/core/quarterly";
-import type { SymbolFundamentals, ReportScope, CodalN30Data } from "../../../lib/fundamental/types";
+import type { SymbolFundamentals, ReportScope, CodalN30Data, ReportSource } from "../../../lib/fundamental/types";
 import type { FundamentalCardData } from "../../../lib/core/fundamentalCard";
 import { buildFundamentalCard } from "../../../lib/core/fundamentalCard";
 import { buildMonthlySales } from "../../../lib/core/monthlyReport";
@@ -255,6 +255,31 @@ test("actual financial chart source is a usable Codal link or explicit unknown, 
   reports.n10!.source.source_url = "/Reports/Decision.aspx?id=7";
   const valid = (await actualPage(market(stock), stock.id, reports)).html;
   assert.ok(valid.includes('<a href="https://codal.ir/Reports/Decision.aspx?id=7" target="_blank" rel="noopener noreferrer" class="underline">مشاهدهٔ اطلاعیه در کدال</a>'));
+});
+
+test("actual symbol caller sends each selected N30 and N10 record with its own identity link and independent periods to reports", async () => {
+  const record = (id: number, period: string): NonNullable<ReportSource["records"]>[number] => ({
+    id, sourceUrl: `/Reports/Decision.aspx?id=${id}`, storedPeriodEnd: "1405-04-31", financialPeriodEnd: period,
+    publishedAt: null, publishedDateRaw: null, publishedTimeRaw: null, publishedAtUtc: null, publicationUtcConfidence: "unknown",
+    capturedAtRaw: null, capturedAt: null, parserVersion: null, parserVersionSource: null, amendment: false,
+  });
+  const reports = reportSet(companyPeriods());
+  const monthly = (period: string): CodalN30Data => ({ symbol: stock.id, report_kind: "ن-۳۰", period_end: period,
+    fiscal_year: 1405, products: [], period_total_amount: 0, fy_cumulative_amount: null, unit: "میلیون ریال", qty_unit: null });
+  reports.n30 = { data: [monthly("1405-06-31"), monthly("1405-05-31")],
+    source: { title: "گزارش ماهانهٔ آزمون", source_url: "/Reports/Decision.aspx?id=900", verified: false,
+      records: [record(101, "1405-06-31"), record(102, "1405-05-31")] } };
+  reports.n10!.source.records = [record(201, "1405-03-31")];
+  reports.n10!.source.source_url = "/Reports/Decision.aspx?id=901";
+  const html = (await actualPage(market(stock), stock.id, reports)).html;
+  const start = html.indexOf("گزارش‌های پردازش‌شده"), end = html.indexOf("اطلاعیه‌های ذخیره‌شدهٔ کدال");
+  assert.ok(start >= 0 && end > start);
+  const processed = html.slice(start, end);
+  assert.equal((processed.match(/<details/g) ?? []).length, 3);
+  for (const id of [101, 102, 201]) assert.ok(processed.includes(`href="https://codal.ir/Reports/Decision.aspx?id=${id}"`));
+  assert.doesNotMatch(processed, /id=900|id=901/);
+  for (const value of ["۱۴۰۵-۰۶-۳۱", "۱۴۰۵-۰۵-۳۱", "۱۴۰۵-۰۳-۳۱", "۱۴۰۵-۰۴-۳۱"]) assert.ok(processed.includes(value), value);
+  assert.ok(processed.includes("شاهد آخرین اجرای کامل دریافت داده نیست"));
 });
 
 function clientComponent(name: string, hooks: unknown, globals: Record<string, unknown> = {}) {

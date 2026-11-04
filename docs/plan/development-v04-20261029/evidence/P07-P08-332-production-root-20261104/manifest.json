@@ -1,0 +1,26 @@
+{
+  "files": {
+    "observer-production-readback.json": {
+      "bytes": 686,
+      "sha256": "f690b6c1b2222a6a231b30caa460cba71ac3fb747c51d6fc19f056b8d3e03910"
+    },
+    "production-race-return.json": {
+      "bytes": 1749,
+      "sha256": "639d9d208ee3eb9e5cf27b4ed88385e3cc08d71b9200ad58a8b1a864776c4b0c"
+    },
+    "production-smoke.json": {
+      "bytes": 3350,
+      "sha256": "b2920426ad9cc43463a82d63623e3b2eb0d2fbdfecfc87eeef39fb954bdb5082"
+    },
+    "release.json": {
+      "bytes": 1629,
+      "sha256": "b0abe131b0310948d7c50a1ca21f64a0d1dbf4721850f414360da2a0eb4d655d"
+    },
+    "REVIEW.fa.md": {
+      "bytes": 4237,
+      "sha256": "539860108d6fbe6aee28947ba260c72035e28b4888c1328bb0fff6fc019d7755"
+    }
+  },
+  "status": "ACTUAL_PRODUCTION_BOUNDED_ACCEPTANCE",
+  "wholePackageAccepted": false
+}

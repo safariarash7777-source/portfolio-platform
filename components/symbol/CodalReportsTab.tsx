@@ -11,15 +11,45 @@ import { useEffect, useRef, useState } from "react";
 import { toPersianDigits } from "@/lib/format";
 import CodalSourceLink from "@/components/symbol/CodalSourceLink";
 import { companyReportKinds, discoverCompanyReports, EMPTY_REPORT_FILTER, type CompanyAnnouncement, type CompanyReportFilter } from "@/lib/core/companyReportDiscovery";
+import type { ReportSource } from "@/lib/fundamental/types";
 
 export type StoredReport = {
   kind: string;          // «ن-۳۰» | «ن-۱۰» | ...
   title: string;
   periodEnd: string | null; // پایان دورهٔ مالی، نه تاریخ انتشار
   url: string | null;    // لینک صفحهٔ کدال
+  record?: NonNullable<ReportSource["records"]>[number];
 };
 
 type LiveItem = CompanyAnnouncement;
+
+function SourceRecordDetails({ record }: { record: NonNullable<StoredReport["record"]> }) {
+  const text = (value: string | null) => value ? toPersianDigits(value) : "نامعلوم";
+  const versionSource = record.parserVersionSource === "raw" ? "متادیتای رکورد"
+    : record.parserVersionSource === "source_url" ? "پسوند نسخهٔ پیوند منبع" : null;
+  const fields = [
+    ["شناسهٔ رکورد", record.id === null ? "نامعلوم" : toPersianDigits(record.id)],
+    ["پایان دورهٔ ذخیره‌شده", text(record.storedPeriodEnd)],
+    ["پایان دورهٔ داخل گزارش", text(record.financialPeriodEnd)],
+    ["تاریخ ارسال منبع", text(record.publishedDateRaw)],
+    ["ساعت ارسال منبع", text(record.publishedTimeRaw)],
+    ["زمان انتشار به UTC", "نامعلوم؛ تبدیل معتبر ثبت نشده"],
+    ["دریافت رکورد؛ متن اصلی منبع", record.capturedAtRaw ?? "نامعلوم"],
+    ["دریافت رکورد؛ UTC با دقت میلی‌ثانیه", record.capturedAt ?? "نامعلوم"],
+    ["نسخهٔ پردازش", record.parserVersion === null ? "نامعلوم"
+      : `${toPersianDigits(record.parserVersion)}${versionSource ? `؛ از ${versionSource}` : ""}`],
+  ];
+  return <details className="mt-2">
+    <summary className="cursor-pointer text-muted-foreground">منبع و زمان این گزارش</summary>
+    <dl className="mt-2 grid gap-x-3 gap-y-1 sm:grid-cols-[max-content_minmax(0,1fr)]">
+      {fields.map(([label, value]) => <div key={label} className="contents">
+        <dt className="text-muted-foreground">{label}</dt>
+        <dd className="min-w-0 break-all"><bdi>{value}</bdi></dd>
+      </div>)}
+    </dl>
+    {record.amendment && <p className="mt-1 text-muted-foreground">نشانهٔ اصلاحیه در این رکورد ثبت شده است.</p>}
+  </details>;
+}
 
 function normalizeLive(j: unknown): LiveItem[] {
   const root = (j && typeof j === "object" ? (j as Record<string, unknown>) : {});
@@ -90,14 +120,17 @@ export default function CodalReportsTab({
         ) : stored.length > 0 ? (
           <ul className="mt-3 divide-y divide-border">
             {stored.map((r, i) => (
-              <li key={i} className="flex items-center justify-between gap-2 py-2 text-xs">
-                <div className="min-w-0">
-                  <span className="ml-2 inline-block rounded bg-muted px-1.5 py-0.5 text-[10px]">{r.kind}</span>
-                  <CodalSourceLink url={r.url} className="font-medium hover:underline" fallback={<span className="font-medium">{r.title}</span>}>
-                    {r.title}
-                  </CodalSourceLink>
+              <li key={r.record?.id == null ? `${r.kind}-${i}` : `${r.kind}-${r.record.id}`} className="py-2 text-xs">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <span className="ml-2 inline-block rounded bg-muted px-1.5 py-0.5 text-[10px]">{r.kind}</span>
+                    <CodalSourceLink url={r.url} className="font-medium hover:underline" fallback={<span className="font-medium">{r.title}</span>}>
+                      {r.title}
+                    </CodalSourceLink>
+                  </div>
+                  <span className="shrink-0 text-muted-foreground">دورهٔ مالی: {r.periodEnd ? toPersianDigits(r.periodEnd) : "نامعلوم"}</span>
                 </div>
-                <span className="shrink-0 text-muted-foreground">دورهٔ مالی: {r.periodEnd ? toPersianDigits(r.periodEnd) : "نامعلوم"}</span>
+                {r.record && <SourceRecordDetails record={r.record} />}
               </li>
             ))}
           </ul>
@@ -106,6 +139,9 @@ export default function CodalReportsTab({
             هنوز گزارشی برای این نماد پردازش نشده است. صف بک‌فیل آرشیو کدال به‌تدریج پوشش را گسترش می‌دهد.
           </p>
         )}
+        {stored.some(report => report.record) && !readFailed && <p className="mt-3 text-[11px] text-muted-foreground">
+          زمان دریافتِ این رکوردها، شاهد آخرین اجرای کامل دریافت داده نیست.
+        </p>}
       </div>
 
       <div className="card p-4">

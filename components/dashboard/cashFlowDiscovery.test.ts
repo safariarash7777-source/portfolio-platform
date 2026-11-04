@@ -21,13 +21,21 @@ test("ordinary-member dashboard exposes the real independent cash-flow route wit
   const jsx = (type: React.ElementType, props: object) => React.createElement(type, props);
   runInNewContext(ts.transpileModule(readFileSync(new URL("../../app/(protected)/dashboard/DashboardClient.tsx", import.meta.url), "utf8"), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
-  }).outputText, { exports: loaded.exports, require(name: string) {
+  }).outputText, { exports: loaded.exports, require: function dependency(name: string): unknown {
     if (name === "react") return { useState: (initial: unknown) => [initial, () => {}], useCallback: (fn: unknown) => fn, useRef: (value: unknown) => ({ current: value }) };
     if (name === "react/jsx-runtime") return { jsx, jsxs: jsx, Fragment: React.Fragment };
     if (name === "next/link") return { __esModule: true, default: (props: object) => React.createElement("a", props) };
     if (name === "next/navigation") return { useRouter: () => ({}) };
     if (name === "lucide-react") return new Proxy({}, { get: () => () => null });
     if (name === "@/lib/format") return format;
+    if (name === "@/components/dashboard/PersonalFinance") {
+      const finance = { exports: {} };
+      const code = ts.transpileModule(readFileSync(new URL("./PersonalFinance.tsx", import.meta.url), "utf8"), {
+        compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
+      }).outputText;
+      runInNewContext(code, { exports: finance.exports, require: dependency });
+      return finance.exports;
+    }
     if (name === "@/components/quiz/quizData") return { RISK_PROFILES: {} };
     return { __esModule: true, default: () => null };
   } });

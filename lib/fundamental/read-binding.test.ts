@@ -2,9 +2,68 @@
 import { test, after } from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
+import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { basename, dirname, join, resolve } from "node:path";
+import { runInNewContext } from "node:vm";
+import { webcrypto } from "node:crypto";
+import ts from "typescript";
 import { readFundamentalsFromSupabase, type CodalRow } from "./supabase";
 
 const require = createRequire(import.meta.url);
+
+test("compiled default reader uses the mapped public binding when runtime legacy values differ", async () => {
+  const temporary = await mkdtemp(join(tmpdir(), "fundamental-build-binding-"));
+  const bundled = require("next/dist/compiled/webpack/webpack");
+  bundled.init();
+  const webpack = bundled.webpack;
+  const calls: { url: string; key: string }[] = [];
+  try {
+    const source = await readFile(new URL("./supabase.ts", import.meta.url), "utf8");
+    await writeFile(join(temporary, "entry.js"), ts.transpileModule(source, {
+      compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 },
+    }).outputText);
+    const compiler = webpack({
+      mode: "development", target: "node", devtool: false, entry: join(temporary, "entry.js"),
+      output: { path: temporary, filename: "reader.cjs", library: { type: "commonjs2" } },
+      externals: [({ request }: { request?: string }, callback: (error?: Error | null, result?: string) => void) => {
+        callback(null, request?.startsWith(".") ? `commonjs ${request}` : undefined);
+      }],
+      plugins: [new webpack.DefinePlugin({
+        "process.env.NEXT_PUBLIC_SUPABASE_URL": JSON.stringify("https://mapped-build.invalid"),
+        "process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY": JSON.stringify("synthetic-mapped-anon"),
+      })],
+    });
+    try {
+      await new Promise<void>((accept, reject) => compiler.run((error: Error | null, stats?: { hasErrors: () => boolean; toString: () => string }) => {
+        if (error || !stats || stats.hasErrors()) reject(error ?? new Error(stats?.toString() ?? "missing compiler stats"));
+        else accept();
+      }));
+    } finally { await new Promise<void>((accept, reject) => compiler.close((error?: Error) => error ? reject(error) : accept())); }
+    const readerModule = { exports: {} as { readFundamentalsFromSupabase: (symbol: string) => Promise<{ state: string }> } };
+    runInNewContext(await readFile(join(temporary, "reader.cjs"), "utf8"), {
+      module: readerModule, exports: readerModule.exports, URLSearchParams, TextEncoder, AbortSignal, crypto: webcrypto,
+      process: { env: { NEXT_PUBLIC_SUPABASE_URL: "https://unmapped-runtime.invalid", NEXT_PUBLIC_SUPABASE_ANON_KEY: "synthetic-runtime-anon" } },
+      require: (specifier: string) => {
+        assert(["../core/quarterly", "./units", "../desk/workspace-model", "./monthly-quantity-binding", "./read-config.server"].includes(specifier));
+        return {};
+      },
+      console: { warn: () => {} },
+      fetch: async (url: string, init: { headers: { apikey: string } }) => {
+        calls.push({ url, key: init.headers.apikey });
+        return { ok: true, json: async () => [] };
+      },
+    });
+    assert.equal((await readerModule.exports.readFundamentalsFromSupabase("build-binding-synthetic")).state, "empty");
+    assert.equal(calls.length, 2);
+    assert(calls.every(call => new URL(call.url).origin === "https://mapped-build.invalid"));
+    assert(calls.every(call => call.key === "synthetic-mapped-anon"));
+  } finally {
+    assert.equal(dirname(resolve(temporary)), resolve(tmpdir()));
+    assert(basename(temporary).startsWith("fundamental-build-binding-"));
+    await rm(temporary, { recursive: true, force: true });
+  }
+});
 const resolver = require("node:module") as { _resolveFilename: (specifier: string, ...args: unknown[]) => string };
 const originalResolve = resolver._resolveFilename;
 resolver._resolveFilename = function (specifier, ...args) {
@@ -65,7 +124,7 @@ test("new pair uses only its own headers and the same two bounded GETs; no env o
   assert.equal(calls.length, 2); assert.deepEqual(timeouts, [8000, 8000]);
   for (const { url, options } of calls) {
     assert.equal(url.origin + url.pathname, `${origin}/rest/v1/codal_reports`);
-    assert.equal(url.searchParams.get("select"), "id,symbol,report_kind,period_end,title,source_url,data,raw");
+    assert.equal(url.searchParams.get("select"), "id,symbol,report_kind,period_end,title,source_url,data,raw,captured_at");
     assert.equal(url.searchParams.get("order"), "period_end.desc,id.desc");
     assert.equal(url.searchParams.get("symbol"), "eq.transport"); assert.equal(url.searchParams.get("data"), "not.is.null");
     assert.equal(url.searchParams.get("limit"), url.searchParams.get("report_kind") === "eq.ن-۱۰" ? "400" : "200");
@@ -291,4 +350,194 @@ test("cycling a binding A-to-B-to-A cannot resurrect an old in-flight A cache", 
   assert.equal(amount(await read("cycle", b)), 20);
   assert.equal(amount(await read("cycle", a)), 30); release(); await pending;
   assert.equal(amount(await read("cycle", a)), 30); assert.equal(calls, 6);
+});
+
+// Metadata fixtures only: the existing request/binding/cache tests above remain
+// unchanged apart from the one additive SELECT column assertion.
+function monthlyRecord(id: number, symbol: string, period = "1405-06-31"): CodalRow {
+  return { ...row(symbol), id, period_end: "2026-09-22",
+    source_url: `https://codal.ir/Reports/Decision.aspx?LetterSerial=synthetic-${id}#pv2`,
+    captured_at: "2026-10-25T10:15:56.894105+00:00",
+    raw: { parser_version: 2, date_publish: "۱۴۰۵/۰۷/۲۹", time_publish: "۲۰:۵۰:۲۶" },
+    data: { symbol, report_kind: "ن-۳۰", period_end: period, fiscal_year: 1405,
+      unit: "میلیون ریال", unit_basis: "header+arithmetic", qty_unit: null,
+      period_total_amount: 2, fy_cumulative_amount: null,
+      products: [{ product_name: "کالای مصنوعی", market: "نامشخص", market_basis: "unknown",
+        qty_unit: null, production_qty: null, sales_qty: null, sales_rate: null, sales_amount: 2 }] } };
+}
+function financialRecord(id: number, symbol: string): CodalRow {
+  return { id, symbol, report_kind: "ن-۱۰", period_end: "2026-09-22", title: "صورت‌های مالی شرکت",
+    source_url: `https://codal.ir/Reports/Decision.aspx?LetterSerial=synthetic-n10-${id}#pv2`,
+    captured_at: "2026-10-25T10:15:56Z", raw: { parser_version: 2 },
+    data: { symbol, company_name: "شرکت مصنوعی", report_kind: "ن-۱۰", period_end: "1405-06-31",
+      period_months: 6, audited: false, restated_prior: false, unit: "میلیون ریال", capital: 100,
+      standalone: { revenue: 10, cogs: 6, gross_profit: 4, operating_profit: 3, net_profit: 2 } } };
+}
+
+test("selected monthly records retain their own identity, link, two periods and raw clocks without inventing UTC", async () => {
+  const symbol = "provenance-monthly";
+  const latest = monthlyRecord(601, symbol), prior = monthlyRecord(602, symbol, "1405-05-31");
+  prior.period_end = "2026-08-22";
+  prior.captured_at = "2026-10-20T12:00:00+03:30";
+  prior.source_url = "https://codal.ir/Reports/Decision.aspx?LetterSerial=synthetic-prior#pv3";
+  prior.raw = { parser_version: 3, date_publish: "۱۴۰۵/۰۶/۲۹", time_publish: "۰۸:۳۰:۰۰" };
+  const inputBefore = JSON.stringify([latest, prior]);
+  const calls = fixture([latest, prior]);
+  const result = await read(symbol, pair());
+  assert.equal(result.state, "ready"); assert.equal(calls.length, 2);
+  const records = result.data?.n30?.source.records;
+  assert.deepEqual(records, [
+    { id: 601, sourceUrl: "https://codal.ir/Reports/Decision.aspx?LetterSerial=synthetic-601",
+      storedPeriodEnd: "2026-09-22", financialPeriodEnd: "1405-06-31",
+      publishedAt: "1405/07/29 20:50:26", publishedDateRaw: "۱۴۰۵/۰۷/۲۹", publishedTimeRaw: "۲۰:۵۰:۲۶",
+      publishedAtUtc: null, publicationUtcConfidence: "unknown", capturedAtRaw: "2026-10-25T10:15:56.894105+00:00",
+      capturedAt: "2026-10-25T10:15:56.894Z",
+      parserVersion: 2, parserVersionSource: "raw", amendment: false },
+    { id: 602, sourceUrl: "https://codal.ir/Reports/Decision.aspx?LetterSerial=synthetic-prior",
+      storedPeriodEnd: "2026-08-22", financialPeriodEnd: "1405-05-31",
+      publishedAt: "1405/06/29 08:30:00", publishedDateRaw: "۱۴۰۵/۰۶/۲۹", publishedTimeRaw: "۰۸:۳۰:۰۰",
+      publishedAtUtc: null, publicationUtcConfidence: "unknown", capturedAtRaw: "2026-10-20T12:00:00+03:30",
+      capturedAt: "2026-10-20T08:30:00.000Z",
+      parserVersion: 3, parserVersionSource: "raw", amendment: false },
+  ]);
+  assert.deepEqual(result.data?.n30?.data, [latest.data, prior.data].map(data => ({ ...data, period_months: 1 })),
+    "unit/quantity/market/amount fields and the existing monthly period normalization are unchanged");
+  assert.equal(JSON.stringify([latest, prior]), inputBefore);
+  assert.equal((await read(symbol, pair())).data, result.data, "metadata uses the existing cache");
+  assert.equal(calls.length, 2, "records do not cause a third read");
+});
+
+test("financial provenance belongs only to the selected amendment, not a higher ID or later capture", async () => {
+  const symbol = "provenance-amendment";
+  const amendment = financialRecord(11, symbol), original = financialRecord(999, symbol);
+  amendment.title = "صورت‌های مالی شرکت (اصلاحيه)";
+  amendment.raw = { parser_version: 2, date_publish: "۱۴۰۵/۰۷/۱۰", time_publish: "۱۱:۴۲:۰۳" };
+  original.raw = { parser_version: 2, date_publish: "۱۴۰۵/۰۷/۳۰", time_publish: "۲۲:۰۰:۰۰" };
+  original.captured_at = "2026-10-30T20:00:00Z";
+  const calls = fixture([original, amendment]);
+  const result = await read(symbol, pair());
+  assert.equal(calls.length, 2);
+  assert.deepEqual(result.data?.n10?.source.records?.map(r => [r.id, r.amendment, r.publishedAt]), [[11, true, "1405/07/10 11:42:03"]]);
+  assert.equal(result.data?.n10?.source.records?.[0].sourceUrl, amendment.source_url?.replace(/#pv2$/, ""));
+  assert.equal(result.data?.n10?.source.publishedAt, "1405/07/10 11:42:03");
+  assert.deepEqual(result.data?.n10Periods?.map(r => r.id), [11]);
+  assert.deepEqual(result.data?.n10?.data.standalone, amendment.data.standalone);
+});
+
+test("missing, malformed and impossible capture timestamps stay null independently of publication", async () => {
+  const stamps = [undefined, null, "", "0", "not-a-clock", "2026-02-29T12:00:00Z", "2026-02-30T12:00:00Z", "2026-10-25T24:00:00Z",
+    "2026-10-25T10:15:56", "2026-10-25T10:15:56+99:99"];
+  for (const [index, stamp] of stamps.entries()) {
+    const r = monthlyRecord(700 + index, `provenance-capture-${index}`); r.captured_at = stamp;
+    const calls = fixture([r]);
+    const selected = (await read(r.symbol, pair())).data?.n30?.source.records?.[0];
+    assert.equal(calls.length, 2); assert.equal(selected?.capturedAt, null);
+    assert.equal(selected?.capturedAtRaw, null);
+    assert.equal(selected?.publishedAt, "1405/07/29 20:50:26");
+    assert.equal(selected?.publishedAtUtc, null); assert.equal(selected?.publicationUtcConfidence, "unknown");
+  }
+});
+
+test("only explicit parser evidence is disclosed; the legacy selection fallback remains unchanged", async () => {
+  const cases = [
+    { raw: { parser_version: 4 }, suffix: "#pv8", expected: 4, source: "raw" },
+    { raw: {}, suffix: "#pv3", expected: 3, source: "source_url" },
+    { raw: null, suffix: "", expected: null, source: null },
+    { raw: {}, suffix: "#pv0", expected: null, source: null },
+    { raw: { parser_version: -1 }, suffix: "#pv3", expected: null, source: null },
+    { raw: {}, suffix: "#pv99999999999999999999", expected: null, source: null },
+  ];
+  for (const [index, c] of cases.entries()) {
+    const r = monthlyRecord(800 + index, `provenance-version-${index}`);
+    r.raw = c.raw; r.source_url = `https://codal.ir/Reports/Decision.aspx?LetterSerial=synthetic-version-${index}${c.suffix}`;
+    fixture([r]);
+    const record = (await read(r.symbol, pair())).data?.n30?.source.records?.[0];
+    assert.equal(record?.parserVersion, c.expected); assert.equal(record?.parserVersionSource, c.source);
+  }
+  const legacyRow = monthlyRecord(811, "provenance-default-one"), zero = monthlyRecord(999, legacyRow.symbol);
+  legacyRow.source_url = "https://codal.ir/Reports/Decision.aspx?LetterSerial=synthetic-default"; legacyRow.raw = null;
+  zero.source_url = legacyRow.source_url + "#pv0"; zero.raw = {};
+  fixture([zero, legacyRow]);
+  const result = (await read(legacyRow.symbol, legacy)).data;
+  assert.equal(result?.n30?.source.records?.[0].id, 811, "selection still uses its legacy version1 fallback over explicit0");
+  assert.equal(result?.n30?.source.records?.[0].parserVersion, null, "default1 is not explicit evidence");
+  assert.equal(result?.n30?.source.records?.[0].parserVersionSource, null);
+});
+
+test("nonfinite metadata cannot become an identity, capture or proven parser version", async () => {
+  for (const [index, value] of [NaN, Infinity, -Infinity].entries()) {
+    const r = monthlyRecord(900 + index, `provenance-nonfinite-${index}`);
+    r.id = value; r.captured_at = value as unknown as string; r.raw = { parser_version: value };
+    r.source_url = null;
+    let calls = 0;
+    // Deliberately bypass JSON's NaN-to-null serialization for this boundary test.
+    globalThis.fetch = async input => {
+      calls++; const response = Response.json([]);
+      response.json = async () => new URL(String(input)).searchParams.get("report_kind") === "eq.ن-۳۰" ? [r] : [];
+      return response;
+    };
+    const result = await read(r.symbol, pair());
+    assert.equal(calls, 2); assert.equal(result.state, "ready");
+    const record = result.data?.n30?.source.records?.[0];
+    assert.equal(record?.id, null); assert.equal(record?.capturedAt, null);
+    assert.equal(record?.capturedAtRaw, null);
+    assert.equal(record?.parserVersion, null); assert.equal(record?.parserVersionSource, null);
+    assert.equal(record?.sourceUrl, null);
+    assert.equal(result.data?.n30?.data[0].period_total_amount, 2);
+  }
+});
+
+test("raw publication fields are separate bounded scalars; missing or invalid clocks never create UTC", async () => {
+  const cases = [
+    { date: "۱۴۰۵/۰۷/۲۹", time: undefined, rawDate: "۱۴۰۵/۰۷/۲۹", rawTime: null },
+    { date: "not-a-date", time: "bad-time", rawDate: "not-a-date", rawTime: "bad-time" },
+    { date: "x".repeat(65), time: " ", rawDate: null, rawTime: null },
+    { date: 42, time: null, rawDate: null, rawTime: null },
+  ];
+  for (const [index, c] of cases.entries()) {
+    const r = monthlyRecord(950 + index, `provenance-publication-${index}`);
+    r.raw = { date_publish: c.date as string, time_publish: c.time as string };
+    Object.assign(r.raw, { private_fixture: "synthetic-private-body-not-metadata" });
+    fixture([r]);
+    const record = (await read(r.symbol, pair())).data?.n30?.source.records?.[0];
+    assert.equal(record?.publishedDateRaw, c.rawDate); assert.equal(record?.publishedTimeRaw, c.rawTime);
+    assert.equal(record?.publishedAt, null); assert.equal(record?.publishedAtUtc, null);
+    assert.equal(record?.publicationUtcConfidence, "unknown");
+    assert.doesNotMatch(JSON.stringify(record), /private_fixture|synthetic-private-body/);
+  }
+});
+
+test("omitted units and rejected private URLs cannot borrow metadata from another selected report", async () => {
+  const known = monthlyRecord(980, "provenance-unit-selection"), omitted = monthlyRecord(981, known.symbol, "1405-07-30");
+  omitted.data.unit = null as unknown as string;
+  known.source_url = "https://codal.ir/Reports/Decision.aspx?LetterSerial=synthetic&token=private-fixture";
+  const calls = fixture([omitted, known]);
+  const result = (await read(known.symbol, pair())).data;
+  assert.equal(calls.length, 2);
+  assert.deepEqual(result?.n30?.source.records?.map(r => r.id), [980]);
+  assert.equal(result?.n30?.source.records?.[0].sourceUrl, null);
+  assert.equal(result?.n30Unavailable?.unitUnknown, 1);
+  assert.equal(result?.n30?.data[0].qty_unit, null);
+  assert.equal(result?.n30?.data[0].unit, "میلیون ریال");
+  assert.equal(result?.n30?.data[0].unit_basis, "header+arithmetic");
+  assert.equal(result?.n30?.data[0].products[0].market_basis, "unknown");
+  assert.equal(result?.n30?.source.records?.[0].publishedAtUtc, null);
+  assert.equal(result?.n30?.source.verified, true, "existing amount-basis check is unchanged, not a time/unit-quantity confidence");
+});
+
+test("valid offset/leap-day capture retains raw fractional precision separately from UTC milliseconds", async () => {
+  const stamps = [
+    ["2024-02-29T12:00:00.123456+03:30", "2024-02-29T08:30:00.123Z"],
+    ["2026-10-25T01:02:03.123456789-04:00", "2026-10-25T05:02:03.123Z"],
+    ["2026-10-25T10:15:56Z", "2026-10-25T10:15:56.000Z"],
+  ];
+  for (const [index, [stamp, normalized]] of stamps.entries()) {
+    const r = monthlyRecord(990 + index, `provenance-precision-${index}`); r.captured_at = stamp;
+    const calls = fixture([r]);
+    const record = (await read(r.symbol, pair())).data?.n30?.source.records?.[0];
+    assert.equal(calls.length, 2); assert.equal(record?.capturedAtRaw, stamp);
+    assert.equal(record?.capturedAt, normalized);
+    assert.equal(record?.publishedDateRaw, "۱۴۰۵/۰۷/۲۹");
+    assert.equal(record?.publishedAtUtc, null); assert.equal(record?.publicationUtcConfidence, "unknown");
+  }
 });

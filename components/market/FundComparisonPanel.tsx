@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { compareFunds, evidencedClass, fundSelectionIssue, MAX_FUND_COMPARISON, UNIT_CLASS_LABELS, type FundComparisonRow } from "@/lib/core/fundComparison";
 import type { ReturnWindowKey } from "@/lib/core/fundReturns";
 import { formatJalali, formatSignedPercent, formatToman, toPersianDigits } from "@/lib/format";
+import { fundSelectionHref, restoreFundSelection } from "@/lib/core/fund-comparison-selection";
 
 const windows: { key: ReturnWindowKey; label: string }[] = [
   { key: "w1", label: "بازده قیمت یک هفته" },
@@ -22,8 +23,24 @@ const emptySelection = () => Array<string>(MAX_FUND_COMPARISON).fill("");
 /** Manual selection only. Changes in board filters never replace chosen funds. */
 export default function FundComparisonPanel({ funds, from }: { funds: FundComparisonRow[]; from: string }) {
   const [ids, setIds] = useState<string[]>(emptySelection);
+  const [restoredIssue, setRestoredIssue] = useState(false);
+  useEffect(() => {
+    const restore = () => {
+      const restored = restoreFundSelection(new URLSearchParams(window.location.search).get("compare"), funds);
+      setIds(restored.ids);
+      setRestoredIssue(restored.rejected);
+    };
+    restore();
+    window.addEventListener("popstate", restore);
+    return () => window.removeEventListener("popstate", restore);
+  }, [funds]);
   const selected = ids.map(id => funds.find(fund => fund.id === id)).filter((row): row is FundComparisonRow => !!row);
-  const choose = (slot: number, id: string) => setIds(previous => previous.map((value, i) => i === slot ? id : value));
+  const update = (next: string[]) => {
+    setIds(next);
+    setRestoredIssue(false);
+    window.history.replaceState(window.history.state, "", fundSelectionHref(window.location.href, next));
+  };
+  const choose = (slot: number, id: string) => update(ids.map((value, i) => i === slot ? id : value));
   return (
     <section aria-labelledby="fund-comparison-title" className="card min-w-0 p-4 md:p-5">
       <h2 id="fund-comparison-title" className="text-base font-bold" style={{ color: "var(--heading)" }}>مقایسه صندوق‌های منتخب</h2>
@@ -52,7 +69,8 @@ export default function FundComparisonPanel({ funds, from }: { funds: FundCompar
           );
         })}
       </div>
-      {ids.some(Boolean) ? <button type="button" className="mt-2 min-h-11 px-2 text-xs underline" style={{ color: "var(--navy-ink)" }} onClick={() => setIds(emptySelection())}>پاک کردن انتخاب‌ها</button> : null}
+      {ids.some(Boolean) ? <button type="button" className="mt-2 min-h-11 px-2 text-xs underline" style={{ color: "var(--navy-ink)" }} onClick={() => update(emptySelection())}>پاک کردن انتخاب‌ها</button> : null}
+      {restoredIssue && <p role="status" className="text-xs" style={{ color: "var(--warning-ink)" }}>بخشی از انتخاب‌های لینک معتبر یا هم‌نوع نیست؛ انتخاب صندوق‌ها را بررسی کنید.</p>}
       {ids.some(id => id && !funds.some(row => row.id === id)) ? <p role="status" className="text-xs" style={{ color: "var(--warning-ink)" }}>یکی از صندوق‌های منتخب در اسنپ‌شات موجود نیست؛ انتخاب تازه لازم است.</p> : null}
       {selected.length ? <FundComparisonDetails rows={selected} from={from} /> : <p role="status" className="mt-3 text-xs" style={{ color: "var(--text-3)" }}>{funds.length ? "هنوز صندوقی انتخاب نشده است." : "داده صندوق در دسترس نیست؛ انتخاب پس از دریافت داده ممکن می‌شود."}</p>}
     </section>

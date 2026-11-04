@@ -1,0 +1,59 @@
+{
+  "origin": "https://62.60.191.24/liara-preview",
+  "path": "/rest/v1/content_hub",
+  "table": "public.content_hub",
+  "httpStatus": 200,
+  "sqlCode": null,
+  "rowCount": 60,
+  "unknownDateCount": 0,
+  "minPublishedAt": "2026-10-08T00:42:03+00:00",
+  "maxPublishedAt": "2026-11-02T21:48:02+00:00",
+  "tlsPolicy": "default system trust and hostname validation; no redirects",
+  "getCount": 1,
+  "databaseMetadata": {
+    "tableExists": true,
+    "anonSelect": true,
+    "columns": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "platform",
+        "type": "text"
+      },
+      {
+        "name": "kind",
+        "type": "text"
+      },
+      {
+        "name": "content_url",
+        "type": "text"
+      },
+      {
+        "name": "title",
+        "type": "text"
+      },
+      {
+        "name": "description",
+        "type": "text"
+      },
+      {
+        "name": "published_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "deleted_at",
+        "type": "timestamp with time zone"
+      }
+    ]
+  },
+  "schemaInvalidCount": 0,
+  "platformInvalidCount": 0,
+  "kindInvalidCount": 0,
+  "status": "GET_RETURNED_VALID_ROWS",
+  "observedAtUtc": "2026-11-03T22:38:06.594848+00:00",
+  "payloadSha256": "09f8737217347f00d2df9d787cee406d3696fe399b0842a8ed185b5e36b3b5ab",
+  "remoteWrites": false,
+  "automaticRetry": false
+}
