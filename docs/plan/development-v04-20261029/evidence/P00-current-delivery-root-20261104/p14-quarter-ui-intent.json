@@ -1,0 +1,28 @@
+{
+  "schema": "p14-quarterly-source-ui-preview-intent.v1",
+  "source": "2aa0cc46e0adb5c73e24bb752706e3168c94fc94",
+  "tree": "12c8f92c3afe1eb7ba5fc19ef17ef7cefa5e2bf0",
+  "base": "16cbddadeb11d23e9c6fbe933afca5b168f0785c",
+  "project": "prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp",
+  "slug": "safariarash7777-4463s-projects",
+  "existingDeployment": "dpl_5W5moToMuRujvgTNQUQHVRFRiQw2",
+  "fromBranch": "codex/media-archive-filters-20261103",
+  "snapshotBranch": "codex/p14-company-views-20261104",
+  "envIds": [
+    "9NEamcg9U7e4wcSX",
+    "rbwHDphHrW3rf8Hk"
+  ],
+  "onlyEnvFieldChanged": "gitBranch",
+  "decryptValues": false,
+  "valueReadOrChanged": false,
+  "productionChange": false,
+  "automaticRetry": false,
+  "packetVerifiedFiles": 77,
+  "rootTargetedTests": {
+    "passed": 42,
+    "failed": 0,
+    "lint": "PASS"
+  },
+  "metadataSourceCi": "41834617988 five gates passed; source16cb exact tree",
+  "acceptance": "PENDING_EXACT_NEW_BROWSER_NOT_TRANSFERRED"
+}

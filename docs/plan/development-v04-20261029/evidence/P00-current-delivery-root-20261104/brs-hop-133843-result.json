@@ -1,0 +1,77 @@
+{
+  "schema": "brs-existing-vps-hop-readonly.v1",
+  "readOnly": true,
+  "providerRequests": 0,
+  "rpcCalls": 0,
+  "sqlWrites": false,
+  "servicesChanged": false,
+  "credentialsRead": false,
+  "latestCompleteFinancialCycle": null,
+  "paasRuntimeIdentity": null,
+  "before": {
+    "idExpected": true,
+    "imageExpected": true,
+    "healthy": true
+  },
+  "vpsServices": [
+    {
+      "name": "portfolio-stage-rest-1",
+      "id": "703c0d4a0273aa257df593633629936bad6703e74b2e4b9da87d82e7580cab41",
+      "image": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+      "running": true,
+      "health": "healthy",
+      "sharesNetworkWithPinnedDb": true,
+      "databaseConnectionProven": false
+    },
+    {
+      "name": "portfolio-stage-gateway-1",
+      "id": "10d8dd93463e5dfbdfd1f43bea9bec95e52def0654c0ffe1d840bca449b643be",
+      "image": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+      "running": true,
+      "health": "healthy",
+      "sharesNetworkWithPinnedDb": true,
+      "databaseConnectionProven": false
+    },
+    {
+      "name": "fx-dashboard-proxy",
+      "id": "3433552f37e1ef3d3718aa00ff56a18d4066fce7ceb956abd09c426cb3d02f65",
+      "image": "sha256:0c994536bddb66445885237f1a5dcc1916bccea922661c76b4e9fc24061f9b52",
+      "running": true,
+      "health": null,
+      "sharesNetworkWithPinnedDb": false,
+      "databaseConnectionProven": false
+    }
+  ],
+  "budgetFunctions": [],
+  "marketSnapshot": [
+    {
+      "key": "symbol_details",
+      "payloadClockType": "number",
+      "payloadAtRaw": 1793799413879,
+      "foladClockType": "number",
+      "foladAtRaw": 1793793419088,
+      "foladDataPresent": true
+    }
+  ],
+  "highestStoredReportId": [
+    {
+      "id": 12288,
+      "symbol": "\u062e\u0631\u06cc\u0646\u06af",
+      "period_end": "2026-10-22",
+      "captured_at": "2026-11-04T12:12:00.065229+00:00"
+    }
+  ],
+  "status": "READ_ONLY_HOP_METADATA_OBSERVED",
+  "after": {
+    "idExpected": true,
+    "imageExpected": true,
+    "healthy": true
+  },
+  "clockMeaning": "stored field names/raw clocks only; highest id or snapshot presence is not a complete collection receipt",
+  "atUtc": "2026-11-04T13:38:43.777512+00:00",
+  "authenticatedObserved": true,
+  "commandSentObserved": true,
+  "observedAtUtc": "2026-11-04T13:38:43.165758+00:00",
+  "automaticRetry": false,
+  "deliberateRemoteWrites": false
+}

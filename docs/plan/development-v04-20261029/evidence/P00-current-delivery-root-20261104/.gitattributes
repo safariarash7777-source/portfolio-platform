@@ -62,3 +62,10 @@ p14-tab-4e-* -text -whitespace
 start-a-m1-* -text -whitespace
 
 start-a-image-* -text -whitespace
+
+# Preserve exact reviewed delivery bytes across Windows checkout.
+m1-* -text -whitespace
+p14-quarter-* -text -whitespace
+p09-main-f3-* -text -whitespace
+p09-f3-* -text -whitespace
+brs-hop-* -text -whitespace

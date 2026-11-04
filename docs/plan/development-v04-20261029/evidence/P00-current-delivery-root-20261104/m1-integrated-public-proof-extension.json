@@ -1,0 +1,7 @@
+{
+  "schema": "root-m1-public-proof-extension.v1",
+  "scope": "verified archive hash/bytes, two equal restore snapshot hashes, inverse/history fixed outcomes; no private journal content projected",
+  "successGate": "binding/archive/snapshot/inverse/history must all match before PASS",
+  "tests": "negative changed archive, foreign binding and changed restore digests; private canary not projected",
+  "authorityUnchanged": true
+}

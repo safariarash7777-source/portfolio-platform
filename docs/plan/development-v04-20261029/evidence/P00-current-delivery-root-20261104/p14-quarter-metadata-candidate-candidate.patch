@@ -1,0 +1,445 @@
+diff --git a/lib/core/quarterly.ts b/lib/core/quarterly.ts
+index 45281a4..ec84016 100644
+--- a/lib/core/quarterly.ts
++++ b/lib/core/quarterly.ts
+@@ -13,11 +13,14 @@
+ // واحد مبالغ: میلیون ریال (مطابق موتور پارس کدال). eps بر حسب ریال.
+ 
+ import { isMillionRialUnit } from "../fundamental/units";
+-import type { ReportScope } from "../fundamental/types";
++import type { ReportRecord, ReportScope } from "../fundamental/types";
++import { createQuarterSourceResolver, type QuarterProvenance, type QuarterReportSource, type TtmProvenance } from "./quarterly-provenance";
+ 
+ export interface QuarterInput {
+   /** شناسهٔ یکتای ردیف در codal_reports — برای تقدم اصلاحیهٔ متأخر. */
+   id: number;
++  /** Optional metadata from this exact input row; never used for selection/math. */
++  record?: ReportRecord | null;
+   /** پایان دورهٔ جلالی مثل "1404-06-31". */
+   period_end: string;
+   /** طول دورهٔ تجمیعی: ۳ | ۶ | ۹ | ۱۲. */
+@@ -36,6 +39,8 @@ export interface QuarterInput {
+ 
+ /** یک فصل مشتق‌شده؛ مقادیر null یعنی زنجیرهٔ لازم موجود نبود. */
+ export interface DerivedQuarter {
++  /** Absent for legacy callers; null/mismatched metadata never changes values. */
++  provenance?: QuarterProvenance;
+   /** سال جلالیِ شروع زنجیره؛ در سال مالی غیرتقویمی با سال پایان متفاوت است. */
+   fy: number;
+   /** شمارهٔ فصل ۱..۴. */
+@@ -59,6 +64,8 @@ export interface DerivedQuarter {
+ }
+ 
+ export interface TtmPoint {
++  /** Four actual profit windows plus the last capital input; no price clock. */
++  provenance?: TtmProvenance;
+   /** برچسب فصل انتهایی پنجره مثل "Q2 1404". */
+   label: string;
+   /** پایان دورهٔ فصل انتهایی (جلالی) — قیمت پایانی همین تاریخ ملاک است. */
+@@ -129,6 +136,7 @@ function toQuarter(
+   q: 1 | 2 | 3 | 4,
+   cur: QuarterInput | undefined,
+   prev: QuarterInput | undefined,
++  sourceOf?: (input: QuarterInput) => QuarterReportSource,
+ ): DerivedQuarter {
+   const label = `Q${q} ${fy}`;
+   const empty: DerivedQuarter = {
+@@ -146,15 +154,26 @@ function toQuarter(
+     adjusted: false,
+     capital: comparable(cur) && finiteNumber(cur.capital) && cur.capital > 0 ? cur.capital : null,
+   };
++  if (sourceOf) empty.provenance = {
++    amounts: { operation: "unavailable", contributors: [] },
++    capital: cur && empty.capital !== null ? sourceOf(cur) : null,
++  };
+   if (!comparable(cur)) return empty;
+   if (q === 1) {
+     // Q1 مستقیم از گزارش ۳ماهه
++    if (sourceOf && empty.provenance) empty.provenance.amounts = {
++      operation: "reported", contributors: [{ role: "current", report: sourceOf(cur) }],
++    };
+     return finalize(empty, cur.revenue, cur.gross_profit, cur.operating_profit, cur.net_profit);
+   }
+   if (!comparable(prev)) return empty; // حلقهٔ غایب/ناسازگار → null
++  if (sourceOf && empty.provenance) empty.provenance.amounts = {
++    operation: "difference", contributors: [{ role: "current", report: sourceOf(cur) }, { role: "previous", report: sourceOf(prev) }],
++  };
+   const rev = difference(cur.revenue, prev.revenue);
+   if (rev !== null && rev < 0) {
+     // تعدیل گزارش قبلی — فصل نامعتبر است؛ پرچم بزنیم و null بدهیم.
++    if (empty.provenance) empty.provenance.amounts.operation = "rejected_difference";
+     return { ...empty, adjusted: true };
+   }
+   return finalize(
+@@ -191,6 +210,10 @@ function finalize(
+ /** فصل‌سازی همهٔ سال‌های مالی موجود؛ خروجی مرتب از قدیم به جدید. */
+ export function deriveQuarters(reports: QuarterInput[]): DerivedQuarter[] {
+   const byPeriod = dedupePeriods(reports);
++  // Opt-in preserves the complete legacy output shape. Missing metadata in an
++  // otherwise tracked chain remains explicit, rather than borrowing a neighbor.
++  const sourceOf = reports.some(report => report && Object.hasOwn(report, "record"))
++    ? createQuarterSourceResolver(reports) : undefined;
+   const chains = new Set<string>();
+   for (const key of byPeriod.keys()) chains.add(key.split("|")[0]);
+   const out: DerivedQuarter[] = [];
+@@ -201,10 +224,10 @@ export function deriveQuarters(reports: QuarterInput[]): DerivedQuarter[] {
+     const m9 = byPeriod.get(`${chain}|9`);
+     const m12 = byPeriod.get(`${chain}|12`);
+     if (!m3 && !m6 && !m9 && !m12) continue;
+-    out.push(toQuarter(fy, 1, m3, undefined));
+-    out.push(toQuarter(fy, 2, m6, m3));
+-    out.push(toQuarter(fy, 3, m9, m6));
+-    out.push(toQuarter(fy, 4, m12, m9));
++    out.push(toQuarter(fy, 1, m3, undefined, sourceOf));
++    out.push(toQuarter(fy, 2, m6, m3, sourceOf));
++    out.push(toQuarter(fy, 3, m9, m6, sourceOf));
++    out.push(toQuarter(fy, 4, m12, m9, sourceOf));
+   }
+   // فصل‌های انتهایی که هنوز گزارش ندارند (آیندهٔ سال جاری) حذف می‌شوند:
+   // از انتها تا اولین فصل دارای دادهٔ واقعی یا پرچم adjusted، فصل‌های تمام-null بدون گزارش حذف.
+@@ -252,6 +275,10 @@ export function ttmSeries(quarters: DerivedQuarter[]): TtmPoint[] {
+       // سرمایه میلیون ریال، سهم ۱۰۰۰ریالی → تعداد سهم = capital×۱۰۰۰؛
+       // EPS = سود(میلیون ریال)×۱۰^۶ ÷ (capital×۱۰۰۰) = سود×۱۰۰۰÷capital (ریال).
+       epsTtm,
++      ...(win.some(w => w.provenance !== undefined) ? { provenance: {
++        netProfit: win.map(w => ({ fy: w.fy, q: w.q, periodEnd: w.periodEnd, amounts: w.provenance?.amounts ?? null })),
++        capital: last.provenance?.capital ?? null,
++      } } : {}),
+     });
+   }
+   return out;
+diff --git a/lib/core/quarterly.test.ts b/lib/core/quarterly.test.ts
+index 897092f..19f5ddc 100644
+--- a/lib/core/quarterly.test.ts
++++ b/lib/core/quarterly.test.ts
+@@ -3,6 +3,7 @@
+ // تفاضل منفی (تعدیل)، EPS TTM فقط با ۴ فصل کامل و متوالی.
+ import { test } from "node:test";
+ import assert from "node:assert/strict";
++import type { ReportRecord } from "../fundamental/types";
+ import {
+   deriveQuarters,
+   dedupePeriods,
+@@ -161,3 +162,151 @@ test("سال مالی جاری ناقص: فصل‌های آینده حذف، ف
+   assert.ok(labels.includes("Q1 1404"));
+   assert.ok(!labels.includes("Q4 1404")); // فصل بدون گزارش در انتها حذف
+ });
++
++function withRecord(input: QuarterInput, overrides: Partial<ReportRecord> = {}): QuarterInput {
++  return { ...input, record: {
++    id: input.id, financialPeriodEnd: input.period_end, storedPeriodEnd: null,
++    sourceUrl: `https://codal.ir/Reports/Decision.aspx?LetterSerial=${input.id}`,
++    publishedAt: "1405/01/01 10:00:00", publishedDateRaw: "۱۴۰۵/۰۱/۰۱", publishedTimeRaw: "۱۰:۰۰:۰۰",
++    publishedAtUtc: null, publicationUtcConfidence: "unknown",
++    capturedAtRaw: "2026-10-25T13:45:56.894105+03:30", capturedAt: "2026-10-25T10:15:56.894Z",
++    parserVersion: null, parserVersionSource: null, amendment: false, ...overrides,
++  } };
++}
++
++function withoutProvenance<T extends { provenance?: unknown }>(values: T[]) {
++  return values.map(value => { const copy = { ...value }; delete copy.provenance; return copy; });
++}
++const legacyInputs = (inputs: QuarterInput[]) => inputs.map(input => { const copy = { ...input }; delete copy.record; return copy; });
++
++test("quarter provenance follows the actual direct/difference inputs and preserves financial results and source precision", () => {
++  const inputs = fullYear(1403, 1000).map(input => withRecord(input));
++  const before = structuredClone(inputs), quarters = deriveQuarters(inputs);
++  assert.deepEqual(inputs, before);
++  assert.deepEqual(withoutProvenance(quarters), deriveQuarters(legacyInputs(inputs)));
++  assert.equal(quarters[0].provenance?.amounts.operation, "reported");
++  assert.deepEqual(quarters[0].provenance?.amounts.contributors.map(c => [c.role, c.report.id]), [["current", inputs[0].id]]);
++  assert.equal(quarters[1].provenance?.amounts.operation, "difference");
++  assert.deepEqual(quarters[1].provenance?.amounts.contributors.map(c => [c.role, c.report.id]), [["current", inputs[1].id], ["previous", inputs[0].id]]);
++  assert.equal(quarters[1].provenance?.capital?.id, inputs[1].id);
++  const source = quarters[1].provenance!.amounts.contributors[0].report;
++  assert.equal(source.binding, "matched");assert.equal(source.unit, "میلیون ریال");assert.equal(source.periodMonths, 6);
++  assert.deepEqual(source.record, inputs[1].record);
++  assert.equal(source.record?.capturedAtRaw, "2026-10-25T13:45:56.894105+03:30");
++  assert.equal(source.record?.publishedAtUtc, null);
++});
++
++test("legacy callers retain their exact quarterly and TTM output shape without provenance", () => {
++  const quarters = deriveQuarters(fullYear(1403, 1000));
++  assert.ok(quarters.every(q => !Object.hasOwn(q, "provenance")));
++  const ttm = ttmSeries(quarters);assert.equal(ttm.length, 1);
++  assert.ok(ttm.every(t => !Object.hasOwn(t, "provenance")));
++});
++
++test("unknown, wrong-period and mismatched row metadata never become financial null or a neighboring source", () => {
++  const base = fullYear(1403, 1000);
++  const cases: Array<[Partial<ReportRecord> | null, string]> = [
++    [null, "missing_record"], [{ id: base[3].id }, "identity_mismatch"],
++    [{ financialPeriodEnd: null }, "period_mismatch"], [{ financialPeriodEnd: base[3].period_end }, "period_mismatch"],
++  ];
++  for (const [metadata, binding] of cases) {
++    const inputs = base.map(input => withRecord(input));
++    inputs[0] = metadata === null ? { ...inputs[0], record: null } : withRecord(base[0], metadata);
++    const quarters = deriveQuarters(inputs);
++    assert.deepEqual(withoutProvenance(quarters), deriveQuarters(base));
++    const source = quarters[1].provenance!.amounts.contributors[1].report;
++    assert.equal(source.binding, binding);assert.equal(source.record, null);assert.equal(source.id, base[0].id);
++    assert.equal(quarters[1].provenance!.amounts.contributors[0].report.binding, "matched");
++  }
++});
++
++test("invalid and ambiguous database identities fail closed only for metadata", () => {
++  for (const id of [0, -1, NaN, Number.MAX_SAFE_INTEGER + 1]) {
++    const input = withRecord(rep({ id })), q = deriveQuarters([input])[0];
++    assert.equal(q.revenue, 100);assert.equal(q.provenance?.amounts.contributors[0].report.binding, "invalid_identity");
++    assert.equal(q.provenance?.amounts.contributors[0].report.id, null);
++    assert.equal(q.provenance?.amounts.contributors[0].report.record, null);
++  }
++  const inputs = fullYear(1403, 1000).map(input => withRecord(input));
++  inputs[1] = withRecord({ ...inputs[1], id: inputs[0].id });
++  const quarters = deriveQuarters(inputs);
++  assert.deepEqual(withoutProvenance(quarters), deriveQuarters(legacyInputs(inputs)));
++  assert.ok(quarters[1].provenance!.amounts.contributors.every(c => c.report.binding === "ambiguous_identity" && c.report.record === null));
++});
++
++test("metadata follows the winning input object, never a discarded newer URL/clock or same-period report", () => {
++  const older = withRecord(rep({ audited: true, revenue: 200 }));
++  const newer = withRecord(rep({ audited: false, revenue: 999 }), { capturedAtRaw: "2099-01-01T00:00:00Z" });
++  const q = deriveQuarters([newer, older])[0];
++  assert.equal(q.revenue, 200);assert.equal(q.provenance?.amounts.contributors[0].report.record?.id, older.id);
++  assert.notEqual(q.provenance?.amounts.contributors[0].report.record?.capturedAtRaw, newer.record?.capturedAtRaw);
++});
++
++test("missing/incompatible links keep unavailable provenance; rejected differences retain the two checked reports", () => {
++  const complete = fullYear(1403, 1000).map(input => withRecord(input));
++  for (const inputs of [complete.filter(r => r.period_months !== 6), complete.map(r => r.period_months === 6 ? { ...r, scope: "unknown" as const } : r)]) {
++    const quarters = deriveQuarters(inputs);
++    assert.deepEqual(withoutProvenance(quarters), deriveQuarters(legacyInputs(inputs)));
++    assert.equal(quarters[2].provenance?.amounts.operation, "unavailable");
++    assert.deepEqual(quarters[2].provenance?.amounts.contributors, []);
++    assert.equal(quarters[2].provenance?.capital?.id, complete[2].id);
++    assert.equal(ttmSeries(quarters).length, 0);
++  }
++  const rejected = [complete[0], withRecord({ ...complete[1], revenue: 1 })];
++  const q = deriveQuarters(rejected)[1];
++  assert.equal(q.adjusted, true);assert.equal(q.netProfit, null);
++  assert.equal(q.provenance?.amounts.operation, "rejected_difference");
++  assert.deepEqual(q.provenance?.amounts.contributors.map(c => c.report.id), [rejected[1].id, rejected[0].id]);
++});
++
++test("TTM retains all four actual quarter calculations, repeated difference contributors, and only final capital", () => {
++  const inputs = [...fullYear(1403, 1000), ...fullYear(1404, 1200)].map(input => withRecord(input));
++  const quarters = deriveQuarters(inputs), ttm = ttmSeries(quarters);
++  assert.deepEqual(withoutProvenance(ttm), ttmSeries(deriveQuarters(legacyInputs(inputs))));
++  const first = ttm[0].provenance!, crossYear = ttm[1].provenance!;
++  assert.equal(first.netProfit.length, 4);
++  assert.deepEqual(first.netProfit.map(q => q.amounts?.contributors.map(c => c.report.id)), [
++    [inputs[0].id], [inputs[1].id, inputs[0].id], [inputs[2].id, inputs[1].id], [inputs[3].id, inputs[2].id],
++  ]);
++  assert.equal(first.capital?.id, inputs[3].id);
++  assert.deepEqual(crossYear.netProfit.map(q => q.periodEnd), quarters.slice(1, 5).map(q => q.periodEnd));
++  assert.equal(crossYear.capital?.id, inputs[4].id);
++  assert.ok(!Object.hasOwn(first, "capturedAt"));assert.ok(!Object.hasOwn(first, "price"));
++});
++
++test("TTM preserves legacy/missing contributor slots as unknown without borrowing another quarter's metadata", () => {
++  const inputs = fullYear(1403, 1000).map(input => withRecord(input));
++  const quarters = deriveQuarters(inputs);delete quarters[1].provenance;
++  quarters[3].provenance!.capital = null;
++  const point = ttmSeries(quarters)[0];
++  assert.equal(point.provenance?.netProfit.length, 4);assert.equal(point.provenance?.netProfit[1].amounts, null);
++  assert.equal(point.provenance?.capital, null);assert.ok(point.epsTtm > 0);
++});
++
++test("noncalendar fiscal chains keep their own period identities; invalid periods do not gain admission through metadata", () => {
++  const ends = ["1403-09-30", "1403-12-29", "1404-03-31", "1404-06-31"];
++  const inputs = fullYear(1403, 1000).map((input, index) => withRecord({ ...input, period_end: ends[index] }));
++  const quarters = deriveQuarters(inputs), point = ttmSeries(quarters)[0];
++  assert.deepEqual(point.provenance?.netProfit.map(q => q.periodEnd), ends);
++  assert.equal(point.provenance?.capital?.record?.financialPeriodEnd, ends[3]);
++  const invalid = withRecord(rep({ period_end: "unknown" }));
++  assert.deepEqual(deriveQuarters([invalid]), []);
++  const missing = withRecord(rep({ period_months: 0 }));
++  assert.deepEqual(deriveQuarters([missing]), []);
++});
++
++test("matched metadata cannot certify nonfinite values, invent margins on zero revenue, or create missing capital", () => {
++  for (const patch of [{ revenue: 0 }, { net_profit: NaN }, { gross_profit: Infinity }, { capital: 0 }]) {
++    const inputs = fullYear(1403, 1000).map(input => withRecord({ ...input, ...patch }));
++    const quarters = deriveQuarters(inputs);
++    assert.deepEqual(withoutProvenance(quarters), deriveQuarters(legacyInputs(inputs)));
++    assert.deepEqual(withoutProvenance(ttmSeries(quarters)), ttmSeries(deriveQuarters(legacyInputs(inputs))));
++    assert.equal(quarters[0].provenance?.amounts.contributors[0].report.binding, "matched");
++    if (patch.revenue === 0) assert.equal(quarters[0].netMargin, null);
++    if (patch.capital === 0) assert.equal(quarters[0].provenance?.capital, null);
++  }
++  const inputs = fullYear(1403, 1000).map(input => withRecord(input));delete inputs[0].record;
++  const point = ttmSeries(deriveQuarters(inputs))[0];
++  assert.equal(point.provenance?.netProfit[0].amounts?.contributors[0].report.binding, "missing_record");
++  assert.ok(point.epsTtm > 0);
++});
+diff --git a/lib/fundamental/types.ts b/lib/fundamental/types.ts
+index f277ac5..d26831e 100644
+--- a/lib/fundamental/types.ts
++++ b/lib/fundamental/types.ts
+@@ -134,6 +134,9 @@ export interface ReportSource {
+   scope?: ReportScope;
+ }
+ 
++/** Metadata of one selected immutable row; never a bundle-level substitute. */
++export type ReportRecord = NonNullable<ReportSource["records"]>[number];
++
+ /** بستهٔ دادهٔ بنیادی یک نماد که به صفحهٔ نماد تزریق می‌شود. */
+ export interface SymbolFundamentals {
+   symbol: string;
+@@ -148,7 +151,7 @@ export interface SymbolFundamentals {
+    * برای کارت انتخاب کرده (حسابرسی ← اصلاحیه ← زمانِ انتشار ← id). انتخابِ
+    * دوباره در پایین‌دست ممنوع است؛ دو قاعده یعنی دو پاسخ در یک صفحه.
+    */
+-  n10Periods?: Array<{ id: number; data: CodalN10Data; scope?: ReportScope }>;
++  n10Periods?: Array<{ id: number; data: CodalN10Data; scope?: ReportScope; record?: ReportRecord | null }>;
+   /** Legacy summary; the reader now quarantines ambiguous/unknown period scopes. */
+   n10PeriodsScope?: "company" | "consolidated_ambiguous";
+ }
+diff --git a/lib/fundamental/supabase.ts b/lib/fundamental/supabase.ts
+index 269bc13..a8fac03 100644
+--- a/lib/fundamental/supabase.ts
++++ b/lib/fundamental/supabase.ts
+@@ -473,7 +473,7 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
+   const periodRows = n10all.filter(
+     (r) => reportScope(r.title) === "company" && fiscalChainKey(r.data as CodalN10Data) !== null,
+   );
+-  const n10Periods = periodRows.map((r) => ({ id: r.id, data: r.data as CodalN10Data, scope: "company" as const }));
++  const n10Periods = periodRows.map((r) => ({ id: r.id, data: r.data as CodalN10Data, scope: "company" as const, record: rowProvenance(r) }));
+   const scopeUnknown = n10all.filter(r => reportScope(r.title) === "unknown").length;
+   const scopeAmbiguous = n10all.filter(r => reportScope(r.title) === "consolidated_ambiguous").length;
+ 
+diff --git a/lib/fundamental/wiring.test.ts b/lib/fundamental/wiring.test.ts
+index 1607809..bea6051 100644
+--- a/lib/fundamental/wiring.test.ts
++++ b/lib/fundamental/wiring.test.ts
+@@ -24,7 +24,7 @@ import assert from "node:assert/strict";
+ import { getFundamentalsFromSupabase as getReader, type CodalRow } from "./supabase";
+ const fixtureEnvironment = Object.freeze({ NEXT_PUBLIC_SUPABASE_URL: "https://fixture.invalid", NEXT_PUBLIC_SUPABASE_ANON_KEY: "fixture-anon" });
+ const getFundamentalsFromSupabase = (symbol: string) => getReader(symbol, { environment: fixtureEnvironment });
+-import { deriveQuarters, type QuarterInput } from "@/lib/core/quarterly";
++import { deriveQuarters, ttmSeries, type QuarterInput } from "@/lib/core/quarterly";
+ 
+ const annual = (id: number, date: string, time: string, revenue: number, netProfit: number, consolidated = false): CodalRow => ({
+   id,
+@@ -240,3 +240,47 @@ test("شپنا ۳ماههٔ ۱۴۰۳ (واقعی): Q1 از اصلاحیه، نه
+   const q = deriveQuarters(toQuarterInputs(f?.n10Periods)).find((x) => x.fy === 1403 && x.q === 1);
+   assert.equal(q?.netProfit, 33_450_171);
+ });
++
++test("each selected period carries its own immutable record into quarters and TTM, not the main bundle record", async () => {
++  // Synthetic offline rows exercise the actual reader projection and selection.
++  const ends = ["1403-03-31", "1403-06-31", "1403-09-30", "1403-12-29"];
++  const rows = ends.map((end, index) => ({
++    ...mk(9700 + index, "تستمنشأ", end, (index + 1) * 3, { revenue: (index + 1) * 100, netProfit: (index + 1) * 20 }),
++    captured_at: `2026-10-${21 + index}T13:45:56.894105+03:30`,
++  }));
++  rows[0].title += " (اصلاحیه)";
++  DATASET = [...rows, mk(9999, "تستمنشأ", ends[0], 3, { revenue: 999, netProfit: 999 })];
++  const f = await getFundamentalsFromSupabase("تستمنشأ");
++  assert.ok(f?.n10);assert.equal(f.n10.source.records?.length, 1);
++  assert.equal(f.n10.source.records?.[0].id, 9703);
++  assert.equal(f.n10Periods?.length, 4);
++  for (const period of f.n10Periods!) {
++    assert.equal(period.record?.id, period.id);
++    assert.equal(period.record?.financialPeriodEnd, period.data.period_end);
++    assert.equal(period.record?.sourceUrl, `https://codal.ir/Reports/Decision.aspx?LetterSerial=${period.id}`);
++    assert.equal(period.record?.capturedAtRaw, rows.find(row => row.id === period.id)?.captured_at);
++  }
++  const inputs = f.n10Periods!.map(p => ({ ...toQuarterInputs([p])[0], record: p.record }));
++  const quarters = deriveQuarters(inputs), ttm = ttmSeries(quarters);
++  assert.deepEqual(quarters[0].provenance?.amounts.contributors.map(c => c.report.id), [9700]);
++  assert.equal(quarters[0].netProfit, 20);
++  assert.equal(quarters[0].provenance?.amounts.contributors[0].report.record?.amendment, true);
++  assert.equal(quarters[0].provenance?.amounts.contributors[0].report.record?.capturedAtRaw, "2026-10-21T13:45:56.894105+03:30");
++  assert.equal(ttm.length, 1);
++  assert.deepEqual(ttm[0].provenance?.netProfit.map(q => q.amounts?.contributors.map(c => c.report.id)), [[9700], [9701, 9700], [9702, 9701], [9703, 9702]]);
++  assert.equal(ttm[0].provenance?.capital?.id, 9703);
++});
++
++test("per-period unknown clocks and unsafe URL stay null; stored period is not substituted for financial period", async () => {
++  const row = mk(9800, "تستساعتمنشأ", "1404-03-31", 3, { revenue: 100, netProfit: 20 });
++  DATASET = [{ ...row, period_end: null, captured_at: "invalid", source_url: "javascript:alert(1)", raw: null }];
++  const f = await getFundamentalsFromSupabase("تستساعتمنشأ"), period = f?.n10Periods?.[0];
++  assert.ok(period);
++  assert.equal(period.record?.id, 9800);assert.equal(period.record?.financialPeriodEnd, "1404-03-31");
++  assert.equal(period.record?.storedPeriodEnd, null);assert.equal(period.record?.sourceUrl, null);
++  assert.equal(period.record?.capturedAtRaw, null);assert.equal(period.record?.capturedAt, null);
++  assert.equal(period.record?.publishedAt, null);assert.equal(period.record?.publishedAtUtc, null);
++  const q = deriveQuarters([{ ...toQuarterInputs([period])[0], record: period.record }])[0];
++  assert.equal(q.netProfit, 20);assert.equal(q.provenance?.amounts.contributors[0].report.binding, "matched");
++  assert.equal(q.provenance?.amounts.contributors[0].report.record?.sourceUrl, null);
++});
+diff --git a/app/symbol/[symbol]/page.tsx b/app/symbol/[symbol]/page.tsx
+index 0f0d58b..57a1d88 100644
+--- a/app/symbol/[symbol]/page.tsx
++++ b/app/symbol/[symbol]/page.tsx
+@@ -157,6 +157,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
+   // T3: فصل‌سازی ن-۱۰ با تفاضل زنجیره‌ای + P/E دوازده‌ماهه
+   const quarterInputs: QuarterInput[] = (fundamentals?.n10Periods ?? []).map((p) => ({
+     id: p.id,
++    ...(previewView ? { record: p.record ?? null } : {}),
+     period_end: p.data.period_end,
+     period_months: p.data.period_months,
+     audited: p.data.audited,
+diff --git a/lib/core/quarterly-provenance.ts b/lib/core/quarterly-provenance.ts
+new file mode 100644
+--- /dev/null
++++ b/lib/core/quarterly-provenance.ts
+@@ -0,0 +1,57 @@
++import type { ReportRecord } from "../fundamental/types";
++import type { QuarterInput } from "./quarterly";
++
++export interface QuarterReportSource {
++  /** Identity consumed by the existing engine, even if metadata cannot bind. */
++  id: number | null;
++  periodEnd: string;
++  periodMonths: number;
++  unit: string | null;
++  binding: "matched" | "missing_record" | "invalid_identity" | "ambiguous_identity" | "identity_mismatch" | "period_mismatch";
++  /** Only the exact input's row metadata; no date/URL/nearest-period lookup. */
++  record: ReportRecord | null;
++}
++
++export interface QuarterAmountsSource {
++  /** rejected_difference records the reports checked, not a valid amount. */
++  operation: "reported" | "difference" | "rejected_difference" | "unavailable";
++  contributors: Array<{ role: "current" | "previous"; report: QuarterReportSource }>;
++}
++
++export interface QuarterProvenance {
++  amounts: QuarterAmountsSource;
++  /** Capital comes only from the current report, independently of the difference. */
++  capital: QuarterReportSource | null;
++}
++
++export interface TtmProvenance {
++  /** Keep all four actual windows and repeated/subtracted inputs; do not reduce
++   * this chain to an annual report or a single latest timestamp. */
++  netProfit: Array<{ fy: number; q: number; periodEnd: string; amounts: QuarterAmountsSource | null }>;
++  capital: QuarterReportSource | null;
++}
++
++const validId = (id: unknown): id is number => typeof id === "number" && Number.isSafeInteger(id) && id > 0;
++
++/** Metadata-only identity checks. Never participates in dedupe or arithmetic. */
++export function createQuarterSourceResolver(inputs: QuarterInput[]): (input: QuarterInput) => QuarterReportSource {
++  const ids = new Map<number, number>();
++  for (const input of inputs) if (input && validId(input.id)) ids.set(input.id, (ids.get(input.id) ?? 0) + 1);
++  return input => {
++    const record = input.record;
++    const binding: QuarterReportSource["binding"] = !validId(input.id) ? "invalid_identity"
++      : ids.get(input.id) !== 1 ? "ambiguous_identity"
++      : !record ? "missing_record"
++      : record.id !== input.id ? "identity_mismatch"
++      : record.financialPeriodEnd !== input.period_end ? "period_mismatch"
++      : "matched";
++    return {
++      id: validId(input.id) ? input.id : null,
++      periodEnd: input.period_end,
++      periodMonths: input.period_months,
++      unit: input.unit ?? null,
++      binding,
++      record: binding === "matched" && record ? { ...record } : null,
++    };
++  };
++}

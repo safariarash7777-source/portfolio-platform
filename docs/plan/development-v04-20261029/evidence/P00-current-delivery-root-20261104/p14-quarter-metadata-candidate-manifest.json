@@ -1,0 +1,305 @@
+{
+  "status": "LOCAL_SOURCE_CANDIDATE_NOT_DEPLOYED",
+  "base": "4e4765bdef751b99047ac12996208c0f2b85c5de",
+  "changed": [
+    "lib/core/quarterly.ts",
+    "lib/core/quarterly.test.ts",
+    "lib/fundamental/types.ts",
+    "lib/fundamental/supabase.ts",
+    "lib/fundamental/wiring.test.ts",
+    "app/symbol/[symbol]/page.tsx",
+    "lib/core/quarterly-provenance.ts"
+  ],
+  "tests": 52,
+  "existingTests": 40,
+  "newTests": 12,
+  "failed": 0,
+  "skipped": 0,
+  "check": {
+    "typecheckDiagnostics": 0,
+    "lint": [],
+    "testRegistry": "existing core and calc PASS",
+    "scope": "changed core/reader/types/tests; page lint, exact Preview forwarding; full page build/CI owned by coordinator"
+  },
+  "compatibility": {
+    "base": "4e4765bdef751b99047ac12996208c0f2b85c5de",
+    "scenarios": [
+      "calendar",
+      "reversed",
+      "gap",
+      "noncalendar",
+      "audited",
+      "duplicateId",
+      "unknownUnit",
+      "unknownScope",
+      "zeroRevenue",
+      "negativeDifference",
+      "nullNet",
+      "nanNet",
+      "infiniteGross",
+      "zeroCapital",
+      "infiniteCapital",
+      "invalidId",
+      "unknownPeriod",
+      "invalidDuration"
+    ],
+    "quarterAndTtmComparisons": 72,
+    "preservedCoreFunctions": [
+      "dedupePeriods",
+      "fiscalChainKey",
+      "fyOf",
+      "finiteNumber",
+      "comparable",
+      "difference",
+      "finalize",
+      "peOf",
+      "avgOf",
+      "rolling4"
+    ],
+    "preservedReaderFunctions": [
+      "fetchQueries",
+      "rowProvenance",
+      "dedupeByPeriod",
+      "latestParserRows"
+    ],
+    "actualPageMapping": "PASS nonPreview identical; decision/dossier exact own record or null; no main record fallback",
+    "scope": "offline differential invariance and actual page initializer, not browser/build acceptance"
+  },
+  "patchCheck": "PASS exact Git base snapshots whitespace=error",
+  "patchStats": "32\t5\tlib/core/quarterly.ts\n149\t0\tlib/core/quarterly.test.ts\n4\t1\tlib/fundamental/types.ts\n1\t1\tlib/fundamental/supabase.ts\n45\t1\tlib/fundamental/wiring.test.ts\n1\t0\tapp/symbol/[symbol]/page.tsx\n57\t0\tlib/core/quarterly-provenance.ts",
+  "checkoutHead": "5fe459f5cf61a5cb7c01a70c23ba86270191c2ec",
+  "checkoutStatus": "",
+  "runtimeDependencyCanonicalMatches": 7,
+  "files": [
+    {
+      "path": "after/app/symbol/[symbol]/page.tsx",
+      "sha256": "53544e6d7841e12559439d66e21fcaaaa55f4b8ec8f921f1081461981db73a14",
+      "bytes": 33360
+    },
+    {
+      "path": "after/components/symbol/QuarterlyCharts.tsx",
+      "sha256": "585c9af6c8325704242d79643796349ad753f61cbbd3b984e92a572990bf658b",
+      "bytes": 11576
+    },
+    {
+      "path": "after/lib/core/engine.ts",
+      "sha256": "40c0ce68afc80f81e0f268aea2c4f0ae699d71121fb4922a15a63b7b9e1eff37",
+      "bytes": 17597
+    },
+    {
+      "path": "after/lib/core/history.ts",
+      "sha256": "c626bb4c055be280b0510615583d2c9360841d6f7e0dd97e8007a579556774f4",
+      "bytes": 7147
+    },
+    {
+      "path": "after/lib/core/monthly-quantity.ts",
+      "sha256": "244b6925cd80a65984d956e3ca671b364a7a353e182ccf8dd7aee76877d78b2d",
+      "bytes": 9415
+    },
+    {
+      "path": "after/lib/core/quarterly-provenance.ts",
+      "sha256": "f6164e284684713ea43e91eab598847ddb15fe756fb09da4d5196990ede9e92b",
+      "bytes": 2482
+    },
+    {
+      "path": "after/lib/core/quarterly.test.ts",
+      "sha256": "67390d47a7063aec040952f0364a1f0f378e3b6c0d7b4f47cd97dfa0c3d06147",
+      "bytes": 17499
+    },
+    {
+      "path": "after/lib/core/quarterly.ts",
+      "sha256": "e097446427f34afe5637ce6ea3f9053bfc66f210ec93355c37b182e7b82fe3f3",
+      "bytes": 14162
+    },
+    {
+      "path": "after/lib/fundamental/amendment.test.ts",
+      "sha256": "d056b062ddb480f3dc269729a7d305e928e41763784eac4cff7bf857a68db167",
+      "bytes": 13660
+    },
+    {
+      "path": "after/lib/fundamental/monthly-quantity-binding.ts",
+      "sha256": "e7ece2c8c84048b3dac506bdb9a748a32dcfd0b7d496c8ceade346913f60f7b9",
+      "bytes": 5488
+    },
+    {
+      "path": "after/lib/fundamental/supabase.ts",
+      "sha256": "54dc8979fe8b2880aab2dd59926780d40de8bd8f154d0ef63677c87842f5436c",
+      "bytes": 31711
+    },
+    {
+      "path": "after/lib/fundamental/types.ts",
+      "sha256": "8e0719ca44c9882005c35de6bf5ca6304b65c78247314ac479558d7742fef4e1",
+      "bytes": 7195
+    },
+    {
+      "path": "after/lib/fundamental/units.ts",
+      "sha256": "6f2150f382e76f19974910c8b65466e0eff0563d9543e2f617b65d1d3574af20",
+      "bytes": 219
+    },
+    {
+      "path": "after/lib/fundamental/wiring.test.ts",
+      "sha256": "082f6eaecb9c7fb17e2baa2851dc1dfeef5998ab9bb5d2894c98d56c39bdab80",
+      "bytes": 16696
+    },
+    {
+      "path": "after/package.json",
+      "sha256": "77b9a5398871ca5ed60426cf7c835db762167dbe23e46e47b378c380ca6172f6",
+      "bytes": 11040
+    },
+    {
+      "path": "baseline.json",
+      "sha256": "529d6220a2aed638c20083a9e3657246984be7a2b7c629d6f7bc14f9211ca174",
+      "bytes": 2341
+    },
+    {
+      "path": "before/app/symbol/[symbol]/page.tsx",
+      "sha256": "8451f977b74179a01d077735f4becf25772f86dbecfc88569791b3a511738635",
+      "bytes": 33302
+    },
+    {
+      "path": "before/components/symbol/QuarterlyCharts.tsx",
+      "sha256": "585c9af6c8325704242d79643796349ad753f61cbbd3b984e92a572990bf658b",
+      "bytes": 11576
+    },
+    {
+      "path": "before/lib/core/engine.ts",
+      "sha256": "40c0ce68afc80f81e0f268aea2c4f0ae699d71121fb4922a15a63b7b9e1eff37",
+      "bytes": 17597
+    },
+    {
+      "path": "before/lib/core/history.ts",
+      "sha256": "c626bb4c055be280b0510615583d2c9360841d6f7e0dd97e8007a579556774f4",
+      "bytes": 7147
+    },
+    {
+      "path": "before/lib/core/monthly-quantity.ts",
+      "sha256": "244b6925cd80a65984d956e3ca671b364a7a353e182ccf8dd7aee76877d78b2d",
+      "bytes": 9415
+    },
+    {
+      "path": "before/lib/core/quarterly.test.ts",
+      "sha256": "ecbc461e918c17860101d89c888284236e4518cdc0eb0d462044ac23d63d8a32",
+      "bytes": 7743
+    },
+    {
+      "path": "before/lib/core/quarterly.ts",
+      "sha256": "8388f22c693cc0dd1399ac23cdca591a40f989320beb837183468c634a6e4742",
+      "bytes": 12380
+    },
+    {
+      "path": "before/lib/fundamental/amendment.test.ts",
+      "sha256": "d056b062ddb480f3dc269729a7d305e928e41763784eac4cff7bf857a68db167",
+      "bytes": 13660
+    },
+    {
+      "path": "before/lib/fundamental/monthly-quantity-binding.ts",
+      "sha256": "e7ece2c8c84048b3dac506bdb9a748a32dcfd0b7d496c8ceade346913f60f7b9",
+      "bytes": 5488
+    },
+    {
+      "path": "before/lib/fundamental/supabase.ts",
+      "sha256": "ee522b1911d80f3c800c49e2e6904328b10c1fcb50c7c76a6d13c89686f5fff8",
+      "bytes": 31685
+    },
+    {
+      "path": "before/lib/fundamental/types.ts",
+      "sha256": "bea403ac912a56e966c78a7bff296e7de7a211e3edcd4f833b9362ed8b60ccee",
+      "bytes": 7011
+    },
+    {
+      "path": "before/lib/fundamental/units.ts",
+      "sha256": "6f2150f382e76f19974910c8b65466e0eff0563d9543e2f617b65d1d3574af20",
+      "bytes": 219
+    },
+    {
+      "path": "before/lib/fundamental/wiring.test.ts",
+      "sha256": "a7d213eb678ea41a1615e23b1b79e8624e1255c427da5e6bb3a24504e301ad89",
+      "bytes": 13485
+    },
+    {
+      "path": "before/package.json",
+      "sha256": "77b9a5398871ca5ed60426cf7c835db762167dbe23e46e47b378c380ca6172f6",
+      "bytes": 11040
+    },
+    {
+      "path": "candidate.patch",
+      "sha256": "3e2f9fe4fecfa2fca4eacac34e982b8c100ac33df85de1a3ac30f563b9b6ac7e",
+      "bytes": 26282
+    },
+    {
+      "path": "check-final.log",
+      "sha256": "061051dea32bc6fbad290b8b3dc3fa8a53cb866284bb011503b27163e7ecca26",
+      "bytes": 225
+    },
+    {
+      "path": "check-first.log",
+      "sha256": "061051dea32bc6fbad290b8b3dc3fa8a53cb866284bb011503b27163e7ecca26",
+      "bytes": 225
+    },
+    {
+      "path": "check.cjs",
+      "sha256": "3e2a919ddc15205edaf13f8c4ff94774ea63307713b2d18730d303463a12ca8e",
+      "bytes": 2496
+    },
+    {
+      "path": "check.json",
+      "sha256": "344e7c6044ca81d8d44452f67aaa9f1a65ff280ce350dd43c7928d88cf32163e",
+      "bytes": 219
+    },
+    {
+      "path": "compatibility.json",
+      "sha256": "22aa1e007bc8f385d999a149f625c594176b11e6a7cb9df3f17e2ee1015a681c",
+      "bytes": 994
+    },
+    {
+      "path": "compatibility.log",
+      "sha256": "df73ade3ae051915bf7c2e905dea593bab1c513c6161b1f374f54a514e7cbac4",
+      "bytes": 1088
+    },
+    {
+      "path": "dependency-proof.json",
+      "sha256": "413fec4e978e0870c71a1bdf741000478f32f56bfe384c29357383c2b44d174e",
+      "bytes": 1687
+    },
+    {
+      "path": "prepare.mjs",
+      "sha256": "9737431843792c61903cf8bb3f6f23f035d2567d82c5765f13bf01ad443e7eca",
+      "bytes": 1257
+    },
+    {
+      "path": "RESULT.fa.md",
+      "sha256": "d91eb1021ab5f3aa1d556f9684457118e880613a74196dfc9988de57ecc9eae8",
+      "bytes": 8298
+    },
+    {
+      "path": "run-tests.cjs",
+      "sha256": "ab7961a7e938d16c3fe7560e4c119a5dde14ffd143389fa01bd63b45f21a6732",
+      "bytes": 2407
+    },
+    {
+      "path": "runtime-dependencies.json",
+      "sha256": "11235aea9685fa7376079cbaf6e72a7d491c306a3b199986240bc16dd7177d9f",
+      "bytes": 889
+    },
+    {
+      "path": "seal.mjs",
+      "sha256": "336563e179f018a0b2ba433b493a1f8772164583e886960135449cbde3a741aa",
+      "bytes": 4381
+    },
+    {
+      "path": "tests-final.log",
+      "sha256": "4ef4de3f200b65f0256e8faa58654a137b432123a4e6f2db6d7d5840f8e118d0",
+      "bytes": 6858
+    },
+    {
+      "path": "tests-first.log",
+      "sha256": "9bd4df9f93e3bb46db28304adaa5e239aac11572517edea124c0fd7f95586611",
+      "bytes": 6737
+    },
+    {
+      "path": "verify-compat.cjs",
+      "sha256": "3dc38b09bc36cc41c63d0a533d329ee3a8a2c5b73e6709488404c800e35a4a1a",
+      "bytes": 5523
+    }
+  ]
+}

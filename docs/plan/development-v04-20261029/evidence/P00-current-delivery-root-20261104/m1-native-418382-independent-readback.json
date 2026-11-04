@@ -1,0 +1,31 @@
+{
+  "schema": "root-m1-native-independent-readback.v1",
+  "atUtc": "2026-11-04T13:56:46.069794+00:00",
+  "run": 41838229728,
+  "artifact": 13328148196,
+  "zipSha256": "b8ea0af5e4418c326592ad05890bd60c39efe7bf6d27f5154d002a53d8f65c88",
+  "receiptSha256": "563337d6853b855b5281f16a844c3997748ea33bb08d5f4ff171c9a0be4f6fbc",
+  "binding": {
+    "allocationId": "f66bd6a2-3682-48cd-bac2-dde285ed142b",
+    "attempt": 1,
+    "executionAllocationId": "bcedad06-1a5b-5c67-8bf6-fe9f29289983",
+    "repository": "safariarash7777-source/portfolio-platform",
+    "runId": "41838229728",
+    "workflowCommit": "499166f81d1074ec7c906bac49706507b253fee1"
+  },
+  "status": "FAIL_M1_NOT_ACCEPTED",
+  "failurePhase": "controller_binding",
+  "failureCode": null,
+  "cleanup": "CONFIRMED",
+  "cleanupFailedRoles": [],
+  "writeOutcomeUnknown": null,
+  "preloadAndPrepare": "SUCCESS",
+  "backupRestoreInverseAcceptance": "NOT_REACHED_NOT_ACCEPTED",
+  "sourceDefect": "phase filename controller_binding rejected by unchanged strict namespace; actual pure validator reproduction attached",
+  "runtimeExactCauseFromReceiptAlone": "UNKNOWN",
+  "privateRuntimeLogRead": false,
+  "automaticReplay": false,
+  "primaryInstall": "NOT_APPLIED",
+  "fullConsumer": "NOT_WIRED",
+  "serviceEntitlement": "NOT_CONNECTED"
+}

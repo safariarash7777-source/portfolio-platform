@@ -1,0 +1,132 @@
+{
+  "schema": "root-p09-existing-pr-main-integration.v1",
+  "atUtc": "2026-11-04T12:56:28.890138+00:00",
+  "existingPr": 385,
+  "existingRemoteBranch": "codex/p01-p03-member-assembly-20261031",
+  "preservedApplicationBase": "960903ca8390bd9767c2d87a309dbb48c815cedb",
+  "mergedMain": "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+  "mergedTree": "b576021a2248f6887319f4ee226df79e906dbe45",
+  "conflicts": 0,
+  "mainFilesChanged": [
+    ".github/workflows/relay-health.yml",
+    "app/market/funds/page.tsx",
+    "components/market/FundComparisonPanel.tsx",
+    "components/market/FundsAccountBridge.tsx",
+    "docs/plan/development-v04-20261029/evidence/P08-funds-url-source-20261104.md",
+    "lib/market-funds-read.server.ts",
+    "lib/market-nav.test.ts",
+    "lib/market-stored.test.ts",
+    "lib/useUrlState.ts",
+    "scripts/ops/liara-binding-discovery-runner.mjs",
+    "scripts/ops/liara-binding-discovery-runner.test.mjs",
+    "scripts/ops/liara-binding-discovery.mjs",
+    "scripts/ops/liara-binding-discovery.test.mjs",
+    "scripts/ops/liara-discovery-source.json"
+  ],
+  "allChangedFilesExactToMain": true,
+  "existingWorkbookRelevantFiles": [
+    {
+      "path": "app/api/admin/intelligence/workbooks/route.test.ts",
+      "unchangedBlob": "7c218c9b05b92872e8c01173f4df3139d102ca47",
+      "sha256": "460cc70211c83376aaa87598063eb31d5d5907c4fe272888a1e9cfc285427462"
+    },
+    {
+      "path": "app/api/admin/intelligence/workbooks/route.ts",
+      "unchangedBlob": "149b3ef79e11f5bff9934bdd80e33d1932cac4ba",
+      "sha256": "4bfbb753dc399d20d984d0c87fed53d703a7f3e7ae7f056e202f257137b12eaf"
+    },
+    {
+      "path": "components/admin/ResearchHistoryPanel.test.tsx",
+      "unchangedBlob": "ce3480c4028a94e90effd7a417a895d70310c0ba",
+      "sha256": "2e581f91f9d65ab38b2d2fb73a7f3c004718df69b7d2d5e24802cb58bcbd1772"
+    },
+    {
+      "path": "components/admin/ResearchHistoryPanel.tsx",
+      "unchangedBlob": "93cfb1fcc060286d10ddd4192a3535e7c4cfe1c0",
+      "sha256": "f6fc8950231c6eaa633b95bade965e49c4238a9dad1ad0edbe7a4a08e7d584eb"
+    },
+    {
+      "path": "components/admin/ResearchPreparationFields.tsx",
+      "unchangedBlob": "a3082d4e6ad97431b309eba1b08fe8e6c94aa659",
+      "sha256": "490f0edeb0f19917f5cec03d523f496768617300f53c06cc3f31ce44320b7bc8"
+    },
+    {
+      "path": "components/admin/ResearchWorkbook.test.ts",
+      "unchangedBlob": "bf7cce89853dfd1082ef5d9aa0c6293419c2c036",
+      "sha256": "02dee94a22e27828c7764982e47187a40c57df91f584962402b2f36198dd5ebd"
+    },
+    {
+      "path": "components/admin/ResearchWorkbook.tsx",
+      "unchangedBlob": "5e21eef71e3004ded0cecf8c4253683c996f95ea",
+      "sha256": "106ba44911d61110d1e67b051aac72f0c359a382df2b634e395eeb895f093990"
+    },
+    {
+      "path": "components/admin/p07-component-test-host.ts",
+      "unchangedBlob": "e742e08aab10bcb4b8f48782ab4ed1874cc90328",
+      "sha256": "66fc61002c927b73457dbe2defea45296d82404cd868e59c15a1e25b76de0452"
+    },
+    {
+      "path": "lib/intelligence/p07-workflow-fixture.ts",
+      "unchangedBlob": "3b6437c76d2af24f95e7bdbc7b137171759318f3",
+      "sha256": "7b9918cc46ada037e36d9eecbdb90bbc885b702f3a12147bf2704373c54eccc1"
+    },
+    {
+      "path": "lib/intelligence/research-history-metadata.ts",
+      "unchangedBlob": "caed02b69ce74570cfdf55542b87bb2767e4091d",
+      "sha256": "5183d95355647990a39de5f005e3934a0c419e8536515661ba285cb32c6cece2"
+    },
+    {
+      "path": "lib/intelligence/research-history.test.ts",
+      "unchangedBlob": "102d07d7f9fc2c25cf5613d971c85696fdb1927f",
+      "sha256": "a3b0ef8c0f1447e4429f70f48dcd06c069462a0f5aee8126f48ef87c5d3bfb42"
+    },
+    {
+      "path": "lib/intelligence/research-history.ts",
+      "unchangedBlob": "d3873954d7cb420aa17774a60643814c8052792f",
+      "sha256": "e59b2099b9b6a0b42cc60e113208c2358d529ec255c17d8b921361615d8876ee"
+    },
+    {
+      "path": "lib/intelligence/workbook-intent-store.ts",
+      "unchangedBlob": "d837836c9f8f230c68439d56932fdf959eb39f83",
+      "sha256": "003cb12c22269344875aa7091dd10c20b492831c13b9a78b7bf37d6b6a6a7eb9"
+    },
+    {
+      "path": "lib/intelligence/workbook-intent.integration.test.ts",
+      "unchangedBlob": "a239977c274ac673790758113aad3ab9cd459859",
+      "sha256": "cfaac011042ec62f88b98d2a07702ab73e015d64e7b5fc77410b89d0418f4315"
+    },
+    {
+      "path": "lib/intelligence/workbook-save-intent.ts",
+      "unchangedBlob": "a5e2ee1b490a2faac2d53f7f801ccd9deb859b75",
+      "sha256": "7c27387f631074fee543951eaae4596e3e0214f6dc72709280bc4845f5da050e"
+    },
+    {
+      "path": "lib/intelligence/workbook-store.test.ts",
+      "unchangedBlob": "77f9241c860b2be7701ab5d1525ed1e334287698",
+      "sha256": "aa04b3b5ffad1e7c5c009535d19552ceaafa0426e3b034bd553859904376b12e"
+    },
+    {
+      "path": "lib/intelligence/workbook-store.ts",
+      "unchangedBlob": "e46bb2350f75e0435ed537ed36d33972f8a84f2b",
+      "sha256": "910089ceb98163387f2b0b20b9e6aaccbed733b3a72d9cbd82b1bd51c613c721"
+    },
+    {
+      "path": "package.json",
+      "unchangedBlob": "b10ded459db82156f23cb1def192b0a20b65bed9",
+      "sha256": "e0570e5ce84b3c6c71d1caa6e9c6d59dc40cc0b9f98e1835458f64f51d1103cf"
+    },
+    {
+      "path": "docs/ops/research-workbook-recovery-20261029/intent-store.candidate.sql",
+      "unchangedBlob": "7e3f7c7f85cb26281851e844c31f3c1ad0e5d9b1",
+      "sha256": "bd0d6700fb9fa6415c94d6db9d9695d8a4bc013856f3e0098c7abbf457f749e6"
+    }
+  ],
+  "ownerWorktreeUnchanged": "C:/Users/Asus/Documents/Codex/2026-10-13/x20/work/member-journey-20261019; clean HEAD960 before integration",
+  "coordinationCheckout": "existing root checkout; local review branch only, same PR remains destination",
+  "scope": "ordinary merge preserving every960 path except fourteen exact current-main files; no new workbook/journal implementation",
+  "newTestsWritten": false,
+  "sqlAppliedToPrimary": false,
+  "productionChanged": false,
+  "nativeAcceptanceAfterMerge": "PENDING_NOT_TRANSFERRED_FROM_E0_OR_A2D",
+  "serviceEntitlement": "NOT_CONNECTED"
+}

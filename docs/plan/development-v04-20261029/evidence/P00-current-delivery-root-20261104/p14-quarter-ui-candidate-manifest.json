@@ -1,0 +1,593 @@
+{
+  "status": "LOCAL_UI_CANDIDATE_NOT_BROWSER_ACCEPTED",
+  "base": "16cbddadeb11d23e9c6fbe933afca5b168f0785c",
+  "priorLayerPatchSha256": "3e2f9fe4fecfa2fca4eacac34e982b8c100ac33df85de1a3ac30f563b9b6ac7e",
+  "priorPacketIntactFiles": 46,
+  "changed": [
+    "components/symbol/QuarterlyCharts.tsx",
+    "package.json",
+    "components/symbol/MonthlySourceChartFrame.tsx",
+    "components/symbol/QuarterlyPointSources.tsx",
+    "components/symbol/QuarterlyPointSources.test.tsx"
+  ],
+  "tests": 42,
+  "existingTests": 29,
+  "newTests": 13,
+  "failed": 0,
+  "skipped": 0,
+  "check": {
+    "typecheckDiagnostics": 0,
+    "lint": [],
+    "testRegistry": "test:core PASS",
+    "scope": "changed UI/frame/tests; complete build/CI and native browser acceptance owned by coordinator"
+  },
+  "compatibility": {
+    "base": "16cbddadeb11d23e9c6fbe933afca5b168f0785c",
+    "scenarios": [
+      {
+        "name": "complete_no_price",
+        "preview": false,
+        "range": 4,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": true
+      },
+      {
+        "name": "complete_no_price",
+        "preview": false,
+        "range": 8,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": true
+      },
+      {
+        "name": "complete_no_price",
+        "preview": false,
+        "range": 12,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": true
+      },
+      {
+        "name": "complete_no_price",
+        "preview": true,
+        "range": 4,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": null
+      },
+      {
+        "name": "complete_no_price",
+        "preview": true,
+        "range": 8,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": null
+      },
+      {
+        "name": "complete_no_price",
+        "preview": true,
+        "range": 12,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": null
+      },
+      {
+        "name": "complete_with_price",
+        "preview": false,
+        "range": 4,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": true
+      },
+      {
+        "name": "complete_with_price",
+        "preview": false,
+        "range": 8,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": true
+      },
+      {
+        "name": "complete_with_price",
+        "preview": false,
+        "range": 12,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": true
+      },
+      {
+        "name": "complete_with_price",
+        "preview": true,
+        "range": 4,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": null
+      },
+      {
+        "name": "complete_with_price",
+        "preview": true,
+        "range": 8,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": null
+      },
+      {
+        "name": "complete_with_price",
+        "preview": true,
+        "range": 12,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": null
+      },
+      {
+        "name": "gaps",
+        "preview": false,
+        "range": 4,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": true
+      },
+      {
+        "name": "gaps",
+        "preview": false,
+        "range": 8,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": true
+      },
+      {
+        "name": "gaps",
+        "preview": false,
+        "range": 12,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": true
+      },
+      {
+        "name": "gaps",
+        "preview": true,
+        "range": 4,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": null
+      },
+      {
+        "name": "gaps",
+        "preview": true,
+        "range": 8,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": null
+      },
+      {
+        "name": "gaps",
+        "preview": true,
+        "range": 12,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": null
+      },
+      {
+        "name": "empty",
+        "preview": false,
+        "range": 4,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": true
+      },
+      {
+        "name": "empty",
+        "preview": false,
+        "range": 8,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": true
+      },
+      {
+        "name": "empty",
+        "preview": false,
+        "range": 12,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": true
+      },
+      {
+        "name": "empty",
+        "preview": true,
+        "range": 4,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": null
+      },
+      {
+        "name": "empty",
+        "preview": true,
+        "range": 8,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": null
+      },
+      {
+        "name": "empty",
+        "preview": true,
+        "range": 12,
+        "financialTracesEqual": true,
+        "nonPreviewHtmlEqual": null
+      }
+    ],
+    "financialTraceComparisons": 24,
+    "nonPreviewHtmlComparisons": 12,
+    "monthlyDefaultFrameComparisons": 2,
+    "scope": "real before/after JSX with chart-render stubs; not browser/layout/touch acceptance"
+  },
+  "patchCheck": "PASS exact Git base raw snapshots whitespace=error",
+  "patchStats": "24\t4\tcomponents/symbol/QuarterlyCharts.tsx\n1\t1\tpackage.json\n7\t4\tcomponents/symbol/MonthlySourceChartFrame.tsx\n111\t0\tcomponents/symbol/QuarterlyPointSources.tsx\n220\t0\tcomponents/symbol/QuarterlyPointSources.test.tsx",
+  "checkoutHead": "5fe459f5cf61a5cb7c01a70c23ba86270191c2ec",
+  "checkoutStatus": "",
+  "runtimeDependencyCanonicalMatches": 7,
+  "files": [
+    {
+      "path": "after/app/symbol/[symbol]/page.tsx",
+      "sha256": "53544e6d7841e12559439d66e21fcaaaa55f4b8ec8f921f1081461981db73a14",
+      "bytes": 33360
+    },
+    {
+      "path": "after/components/symbol/CodalSourceLink.tsx",
+      "sha256": "3ddec6c3bf3e91140c4a9f9bd205114e04fe656198896b1b2268cda96dd2bc95",
+      "bytes": 538
+    },
+    {
+      "path": "after/components/symbol/MeasuredResponsiveContainer.tsx",
+      "sha256": "ad342538fb69a0f790885e471e9894c967130bb7a0aab476c9033ffc96cc1b21",
+      "bytes": 1794
+    },
+    {
+      "path": "after/components/symbol/monthly-point-provenance.test.ts",
+      "sha256": "493b180bea5632666f55d1e053a0534f38fed2a5531e53238e1bd9553b5968eb",
+      "bytes": 5304
+    },
+    {
+      "path": "after/components/symbol/monthly-point-provenance.ts",
+      "sha256": "1b61673725b9fe4157ccdbb505c0fdc0cb820718910413111ed885d156bc47d7",
+      "bytes": 2080
+    },
+    {
+      "path": "after/components/symbol/MonthlyPointSourceLabel.tsx",
+      "sha256": "e40827d58c55a447cc6c1a1d7d7837d64f080a4a378bead827d756c4861e5b08",
+      "bytes": 3554
+    },
+    {
+      "path": "after/components/symbol/MonthlySalesCharts.test.tsx",
+      "sha256": "2fee277ef3a5e3c347581adc27540df19964441fe01ed5d4841a1b72a697f9e8",
+      "bytes": 31454
+    },
+    {
+      "path": "after/components/symbol/MonthlySalesCharts.tsx",
+      "sha256": "99d074596829fb433ecca82959528c841b741ed61dd99c27467990c9a779cf42",
+      "bytes": 28546
+    },
+    {
+      "path": "after/components/symbol/MonthlySourceChartFrame.tsx",
+      "sha256": "9554491a7631d077f40cbdbd57c05e68b84275e6fa2c2c1f94c7e299b799e6d1",
+      "bytes": 2746
+    },
+    {
+      "path": "after/components/symbol/QuarterlyCharts.tsx",
+      "sha256": "03fcec78f59c6b3a5a2ee8d027a0408e3e3649732314839363cda3fecba78981",
+      "bytes": 13437
+    },
+    {
+      "path": "after/components/symbol/QuarterlyPointSources.test.tsx",
+      "sha256": "674e473c4bda47b07157b3f7127a13b4f158c42072f9cec465f38ae6e7141801",
+      "bytes": 16866
+    },
+    {
+      "path": "after/components/symbol/QuarterlyPointSources.tsx",
+      "sha256": "e7a7ae5c155ba61afcf1ea0b5666a928ced4afb7ee10e3bad7c54420fe1c209b",
+      "bytes": 8523
+    },
+    {
+      "path": "after/lib/core/engine.ts",
+      "sha256": "40c0ce68afc80f81e0f268aea2c4f0ae699d71121fb4922a15a63b7b9e1eff37",
+      "bytes": 17597
+    },
+    {
+      "path": "after/lib/core/history.ts",
+      "sha256": "c626bb4c055be280b0510615583d2c9360841d6f7e0dd97e8007a579556774f4",
+      "bytes": 7147
+    },
+    {
+      "path": "after/lib/core/monthly-quantity.ts",
+      "sha256": "244b6925cd80a65984d956e3ca671b364a7a353e182ccf8dd7aee76877d78b2d",
+      "bytes": 9415
+    },
+    {
+      "path": "after/lib/core/monthlyReport.ts",
+      "sha256": "7359f0ccb5881fe9deb0770c0f4e0bb726c916d38779db6f7d599abe40dc21f3",
+      "bytes": 33312
+    },
+    {
+      "path": "after/lib/core/quarterly-provenance.ts",
+      "sha256": "f6164e284684713ea43e91eab598847ddb15fe756fb09da4d5196990ede9e92b",
+      "bytes": 2482
+    },
+    {
+      "path": "after/lib/core/quarterly.test.ts",
+      "sha256": "67390d47a7063aec040952f0364a1f0f378e3b6c0d7b4f47cd97dfa0c3d06147",
+      "bytes": 17499
+    },
+    {
+      "path": "after/lib/core/quarterly.ts",
+      "sha256": "e097446427f34afe5637ce6ea3f9053bfc66f210ec93355c37b182e7b82fe3f3",
+      "bytes": 14162
+    },
+    {
+      "path": "after/lib/format.ts",
+      "sha256": "434790b4d1e4ddf7a5b39a2c7a0321ec81844849ca92287b2cdbf8fe40c79ac5",
+      "bytes": 12112
+    },
+    {
+      "path": "after/lib/fundamental/amendment.test.ts",
+      "sha256": "d056b062ddb480f3dc269729a7d305e928e41763784eac4cff7bf857a68db167",
+      "bytes": 13660
+    },
+    {
+      "path": "after/lib/fundamental/monthly-quantity-binding.ts",
+      "sha256": "e7ece2c8c84048b3dac506bdb9a748a32dcfd0b7d496c8ceade346913f60f7b9",
+      "bytes": 5488
+    },
+    {
+      "path": "after/lib/fundamental/supabase.ts",
+      "sha256": "54dc8979fe8b2880aab2dd59926780d40de8bd8f154d0ef63677c87842f5436c",
+      "bytes": 31711
+    },
+    {
+      "path": "after/lib/fundamental/types.ts",
+      "sha256": "8e0719ca44c9882005c35de6bf5ca6304b65c78247314ac479558d7742fef4e1",
+      "bytes": 7195
+    },
+    {
+      "path": "after/lib/fundamental/units.ts",
+      "sha256": "6f2150f382e76f19974910c8b65466e0eff0563d9543e2f617b65d1d3574af20",
+      "bytes": 219
+    },
+    {
+      "path": "after/lib/fundamental/wiring.test.ts",
+      "sha256": "082f6eaecb9c7fb17e2baa2851dc1dfeef5998ab9bb5d2894c98d56c39bdab80",
+      "bytes": 16696
+    },
+    {
+      "path": "after/package.json",
+      "sha256": "4583726de61c8626493482487f4d83e94187ae8acbf5abbbf1446a252531f970",
+      "bytes": 11089
+    },
+    {
+      "path": "after/relay/codal-admission-diagnostics.mjs",
+      "sha256": "0e06c71bfc2aba4bf05ddf1b3c774ef4d70f942dc385a0173ff62902de36a4fb",
+      "bytes": 2456
+    },
+    {
+      "path": "after/relay/codal.mjs",
+      "sha256": "a0c2a680c588065891e37e25da364307c0ab5423de94824c7e029f5c8631fd4a",
+      "bytes": 68942
+    },
+    {
+      "path": "after/relay/fixtures/codal-offline.mjs",
+      "sha256": "fe99a941186f0e45c4c5317c1a1fb50cec1b2a1209d325f4fd5991732f80f329",
+      "bytes": 2612
+    },
+    {
+      "path": "after/relay/fixtures/folad-n30-primary.html",
+      "sha256": "11c089fae22de79e4986b37677e3ce2af3f594642cff0f546b2bc0feb84c2a62",
+      "bytes": 192342
+    },
+    {
+      "path": "baseline.json",
+      "sha256": "679b886f01fdb041d173e9952e5fcd6a5d5459dd72c5c3de23340a5179c9422d",
+      "bytes": 7689
+    },
+    {
+      "path": "before/app/symbol/[symbol]/page.tsx",
+      "sha256": "53544e6d7841e12559439d66e21fcaaaa55f4b8ec8f921f1081461981db73a14",
+      "bytes": 33360
+    },
+    {
+      "path": "before/components/symbol/CodalSourceLink.tsx",
+      "sha256": "3ddec6c3bf3e91140c4a9f9bd205114e04fe656198896b1b2268cda96dd2bc95",
+      "bytes": 538
+    },
+    {
+      "path": "before/components/symbol/MeasuredResponsiveContainer.tsx",
+      "sha256": "ad342538fb69a0f790885e471e9894c967130bb7a0aab476c9033ffc96cc1b21",
+      "bytes": 1794
+    },
+    {
+      "path": "before/components/symbol/monthly-point-provenance.test.ts",
+      "sha256": "493b180bea5632666f55d1e053a0534f38fed2a5531e53238e1bd9553b5968eb",
+      "bytes": 5304
+    },
+    {
+      "path": "before/components/symbol/monthly-point-provenance.ts",
+      "sha256": "1b61673725b9fe4157ccdbb505c0fdc0cb820718910413111ed885d156bc47d7",
+      "bytes": 2080
+    },
+    {
+      "path": "before/components/symbol/MonthlyPointSourceLabel.tsx",
+      "sha256": "e40827d58c55a447cc6c1a1d7d7837d64f080a4a378bead827d756c4861e5b08",
+      "bytes": 3554
+    },
+    {
+      "path": "before/components/symbol/MonthlySalesCharts.test.tsx",
+      "sha256": "2fee277ef3a5e3c347581adc27540df19964441fe01ed5d4841a1b72a697f9e8",
+      "bytes": 31454
+    },
+    {
+      "path": "before/components/symbol/MonthlySalesCharts.tsx",
+      "sha256": "99d074596829fb433ecca82959528c841b741ed61dd99c27467990c9a779cf42",
+      "bytes": 28546
+    },
+    {
+      "path": "before/components/symbol/MonthlySourceChartFrame.tsx",
+      "sha256": "55784f9734ffbaf8edb39d5d42acc597870a00d46e2a7e1cffa70827cb491b03",
+      "bytes": 2573
+    },
+    {
+      "path": "before/components/symbol/QuarterlyCharts.tsx",
+      "sha256": "585c9af6c8325704242d79643796349ad753f61cbbd3b984e92a572990bf658b",
+      "bytes": 11576
+    },
+    {
+      "path": "before/lib/core/engine.ts",
+      "sha256": "40c0ce68afc80f81e0f268aea2c4f0ae699d71121fb4922a15a63b7b9e1eff37",
+      "bytes": 17597
+    },
+    {
+      "path": "before/lib/core/history.ts",
+      "sha256": "c626bb4c055be280b0510615583d2c9360841d6f7e0dd97e8007a579556774f4",
+      "bytes": 7147
+    },
+    {
+      "path": "before/lib/core/monthly-quantity.ts",
+      "sha256": "244b6925cd80a65984d956e3ca671b364a7a353e182ccf8dd7aee76877d78b2d",
+      "bytes": 9415
+    },
+    {
+      "path": "before/lib/core/monthlyReport.ts",
+      "sha256": "7359f0ccb5881fe9deb0770c0f4e0bb726c916d38779db6f7d599abe40dc21f3",
+      "bytes": 33312
+    },
+    {
+      "path": "before/lib/core/quarterly-provenance.ts",
+      "sha256": "f6164e284684713ea43e91eab598847ddb15fe756fb09da4d5196990ede9e92b",
+      "bytes": 2482
+    },
+    {
+      "path": "before/lib/core/quarterly.test.ts",
+      "sha256": "67390d47a7063aec040952f0364a1f0f378e3b6c0d7b4f47cd97dfa0c3d06147",
+      "bytes": 17499
+    },
+    {
+      "path": "before/lib/core/quarterly.ts",
+      "sha256": "e097446427f34afe5637ce6ea3f9053bfc66f210ec93355c37b182e7b82fe3f3",
+      "bytes": 14162
+    },
+    {
+      "path": "before/lib/format.ts",
+      "sha256": "434790b4d1e4ddf7a5b39a2c7a0321ec81844849ca92287b2cdbf8fe40c79ac5",
+      "bytes": 12112
+    },
+    {
+      "path": "before/lib/fundamental/amendment.test.ts",
+      "sha256": "d056b062ddb480f3dc269729a7d305e928e41763784eac4cff7bf857a68db167",
+      "bytes": 13660
+    },
+    {
+      "path": "before/lib/fundamental/monthly-quantity-binding.ts",
+      "sha256": "e7ece2c8c84048b3dac506bdb9a748a32dcfd0b7d496c8ceade346913f60f7b9",
+      "bytes": 5488
+    },
+    {
+      "path": "before/lib/fundamental/supabase.ts",
+      "sha256": "54dc8979fe8b2880aab2dd59926780d40de8bd8f154d0ef63677c87842f5436c",
+      "bytes": 31711
+    },
+    {
+      "path": "before/lib/fundamental/types.ts",
+      "sha256": "8e0719ca44c9882005c35de6bf5ca6304b65c78247314ac479558d7742fef4e1",
+      "bytes": 7195
+    },
+    {
+      "path": "before/lib/fundamental/units.ts",
+      "sha256": "6f2150f382e76f19974910c8b65466e0eff0563d9543e2f617b65d1d3574af20",
+      "bytes": 219
+    },
+    {
+      "path": "before/lib/fundamental/wiring.test.ts",
+      "sha256": "082f6eaecb9c7fb17e2baa2851dc1dfeef5998ab9bb5d2894c98d56c39bdab80",
+      "bytes": 16696
+    },
+    {
+      "path": "before/package.json",
+      "sha256": "77b9a5398871ca5ed60426cf7c835db762167dbe23e46e47b378c380ca6172f6",
+      "bytes": 11040
+    },
+    {
+      "path": "before/relay/codal-admission-diagnostics.mjs",
+      "sha256": "0e06c71bfc2aba4bf05ddf1b3c774ef4d70f942dc385a0173ff62902de36a4fb",
+      "bytes": 2456
+    },
+    {
+      "path": "before/relay/codal.mjs",
+      "sha256": "a0c2a680c588065891e37e25da364307c0ab5423de94824c7e029f5c8631fd4a",
+      "bytes": 68942
+    },
+    {
+      "path": "before/relay/fixtures/codal-offline.mjs",
+      "sha256": "fe99a941186f0e45c4c5317c1a1fb50cec1b2a1209d325f4fd5991732f80f329",
+      "bytes": 2612
+    },
+    {
+      "path": "before/relay/fixtures/folad-n30-primary.html",
+      "sha256": "11c089fae22de79e4986b37677e3ce2af3f594642cff0f546b2bc0feb84c2a62",
+      "bytes": 192342
+    },
+    {
+      "path": "candidate.patch",
+      "sha256": "b337a298210c28d83f7b71020574f35f855485dc8b04631372fa82469f0e6856",
+      "bytes": 50063
+    },
+    {
+      "path": "check-final.log",
+      "sha256": "967caea4100df7683147c036094a730f451ef09d5ffe8c1030a1d4be4c4cd431",
+      "bytes": 195
+    },
+    {
+      "path": "check-first.log",
+      "sha256": "967caea4100df7683147c036094a730f451ef09d5ffe8c1030a1d4be4c4cd431",
+      "bytes": 195
+    },
+    {
+      "path": "check.cjs",
+      "sha256": "5aec09ff2634b1ea58347b78f1678a39a3d5c64c6e7892b9b668c2532e2c7ad8",
+      "bytes": 2389
+    },
+    {
+      "path": "check.json",
+      "sha256": "bb56822576168bc65a751b7ee5a847ae02986bb48bfa310795d0932787641d68",
+      "bytes": 189
+    },
+    {
+      "path": "compatibility.json",
+      "sha256": "31c379dec55e16b1f0c6c04de3dcb8208dea1a1b792abf335f1fac0ec22ee227",
+      "bytes": 3982
+    },
+    {
+      "path": "compatibility.log",
+      "sha256": "78733c779706904587126eb9ac8388bb24c8f3a29c7a046a94825c59e2396b64",
+      "bytes": 150
+    },
+    {
+      "path": "dependency-proof.json",
+      "sha256": "413fec4e978e0870c71a1bdf741000478f32f56bfe384c29357383c2b44d174e",
+      "bytes": 1687
+    },
+    {
+      "path": "prepare.mjs",
+      "sha256": "802edf53e8ba9bf3ef36fcda41eb767945c68738c91dded934a1eeba13b97b6b",
+      "bytes": 2870
+    },
+    {
+      "path": "RESULT.fa.md",
+      "sha256": "e60db018e3074f2580c408879b3e249e5fd4a74dac0c373d11689d9daa8c3d76",
+      "bytes": 7965
+    },
+    {
+      "path": "run-tests.cjs",
+      "sha256": "895ea56e542f12f9a4eb39e5adf0303cb2c2e4a5163976e4e22047e9b232bce9",
+      "bytes": 2461
+    },
+    {
+      "path": "runtime-dependencies.json",
+      "sha256": "11235aea9685fa7376079cbaf6e72a7d491c306a3b199986240bc16dd7177d9f",
+      "bytes": 889
+    },
+    {
+      "path": "seal.mjs",
+      "sha256": "2ec50595005c4ed5381ba17ede8591a27b61f540d56426f9e15b82cbf8dca832",
+      "bytes": 5422
+    },
+    {
+      "path": "tests-final.log",
+      "sha256": "a2ae31d7d45e2aae51224e4f4e27009a0278eed287c09988d5f0ebbb926fa8c9",
+      "bytes": 4843
+    },
+    {
+      "path": "tests-first.log",
+      "sha256": "cafecbedc4134459b6414c2fe76a34e8fc80e91df74bf7e3a7b520a27f27cd71",
+      "bytes": 4583
+    },
+    {
+      "path": "verify-ui-compat.cjs",
+      "sha256": "50a71fb0d2e0604d1ea2728ca43df739289f10fa98e5ea688ce8608f4a2354df",
+      "bytes": 4923
+    }
+  ]
+}

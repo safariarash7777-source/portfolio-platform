@@ -1,0 +1,47 @@
+{
+  "base": "cbf9cd3ba146d035ab7ccd14484cfe5a0ad59ddf",
+  "receiptSha256": "0fdbd4b4c9c9bf46e8fdca9ad9b3648ef543d80559d158126340a6b8e985d12a",
+  "patchSha256": "2165a295511eb91213992d589efb40cec80a01385015c51e756781f42b912287",
+  "privateGitDir": "C:/Users/Asus/Documents/ChatGPT/توسعه سایت/outputs/start-a-p15-m1-cbf9-peer-20261104/revision3/git-proof.git",
+  "privateIndex": "C:/Users/Asus/Documents/ChatGPT/توسعه سایت/outputs/start-a-p15-m1-cbf9-peer-20261104/revision3/peer-private-index",
+  "sourceObjectsReadOnlyAlternate": true,
+  "command": "git apply --cached --whitespace=error",
+  "result": "PASS",
+  "actualIndexTree": "b55f37085d8027f47feb4dc7e8b5290a8300ab52",
+  "changedPaths": [
+    ".github/workflows/ci.yml",
+    "scripts/testing/assembled-native-ci/run.py",
+    "scripts/testing/assembled-native-ci/test_run.py",
+    "scripts/testing/consultation-feedback/install-feedback.py"
+  ],
+  "files": [
+    {
+      "path": "scripts/testing/assembled-native-ci/run.py",
+      "baseSha256": "c675a7c8637349cab8c76a29f514899beaffb2ccf8844e26babd4dfe45e89c2b",
+      "actualIndexSha256": "849675db42bd64761d3d778ae45be353a42034f1bd77d6411e5019b8a744e0fa",
+      "byteExact": true
+    },
+    {
+      "path": "scripts/testing/assembled-native-ci/test_run.py",
+      "baseSha256": "dfce6cf052046c6090df5a724f3dbe6897fba5aa2d41d2fd79e066957a4a200e",
+      "actualIndexSha256": "021343c55944d05d1f384b59a9d1a2c9880174afb06f72b7a933833a56bf9bff",
+      "byteExact": true
+    },
+    {
+      "path": "scripts/testing/consultation-feedback/install-feedback.py",
+      "baseSha256": null,
+      "actualIndexSha256": "88da3b8b1699e0bfb0655d0fbba49bac0220aa8069abea0a654faa074788f353",
+      "byteExact": true
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "baseSha256": "ba810334e794899fc1cf2008b309ad53d229f7fc6fa3fc1ba6d9a9998568e5e0",
+      "actualIndexSha256": "d19b882cb5fc0e186a0654e9c3532c6ca3d31bda788af7b62d0cbb083dff840c",
+      "byteExact": true
+    }
+  ],
+  "sourceRunTestAdapterR2Exact": true,
+  "workflowOnlyCRLFtoLF": true,
+  "testsRun": false,
+  "runtimeRun": false
+}

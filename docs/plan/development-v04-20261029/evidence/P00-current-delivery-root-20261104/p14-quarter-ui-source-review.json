@@ -1,0 +1,25 @@
+{
+  "schema": "root-p14-quarterly-source-ui-adoption.v1",
+  "atUtc": "2026-11-04T13:21:26.425613+00:00",
+  "base": "16cbddadeb11d23e9c6fbe933afca5b168f0785c",
+  "manifestSha256": "ae6303cd477be759f8e7d3a1d8e3f2c2d37a57997e06c3bcc35b825b8af40733",
+  "packetFilesVerified": 77,
+  "patchSha256": "b337a298210c28d83f7b71020574f35f855485dc8b04631372fa82469f0e6856",
+  "changed": [
+    "components/symbol/QuarterlyCharts.tsx",
+    "package.json",
+    "components/symbol/MonthlySourceChartFrame.tsx",
+    "components/symbol/QuarterlyPointSources.tsx",
+    "components/symbol/QuarterlyPointSources.test.tsx"
+  ],
+  "newComponent": "source report details only; direct/difference/each TTM quarter and independent capital; no new plot",
+  "sharedFrame": "existing accepted frame reused at height250/width100%; monthly default unchanged; no duplicated interaction state/portal",
+  "privacyAndSafety": "existing approved Codal link component, escaped text, original raw clock precision retained, unknown identities do not borrow report",
+  "financialLogic": "core/reader/page/types/history/formatter values unchanged in this layer; negative finite profits remain real values and gaps remain null",
+  "legacy": "nonPreview shapes and tooltip props unchanged",
+  "packageChange": "register one existing Core suite only; no dependency/lock changes",
+  "sourceMeaning": "report timing is not price timing; source of P/E price remains unknown",
+  "browserAcceptance": "PENDING_EXACT_NEW_PREVIEW",
+  "previousUsablePreview": "4e4765b",
+  "productionChanged": false
+}

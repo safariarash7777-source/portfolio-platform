@@ -1,0 +1,26 @@
+{
+  "schema": "root-p14-quarterly-source-ui-linux-ci.v1",
+  "atUtc": "2026-11-04T13:53:23.220Z",
+  "run": 41837387262,
+  "source": "2aa0cc46e0adb5c73e24bb752706e3168c94fc94",
+  "actualCiMerge": "314cf9f7b142649d5b4565c9dce1b89afdd86621",
+  "tree": "12c8f92c3afe1eb7ba5fc19ef17ef7cefa5e2bf0",
+  "parents": [
+    "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+    "2aa0cc46e0adb5c73e24bb752706e3168c94fc94"
+  ],
+  "core": {
+    "job": 126599713726,
+    "characters": 1307917,
+    "errors": []
+  },
+  "db": {
+    "job": 126599714176,
+    "characters": 3281112,
+    "errors": []
+  },
+  "fullLogsRead": true,
+  "fiveGates": "SUCCESS",
+  "native": "SKIPPED",
+  "productionChanged": false
+}

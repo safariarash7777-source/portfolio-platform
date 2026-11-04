@@ -1,0 +1,21 @@
+test_proof_projects_only_bound_archive_restore_inverse_and_history_outcomes (__main__.M1PublicProof.test_proof_projects_only_bound_archive_restore_inverse_and_history_outcomes) ... ok
+test_cleanup_attempts_other_bound_resources_after_first_failure (__main__.M1SourceContracts.test_cleanup_attempts_other_bound_resources_after_first_failure) ... ok
+test_controller_adapter_pin_matches_actual_source (__main__.M1SourceContracts.test_controller_adapter_pin_matches_actual_source) ... ok
+test_database_role_settings_require_observed_empty_before_bootstrap (__main__.M1SourceContracts.test_database_role_settings_require_observed_empty_before_bootstrap) ... ok
+test_dispatch_routes_before_legacy_side_effects (__main__.M1SourceContracts.test_dispatch_routes_before_legacy_side_effects) ... ok
+test_execute_failure_records_first_phase_before_store_close (__main__.M1SourceContracts.test_execute_failure_records_first_phase_before_store_close) ... ok
+test_explicit_profile_and_independent_controller_recipe (__main__.M1SourceContracts.test_explicit_profile_and_independent_controller_recipe) ... ok
+test_failure_projection_is_literal_typed_and_bound_not_raw_cause (__main__.M1SourceContracts.test_failure_projection_is_literal_typed_and_bound_not_raw_cause) ... ok
+test_image_index_config_platform_and_provenance_are_distinct (__main__.M1SourceContracts.test_image_index_config_platform_and_provenance_are_distinct) ... ok
+test_io_binds_three_ids_and_rejects_foreign_target_before_transport (__main__.M1SourceContracts.test_io_binds_three_ids_and_rejects_foreign_target_before_transport) ... ok
+test_process_is_bounded_redacts_stderr_and_drops_credentials (__main__.M1SourceContracts.test_process_is_bounded_redacts_stderr_and_drops_credentials) ... ok
+test_restore_rejects_role_drift_before_role_write (__main__.M1SourceContracts.test_restore_rejects_role_drift_before_role_write) ... ok
+test_restore_view_only_target_is_rejected_before_writes (__main__.M1SourceContracts.test_restore_view_only_target_is_rejected_before_writes) ... ok
+test_schema_nonce_normalization_preserves_acl_null_and_empty (__main__.M1SourceContracts.test_schema_nonce_normalization_preserves_acl_null_and_empty) ... ok
+test_store_exclusive_write_fsyncs_file_then_directory (__main__.M1SourceContracts.test_store_exclusive_write_fsyncs_file_then_directory) ... ok
+test_store_walk_is_descriptor_relative_for_every_component (__main__.M1SourceContracts.test_store_walk_is_descriptor_relative_for_every_component) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.056s
+
+OK

@@ -1,0 +1,32 @@
+{
+  "schema": "root-m1-cbf-source-adoption.v1",
+  "atUtc": "2026-11-04T13:06:49.132231+00:00",
+  "base": "cbf9cd3ba146d035ab7ccd14484cfe5a0ad59ddf",
+  "receiptSha256": "0fdbd4b4c9c9bf46e8fdca9ad9b3648ef543d80559d158126340a6b8e985d12a",
+  "patchSha256": "2165a295511eb91213992d589efb40cec80a01385015c51e756781f42b912287",
+  "peerSha256": "baf5f39e5bc89338f47c0cb6ff196a8ddd3ff29c6514220a44423e6c38eea95f",
+  "rawGitBaseCompared": true,
+  "fourFileAppliedTree": "b55f37085d8027f47feb4dc7e8b5290a8300ab52",
+  "historicalMethodsAstExact": 72,
+  "totalMethods": 87,
+  "historicalFixturesUnchanged": true,
+  "adapterSha256": "88da3b8b1699e0bfb0655d0fbba49bac0220aa8069abea0a654faa074788f353",
+  "rootAdditionalAttribute": "/scripts/testing/consultation-feedback/install-feedback.py -text -whitespace",
+  "rootScopeReview": [
+    "caller-issued planned recipe and separately inspected three full IDs",
+    "network none, tmpfs exact, fixed resources, reinspection and marker before target operations",
+    "exclusive fsynced intent/blob journal; fixed closed diagnostics only",
+    "index/platform-manifest/config differentiated and verified before create",
+    "archive/restore tables sequences schema ACL roles and observed empty unsupported DB-role settings",
+    "prehistory inverse on third copy; posthistory PT409 preserves history; writer-off retains readability",
+    "same existing job with explicit reviewed image preload; old profiles and budgets preserved"
+  ],
+  "limits": [
+    "quiescent synthetic fixture only",
+    "fullConsumer NOT_WIRED",
+    "actual Linux restore/inverse NOT_RUN",
+    "primary NOT_APPLIED",
+    "native service rights NOT_CONNECTED"
+  ],
+  "preloadOrNativeDuringAdoption": false
+}

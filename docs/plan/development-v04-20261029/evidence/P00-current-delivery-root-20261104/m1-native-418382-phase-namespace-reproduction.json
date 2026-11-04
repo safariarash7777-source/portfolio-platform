@@ -1,0 +1,78 @@
+{
+  "schema": "root-m1-actual-name-validator-reproduction.v1",
+  "source": "499166f81d1074ec7c906bac49706507b253fee1",
+  "atUtc": "2026-11-04T13:53:46.863991+00:00",
+  "actualPureValidatorExecuted": true,
+  "candidateMainExecuted": false,
+  "filesystemDockerSqlOperations": false,
+  "rows": [
+    {
+      "phase": "allocation",
+      "currentName": "m1-phase-allocation.json",
+      "currentResult": "ACCEPTED",
+      "proposedName": "m1-phase-allocation.json"
+    },
+    {
+      "phase": "apply_history",
+      "currentName": "m1-phase-apply_history.json",
+      "currentResult": "REJECTED_m1_evidence_name",
+      "proposedName": "m1-phase-apply-history.json"
+    },
+    {
+      "phase": "backup",
+      "currentName": "m1-phase-backup.json",
+      "currentResult": "ACCEPTED",
+      "proposedName": "m1-phase-backup.json"
+    },
+    {
+      "phase": "bootstrap",
+      "currentName": "m1-phase-bootstrap.json",
+      "currentResult": "ACCEPTED",
+      "proposedName": "m1-phase-bootstrap.json"
+    },
+    {
+      "phase": "cleanup",
+      "currentName": "m1-phase-cleanup.json",
+      "currentResult": "ACCEPTED",
+      "proposedName": "m1-phase-cleanup.json"
+    },
+    {
+      "phase": "controller_binding",
+      "currentName": "m1-phase-controller_binding.json",
+      "currentResult": "REJECTED_m1_evidence_name",
+      "proposedName": "m1-phase-controller-binding.json"
+    },
+    {
+      "phase": "initial_roles",
+      "currentName": "m1-phase-initial_roles.json",
+      "currentResult": "REJECTED_m1_evidence_name",
+      "proposedName": "m1-phase-initial-roles.json"
+    },
+    {
+      "phase": "prewrite_inverse",
+      "currentName": "m1-phase-prewrite_inverse.json",
+      "currentResult": "REJECTED_m1_evidence_name",
+      "proposedName": "m1-phase-prewrite-inverse.json"
+    },
+    {
+      "phase": "restore_copy",
+      "currentName": "m1-phase-restore_copy.json",
+      "currentResult": "REJECTED_m1_evidence_name",
+      "proposedName": "m1-phase-restore-copy.json"
+    },
+    {
+      "phase": "restore_third",
+      "currentName": "m1-phase-restore_third.json",
+      "currentResult": "REJECTED_m1_evidence_name",
+      "proposedName": "m1-phase-restore-third.json"
+    },
+    {
+      "phase": "result",
+      "currentName": "m1-phase-result.json",
+      "currentResult": "ACCEPTED",
+      "proposedName": "m1-phase-result.json"
+    }
+  ],
+  "finding": "First phase filename deterministically rejected before controller binding read/capacity/lock/allocation; diagnostic whitelist projects its code as null. This source reproduction is consistent with the native receipt; no private runtime log read.",
+  "fixProposal": "Encode underscores as dashes in closed phase filenames only; retain phase values and strict name validator; independent writer owns patch."
+}

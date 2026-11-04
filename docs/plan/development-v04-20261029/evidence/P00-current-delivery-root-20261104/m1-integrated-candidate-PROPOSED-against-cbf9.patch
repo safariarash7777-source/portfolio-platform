@@ -1,0 +1,1632 @@
+--- a/scripts/testing/assembled-native-ci/run.py
++++ b/scripts/testing/assembled-native-ci/run.py
+@@ -424,10 +424,219 @@
+     return json.loads(raw.decode('utf-8'), object_pairs_hook=unique, parse_constant=invalid)
+ 
+ 
++# Existing controller, M1 purpose only. No separate runner, native Auth or browser.
++OWNED_START_A = 'owned-start-a-copy'
++M1_BASE = '0d63a8b64e4975a3c9dab3f1f579f91302602b01'
++M1_TREE = '15cc4ab8315e6c1a2594a5d3eda24b2bb375619a'
++M1_ADAPTER_SHA = '88da3b8b1699e0bfb0655d0fbba49bac0220aa8069abea0a654faa074788f353'
++
++
++def m1_module(app):
++    path=CONTROL/'scripts/testing/consultation-feedback/install-feedback.py'
++    need(sha(path.read_bytes())==M1_ADAPTER_SHA,'m1_adapter_pin_changed')
++    spec=importlib.util.spec_from_file_location('reviewed_owned_start_a',path)
++    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
++    helper=module.load_safety(app/'scripts/testing/consultation-next/install-native.py')
++    return module,helper
++
++
++def m1_recipe(binding,module):
++    # Issued HERE from independently verified actual_context; never adapter JSON.
++    prefix='start-a-owned-'+uuid.UUID(binding['executionAllocationId']).hex
++    labels={'portfolio.owned.runId':binding['runId'],'portfolio.owned.attempt':'1','portfolio.owned.sourceCommit':M1_BASE,'portfolio.owned.allocationId':binding['executionAllocationId'],'portfolio.owned.controller':binding['workflowCommit'],'portfolio.owned.purpose':OWNED_START_A}
++    return {'purpose':OWNED_START_A,'contractVersion':'GHA-owned-copy.v1','runId':binding['runId'],'attempt':'1','controllerCommit':binding['workflowCommit'],'sourceCommit':M1_BASE,'allocationId':binding['executionAllocationId'],'image':module.M1_IMAGE,'imageContract':module.M1_IMAGE_CONTRACT,'databaseMarker':prefix,'resources':{r:{'name':prefix+'-'+r,'image':module.M1_IMAGE,'imageContract':module.M1_IMAGE_CONTRACT,'labels':{**labels,'portfolio.owned.role':r}} for r in ('source','copy','restore')}}
++
++
++def m1_prepare(binding):
++    _,_,private,app=paths()
++    need(git(app,'rev-parse','HEAD')==M1_BASE and git(app,'rev-parse','HEAD^{tree}')==M1_TREE and git(app,'status','--porcelain','--untracked-files=no')=='','m1_baseline_checkout_changed')
++    module,helper=m1_module(app)
++    for name,pin in module.M1_BASELINE_PINS:
++        need(sha((app/name).read_bytes())==pin,'m1_baseline_bytes_changed')
++    for paths_and_pins in module.ARTIFACTS.values():
++        for name,pin in paths_and_pins:need(sha((app/name).read_bytes())==pin,'m1_sql_bytes_changed')
++    module.capacity(private.parent)
++    private.mkdir(mode=0o700);owned(private,True)
++    store=module.OwnedPrivateStore(private)
++    try:
++        recipe=m1_recipe(binding,module)
++        store.write_exclusive('m1-recipe.json',recipe)
++        store.write_exclusive('m1-controller-binding.json',{'binding':binding,'recipeSha256':sha(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode()),'adapterSha256':M1_ADAPTER_SHA,'stage':'PREPARED'})
++    finally:store.close()
++    return 'PREPARED_M1_NOT_EXECUTED'
++
++
++def m1_inspect_planned(module,object_id,planned,*,running=None):
++    need(isinstance(object_id,str) and re.fullmatch(r'[a-f0-9]{64}',object_id),'m1_full_container_id_required')
++    result=module.bounded_owned_process(['docker','inspect',object_id],timeout=10,max_stdout_bytes=262144)
++    need(result['exitCode']==0,'m1_inspect_failed');rows=json.loads(result['stdout']);need(isinstance(rows,list) and len(rows)==1,'m1_inspect_shape')
++    row=rows[0]
++    module.m1_verify_image(module.bounded_owned_process,planned.get('imageContract'))
++    need(row['Id']==object_id and row['Name']=='/'+planned['name'] and row['Image']==planned['image'] and all((row['Config'].get('Labels') or {}).get(k)==v for k,v in planned['labels'].items()),'m1_planned_identity_changed')
++    need(row['HostConfig']['NetworkMode']=='none' and not row['HostConfig'].get('PortBindings') and not any((row['NetworkSettings'].get('Ports') or {}).values()),'m1_planned_network_changed')
++    if running is not None:need(row['State']['Running'] is running,'m1_planned_state_changed')
++    return row
++
++
++def m1_allocate(module,store,recipe,deadline):
++    module.m1_verify_image(module.bounded_owned_process,recipe.get('imageContract'))
++    actual={}
++    for role in ('source','copy','restore'):
++        planned=recipe['resources'][role]
++        need(time.monotonic()<deadline,'m1_deadline')
++        prior=module.bounded_owned_process(['docker','container','ls','-aq','--filter','name=^/'+planned['name']+'$'],timeout=10,max_stdout_bytes=1024)
++        need(prior['exitCode']==0 and not prior['stdout'].strip(),'m1_resource_name_already_exists')
++        store.write_exclusive('m1-'+role+'-create-intent.json',{'recipe':recipe,'role':role,'automaticReplay':False})
++        args=['docker','create','--pull','never','--name',planned['name'],'--network','none','--memory','768m','--cpus','1','--mount','type=tmpfs,destination=/var/lib/postgresql/data,tmpfs-size=536870912','--env','PGDATA=/var/lib/postgresql/data','--env','POSTGRES_HOST_AUTH_METHOD=trust','--health-cmd','pg_isready -U postgres','--health-interval','1s','--health-timeout','1s','--health-retries','30']
++        for key,value in sorted(planned['labels'].items()):args+=['--label',key+'='+value]
++        args+=[planned['image'],'postgres','-c','cron.launch_active_jobs=off','-c','portfolio.owned_copy_marker='+recipe['databaseMarker']]
++        result=module.bounded_owned_process(args,timeout=30,max_stdout_bytes=1024)
++        need(result['exitCode']==0,'m1_create_unknown_no_replay');object_id=result['stdout'].decode().strip()
++        row=m1_inspect_planned(module,object_id,planned,running=False)
++        actual[role]={**planned,'id':row['Id']}
++        store.write_exclusive('m1-'+role+'-identity.json',{'role':role,'actual':actual[role],'recipeSha256':sha(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode())})
++        store.write_exclusive('m1-'+role+'-start-intent.json',{'id':object_id,'automaticReplay':False})
++        started=module.bounded_owned_process(['docker','start',object_id],timeout=30,max_stdout_bytes=1024)
++        need(started['exitCode']==0,'m1_start_unknown_no_replay')
++        for _ in range(45):
++            need(time.monotonic()<deadline,'m1_deadline')
++            observed=m1_inspect_planned(module,object_id,planned,running=True)
++            if observed['State'].get('Health',{}).get('Status')=='healthy':break
++            time.sleep(1)
++        else:raise RuntimeError('m1_database_not_ready')
++    allocation={k:recipe[k] for k in ('purpose','contractVersion','runId','attempt','controllerCommit','sourceCommit','allocationId','databaseMarker')}
++    allocation.update(actual)
++    store.write_exclusive('m1-actual-allocation.json',allocation)
++    # Caller-issued pin binds BOTH independently observed IDs and reviewed recipe.
++    expected=sha(json.dumps(allocation,sort_keys=True,separators=(',',':')).encode())
++    store.write_exclusive('m1-actual-binding.json',{'allocationSha256':expected,'recipeSha256':sha(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode())})
++    return allocation,expected
++
++
++M1_PHASES=frozenset({'controller_binding','allocation','initial_roles','bootstrap','backup','restore_copy','restore_third','prewrite_inverse','apply_history','result','cleanup'})
++M1_FAILURE_CODES=frozenset({'m1_controller_binding_changed','m1_deadline','m1_create_unknown_no_replay','m1_start_unknown_no_replay','m1_database_not_ready','m1_image_provenance_changed','m1_initial_roles_changed','m1_db_role_settings_unsupported','m1_source_not_empty','m1_restore_target_not_empty','m1_result_not_accepted','m1_cleanup_unknown','m1_cleanup_not_confirmed','m1_cleanup_unconfirmed','m1_execution_not_confirmed'})
++
++
++def m1_failure_projection(phase,error):
++    # Never stringify exceptions: only exact reviewed literal args are eligible.
++    code=error.args[0] if type(error) in (RuntimeError,ValueError) and len(error.args)==1 else None
++    return {'phase':phase if type(phase) is str and phase in M1_PHASES else None,'code':code if type(code) is str and code in M1_FAILURE_CODES else None}
++
++
++def m1_failure_readback(record,binding):
++    if not isinstance(record,dict) or set(record)!={'binding','phase','code'} or record.get('binding')!=binding:return {'phase':None,'code':None}
++    phase,code=record.get('phase'),record.get('code')
++    if type(phase) is not str or phase not in M1_PHASES or (code is not None and (type(code) is not str or code not in M1_FAILURE_CODES)):return {'phase':None,'code':None}
++    return {'phase':phase,'code':code}
++
++
++def m1_execute(binding):
++    _,_,private,app=paths();module,helper=m1_module(app);store=module.OwnedPrivateStore(private)
++    deadline=time.monotonic()+22*60
++    phase='controller_binding'
++    def observe_phase(value):
++        nonlocal phase
++        phase=value
++        store.write_exclusive('m1-phase-'+value+'.json',{'binding':binding,'phase':value})
++    try:
++        observe_phase('controller_binding')
++        authority=store.read('m1-controller-binding.json');recipe=store.read('m1-recipe.json')
++        need(authority['binding']==binding and authority['stage']=='PREPARED' and recipe==m1_recipe(binding,module) and sha(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode())==authority['recipeSha256'],'m1_controller_binding_changed')
++        module.capacity(private)
++        with store.lock_exclusive():
++            need(not store.exists('m1-execution-intent.json'),'m1_execution_no_replay')
++            store.write_exclusive('m1-execution-intent.json',{'binding':binding,'recipeSha256':authority['recipeSha256'],'automaticReplay':False})
++            observe_phase('allocation')
++            allocation,expected=m1_allocate(module,store,recipe,deadline)
++        def bounded(args,body=None,**options):
++            remaining=int(deadline-time.monotonic());need(remaining>0,'m1_deadline')
++            options['timeout']=min(options.get('timeout',90),remaining)
++            return module.bounded_owned_process(args,body,**options)
++        io=module.OwnedDockerIO(store,allocation,expected,process=bounded)
++        guard=module.M1BoundSafety(helper,allocation,expected)
++        exercise=module.M1Exercise(guard,io,app)
++        observe_phase('initial_roles')
++        module.m1_capture_initial_roles(exercise)
++        observe_phase('bootstrap')
++        module.m1_bootstrap_source(exercise)
++        module.capacity(private)
++        observe_phase('backup')
++        exercise.archive_baseline()
++        observe_phase('restore_copy')
++        exercise.restore_target('copy')
++        observe_phase('restore_third')
++        exercise.restore_target('restore')
++        observe_phase('prewrite_inverse')
++        module.m1_prewrite_inverse_on_third(exercise)
++        observe_phase('apply_history')
++        result=module.m1_apply_and_history(exercise)
++        observe_phase('result')
++        need(result['state']=='PASS_M1_SQL_COPY_ONLY','m1_result_not_accepted')
++        store.write_exclusive('m1-execution-result.json',{'binding':binding,'result':result,'deadlineMet':time.monotonic()<deadline})
++        return 'M1_SQL_COPY_EXECUTED_PENDING_CLEANUP'
++    except Exception as error:
++        try:
++            if not store.exists('m1-failure.json'):store.write_exclusive('m1-failure.json',{'binding':binding,**m1_failure_projection(phase,error)})
++        except Exception:pass  # Missing diagnostic is unknown, never acceptance.
++        raise
++    finally:store.close()
++
++
++def m1_finalize(binding):
++    workspace,_,private,app=paths();module,_=m1_module(app);store=module.OwnedPrivateStore(private)
++    report={'schemaVersion':'owned-start-a-copy.v1','binding':binding,'status':'FAIL_M1_NOT_ACCEPTED','targetInstall':'NOT_APPLIED','fullConsumer':'NOT_WIRED','authBrowserAcceptance':False,'automaticReplay':False,'cleanup':'UNCONFIRMED','failurePhase':None,'failureCode':None}
++    phase='cleanup';failure=None
++    try:
++        if store.exists('m1-failure.json'):
++            try:failure=m1_failure_readback(store.read('m1-failure.json'),binding)
++            except Exception:failure={'phase':None,'code':None}
++        recipe=store.read('m1-recipe.json');need(recipe==m1_recipe(binding,module),'m1_recipe_changed')
++        unknown=False;failed=[]
++        for role,planned in recipe['resources'].items():
++            try:
++                identity='m1-'+role+'-identity.json'
++                if not store.exists(identity):
++                    if store.exists('m1-'+role+'-create-intent.json'):unknown=True
++                    continue
++                record=store.read(identity);need(record['role']==role and record['recipeSha256']==sha(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode()),'m1_cleanup_binding_changed')
++                object_id=record['actual']['id'];m1_inspect_planned(module,object_id,planned)
++                store.write_exclusive('m1-'+role+'-cleanup-intent.json',{'id':object_id,'recipeSha256':record['recipeSha256']})
++                result=module.bounded_owned_process(['docker','rm','-f','-v',object_id],timeout=30,max_stdout_bytes=1024)
++                need(result['exitCode']==0,'m1_cleanup_unknown')
++                left=module.bounded_owned_process(['docker','container','ls','-aq','--no-trunc','--filter','id='+object_id],timeout=10,max_stdout_bytes=1024)
++                need(left['exitCode']==0 and not left['stdout'].strip(),'m1_cleanup_not_confirmed')
++            except Exception as error:
++                if failure is None:failure=m1_failure_projection('cleanup',error)
++                failed.append(role)  # Continue other independently bound IDs once.
++        report['cleanupFailedRoles']=failed
++        need(not unknown and not failed,'m1_cleanup_unconfirmed')
++        report['cleanup']='CONFIRMED'
++        phase='result'
++        execution=store.read('m1-execution-result.json')
++        need(execution['binding']==binding and execution['deadlineMet'] is True and execution['result']['state']=='PASS_M1_SQL_COPY_ONLY','m1_execution_not_confirmed')
++        need(failure is None,'m1_prior_failure_record_present')
++        report['status']='PASS_M1_SQL_COPY_ONLY'
++    except Exception as error:
++        if failure is None:failure=m1_failure_projection(phase,error)
++        report['failurePhase']=failure['phase'];report['failureCode']=failure['code']
++        report['writeOutcomeUnknown']=True if store.exists('apply-intent.json') or store.exists('m1-history-intent.json') else None
++    finally:
++        store.write_exclusive('m1-public-receipt.json',report);store.close()
++    public=workspace/'assembled-native-artifact';public.mkdir(exist_ok=True);need(not public.is_symlink(),'m1_artifact_path')
++    private_json(public/'receipt.json',report,True)
++    need(report['status']=='PASS_M1_SQL_COPY_ONLY','m1_not_accepted_see_receipt')
++    return report['status']
++
++
++
+ def select_profile(inputs):
+     global SELECTED_PROFILE, CANDIDATE, TREE, CAPSULE, DRIVER, PREFIX, CAPSULE_FILE, NATIVE_GLOB, OVERLAY_NAMES
+     profile = inputs.get('acceptance_profile', 'assembled-member-admin-v1')
+     extra = [inputs.get(key, '') for key in ('candidate_sha', 'capsule_sha256', 'driver_sha256')]
++    if profile == 'owned-start-a-copy':
++        need(extra == [M1_BASE, '', ''], 'm1_explicit_baseline_input_required')
++        SELECTED_PROFILE, CANDIDATE, TREE = profile, M1_BASE, M1_TREE
++        return profile
+     if profile == 'assembled-member-admin-v1':
+         need(extra == ['', '', ''] and SELECTED_PROFILE == profile, 'assembled_composition_invalid')
+         return profile
+@@ -842,6 +1051,8 @@
+ 
+ def prepare():
+     binding = actual_context()
++    if SELECTED_PROFILE == OWNED_START_A:
++        return m1_prepare(binding)
+     _, temp, private, app = paths()
+     private.mkdir(mode=0o700)
+     owned(private, True)
+@@ -918,6 +1129,8 @@
+ 
+ def execute():
+     binding = actual_context()
++    if SELECTED_PROFILE == OWNED_START_A:
++        return m1_execute(binding)
+     _, _, private, app = paths()
+     state = load_state(binding, private)
+     claim_execution(private, binding, state)
+@@ -1281,6 +1494,8 @@
+ 
+ def finalize():
+     binding = actual_context()
++    if SELECTED_PROFILE == OWNED_START_A:
++        return m1_finalize(binding)
+     workspace, temp, private, app = paths()
+     state = load_state(binding, private)
+     public = workspace / 'assembled-native-artifact'
+--- a/scripts/testing/assembled-native-ci/test_run.py
++++ b/scripts/testing/assembled-native-ci/test_run.py
+@@ -17,7 +17,8 @@
+ import tarfile
+ import unittest
+ from types import SimpleNamespace
+-from unittest.mock import patch
++from unittest.mock import patch, Mock
++import contextlib
+ 
+ sys.dont_write_bytecode = True
+ HERE = Path(__file__).resolve().parent
+@@ -1199,5 +1200,232 @@
+             self.assertEqual(result.returncode,0,output)
+             self.assertTrue(valid_guarded_pure_output(output,8),output)
+ 
++class M1SourceContracts(unittest.TestCase):
++    @classmethod
++    def setUpClass(cls):
++        path=HERE.parents[2]/'scripts/testing/consultation-feedback/install-feedback.py'
++        spec=importlib.util.spec_from_file_location('m1_offline_adapter',path)
++        cls.adapter=importlib.util.module_from_spec(spec);spec.loader.exec_module(cls.adapter)
++
++    def test_dispatch_routes_before_legacy_side_effects(self):
++        for name in ('prepare','execute','finalize'):
++            with self.subTest(action=name),patch.object(runner,'actual_context',return_value={'test':'binding'}),patch.object(runner,'SELECTED_PROFILE',runner.OWNED_START_A),patch.object(runner,'m1_'+name,return_value='M1_ONLY') as child,patch.object(runner,'paths',side_effect=AssertionError('legacy path reached')):
++                self.assertEqual(getattr(runner,name)(),'M1_ONLY');child.assert_called_once_with({'test':'binding'})
++
++    def test_explicit_profile_and_independent_controller_recipe(self):
++        saved={k:getattr(runner,k) for k in ('SELECTED_PROFILE','CANDIDATE','TREE')}
++        try:
++            with self.assertRaises(ValueError):runner.select_profile({'acceptance_profile':runner.OWNED_START_A})
++            self.assertEqual(runner.select_profile({'acceptance_profile':runner.OWNED_START_A,'candidate_sha':runner.M1_BASE}),runner.OWNED_START_A)
++            binding={'executionAllocationId':'00000000-0000-4000-8000-000000000001','runId':'123','workflowCommit':'a'*40}
++            recipe=runner.m1_recipe(binding,self.adapter)
++            self.assertEqual(set(recipe['resources']),{'source','copy','restore'})
++            self.assertEqual(len({r['name'] for r in recipe['resources'].values()}),3)
++            self.assertTrue(all('id' not in r for r in recipe['resources'].values()))
++            self.assertEqual(recipe['sourceCommit'],runner.M1_BASE)
++            self.assertNotIn('expectedAllocationSha256',recipe)
++        finally:
++            for key,value in saved.items():setattr(runner,key,value)
++
++    def test_process_is_bounded_redacts_stderr_and_drops_credentials(self):
++        import types
++        class Child:
++            def __init__(self,out=b'ok',err=b'',code=0):self.stdin=io.BytesIO();self.stdout=io.BytesIO(out);self.stderr=io.BytesIO(err);self.code=code;self.killed=False
++            def poll(self):return self.code
++            def wait(self,timeout=None):return self.code
++            def kill(self):self.killed=True
++        captured={};child=Child(err=b'PRIVATE_CANARY')
++        def create(*args,**kw):captured.update(kw);return child
++        with patch.dict(os.environ,{'OPENAI_API_KEY':'PRIVATE_CANARY','DOCKER_HOST':'tcp://forbidden.invalid'}):
++            result=self.adapter.bounded_owned_process(['docker','inspect','fixed'],popen=create,max_stdout_bytes=32)
++        self.assertEqual(result,{'exitCode':0,'stdout':b'ok','sqlstate':None})
++        self.assertNotIn('OPENAI_API_KEY',captured['env']);self.assertEqual(captured['env']['DOCKER_HOST'],'unix:///var/run/docker.sock')
++        self.assertNotIn('PRIVATE_CANARY',repr(result))
++        overflow=Child(out=b'x'*20)
++        with self.assertRaisesRegex(RuntimeError,'m1_process_incomplete'):self.adapter.bounded_owned_process(['docker','inspect','fixed'],popen=lambda *a,**k:overflow,max_stdout_bytes=8)
++        self.assertTrue(overflow.killed)
++        state=Child(err=b'ERROR:  PT409: PRIVATE_CANARY\n',code=1)
++        result=self.adapter.bounded_owned_process(['docker','exec','fixed'],popen=lambda *a,**k:state)
++        self.assertEqual(result['sqlstate'],'PT409');self.assertNotIn('PRIVATE_CANARY',repr(result))
++
++    def test_store_walk_is_descriptor_relative_for_every_component(self):
++        from pathlib import PurePosixPath
++        from types import SimpleNamespace
++        fake=SimpleNamespace(O_RDONLY=1,O_DIRECTORY=2,O_NOFOLLOW=4,getuid=lambda:7,open=Mock(side_effect=[10,11,12]),close=Mock(),fstat=lambda fd:SimpleNamespace(st_mode=stat.S_IFDIR|0o700,st_uid=7))
++        with patch.object(self.adapter,'os',fake),patch.object(self.adapter,'Path',PurePosixPath):
++            store=self.adapter.OwnedPrivateStore('/private/evidence')
++        self.assertEqual(fake.open.call_args_list[0].args,('/',7))
++        self.assertEqual(fake.open.call_args_list[1].kwargs,{'dir_fd':10})
++        self.assertEqual(fake.open.call_args_list[2].kwargs,{'dir_fd':11})
++        self.assertEqual(store.fd,12)
++        fake.open=Mock(side_effect=[10,OSError('symlink')]);fake.close.reset_mock()
++        with patch.object(self.adapter,'os',fake),patch.object(self.adapter,'Path',PurePosixPath),self.assertRaises(OSError):self.adapter.OwnedPrivateStore('/private/evidence')
++        fake.close.assert_called_with(10)
++
++    def test_store_exclusive_write_fsyncs_file_then_directory(self):
++        from types import SimpleNamespace
++        store=object.__new__(self.adapter.OwnedPrivateStore);store.fd=12
++        writes=[];sync=[]
++        fake=SimpleNamespace(O_WRONLY=1,O_CREAT=2,O_EXCL=4,O_NOFOLLOW=8,open=Mock(return_value=20),close=Mock(),fstat=lambda fd:SimpleNamespace(st_mode=stat.S_IFREG|0o600,st_nlink=1),write=lambda fd,v:(writes.append(bytes(v[:2])) or min(2,len(v))),fsync=lambda fd:sync.append(fd))
++        with patch.object(self.adapter,'os',fake):store.write_blob_exclusive('intent.json',b'abcdef')
++        self.assertEqual(b''.join(writes),b'abcdef');self.assertEqual(sync,[20,12]);self.assertEqual(fake.open.call_args.args[1],15)
++        fake.open=Mock(side_effect=FileExistsError('existing'))
++        with patch.object(self.adapter,'os',fake),self.assertRaises(FileExistsError):store.write_blob_exclusive('intent.json',b'new')
++        with self.assertRaises(RuntimeError):store.name('../outside')
++
++    def test_restore_rejects_role_drift_before_role_write(self):
++        e=object.__new__(self.adapter.M1Exercise);e.binding={'test':'binding'}
++        archive=b'PGDMPfixture';digest=lambda b:hashlib.sha256(b).hexdigest()
++        e.guard=type('Guard',(),{'digest':staticmethod(digest)})();calls=[]
++        proof={'binding':e.binding,'state':'BASELINE_ARCHIVED','archiveSha256':digest(archive)}
++        class Store:
++            def lock_exclusive(self):return contextlib.nullcontext()
++            def exists(self,name):return False
++            def read(self,name):return proof if name=='m1-backup-readback.json' else {'binding':e.binding,'rolesAndDatabase':{'roles':'initial'}}
++            def read_blob(self,*args):return archive
++            def write_exclusive(self,*args):raise AssertionError('must not write')
++        e.io=Store()
++        def query(sql,role):
++            calls.append(sql)
++            if sql==self.adapter.M1_EMPTY_CATALOG_QUERY:return 't'
++            if self.adapter.M1_RELATIONS_QUERY in sql:return '[]'
++            return json.dumps({'roles':'changed'})
++        e.query=query
++        with self.assertRaisesRegex(RuntimeError,'m1_initial_roles_changed'):e.restore_target('copy')
++        self.assertNotIn(self.adapter.M1_ROLE_SQL,calls)
++        self.assertTrue(self.adapter.M1_ROLE_SQL.startswith('BEGIN;') and self.adapter.M1_ROLE_SQL.endswith('COMMIT;'))
++
++    def test_restore_view_only_target_is_rejected_before_writes(self):
++        e=object.__new__(self.adapter.M1Exercise);e.binding={};e.guard=type('Guard',(),{'digest':staticmethod(lambda b:'a'*64)})()
++        class Store:
++            def lock_exclusive(self):return contextlib.nullcontext()
++            def exists(self,n):return False
++            def read(self,n):return {'binding':{},'state':'BASELINE_ARCHIVED','archiveSha256':'a'*64}
++            def read_blob(self,*a):return b'PGDMP'
++            def write_exclusive(self,*a):raise AssertionError('no writes')
++        e.io=Store();e.query=lambda *a:json.dumps([{'schema':'public','name':'foreign_view','kind':'v'}])
++        with self.assertRaisesRegex(RuntimeError,'m1_restore_target_not_empty'):e.restore_target('restore')
++        self.assertIn("'v'",self.adapter.M1_RELATIONS_QUERY)
++
++    def test_schema_nonce_normalization_preserves_acl_null_and_empty(self):
++        a=b'-- PostgreSQL database dump\n\\restrict ABC123\nALTER TABLE public.t OWNER TO postgres;\n-- PostgreSQL database dump complete\n\\unrestrict ABC123\n'
++        normalized=self.adapter.m1_schema_bytes(a)
++        self.assertIn(b'OWNER TO postgres',normalized);self.assertNotIn(b'ABC123',normalized)
++        with self.assertRaises(RuntimeError):self.adapter.m1_schema_bytes(a.replace(b'unrestrict ABC123',b'unrestrict OTHER'))
++        self.assertNotEqual(self.adapter.m1_schema_bytes(b'GRANT SELECT ON t TO anon;\n'),self.adapter.m1_schema_bytes(b'REVOKE ALL ON t FROM anon;\n'))
++
++    def test_io_binds_three_ids_and_rejects_foreign_target_before_transport(self):
++        binding={'executionAllocationId':'00000000-0000-4000-8000-000000000001','runId':'123','workflowCommit':'a'*40}
++        recipe=runner.m1_recipe(binding,self.adapter);allocation={k:recipe[k] for k in ('purpose','contractVersion','runId','attempt','controllerCommit','sourceCommit','allocationId','databaseMarker')}
++        for i,role in enumerate(('source','copy','restore'),1):allocation[role]={**recipe['resources'][role],'id':str(i)*64}
++        calls=[]
++        def process(argv,body=None,**kw):
++            if argv[:3]==['docker','image','inspect']:
++                return {'exitCode':0,'stdout':json.dumps([{'Id':self.adapter.M1_IMAGE,'Os':'linux','Architecture':'amd64','RepoDigests':[self.adapter.M1_REPO_DIGEST]}]).encode()}
++            calls.append((argv,body));object_id=argv[2] if argv[1]=='inspect' else argv[5];role=next(r for r in ('source','copy','restore') if allocation[r]['id']==object_id);a=allocation[role]
++            if argv[1]=='inspect':
++                row={'Id':object_id,'Name':'/'+a['name'],'Image':a['image'],'State':{'Running':True,'Health':{'Status':'healthy'}},'HostConfig':{'NetworkMode':'none'},'NetworkSettings':{'Ports':{},'Networks':{'none':{}}},'Config':{'Labels':a['labels'],'Env':['PGDATA=/var/lib/postgresql/data']},'Mounts':[{'Type':'tmpfs','Destination':'/var/lib/postgresql/data','RW':True}]}
++                return {'exitCode':0,'stdout':json.dumps([row]).encode(),'sqlstate':None}
++            return {'exitCode':0,'stdout':(allocation['databaseMarker'] if body and b'current_setting' in body else 'ok').encode(),'sqlstate':None}
++        expected=hashlib.sha256(json.dumps(allocation,sort_keys=True,separators=(',',':')).encode()).hexdigest()
++        io_adapter=self.adapter.OwnedDockerIO(object(),allocation,expected,process)
++        prefix=['docker','exec','-i','-e','PGOPTIONS=-c lock_timeout=5s -c statement_timeout=60s']
++        command=prefix+[allocation['copy']['id'],'psql','-XqAt','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1']
++        self.assertEqual(io_adapter.execute(command,b'SELECT 1;')['stdout'],b'ok')
++        self.assertEqual(sum(body is not None and b'current_setting' in body for _,body in calls),3)
++        calls.clear()
++        with self.assertRaises(RuntimeError):io_adapter.execute(prefix+['f'*64]+command[6:],b'SELECT 1;')
++        self.assertEqual(calls,[])
++        with self.assertRaises(RuntimeError):self.adapter.OwnedDockerIO(object(),allocation,'0'*64,process)
++
++    def test_database_role_settings_require_observed_empty_before_bootstrap(self):
++        a=self.adapter
++        a.m1_require_supported_settings({'dbRoleSettings':[]})
++        for metadata in ({},{'dbRoleSettings':None},{'dbRoleSettings':[{'database':'postgres','role':None,'settings':['private=value']}]}):
++            with self.subTest(metadata=metadata),self.assertRaisesRegex(RuntimeError,'m1_db_role_settings_unsupported'):a.m1_require_supported_settings(metadata)
++        self.assertIn('pg_db_role_setting',a.M1_ROLES_QUERY)
++        self.assertIn("'database',d.datname,'role',r.rolname",a.M1_ROLES_QUERY)
++        e=SimpleNamespace(io=SimpleNamespace(lock_exclusive=contextlib.nullcontext,exists=lambda n:False),query=lambda *args:json.dumps({'roles':[{'name':'postgres'}],'dbRoleSettings':[{'database':'postgres','role':None,'settings':[]}]}),persist=Mock())
++        with self.assertRaisesRegex(RuntimeError,'m1_db_role_settings_unsupported'):a.m1_capture_initial_roles(e)
++        e.persist.assert_not_called()
++
++    def test_failure_projection_is_literal_typed_and_bound_not_raw_cause(self):
++        self.assertEqual(runner.m1_failure_projection('backup',RuntimeError('m1_deadline')),{'phase':'backup','code':'m1_deadline'})
++        for error in (RuntimeError('PRIVATE token SQL https://secret'),ValueError({'private':'secret'}),Exception('m1_deadline')):
++            result=runner.m1_failure_projection('apply_history',error)
++            self.assertEqual(result,{'phase':'apply_history','code':None})
++            self.assertNotIn('PRIVATE',json.dumps(result))
++        binding={'runId':'1'}
++        for record in ({'binding':{},'phase':'backup','code':'m1_deadline'},{'binding':binding,'phase':[],'code':None},{'binding':binding,'phase':'backup','code':'PRIVATE'},{'binding':binding,'phase':'backup','code':None,'raw':'secret'}):
++            self.assertEqual(runner.m1_failure_readback(record,binding),{'phase':None,'code':None})
++        self.assertEqual(runner.m1_failure_readback({'binding':binding,'phase':'backup','code':None},binding),{'phase':'backup','code':None})
++
++    def test_execute_failure_records_first_phase_before_store_close(self):
++        binding={'executionAllocationId':'00000000-0000-4000-8000-000000000001','runId':'123','workflowCommit':'a'*40}
++        recipe=runner.m1_recipe(binding,self.adapter);records={'m1-recipe.json':recipe,'m1-controller-binding.json':{'binding':binding,'stage':'PREPARED','recipeSha256':hashlib.sha256(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode()).hexdigest()}};events=[]
++        class Store:
++            def read(self,n):return records[n]
++            def exists(self,n):return n in records
++            def lock_exclusive(self):return contextlib.nullcontext()
++            def write_exclusive(self,n,v):
++                if n in records:raise FileExistsError(n)
++                records[n]=v;events.append(n)
++            def close(self):events.append('closed')
++        module=SimpleNamespace(M1_IMAGE=self.adapter.M1_IMAGE,M1_IMAGE_CONTRACT=self.adapter.M1_IMAGE_CONTRACT,OwnedPrivateStore=lambda p:Store(),capacity=lambda p:None)
++        with patch.object(runner,'paths',return_value=(Path('.'),Path('.'),Path('.'),Path('.'))),patch.object(runner,'m1_module',return_value=(module,None)),patch.object(runner,'m1_allocate',side_effect=RuntimeError('PRIVATE SQL token')):
++            with self.assertRaisesRegex(RuntimeError,'PRIVATE'):runner.m1_execute(binding)
++        self.assertEqual(records['m1-failure.json'],{'binding':binding,'phase':'allocation','code':None})
++        self.assertLess(events.index('m1-failure.json'),events.index('closed'))
++        self.assertNotIn('m1-phase-bootstrap.json',records)
++        self.assertNotIn('PRIVATE',json.dumps(records))
++
++    def test_controller_adapter_pin_matches_actual_source(self):
++        adapter_path=Path(__file__).resolve().parents[1]/'consultation-feedback'/'install-feedback.py'
++        self.assertEqual(runner.M1_ADAPTER_SHA,hashlib.sha256(adapter_path.read_bytes()).hexdigest())
++
++    def test_image_index_config_platform_and_provenance_are_distinct(self):
++        a=self.adapter
++        valid={'Id':a.M1_IMAGE,'Os':'linux','Architecture':'amd64','RepoDigests':[a.M1_REPO_DIGEST]}
++        calls=[]
++        def process(argv,**kwargs):
++            calls.append(argv)
++            return {'exitCode':0,'stdout':json.dumps([row]).encode()}
++        row=dict(valid);a.m1_verify_image(process,dict(a.M1_IMAGE_CONTRACT))
++        for change in ({'Id':a.M1_IMAGE_INDEX},{'RepoDigests':[]},{'Architecture':'arm64'},{'Os':'windows'}):
++            row={**valid,**change}
++            with self.subTest(change=change),self.assertRaises(RuntimeError):a.m1_verify_image(process,dict(a.M1_IMAGE_CONTRACT))
++        calls.clear()
++        with self.assertRaises(RuntimeError):a.m1_verify_image(process,{**a.M1_IMAGE_CONTRACT,'configId':a.M1_IMAGE_INDEX})
++        self.assertEqual(calls,[])
++        self.assertNotEqual(a.M1_IMAGE_INDEX,a.M1_IMAGE)
++
++    def test_cleanup_attempts_other_bound_resources_after_first_failure(self):
++        from types import SimpleNamespace
++        binding={'executionAllocationId':'00000000-0000-4000-8000-000000000001','runId':'123','workflowCommit':'a'*40}
++        recipe=runner.m1_recipe(binding,self.adapter);pin=hashlib.sha256(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode()).hexdigest()
++        rows={'m1-recipe.json':recipe,'m1-execution-result.json':{'binding':binding,'deadlineMet':True,'result':{'state':'PASS_M1_SQL_COPY_ONLY'}}}
++        for i,role in enumerate(('source','copy','restore'),1):rows['m1-'+role+'-identity.json']={'role':role,'actual':{'id':str(i)*64},'recipeSha256':pin}
++        class Store:
++            def read(self,n):return rows[n]
++            def exists(self,n):return n in rows
++            def write_exclusive(self,n,v):
++                if n in rows:raise FileExistsError(n)
++                rows[n]=v
++            def close(self):pass
++        removed=[]
++        def process(argv,**kw):
++            if argv[1]=='rm':removed.append(argv[-1]);return {'exitCode':1 if argv[-1]=='1'*64 else 0,'stdout':b'','sqlstate':None}
++            return {'exitCode':0,'stdout':b'','sqlstate':None}
++        module=SimpleNamespace(M1_IMAGE_CONTRACT=self.adapter.M1_IMAGE_CONTRACT,M1_IMAGE=self.adapter.M1_IMAGE,OwnedPrivateStore=lambda p:Store(),bounded_owned_process=process)
++        with tempfile.TemporaryDirectory() as folder:
++            root=Path(folder)
++            with patch.object(runner,'paths',return_value=(root,root,root/'private',root/'app')),patch.object(runner,'m1_module',return_value=(module,None)),patch.object(runner,'m1_inspect_planned',return_value={}),patch.object(runner,'private_json') as public:
++                with self.assertRaises(ValueError):runner.m1_finalize(binding)
++        self.assertEqual(removed,['1'*64,'2'*64,'3'*64])
++        self.assertEqual(public.call_args.args[1]['status'],'FAIL_M1_NOT_ACCEPTED')
++        self.assertEqual(public.call_args.args[1]['cleanup'],'UNCONFIRMED')
++        self.assertEqual(public.call_args.args[1]['cleanupFailedRoles'],['source'])
++
++
+ if __name__ == '__main__':
+     unittest.main()
+--- /dev/null
++++ b/scripts/testing/consultation-feedback/install-feedback.py
+@@ -0,0 +1,1081 @@
++"""Code-only START-A adapter. No SSH, provisioning, automatic replay or rollback.
++
++Linux execution requires external current authorization and an exact reviewed bundle.
++Reuses PR314 identity, backup, isolation, durable-write and transport guards.
++"""
++import argparse
++import datetime as dt
++import importlib.util
++import json
++import os
++from pathlib import Path
++import re
++import shutil
++from urllib.parse import urlsplit
++from uuid import uuid4
++
++ROOT = Path(__file__).resolve().parents[3]
++SAFETY_SHA = '5b5b082907609f8834fdc0f785579a00cda60f4b5ae8512875b5ea2935be6e5f'
++SOURCE_SHA = 'b08687b233d5fe1317748b6adff61653d58dadd8'
++MIN_FREE_BYTES = 10 * 1024 ** 3
++ARTIFACTS = {
++    'apply': [
++        ('supabase/migrations/20261029142010_consultation_feedback_states.sql', '32f928eac23f02c1412301932f7a58ebe1707b987d9b78d09ba67b1117913dda'),
++        ('supabase/migrations/20261029160723_consultation_feedback_rollout_guard.sql', '5b3538d2a4526c91ac0af092b86a81b3e7bb140dab88ad20aef30abff2ff03e2'),
++    ],
++    'rollback': [
++        ('docs/ops/start-a-finance-v04-20261029/rollback-rollout.sql', 'bb8964f7d07df1575c8a70bf762987e4830600ccacfe72eac63e4af79e9377ba'),
++        ('docs/ops/start-a-finance-v04-20261029/rollback-candidate.sql', 'aa1a278bb0b1cecfca8ae119919a11bdd762772950bd57d1f147d2ef20989ffa'),
++    ],
++}
++OLD = ('54dd2351f7ca5ac458e7feb52729c88d', 'da2199a556779a36286deb2f534404a9', 'ca3cf9c59e64d0bf8a442413635a3ac3')
++NEW = ('20701b814f94276bc90f8cad51f16174', 'e65e1a32348c961f2b409a4f6593c05f', 'e3b2b74277cc66c024a772e48382cfb1')
++OLD_STATES = ['acknowledged', 'doing', 'done', 'question', 'viewed']
++NEW_STATES = sorted(OLD_STATES + ['partial', 'not_done'])
++
++
++def check(condition, code):
++    if not condition:
++        raise RuntimeError(code)
++
++
++def load_safety(path=None):
++    import hashlib
++    path = Path(path or ROOT / 'scripts/testing/consultation-next/install-native.py')
++    check(hashlib.sha256(path.read_bytes()).hexdigest() == SAFETY_SHA, 'safety_helper_bytes_changed')
++    spec = importlib.util.spec_from_file_location('start_a_reviewed_safety', path)
++    module = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(module)
++    return module
++
++
++# Preserve ALL preexisting objects including the PR314 extension. Exclude only the
++# reviewed constraint tuple and the prosrc field of the two exact changed functions.
++INVENTORY = r"""
++WITH namespaces AS (
++ SELECT oid,nspname,nspowner,nspacl FROM pg_namespace
++ WHERE nspname NOT LIKE 'pg_%' AND nspname <> 'information_schema'
++), objects AS (SELECT c.* FROM pg_class c JOIN namespaces n ON n.oid=c.relnamespace WHERE NOT(n.nspname='consultation_private' AND c.relname IN('feedback_rollout','feedback_rollout_pkey')))
++SELECT jsonb_build_object(
++ 'namespaces',(SELECT jsonb_agg(to_jsonb(n) ORDER BY oid) FROM namespaces n),
++ 'relations',(SELECT jsonb_agg(jsonb_build_array(c.oid,c.relname,c.relnamespace,c.relkind,c.relowner,c.relacl::text,c.relrowsecurity,c.relforcerowsecurity,c.reloptions) ORDER BY c.oid) FROM objects c),
++ 'columns',(SELECT jsonb_agg(jsonb_build_array(a.attrelid,a.attnum,a.attname,a.atttypid,a.atttypmod,a.attnotnull,a.attidentity,a.attgenerated,a.attacl::text,pg_get_expr(d.adbin,d.adrelid)) ORDER BY a.attrelid,a.attnum) FROM pg_attribute a JOIN objects c ON c.oid=a.attrelid LEFT JOIN pg_attrdef d ON d.adrelid=a.attrelid AND d.adnum=a.attnum WHERE a.attnum>0 AND NOT a.attisdropped),
++ 'functions',(SELECT jsonb_agg(CASE WHEN p.oid IN(to_regprocedure('consultation_private.command(jsonb)'),to_regprocedure('consultation_private.execute(jsonb)'),to_regprocedure('consultation_private.load(uuid,date,date)')) THEN to_jsonb(p)-'prosrc' ELSE to_jsonb(p) END ORDER BY p.oid) FROM pg_proc p JOIN namespaces n ON n.oid=p.pronamespace WHERE p.prokind IN('f','p')),
++ 'constraints',(SELECT jsonb_agg(to_jsonb(c) ORDER BY c.oid) FROM pg_constraint c JOIN objects o ON o.oid=c.conrelid WHERE NOT(c.conrelid=to_regclass('public.consultation_actions') AND c.conname='consultation_actions_status_check')),
++ 'triggers',(SELECT jsonb_agg(to_jsonb(t) ORDER BY t.oid) FROM pg_trigger t JOIN objects o ON o.oid=t.tgrelid WHERE NOT t.tgisinternal),
++ 'policies',(SELECT jsonb_agg(to_jsonb(p) ORDER BY p.oid) FROM pg_policy p JOIN objects o ON o.oid=p.polrelid),
++ 'indexes',(SELECT jsonb_agg(jsonb_build_array(i.indexrelid,pg_get_indexdef(i.indexrelid)) ORDER BY i.indexrelid) FROM pg_index i JOIN objects o ON o.oid=i.indrelid),
++ 'defaultAcl',(SELECT jsonb_agg(to_jsonb(d) ORDER BY d.oid) FROM pg_default_acl d WHERE d.defaclnamespace=0 OR d.defaclnamespace IN(SELECT oid FROM namespaces)));
++"""
++HISTORY_TABLES = [
++    'consultation_advisors', 'consultation_relationships', 'consultation_revocations',
++    'consultation_sessions', 'consultation_private_notes', 'consultation_events',
++    'consultation_publications', 'consultation_actions', 'consultation_command_receipts',
++    'consultation_reply_versions', 'consultation_reply_receipts',
++    'member_holding_versions', 'member_holding_positions', 'member_cash_flow_versions',
++    'member_cash_flow_entries', 'member_goals_versions',
++]
++HISTORY = 'SELECT jsonb_build_object(' + ','.join(
++    "'%s',(SELECT jsonb_build_object('count',count(*),'sha256',encode(sha256(convert_to(coalesce(string_agg(h, '' ORDER BY h),''),'UTF8')),'hex')) FROM (SELECT encode(sha256(convert_to(to_jsonb(r)::text,'UTF8')),'hex') h FROM public.%s r) hashes)" % (name, name)
++    for name in HISTORY_TABLES) + ');'
++ROLLOUT_DEFAULT_OFF = "SELECT count(*)=1 AND bool_and(NOT enabled AND reader_sha IS NULL AND reviewed_at IS NULL) FROM consultation_private.feedback_rollout;"
++
++
++def checks(safety, extended):
++    """PR314 ACL/RLS checks without its installation-only empty-history demand."""
++    prerequisite = safety.CHECKS.strip().rstrip(';')
++    bodies, states = (NEW, NEW_STATES) if extended else (OLD, OLD_STATES)
++    gate = """(SELECT count(*)=1 AND bool_and(c.relrowsecurity AND c.relforcerowsecurity AND pg_get_userbyid(c.relowner)='postgres' AND NOT EXISTS(SELECT FROM unnest(ARRAY['anon','authenticated','service_role']) r CROSS JOIN unnest(ARRAY['SELECT','INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER']) privilege WHERE has_table_privilege(r,c.oid,privilege))) FROM pg_class c WHERE c.oid=to_regclass('consultation_private.feedback_rollout'))""" if extended else "to_regclass('consultation_private.feedback_rollout') IS NULL"
++    return """SELECT (to_jsonb(t.v)-'emptyReplies'-'emptyReceipts') || jsonb_build_object(
++ 'kernelBodies', (SELECT count(*)=3 AND bool_and(md5(replace(p.prosrc,E'\\r\\n',E'\\n'))=CASE p.proname WHEN 'command' THEN '%s' WHEN 'execute' THEN '%s' ELSE '%s' END) FROM pg_proc p WHERE p.oid IN(to_regprocedure('consultation_private.command(jsonb)'),to_regprocedure('consultation_private.execute(jsonb)'),to_regprocedure('consultation_private.load(uuid,date,date)'))),
++ 'kernelClosed', (SELECT count(*)=3 AND bool_and(pg_get_userbyid(p.proowner)='postgres' AND NOT p.prosecdef AND p.proconfig=ARRAY['search_path=""']::text[] AND NOT has_function_privilege('anon',p.oid,'EXECUTE') AND NOT has_function_privilege('authenticated',p.oid,'EXECUTE') AND NOT has_function_privilege('service_role',p.oid,'EXECUTE')) FROM pg_proc p WHERE p.oid IN(to_regprocedure('consultation_private.command(jsonb)'),to_regprocedure('consultation_private.execute(jsonb)'),to_regprocedure('consultation_private.load(uuid,date,date)'))) AND (%s),
++ 'feedbackConstraint', (SELECT array_agg(m[1] ORDER BY m[1])=ARRAY[%s]::text[] FROM pg_constraint c CROSS JOIN LATERAL regexp_matches(pg_get_constraintdef(c.oid),'''([^'']*)''','g') m WHERE c.conrelid=to_regclass('public.consultation_actions') AND c.conname='consultation_actions_status_check' AND c.contype='c' AND c.convalidated AND NOT c.connoinherit)) FROM (%s) t(v);""" % (bodies[0], bodies[1], bodies[2], gate, ','.join("'%s'" % s for s in states), prerequisite)
++
++
++def payload(safety, operation, repo=ROOT):
++    check(operation in ARTIFACTS, 'explicit_operation_required')
++    bodies = []
++    for path, expected in ARTIFACTS[operation]:
++        raw = (repo / path).read_bytes()
++        check(safety.digest(raw) == expected, 'feedback_sql_bytes_changed')
++        text = raw.decode('utf-8')
++        check(len(re.findall(r'^BEGIN;\s*$',text,re.M))==1 and len(re.findall(r'^COMMIT;\s*$',text,re.M))==1, 'feedback_transaction_boundary_changed')
++        bodies.append(re.sub(r'^COMMIT;\s*$','',re.sub(r'^BEGIN;\s*$','',text,count=1,flags=re.M),count=1,flags=re.M))
++    return 'BEGIN;\n'+'\n'.join(bodies)+'\nCOMMIT;\n'
++
++
++def capacity(path):
++    free = shutil.disk_usage(path).free
++    check(free >= MIN_FREE_BYTES, 'capacity_below_10GiB')
++    return free
++
++
++def validate_rehearsal(safety, proof, binding):
++    check(proof.get('profile', 'legacy') == 'legacy' and proof.get('productionGateEligible', True) is True, 'owned_proof_not_production_eligible')
++    check(proof.get('status') == 'APPLIED' and proof.get('mode') == 'copy'
++          and proof.get('binding') == binding and proof.get('targetStopped') is True
++          and proof.get('sourceHealthyAfter') is True and proof.get('existingCatalogUnchanged') is True
++          and proof.get('historyAndFinancialUnchanged') is True and proof.get('rolloutDefaultOff') is True, 'feedback_copy_rehearsal_missing')
++    safety.all_passed(proof.get('checks'), 9)
++
++
++def validate_reader(reader, attestation, payload_sha, now=None):
++    check(isinstance(reader,dict) and set(reader)=={'contractVersion','sourceContainerId','readerSha','deploymentId','url','checkedAt','verificationReceiptSha256','payloadSha256','authority','checks'}, 'reader_attestation_shape')
++    check(reader['contractVersion']=='consultation-feedback-reader.v1' and reader['authority']=='VERIFIED_BY_COORDINATOR', 'reader_attestation_authority')
++    check(reader['sourceContainerId']==attestation['source']['id'] and reader['payloadSha256']==payload_sha, 'reader_environment_or_payload_changed')
++    check(isinstance(reader['readerSha'],str) and re.fullmatch(r'[a-f0-9]{40}',reader['readerSha']) and isinstance(reader['verificationReceiptSha256'],str) and re.fullmatch(r'[a-f0-9]{64}',reader['verificationReceiptSha256']), 'reader_digest_invalid')
++    check(isinstance(reader['deploymentId'],str) and re.fullmatch(r'dpl_[A-Za-z0-9]+',reader['deploymentId']), 'reader_deployment_identity_invalid')
++    url=urlsplit(reader['url'])
++    check(url.scheme=='https' and url.hostname and not url.username and not url.password and not url.query and not url.fragment, 'reader_url_invalid')
++    checked=dt.datetime.fromisoformat(reader['checkedAt'].replace('Z','+00:00'))
++    check(checked.utcoffset()==dt.timedelta(0) and 0<=((now or dt.datetime.now(dt.timezone.utc))-checked).total_seconds()<=86400, 'reader_proof_not_fresh')
++    check(set(reader['checks'])=={'oldSqlRead','missingCapabilityOff','newSqlRead','newHistoryReadable','uiWriterOff','postWriterOff'} and all(v is True for v in reader['checks'].values()), 'reader_compatibility_not_verified')
++
++
++def binding_for(safety, attestation, operation, reader=None):
++    sql = payload(safety, operation)
++    return {'sourceBaseSha': SOURCE_SHA, 'operation': operation,
++            'attestationSha256': safety.digest(json.dumps(attestation, sort_keys=True).encode()),
++            'payloadSha256': safety.digest(sql.encode()), 'safetyHelperSha256': SAFETY_SHA,
++            'adapterSha256': safety.digest(Path(__file__).read_bytes()),
++            'readerAttestationSha256':safety.digest(json.dumps(reader,sort_keys=True).encode()) if reader else None}
++
++
++def reconcile(mode, attestation, operation, *, safety=None, reader=None, profile='legacy'):
++    """Observe one existing intent. Never DDL, start/stop, replay or replace evidence.
++
++    A stopped copy must be started separately by its authorized owner. Old state
++    cannot prove an unknown original operation will never commit: it stays unresolved.
++    """
++    check(profile == 'legacy', 'owned_reconcile_integration_pending')
++    import fcntl
++    safety = safety or load_safety()
++    # Check the original attestation's exact structure/identity, without pretending
++    # a historical checkpoint is fresh write authorization. No write path uses this.
++    stamp = dt.datetime.strptime(attestation['checkpoint'], '%Y%m%dT%H%M%SZ').replace(tzinfo=dt.timezone.utc)
++    safety.validate_attestation(attestation, now=stamp)
++    check(mode in ('copy', 'source'), 'explicit_mode_required')
++    check(safety.digest(Path(safety.__file__).read_bytes()) == SAFETY_SHA, 'safety_helper_bytes_changed')
++    directory = safety.BACKUPS / attestation['checkpoint'] / 'consultation-feedback-install' / operation
++    binding = binding_for(safety, attestation, operation, reader)
++    if reader:
++        validate_reader(reader,attestation,binding['payloadSha256'],now=dt.datetime.fromisoformat(reader['checkedAt'].replace('Z','+00:00')))
++    with (safety.BACKUPS / '.cashflow-release.lock').open('a+b') as lock:
++        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
++        intent = json.loads((directory / (mode+'-intent.json')).read_text())
++        check(intent.get('binding') == binding and intent.get('mode') == mode
++              and intent.get('sourceId') == attestation['source']['id']
++              and intent.get('targetId') == attestation[mode]['id'], 'intent_binding_changed')
++        before = json.loads((directory / (mode+'-before.json')).read_text())
++        check(safety.digest(json.dumps(before, sort_keys=True).encode()) == intent.get('beforeSha256'), 'intent_before_fingerprint_changed')
++        source = json.loads(safety.command(['docker', 'inspect', attestation['source']['id']]))[0]
++        safety.source_safe(source, attestation)
++        if mode == 'copy':
++            copy = json.loads(safety.command(['docker', 'inspect', attestation['copy']['id']]))[0]
++            safety.copy_safe(copy, source, attestation, True)
++        query = ('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;/* START_A_RECONCILE_READONLY */'
++                 + INVENTORY + HISTORY + checks(safety, False) + checks(safety, True) + 'COMMIT;')
++        raw = safety.command(['docker', 'exec', '-i', '-e', 'PGOPTIONS=-c lock_timeout=5s -c statement_timeout=60s',
++                              attestation[mode]['id'], 'psql', '-XqAt', '-U', 'postgres', '-d', 'postgres',
++                              '-v', 'ON_ERROR_STOP=1'], query.encode())
++        values = [json.loads(line) for line in raw.splitlines() if line.strip()]
++        check(len(values) == 4, 'reconciliation_shape_changed')
++        catalog, history, old_checks, new_checks = values
++        old = len(old_checks) == 9 and all(v is True for v in old_checks.values())
++        new = len(new_checks) == 9 and all(v is True for v in new_checks.values())
++        gate_off = old
++        if new:
++            raw_gate = safety.command(['docker','exec','-i','-e','PGOPTIONS=-c statement_timeout=10s',
++                                       attestation[mode]['id'],'psql','-XqAt','-U','postgres','-d','postgres',
++                                       '-v','ON_ERROR_STOP=1'], ('BEGIN READ ONLY;'+ROLLOUT_DEFAULT_OFF+'COMMIT;').encode())
++            gate_off = raw_gate.strip() == 't'
++        unchanged = catalog == before['catalog'] and history == before['historyAndFinancial']
++        matches = unchanged and gate_off and (new if operation == 'apply' else old)
++        result = {'status': 'MATCHED_TARGET_STATE_READBACK' if matches else 'UNRESOLVED',
++                  'binding': binding, 'mode': mode, 'intentSha256': safety.digest((directory/(mode+'-intent.json')).read_bytes()),
++                  'observedAt': dt.datetime.now(dt.timezone.utc).isoformat(),
++                  'observedKernel': 'NEW' if new else 'OLD' if old else 'DRIFT',
++                  'existingCatalogUnchanged': catalog == before['catalog'],
++                  'historyAndFinancialUnchanged': history == before['historyAndFinancial'],
++                  'observedSnapshotSha256': safety.digest(json.dumps(values, sort_keys=True).encode()),
++                  'effectMatchesIntent': matches, 'installationExecuted': False, 'replayAllowed': False,
++                  'rolloutDefaultOff': gate_off,
++                  'nativeAcceptance': False, 'originalResultReplaced': False}
++        name = mode+'-reconciliation-'+uuid4().hex+'.json'
++        safety.write_exclusive(directory / name, result)
++        print(json.dumps(result))
++        return result
++
++
++# Proposed in-file profile. No credential or production authority is accepted.
++class OwnedCopySafety:
++    def __init__(self, helper, allocation, expected_sha, context):
++        check(isinstance(expected_sha, str) and re.fullmatch(r'[a-f0-9]{64}', expected_sha), 'owned_allocation_pin_required')
++        check(helper.digest(json.dumps(allocation, sort_keys=True, separators=(',', ':')).encode()) == expected_sha, 'owned_allocation_pin_changed')
++        self.helper = helper
++        self.allocation = json.loads(json.dumps(allocation))
++        self.context = dict(context)
++        self.__file__ = helper.__file__
++        self.validate_attestation(self.allocation)
++        self.BACKUPS = Path('/tmp') / ('start-a-owned-' + allocation['allocationId'])
++
++    def __getattr__(self, name):
++        return getattr(self.helper, name)
++
++    def validate_attestation(self, value, now=None):
++        keys = {'contractVersion', 'runId', 'attempt', 'sourceCommit', 'allocationId', 'checkpoint', 'checkpointReceiptSha256', 'source', 'copy', 'databaseMarker'}
++        check(isinstance(value, dict) and set(value) == keys and value == self.allocation, 'owned_allocation_shape_or_drift')
++        check(value['contractVersion'] == 'GHA-owned-copy.v1', 'owned_profile_required')
++        check(self.context.get('GITHUB_ACTIONS') == 'true' and self.context.get('RUNNER_OS') == 'Linux', 'owned_context_required')
++        for field, env in [('runId', 'GITHUB_RUN_ID'), ('attempt', 'GITHUB_RUN_ATTEMPT'), ('sourceCommit', 'GITHUB_SHA')]:
++            check(isinstance(value[field], str) and value[field] == self.context.get(env), 'owned_run_binding_changed')
++        check(re.fullmatch(r'[1-9][0-9]{0,19}', value['runId']) and re.fullmatch(r'[1-9][0-9]{0,5}', value['attempt']) and re.fullmatch(r'[a-f0-9]{40}', value['sourceCommit']), 'owned_context_shape')
++        check(isinstance(value['allocationId'], str) and re.fullmatch(r'[a-f0-9]{32}', value['allocationId']), 'owned_allocation_id')
++        check(value['databaseMarker'] == 'start-a-owned-' + value['allocationId'], 'owned_marker_shape')
++        check(isinstance(value['checkpointReceiptSha256'], str) and re.fullmatch(r'[a-f0-9]{64}', value['checkpointReceiptSha256']), 'owned_checkpoint_pin')
++        stamp = dt.datetime.strptime(value['checkpoint'], '%Y%m%dT%H%M%SZ').replace(tzinfo=dt.timezone.utc)
++        check(0 <= ((now or dt.datetime.now(dt.timezone.utc))-stamp).total_seconds() <= 86400, 'owned_checkpoint_expired')
++        for role in ('source', 'copy'):
++            item = value[role]
++            check(isinstance(item, dict) and set(item) == {'name', 'id', 'image'}, 'owned_resource_shape')
++            check(item['name'] == 'start-a-owned-' + value['allocationId'] + '-' + role and isinstance(item['id'], str) and re.fullmatch(r'[a-f0-9]{64}', item['id']) and isinstance(item['image'], str) and re.fullmatch(r'sha256:[a-f0-9]{64}', item['image']), 'owned_resource_identity')
++        check(value['source']['id'] != value['copy']['id'] and value['source']['image'] == value['copy']['image'], 'owned_resources_not_independent')
++
++    def resource_safe(self, state, role, running):
++        a = self.allocation
++        expected = a[role]
++        check(state['Name'] == '/' + expected['name'] and state['Id'] == expected['id'] and state['Image'] == expected['image'] and state['State']['Running'] is running, 'owned_identity_changed')
++        check(state['HostConfig']['NetworkMode'] == 'none' and not state['HostConfig'].get('PortBindings') and not any((state['NetworkSettings'].get('Ports') or {}).values()), 'owned_network_not_isolated')
++        labels = state['Config'].get('Labels') or {}
++        check(all(labels.get('portfolio.owned.' + key) == a[key] for key in ('runId', 'attempt', 'sourceCommit', 'allocationId')) and labels.get('portfolio.owned.role') == role, 'owned_labels_changed')
++        check('cron.launch_active_jobs=off' in (state['Config'].get('Cmd') or []), 'owned_cron_enabled')
++        # Fixed reviewed synthetic contract; not inferred from an image default.
++        data_dir = '/var/lib/postgresql/data'
++        mounts = state['Mounts']
++        check(isinstance(mounts, list) and len(mounts) == 1 and mounts[0].get('Type') == 'tmpfs' and mounts[0].get('Destination') == data_dir and mounts[0].get('RW') is True, 'owned_data_mount_not_exact_tmpfs')
++        env = state['Config'].get('Env')
++        check(isinstance(env, list) and all(isinstance(v, str) for v in env) and [v for v in env if v.startswith('PGDATA=')] == ['PGDATA=' + data_dir], 'owned_pgdata_changed')
++
++    def marker(self, state):
++        raw = self.command(['docker', 'exec', '-i', '-e', 'PGOPTIONS=-c statement_timeout=5s', state['Id'], 'psql', '-XqAt', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1'], b"BEGIN READ ONLY; SELECT current_setting('portfolio.owned_copy_marker',true); COMMIT;")
++        check(raw.strip() == self.allocation['databaseMarker'], 'owned_database_marker_changed')
++
++    def source_safe(self, state, attestation):
++        self.validate_attestation(attestation)
++        self.resource_safe(state, 'source', True)
++        check(state['State'].get('Health', {}).get('Status') == 'healthy', 'owned_source_unhealthy')
++        self.marker(state)
++
++    def copy_safe(self, state, source, attestation, running):
++        self.validate_attestation(attestation)
++        self.resource_safe(state, 'copy', running)
++        self.resource_safe(source, 'source', True)
++        if running:
++            self.marker(state)
++
++    def validate_backup(self, raw, attestation):
++        check(self.digest(raw) == attestation['checkpointReceiptSha256'], 'owned_backup_pin_changed')
++        proof = json.loads(raw)
++        check(set(proof) == {'contractVersion', 'allocationId', 'runId', 'attempt', 'sourceCommit', 'sourceId', 'copyId', 'databaseMarker', 'restoredEqual', 'sourceHealthy', 'copyStopped', 'syntheticOnly'}, 'owned_backup_shape')
++        check(proof['contractVersion'] == 'GHA-owned-copy-backup.v1' and all(proof[k] == attestation[k] for k in ('allocationId', 'runId', 'attempt', 'sourceCommit', 'databaseMarker')) and proof['sourceId'] == attestation['source']['id'] and proof['copyId'] == attestation['copy']['id'], 'owned_backup_binding')
++        check(all(proof[k] is True for k in ('restoredEqual', 'sourceHealthy', 'copyStopped', 'syntheticOnly')), 'owned_backup_not_verified')
++
++
++class OwnedCopyExercise:
++    """Underlying owned-only algorithm. No default transport, CLI or activation.
++
++    Caller supplies reviewed exclusive journal/blob store and bounded transport.
++    The public run/reconcile gate remains CLOSED until that integration is reviewed.
++    Evidence bodies/history stay private; returned receipts contain only bindings.
++    """
++    def __init__(self, guard, io, repo=ROOT):
++        check(type(guard) is OwnedCopySafety, 'owned_guard_required')
++        self.guard, self.io, self.repo = guard, io, repo
++        self.binding = {'profile': 'GHA-owned-copy.v1', 'allocationId': guard.allocation['allocationId'],
++                        'runId': guard.allocation['runId'], 'attempt': guard.allocation['attempt'],
++                        'sourceCommit': guard.allocation['sourceCommit'],
++                        'allocationSha256': guard.digest(json.dumps(guard.allocation, sort_keys=True, separators=(',', ':')).encode()),
++                        'payloadSha256': guard.digest(payload(guard, 'apply', repo).encode())}
++        check(self.binding['payloadSha256'] == 'c53de46a216a57b90afaff760c0474cb5d95911f56ff022832fd1536affae8a8', 'owned_payload_changed')
++
++    def resources(self):
++        a = self.guard.allocation
++        source = self.io.inspect(a['source']['id'])
++        copy = self.io.inspect(a['copy']['id'])
++        self.guard.validate_attestation(a)
++        self.guard.resource_safe(source, 'source', True)
++        self.guard.resource_safe(copy, 'copy', True)
++        check(source['State'].get('Health', {}).get('Status') == 'healthy', 'owned_source_unhealthy')
++        # Use the SAME injected bounded transport for metadata too; never fall
++        # through guard.helper.command to a native default.
++        for role in ('source','copy'):
++            result = self.transport(role, ['psql','-XqAt','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1'], b"BEGIN READ ONLY; SELECT current_setting('portfolio.owned_copy_marker',true); COMMIT;")
++            check(result['exitCode'] == 0 and result['sqlstate'] is None and result['stdout'].decode('utf-8').strip() == a['databaseMarker'], 'owned_database_marker_changed')
++        return source, copy
++
++    def transport(self, role, program, body=None):
++        check(role in ('source','copy'), 'owned_target_role_invalid')
++        target = self.guard.allocation[role]['id']
++        result = self.io.execute(['docker', 'exec', '-i', '-e',
++            'PGOPTIONS=-c lock_timeout=5s -c statement_timeout=60s', target, *program], body,
++            timeout=90, max_stdout_bytes=64*1024*1024)
++        check(isinstance(result, dict) and set(result) == {'exitCode','stdout','sqlstate'}
++              and type(result['exitCode']) is int and isinstance(result['stdout'], bytes)
++              and len(result['stdout']) <= 64*1024*1024
++              and (result['sqlstate'] is None or result['sqlstate'] == 'PT409'), 'owned_transport_result_invalid')
++        return result
++
++    def execute(self, role, program, body=None):
++        self.resources()
++        return self.transport(role, program, body)
++
++    def query(self, sql, role='copy', expected_error=None):
++        result = self.execute(role, ['psql', '-XqAt', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1'], sql.encode())
++        if expected_error:
++            check(result['exitCode'] != 0 and result['sqlstate'] == expected_error, 'owned_expected_sqlstate_missing')
++            return None
++        check(result['exitCode'] == 0 and result['sqlstate'] is None, 'owned_query_failed')
++        return result['stdout'].decode('utf-8')
++
++    def snapshot(self, role='copy'):
++        rows = [json.loads(line) for line in self.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;'+INVENTORY+HISTORY+'COMMIT;', role).splitlines() if line.strip()]
++        check(len(rows) == 2 and all(isinstance(x, dict) for x in rows), 'owned_snapshot_invalid')
++        check(set(rows[1]) == set(HISTORY_TABLES), 'owned_history_roster_changed')
++        for entry in rows[1].values():
++            check(isinstance(entry, dict) and set(entry) == {'count','sha256'} and type(entry['count']) is int and entry['count'] >= 0 and isinstance(entry['sha256'], str) and re.fullmatch(r'[a-f0-9]{64}', entry['sha256']), 'owned_history_fingerprint_invalid')
++        return {'catalog':rows[0], 'history':rows[1]}
++
++    def kernel(self, extended):
++        result = json.loads(self.query('BEGIN READ ONLY;'+checks(self.guard, extended)+'COMMIT;'))
++        self.guard.all_passed(result, 9)
++
++    def persist(self, name, value):
++        self.io.write_exclusive(name, value)  # Contract: file AND directory fsync before return.
++
++    def record(self, state, **fields):
++        return {'state':state, 'binding':self.binding, 'targetInstall':'NOT_APPLIED',
++                'productionGateEligible':False, 'automaticReplay':False, **fields}
++
++    def backup_restore(self):
++        # Empty target must be independently allocated; never clean an existing DB.
++        with self.io.lock_exclusive():
++            check(not self.io.exists('restore-intent.json'), 'owned_restore_no_replay')
++            self.resources()
++            empty = self.query("BEGIN READ ONLY; SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname NOT LIKE 'pg_%' AND n.nspname <> 'information_schema' AND c.relkind IN('r','p','v','m','S','f'); COMMIT;")
++            check(empty.strip() == '0', 'owned_restore_target_not_empty')
++            before = self.snapshot('source')
++            dump = self.execute('source', ['pg_dump','-U','postgres','-d','postgres','--format=custom','--no-password'])
++            check(dump['exitCode'] == 0 and dump['sqlstate'] is None and dump['stdout'].startswith(b'PGDMP'), 'owned_dump_failed')
++            archive = dump['stdout']
++            archive_sha = self.guard.digest(archive)
++            self.io.write_blob_exclusive('synthetic-backup.dump', archive)
++            stored = self.io.read_blob('synthetic-backup.dump', 64*1024*1024)
++            check(isinstance(stored, bytes) and self.guard.digest(stored) == archive_sha, 'owned_backup_readback_failed')
++            intent = self.record('RESTORE_INTENT', archiveSha256=archive_sha, sourceBefore=before)
++            self.persist('restore-intent.json', intent)
++            # Unknown restore is NEVER retried. A later readback uses this same intent.
++            result = self.execute('copy', ['pg_restore','-U','postgres','-d','postgres','--exit-on-error','--single-transaction'], stored)
++            check(result['exitCode'] == 0 and result['sqlstate'] is None, 'owned_restore_unknown_requires_readback')
++            return self.restore_readback_locked(intent)
++
++    def restore_readback_locked(self, intent):
++        check(isinstance(intent,dict) and intent.get('binding') == self.binding and intent.get('state') == 'RESTORE_INTENT', 'owned_restore_intent_changed')
++        archive = self.io.read_blob('synthetic-backup.dump',64*1024*1024)
++        check(self.guard.digest(archive) == intent.get('archiveSha256'), 'owned_archive_changed')
++        source = self.snapshot('source'); copy = self.snapshot()
++        self.kernel(False)
++        check(source == intent['sourceBefore'] and copy['history'] == source['history'], 'owned_restore_data_mismatch')
++        proof = self.record('RESTORED_READBACK', archiveSha256=intent['archiveSha256'], sourceSnapshotSha256=self.guard.digest(json.dumps(source,sort_keys=True).encode()), copySnapshotSha256=self.guard.digest(json.dumps(copy,sort_keys=True).encode()))
++        self.persist('restore-readback.json', proof)
++        return proof
++
++    def restore_readback(self):
++        with self.io.lock_exclusive():
++            return self.restore_readback_locked(self.io.read('restore-intent.json'))
++
++    def apply(self):
++        with self.io.lock_exclusive():
++            check(not self.io.exists('apply-intent.json'), 'owned_apply_no_replay')
++            proof = self.io.read('restore-readback.json')
++            check(proof.get('state') == 'RESTORED_READBACK' and proof.get('binding') == self.binding, 'owned_restore_proof_missing')
++            restore_intent = self.io.read('restore-intent.json')
++            check(restore_intent.get('binding') == self.binding and restore_intent.get('state') == 'RESTORE_INTENT', 'owned_restore_intent_changed')
++            archive = self.io.read_blob('synthetic-backup.dump',64*1024*1024)
++            check(isinstance(archive,bytes) and self.guard.digest(archive) == restore_intent.get('archiveSha256') == proof.get('archiveSha256'), 'owned_archive_changed')
++            self.kernel(False)
++            before = self.snapshot()
++            source_before = self.snapshot('source')
++            check(source_before == restore_intent['sourceBefore'] and before['history'] == source_before['history'], 'owned_restore_proof_stale')
++            intent = self.record('APPLY_INTENT', before=before)
++            self.persist('apply-intent.json', intent)
++            # Exactly one atomic request containing the two reviewed migrations.
++            try:
++                self.query(payload(self.guard, 'apply', self.repo))
++            except Exception:
++                # Readback has no write/retry path; uncertainty remains until observed.
++                return self.apply_readback_locked(intent, response_lost=True)
++            return self.apply_readback_locked(intent, response_lost=False)
++
++    def apply_readback_locked(self, intent, response_lost=True):
++        check(isinstance(intent, dict) and intent.get('binding') == self.binding and intent.get('state') == 'APPLY_INTENT', 'owned_apply_intent_changed')
++        try:
++            self.kernel(True)
++            after = self.snapshot()
++            matched = after == intent['before'] and self.query('BEGIN READ ONLY;'+ROLLOUT_DEFAULT_OFF+'COMMIT;').strip() == 't'
++        except Exception:
++            matched = False
++        result = self.record('MATCHED_TARGET_STATE_READBACK' if matched else 'OUTCOME_UNKNOWN_READBACK_REQUIRED', responseLost=response_lost, originalWriteOutcome='unknown' if response_lost else 'response_received')
++        # Original result is immutable. Explicit subsequent read-only observations
++        # use a bounded append-only namespace while the same exclusive lock is held.
++        name = 'apply-readback.json'
++        if self.io.exists(name):
++            name = next(('apply-observation-%04d.json' % n for n in range(1, 1001)
++                         if not self.io.exists('apply-observation-%04d.json' % n)), None)
++            check(name is not None, 'owned_observation_limit_requires_review')
++        self.persist(name, result)
++        return result
++
++    def apply_readback(self):
++        with self.io.lock_exclusive():
++            return self.apply_readback_locked(self.io.read('apply-intent.json'))
++
++    # The existing JavaScript consumer now exports its ACTUAL second phase.
++    # No invented cross-language callback is executed here. The named root caller
++    # must bind that phase to the same allocated context; entry remains closed.
++
++    def validate_reader_snapshot(self, value, enabled):
++        check(isinstance(value,dict) and set(value)=={'binding','actions','extendedFeedbackWrite','financialFingerprints'} and value['binding']==self.binding and value['extendedFeedbackWrite'] is enabled, 'owned_reader_receipt_invalid')
++        rows=value['actions']
++        check(isinstance(rows,list) and len(rows)==2, 'owned_reader_rows_missing')
++        fields={'id','sessionId','actionKey','version','status','text','actorId','createdAt'}
++        for row,status in zip(rows,('partial','not_done')):
++            check(isinstance(row,dict) and set(row)==fields and row['status']==status and type(row['version']) is int and row['version']==1, 'owned_reader_row_shape')
++            check(all(isinstance(row[k],str) and re.fullmatch(r'[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}',row[k]) for k in ('id','sessionId','actionKey','actorId')), 'owned_reader_row_identity')
++            check(isinstance(row['text'],str) and 0<len(row['text'])<=4000 and isinstance(row['createdAt'],str) and len(row['createdAt'])<=40, 'owned_reader_row_details')
++            dt.datetime.fromisoformat(row['createdAt'].replace('Z','+00:00'))
++        check(rows[0]['id']!=rows[1]['id'] and rows[0]['actorId']!=rows[1]['actorId'] and rows[0]['actionKey']!=rows[1]['actionKey'] and rows[0]['sessionId']==rows[1]['sessionId'], 'owned_reader_two_actor_binding')
++        fingerprints=value['financialFingerprints']
++        expected={'member_holding_versions','member_holding_positions','member_debt_positions','member_cash_flow_versions','member_cash_flow_entries','member_goals_versions'}
++        check(isinstance(fingerprints,dict) and set(fingerprints)==expected and all(isinstance(x,str) and re.fullmatch(r'[a-f0-9]{64}',x) for x in fingerprints.values()), 'owned_financial_fingerprints_invalid')
++
++
++
++def run(mode, attestation, operation, *, safety=None, reader=None, profile='legacy', expected_allocation_sha=None, context=None):
++    check(profile in ('legacy', 'GHA-owned-copy.v1'), 'unknown_execution_profile')
++    owned = profile == 'GHA-owned-copy.v1'
++    check(not owned or (mode == 'copy' and reader is None), 'owned_production_authority_rejected')
++    # Caller reserved: assembled-native-ci/run.py, purpose owned-start-a-copy.
++    # Independent allocation pin does not prove directory, backup, reader/history
++    # or reconciliation gates. No runtime option opens this source gate.
++    check(not owned, 'owned_copy_integration_pending')
++    import fcntl  # No fallback lock or Windows operational execution.
++    safety = safety or load_safety()
++    if owned:
++        safety = OwnedCopySafety(safety, attestation, expected_allocation_sha, context or {})
++    safety.validate_attestation(attestation)
++    check(mode in ('copy', 'source'), 'explicit_mode_required')
++    sql = payload(safety, operation)
++    check(mode!='source' or reader is not None, 'source_reader_proof_required')
++    if reader:
++        validate_reader(reader,attestation,safety.digest(sql.encode()))
++    check(safety.digest(Path(safety.__file__).read_bytes()) == SAFETY_SHA, 'safety_helper_bytes_changed')
++    if not owned:
++        check(safety.digest(safety.HELPER.read_bytes()) == attestation['backupHelperSha256'], 'backup_helper_hash_changed')
++    os.umask(0o077)
++    checkpoint = safety.BACKUPS / attestation['checkpoint']
++    directory = checkpoint / 'consultation-feedback-install' / operation
++    binding = binding_for(safety, attestation, operation, reader)
++
++    def inspect(which):
++        return json.loads(safety.command(['docker', 'inspect', attestation[which]['id']]))[0]
++
++    def target_safe():
++        safety.validate_attestation(attestation)
++        if reader:
++            validate_reader(reader,attestation,binding['payloadSha256'])
++        source = inspect('source')
++        safety.source_safe(source, attestation)
++        if mode == 'copy':
++            safety.copy_safe(inspect('copy'), source, attestation, True)
++
++    def query(value):
++        target_safe()
++        return safety.command(['docker', 'exec', '-i', '-e',
++                               'PGOPTIONS=-c lock_timeout=5s -c statement_timeout=60s',
++                               attestation[mode]['id'], 'psql', '-XqAt', '-U', 'postgres',
++                               '-d', 'postgres', '-v', 'ON_ERROR_STOP=1'], value.encode())
++
++    def snapshot():
++        values = [json.loads(line) for line in query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;' + INVENTORY + HISTORY + 'COMMIT;').splitlines() if line.strip()]
++        check(len(values) == 2, 'snapshot_shape_changed')
++        return {'catalog': values[0], 'historyAndFinancial': values[1]}
++
++    with (safety.BACKUPS / '.cashflow-release.lock').open('a+b') as lock:
++        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
++        safety.validate_backup((checkpoint / 'receipt.json').read_bytes(), attestation)
++        capacity(safety.BACKUPS)
++        safety.source_safe(inspect('source'), attestation)
++        safety.copy_safe(inspect('copy'), inspect('source'), attestation, False)
++        if mode == 'source':
++            validate_rehearsal(safety, json.loads((directory / 'copy-result.json').read_text()), binding)
++        directory.mkdir(parents=True, mode=0o700, exist_ok=True)
++        check(not any((directory / (mode + suffix)).exists() for suffix in
++                      ('-intent.json', '-result.json', '-before.json', '-after.json')),
++              'prior_feedback_attempt_requires_readback_no_replay')
++        result = {'status': 'BLOCKED', 'mode': mode, 'binding': binding,
++                  'checkpoint': attestation['checkpoint'], 'sourceId': attestation['source']['id'],
++                  'targetId': attestation[mode]['id'], 'automaticReplay': False,
++                  'schemaReloadRequested': False, 'nativeAcceptance': False,
++                  'encryptedBackupVerification': 'external_coordinator_attestation_not_decrypted_by_adapter'}
++        if owned:
++            result.update({'profile': 'GHA-owned-copy.v1', 'targetInstall': 'NOT_APPLIED', 'productionGateEligible': False, 'encryptedBackupVerification': 'not_applicable_owned_synthetic_only'})
++        try:
++            if mode == 'copy':
++                safety.command(['docker', 'start', attestation['copy']['id']])
++                for attempt in range(30):
++                    target_safe()
++                    try:
++                        safety.command(['docker', 'exec', attestation['copy']['id'], 'pg_isready', '-U', 'postgres'], timeout=5)
++                        break
++                    except RuntimeError:
++                        if attempt == 29:
++                            raise RuntimeError('copy_not_ready')
++                        safety.time.sleep(0.5)
++                check(query('SELECT 1;').strip() == '1', 'copy_not_ready')
++                check(query('SHOW cron.launch_active_jobs;').strip() == 'off', 'copy_cron_enabled')
++            before_checks = json.loads(query('BEGIN READ ONLY;' + checks(safety, operation == 'rollback') + 'COMMIT;'))
++            safety.all_passed(before_checks, 9)
++            before = snapshot()
++            safety.write_exclusive(directory / (mode + '-before.json'), before)
++            result['beforeSha256'] = safety.digest(json.dumps(before, sort_keys=True).encode())
++            result['capacityFreeBytesBeforeDdl'] = capacity(safety.BACKUPS)
++            target_safe()
++            safety.write_exclusive(directory / (mode + '-intent.json'),
++                                   {**result, 'status': 'INTENT_RECORDED', 'startedAt': dt.datetime.now(dt.timezone.utc).isoformat()})
++            result['status'] = 'OUTCOME_UNKNOWN_READBACK_REQUIRED'
++            query(sql)  # Exactly one DDL request. Never auto-replayed or auto-rolled back.
++            result['status'] = 'APPLIED_REVIEW_REQUIRED'
++            after = snapshot()
++            safety.write_exclusive(directory / (mode + '-after.json'), after)
++            result['existingCatalogUnchanged'] = before['catalog'] == after['catalog']
++            result['historyAndFinancialUnchanged'] = before['historyAndFinancial'] == after['historyAndFinancial']
++            result['beforeSha256'] = safety.digest(json.dumps(before, sort_keys=True).encode())
++            result['afterSha256'] = safety.digest(json.dumps(after, sort_keys=True).encode())
++            result['checks'] = json.loads(query('BEGIN READ ONLY;' + checks(safety, operation == 'apply') + 'COMMIT;'))
++            safety.all_passed(result['checks'], 9)
++            result['rolloutDefaultOff'] = operation == 'rollback' or query('BEGIN READ ONLY;'+ROLLOUT_DEFAULT_OFF+'COMMIT;').strip() == 't'
++            check(result['rolloutDefaultOff'], 'rollout_gate_not_default_off')
++            check(result['existingCatalogUnchanged'], 'unexpected_existing_catalog_change')
++            check(result['historyAndFinancialUnchanged'], 'history_or_financial_change_requires_review')
++            # Signatures and public schema are unchanged: no reload, GRANT or flag write.
++            result['status'] = 'APPLIED'
++        finally:
++            cleanup_errors = []
++            if mode == 'copy':
++                try:
++                    source, copy = inspect('source'), inspect('copy')
++                    running = copy['State']['Running']
++                    safety.copy_safe(copy, source, attestation, running)
++                    if running:
++                        safety.command(['docker', 'stop', '-t', '10', attestation['copy']['id']], timeout=30)
++                    safety.copy_safe(inspect('copy'), source, attestation, False)
++                    result['targetStopped'] = True
++                except Exception:
++                    cleanup_errors.append('copy_stop_requires_review')
++            try:
++                safety.source_safe(inspect('source'), attestation)
++                result['sourceHealthyAfter'] = True
++            except Exception:
++                result['sourceHealthyAfter'] = False
++                cleanup_errors.append('source_identity_or_health_requires_review')
++            if cleanup_errors and result['status'] == 'APPLIED':
++                result['status'] = 'APPLIED_REVIEW_REQUIRED'
++            result['cleanupErrors'] = cleanup_errors
++            result['finishedAt'] = dt.datetime.now(dt.timezone.utc).isoformat()
++            safety.write_exclusive(directory / (mode + '-result.json'), result)
++            print(json.dumps(result))
++            check(not cleanup_errors, 'cleanup_or_source_health_requires_review')
++    return result
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--profile', choices=('legacy', 'GHA-owned-copy.v1'), default='legacy')
++    parser.add_argument('--attestation', required=True, type=Path)
++    parser.add_argument('--mode', required=True, choices=('copy', 'source'))
++    parser.add_argument('--operation', required=True, choices=('apply', 'rollback'))
++    parser.add_argument('--reconcile', action='store_true', help='Read an existing intent; no DDL, resource start/stop or replay')
++    parser.add_argument('--reader-attestation', type=Path, help='Required and bound before copy rehearsal intended to authorize source')
++    args = parser.parse_args()
++    check(args.profile == 'legacy', 'owned_trusted_caller_binding_required')
++    action = reconcile if args.reconcile else run
++    reader=json.loads(args.reader_attestation.read_text(encoding='utf-8')) if args.reader_attestation else None
++    action(args.mode, json.loads(args.attestation.read_text(encoding='utf-8')), args.operation,reader=reader)
++
++
++# M1 helpers remain within the existing START-A adapter. No native entry point.
++def bounded_owned_process(argv, body=None, *, timeout=90, max_stdout_bytes=64*1024*1024, popen=None):
++    import subprocess
++    import threading
++    import time
++    check(isinstance(argv,list) and all(isinstance(x,str) for x in argv) and argv[0]=='docker', 'm1_fixed_docker_required')
++    check(body is None or isinstance(body,bytes) and len(body)<=64*1024*1024, 'm1_input_bound')
++    check(type(timeout) is int and 1<=timeout<=90 and type(max_stdout_bytes) is int and 0<max_stdout_bytes<=64*1024*1024, 'm1_transport_limits')
++    env={'PATH':os.environ.get('PATH',''),'LANG':'C.UTF-8','DOCKER_HOST':'unix:///var/run/docker.sock','DOCKER_CONFIG':'/nonexistent-start-a-owned-client'}
++    try:child=(popen or subprocess.Popen)(argv,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=env,shell=False)
++    except Exception:raise RuntimeError('m1_process_start_failed') from None
++    chunks=[bytearray(),bytearray()];errors=[];done=[threading.Event() for _ in range(3)]
++    def drain(index,stream,limit):
++        try:
++            while True:
++                part=stream.read(min(65536,limit-len(chunks[index])+1))
++                if not part:break
++                if len(chunks[index])+len(part)>limit:raise RuntimeError('m1_output_bound')
++                chunks[index].extend(part)
++        except Exception:errors.append('m1_stream_failed')
++        finally:done[index].set()
++    def feed():
++        try:
++            value=body or b''
++            for offset in range(0,len(value),65536):child.stdin.write(value[offset:offset+65536])
++            child.stdin.close()
++        except BrokenPipeError:errors.append('m1_input_broken_pipe')
++        except Exception:errors.append('m1_input_failed')
++        finally:done[2].set()
++    for fn,args in [(drain,(0,child.stdout,max_stdout_bytes)),(drain,(1,child.stderr,65536)),(feed,())]:threading.Thread(target=fn,args=args,daemon=True).start()
++    deadline=time.monotonic()+timeout
++    try:
++        while not all(x.is_set() for x in done) or child.poll() is None:
++            if any(x!='m1_input_broken_pipe' for x in errors) or time.monotonic()>=deadline:raise RuntimeError('m1_process_incomplete')
++            time.sleep(.005)
++        code=child.wait(timeout=1)
++        check(not errors or code!=0 and all(x=='m1_input_broken_pipe' for x in errors), 'm1_process_incomplete')
++        # Only this reviewed SQLSTATE is exposed; raw stderr never leaves IO.
++        sqlstate='PT409' if code!=0 and re.search(rb'(?m)^ERROR:\s+PT409:',bytes(chunks[1])) else None
++        return {'exitCode':code,'stdout':bytes(chunks[0]),'sqlstate':sqlstate}
++    except Exception:
++        child.kill()  # Only the child this call created, never a container/other PID.
++        child.wait(timeout=5)
++        raise RuntimeError('m1_process_incomplete') from None
++    finally:
++        for stream in (child.stdin,child.stdout,child.stderr):
++            try:stream.close()
++            except Exception:pass
++
++
++class OwnedPrivateStore:
++    """Fixed flat namespace; Linux descriptor-based nofollow exclusive evidence."""
++    def __init__(self, path):
++        import stat
++        check(hasattr(os,'O_NOFOLLOW') and hasattr(os,'O_DIRECTORY'), 'm1_linux_fs_required')
++        self.path=Path(path)
++        check(self.path.is_absolute(), 'm1_absolute_store_required')
++        # Walk from the root descriptor. O_NOFOLLOW applies to EVERY component;
++        # leaf is never reopened by a raceable full path.
++        fd=os.open('/',os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
++        try:
++            for part in self.path.parts[1:]:
++                check(part not in ('.','..'),'m1_store_component')
++                child=os.open(part,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW,dir_fd=fd)
++                try:
++                    meta=os.fstat(child)
++                    check(stat.S_ISDIR(meta.st_mode) and meta.st_uid in (0,os.getuid()),'m1_store_ancestor_unsafe')
++                except Exception:
++                    os.close(child);raise
++                os.close(fd);fd=child
++            meta=os.fstat(fd)
++            check(meta.st_uid==os.getuid() and not meta.st_mode&0o077,'m1_store_owner_mode')
++            self.fd=fd;fd=None
++        finally:
++            if fd is not None:os.close(fd)
++
++    def name(self,name):
++        check(isinstance(name,str) and re.fullmatch(r'[a-z][a-z0-9.-]{0,90}',name) and '..' not in name, 'm1_evidence_name')
++        return name
++
++    def exists(self,name):
++        import stat
++        try:meta=os.stat(self.name(name),dir_fd=self.fd,follow_symlinks=False)
++        except FileNotFoundError:return False
++        check(stat.S_ISREG(meta.st_mode) and meta.st_nlink==1 and meta.st_uid==os.getuid() and not meta.st_mode&0o077,'m1_evidence_unsafe')
++        return True
++
++    def write_blob_exclusive(self,name,raw):
++        import stat
++        check(isinstance(raw,bytes) and len(raw)<=64*1024*1024,'m1_blob_bound')
++        fd=os.open(self.name(name),os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600,dir_fd=self.fd)
++        try:
++            meta=os.fstat(fd);check(stat.S_ISREG(meta.st_mode) and meta.st_nlink==1,'m1_evidence_unsafe')
++            view=memoryview(raw)
++            while view:
++                count=os.write(fd,view);check(count>0,'m1_write_incomplete');view=view[count:]
++            os.fsync(fd)
++        finally:os.close(fd)
++        os.fsync(self.fd)
++
++    def read_blob(self,name,limit):
++        import stat
++        check(type(limit) is int and 0<limit<=64*1024*1024,'m1_read_bound')
++        fd=os.open(self.name(name),os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK,dir_fd=self.fd)
++        try:
++            before=os.fstat(fd)
++            check(stat.S_ISREG(before.st_mode) and before.st_nlink==1 and before.st_uid==os.getuid() and not before.st_mode&0o077 and before.st_size<=limit,'m1_evidence_unsafe')
++            result=bytearray()
++            while len(result)<=before.st_size:
++                part=os.read(fd,min(65536,before.st_size+1-len(result)))
++                if not part:break
++                result.extend(part)
++            after=os.fstat(fd);path=os.stat(name,dir_fd=self.fd,follow_symlinks=False)
++            identity=lambda m:(m.st_dev,m.st_ino,m.st_size,m.st_mtime_ns,m.st_ctime_ns,m.st_nlink)
++            check(len(result)==before.st_size and identity(before)==identity(after)==identity(path),'m1_evidence_changed')
++            return bytes(result)
++        finally:os.close(fd)
++
++    def write_exclusive(self,name,value):self.write_blob_exclusive(name,json.dumps(value,sort_keys=True,allow_nan=False).encode())
++    def read(self,name):
++        def unique(pairs):
++            value=dict(pairs);check(len(value)==len(pairs),'m1_duplicate_json');return value
++        return json.loads(self.read_blob(name,2*1024*1024).decode('utf-8'),object_pairs_hook=unique,parse_constant=lambda _:check(False,'m1_json_invalid'))
++
++    def lock_exclusive(self):
++        import fcntl
++        from contextlib import contextmanager
++        @contextmanager
++        def locked():
++            # Lock file cannot be attacker supplied symlink/hardlink or other owner.
++            import stat
++            fd=os.open('allocation.lock',os.O_RDWR|os.O_CREAT|os.O_NOFOLLOW,0o600,dir_fd=self.fd)
++            try:
++                meta=os.fstat(fd);check(stat.S_ISREG(meta.st_mode) and meta.st_nlink==1 and meta.st_uid==os.getuid() and not meta.st_mode&0o077,'m1_lock_unsafe')
++                fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
++                yield
++            finally:os.close(fd)
++        return locked()
++
++    def close(self):os.close(self.fd)
++
++
++class OwnedDockerIO:
++    """Caller issues recipe and observes IDs; adapter never chooses its own trust pin."""
++    def __init__(self, store, allocation, expected_sha, process=bounded_owned_process):
++        check(isinstance(expected_sha,str) and re.fullmatch(r'[a-f0-9]{64}',expected_sha),'m1_caller_pin_missing')
++        import hashlib
++        check(hashlib.sha256(json.dumps(allocation,sort_keys=True,separators=(',',':')).encode()).hexdigest()==expected_sha,'m1_caller_binding_changed')
++        self.store,self.allocation,self.process=store,json.loads(json.dumps(allocation)),process
++        self.ids={allocation[r]['id']:r for r in ('source','copy','restore')}
++        check(len(self.ids)==3 and all(re.fullmatch(r'[a-f0-9]{64}',x) for x in self.ids),'m1_three_distinct_ids_required')
++
++    def __getattr__(self,name):
++        check(name in ('exists','read','read_blob','write_exclusive','write_blob_exclusive','lock_exclusive'),'m1_unknown_io_method')
++        return getattr(self.store,name)
++
++    def inspect(self,object_id):
++        check(object_id in self.ids,'m1_foreign_target')
++        result=self.process(['docker','inspect',object_id],timeout=10,max_stdout_bytes=262144)
++        check(result['exitCode']==0,'m1_inspect_failed')
++        value=json.loads(result['stdout']);check(isinstance(value,list) and len(value)==1,'m1_inspect_shape')
++        row=value[0];role=self.ids[object_id];expected=self.allocation[role]
++        m1_verify_image(self.process,expected.get('imageContract'))
++        check(row['Id']==object_id and row['Name']=='/'+expected['name'] and row['Image']==expected['image'],'m1_resource_identity_changed')
++        check(row['State']['Running'] is True and row['HostConfig']['NetworkMode']=='none' and not row['HostConfig'].get('PortBindings') and not any((row['NetworkSettings'].get('Ports') or {}).values()) and set(row['NetworkSettings'].get('Networks',{}))=={'none'},'m1_resource_isolation_changed')
++        labels=row['Config'].get('Labels') or {}
++        check(all(labels.get(k)==v for k,v in expected['labels'].items()),'m1_resource_labels_changed')
++        mounts=row['Mounts'];check(len(mounts)==1 and mounts[0]['Type']=='tmpfs' and mounts[0]['Destination']=='/var/lib/postgresql/data' and mounts[0]['RW'] is True,'m1_data_mount_changed')
++        check([x for x in row['Config'].get('Env',[]) if x.startswith('PGDATA=')]==['PGDATA=/var/lib/postgresql/data'],'m1_pgdata_changed')
++        return row
++
++    def execute(self,argv,body=None,*,timeout=90,max_stdout_bytes=64*1024*1024):
++        prefix=['docker','exec','-i','-e','PGOPTIONS=-c lock_timeout=5s -c statement_timeout=60s']
++        check(argv[:5]==prefix and len(argv)>6 and argv[5] in self.ids,'m1_command_target_invalid')
++        programs=[['psql','-XqAt','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1'],['pg_dump','-U','postgres','-d','postgres','--format=custom','--no-password'],['pg_dump','-U','postgres','-d','postgres','--schema-only','--no-password'],['pg_restore','-U','postgres','-d','postgres','--exit-on-error','--single-transaction']]
++        check(argv[6:] in programs,'m1_program_not_allowed')
++        for object_id in self.ids:self.inspect(object_id)
++        # Recheck source health, IDs and namespace marker on every target operation.
++        source=self.inspect(self.allocation['source']['id']);check(source['State'].get('Health',{}).get('Status')=='healthy','m1_source_unhealthy')
++        marker_sql=b"BEGIN READ ONLY; SELECT current_setting('portfolio.owned_copy_marker',true); COMMIT;"
++        for object_id in self.ids:
++            marker=self.process(prefix+[object_id]+programs[0],marker_sql,timeout=10,max_stdout_bytes=256)
++            check(marker['exitCode']==0 and marker['stdout'].decode().strip()==self.allocation['databaseMarker'],'m1_namespace_marker_changed')
++        exact=list(argv)
++        if exact[6]=='psql':exact+=['-v','VERBOSITY=verbose']
++        return self.process(exact,body,timeout=timeout,max_stdout_bytes=max_stdout_bytes)
++
++
++M1_BASE_COMMIT='0d63a8b64e4975a3c9dab3f1f579f91302602b01'
++M1_IMAGE_INDEX='sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24'
++M1_IMAGE='sha256:79bd7c99e923138f136f8009d6bffa66e21e9d4fda5c0c561b00fc9c90cfe537'
++M1_REPO_DIGEST='postgres@sha256:aa90e97ee862e558111d34cfb8b2c4bec768c2b039fb791341686928560263b3'
++M1_IMAGE_CONTRACT={'repository':'docker.io/library/postgres','index':M1_IMAGE_INDEX,'repoDigest':M1_REPO_DIGEST,'configId':M1_IMAGE,'os':'linux','architecture':'amd64'}
++
++
++def m1_verify_image(process,contract):
++    check(contract==M1_IMAGE_CONTRACT,'m1_image_contract_changed')
++    result=process(['docker','image','inspect',M1_IMAGE],timeout=10,max_stdout_bytes=262144)
++    check(result['exitCode']==0,'m1_image_inspect_failed')
++    rows=json.loads(result['stdout']);check(isinstance(rows,list) and len(rows)==1,'m1_image_inspect_shape')
++    row=rows[0]
++    check(row.get('Id')==M1_IMAGE and row.get('Os')=='linux' and row.get('Architecture')=='amd64' and M1_REPO_DIGEST in (row.get('RepoDigests') or []),'m1_image_provenance_changed')
++
++M1_ROLE_SQL='BEGIN; CREATE ROLE anon NOLOGIN NOINHERIT; CREATE ROLE authenticated NOLOGIN NOINHERIT; CREATE ROLE service_role NOLOGIN NOINHERIT BYPASSRLS; COMMIT;'
++M1_ROLES_QUERY="""SELECT jsonb_build_object('roles',(SELECT jsonb_agg(jsonb_build_object('name',rolname,'super',rolsuper,'inherit',rolinherit,'createRole',rolcreaterole,'createDb',rolcreatedb,'login',rolcanlogin,'replication',rolreplication,'bypassRls',rolbypassrls,'connectionLimit',rolconnlimit,'validUntil',rolvaliduntil,'config',rolconfig) ORDER BY rolname) FROM pg_roles),'memberships',(SELECT coalesce(jsonb_agg(jsonb_build_array(r.rolname,m.rolname,g.rolname,a.admin_option,a.inherit_option,a.set_option) ORDER BY r.rolname,m.rolname,g.rolname),'[]') FROM pg_auth_members a JOIN pg_roles r ON r.oid=a.roleid JOIN pg_roles m ON m.oid=a.member JOIN pg_roles g ON g.oid=a.grantor),'database',(SELECT jsonb_build_object('name',datname,'owner',pg_get_userbyid(datdba),'acl',datacl::text,'allowConnection',datallowconn,'connectionLimit',datconnlimit,'encoding',pg_encoding_to_char(encoding),'collation',datcollate,'ctype',datctype) FROM pg_database WHERE datname=current_database()),'dbRoleSettings',(SELECT coalesce(jsonb_agg(jsonb_build_object('database',d.datname,'role',r.rolname,'settings',s.setconfig) ORDER BY d.datname NULLS FIRST,r.rolname NULLS FIRST),'[]') FROM pg_db_role_setting s LEFT JOIN pg_database d ON d.oid=s.setdatabase LEFT JOIN pg_roles r ON r.oid=s.setrole),'extensions',(SELECT coalesce(jsonb_agg(jsonb_build_array(extname,extversion,n.nspname) ORDER BY extname),'[]') FROM pg_extension e JOIN pg_namespace n ON n.oid=e.extnamespace));"""
++M1_RELATIONS_QUERY="""SELECT coalesce(jsonb_agg(jsonb_build_object('schema',n.nspname,'name',c.relname,'kind',c.relkind) ORDER BY n.nspname,c.relname),'[]') FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname NOT LIKE 'pg_%' AND n.nspname<>'information_schema' AND c.relkind IN ('r','p','S','m','f','v');"""
++
++
++def m1_identifier(value):
++    check(isinstance(value,str) and 0<len(value)<=63 and '\x00' not in value,'m1_identifier_invalid')
++    return '"'+value.replace('"','""')+'"'
++
++
++def m1_schema_bytes(raw):
++    check(isinstance(raw,bytes) and 0<len(raw)<=16*1024*1024,'m1_schema_bound')
++    # pg_dump17 restrict nonces are transport tokens, not schema. Strip ONLY a
++    # paired, identical generated nonce; every other SQL/comment byte retained.
++    lines=raw.splitlines(keepends=True);start=[];end=[]
++    for i,line in enumerate(lines):
++        if re.fullmatch(rb'\\restrict [A-Za-z0-9]+\r?\n?',line):start.append((i,line.split()[1]))
++        if re.fullmatch(rb'\\unrestrict [A-Za-z0-9]+\r?\n?',line):end.append((i,line.split()[1]))
++    check((not start and not end) or len(start)==len(end)==1 and start[0][1]==end[0][1] and start[0][0]<=12 and end[0][0]>=len(lines)-4 and start[0][0]<end[0][0] and b'-- PostgreSQL database dump complete' in b''.join(lines[-10:]),'m1_schema_nonce_unpaired')
++    remove={i for i,_ in start+end};return b''.join(line for i,line in enumerate(lines) if i not in remove)
++
++
++class M1Exercise(OwnedCopyExercise):
++    def __init__(self, guard, io, repo):
++        self.guard,self.io,self.repo=guard,io,repo
++        self.binding={'profile':'GHA-owned-copy.v1','purpose':'owned-start-a-copy','allocationId':guard.allocation['allocationId'],'runId':guard.allocation['runId'],'attempt':guard.allocation['attempt'],'sourceCommit':M1_BASE_COMMIT,'allocationSha256':guard.digest(json.dumps(guard.allocation,sort_keys=True,separators=(',',':')).encode()),'payloadSha256':guard.digest(payload(guard,'apply',repo).encode())}
++        check(self.binding['payloadSha256']=='c53de46a216a57b90afaff760c0474cb5d95911f56ff022832fd1536affae8a8','m1_apply_payload_changed')
++
++    def resources(self):
++        rows={role:self.io.inspect(self.guard.allocation[role]['id']) for role in ('source','copy','restore')}
++        check(rows['source']['State'].get('Health',{}).get('Status')=='healthy','m1_source_unhealthy')
++        return rows['source'],rows['copy']
++
++    def transport(self,role,program,body=None):
++        check(role in ('source','copy','restore'),'m1_role_invalid')
++        return self.io.execute(['docker','exec','-i','-e','PGOPTIONS=-c lock_timeout=5s -c statement_timeout=60s',self.guard.allocation[role]['id'],*program],body,timeout=90,max_stdout_bytes=64*1024*1024)
++
++    def full_snapshot(self,role):
++        self.resources()
++        before=self.query('BEGIN READ ONLY;'+M1_RELATIONS_QUERY+'COMMIT;',role)
++        relations=json.loads(before);check(isinstance(relations,list) and len(relations)<=256,'m1_relation_bound')
++        data={};sequences={}
++        for item in relations:
++            check(isinstance(item,dict) and set(item)=={'schema','name','kind'},'m1_relation_shape')
++            identifier=m1_identifier(item['schema'])+'.'+m1_identifier(item['name'])
++            key=item['schema']+'.'+item['name']
++            check(key not in data and key not in sequences,'m1_relation_collision')
++            if item['kind']=='v':
++                continue  # Definition/owner/ACL is covered by the full schema dump.
++            if item['kind']=='S':
++                sequences[key]=json.loads(self.query('BEGIN READ ONLY; SELECT jsonb_build_object(\'lastValue\',last_value,\'isCalled\',is_called) FROM '+identifier+'; COMMIT;',role))
++            else:
++                check(item['kind'] in ('r','p','m'),'m1_unsupported_foreign_table')
++                value=json.loads(self.query("BEGIN READ ONLY; SELECT jsonb_build_object('count',count(*),'sha256',encode(sha256(convert_to(coalesce(string_agg(h,'' ORDER BY h),''),'UTF8')),'hex')) FROM (SELECT encode(sha256(convert_to(to_jsonb(r)::text,'UTF8')),'hex') h FROM "+identifier+' r) rows; COMMIT;',role))
++                check(set(value)=={'count','sha256'} and type(value['count']) is int and value['count']>=0 and re.fullmatch(r'[a-f0-9]{64}',value['sha256']),'m1_table_fingerprint_shape');data[key]=value
++        check('public.member_debt_positions' in data and data['public.member_debt_positions']['count']>0,'m1_nonzero_debt_evidence_required')
++        roles=json.loads(self.query('BEGIN READ ONLY;'+M1_ROLES_QUERY+'COMMIT;',role))
++        m1_require_supported_settings(roles)
++        names={row['name'] for row in roles['roles']}
++        check({'postgres','anon','authenticated','service_role'}<=names and all(x.startswith('pg_') or x in ('postgres','anon','authenticated','service_role') for x in names),'m1_unreviewed_role')
++        schema=self.execute(role,['pg_dump','-U','postgres','-d','postgres','--schema-only','--no-password'])
++        check(schema['exitCode']==0,'m1_schema_dump_failed')
++        schema_bytes=m1_schema_bytes(schema['stdout'])
++        after=self.query('BEGIN READ ONLY;'+M1_RELATIONS_QUERY+'COMMIT;',role)
++        check(before==after,'m1_relation_roster_changed')
++        return {'schemaSha256':self.guard.digest(schema_bytes),'schemaBytes':len(schema_bytes),'rolesAndDatabase':roles,'tables':data,'sequences':sequences}
++
++    def archive_baseline(self):
++        with self.io.lock_exclusive():
++            check(not self.io.exists('m1-backup-intent.json'),'m1_backup_no_replay')
++            before=self.full_snapshot('source')
++            self.persist('m1-backup-intent.json',self.record('BACKUP_INTENT',before=before))
++            dump=self.execute('source',['pg_dump','-U','postgres','-d','postgres','--format=custom','--no-password'])
++            check(dump['exitCode']==0 and dump['stdout'].startswith(b'PGDMP'),'m1_dump_failed')
++            self.io.write_blob_exclusive('m1-baseline.dump',dump['stdout'])
++            archive=self.io.read_blob('m1-baseline.dump',64*1024*1024)
++            check(archive==dump['stdout'] and self.full_snapshot('source')==before,'m1_backup_changed')
++            result=self.record('BASELINE_ARCHIVED',archiveSha256=self.guard.digest(archive),before=before)
++            self.persist('m1-backup-readback.json',result);return result
++
++    def restore_target(self,role):
++        check(role in ('copy','restore'),'m1_source_restore_forbidden')
++        with self.io.lock_exclusive():
++            name='m1-'+role+'-restore-intent.json';check(not self.io.exists(name),'m1_restore_no_replay')
++            proof=self.io.read('m1-backup-readback.json');check(proof.get('binding')==self.binding and proof.get('state')=='BASELINE_ARCHIVED','m1_backup_binding')
++            archive=self.io.read_blob('m1-baseline.dump',64*1024*1024);check(self.guard.digest(archive)==proof['archiveSha256'],'m1_archive_changed')
++            check(json.loads(self.query('BEGIN READ ONLY;'+M1_RELATIONS_QUERY+'COMMIT;',role))==[],'m1_restore_target_not_empty')
++            check(self.query(M1_EMPTY_CATALOG_QUERY,role).strip()=='t','m1_restore_target_catalog_not_empty')
++            initial=self.io.read('m1-initial-roles.json')
++            check(initial.get('binding')==self.binding and json.loads(self.query('BEGIN READ ONLY;'+M1_ROLES_QUERY+'COMMIT;',role))==initial['rolesAndDatabase'],'m1_initial_roles_changed')
++            m1_require_supported_settings(initial['rolesAndDatabase'])
++            self.persist(name,self.record('RESTORE_INTENT',role=role,archiveSha256=proof['archiveSha256']))
++            # Three reviewed non-login roles only. No global/password dump imported.
++            self.query(M1_ROLE_SQL,role)
++            result=self.execute(role,['pg_restore','-U','postgres','-d','postgres','--exit-on-error','--single-transaction'],archive)
++            check(result['exitCode']==0,'m1_restore_unknown_readback_required')
++            return self.restore_target_readback_locked(role)
++
++    def restore_target_readback_locked(self,role):
++        check(role in ('copy','restore'),'m1_source_restore_forbidden')
++        intent=self.io.read('m1-'+role+'-restore-intent.json');proof=self.io.read('m1-backup-readback.json')
++        check(intent.get('binding')==proof.get('binding')==self.binding and intent.get('role')==role and intent.get('archiveSha256')==proof.get('archiveSha256'),'m1_restore_binding_changed')
++        archive=self.io.read_blob('m1-baseline.dump',64*1024*1024);check(self.guard.digest(archive)==proof['archiveSha256'],'m1_archive_changed')
++        restored=self.full_snapshot(role);source=self.full_snapshot('source')
++        check(source==restored==proof['before'],'m1_full_restore_mismatch')
++        result=self.record('FULL_OWNED_BASELINE_RESTORE_MATCHED',role=role,archiveSha256=proof['archiveSha256'],snapshotSha256=self.guard.digest(json.dumps(restored,sort_keys=True).encode()),globalPasswordsIncluded=False)
++        name='m1-'+role+'-restore-readback.json'
++        check(not self.io.exists(name),'m1_restore_readback_already_recorded')
++        self.persist(name,result);return result
++
++    def restore_target_readback(self,role):
++        with self.io.lock_exclusive():return self.restore_target_readback_locked(role)
++
++
++M1_EMPTY_CATALOG_QUERY="BEGIN READ ONLY; SELECT NOT EXISTS(SELECT FROM pg_namespace WHERE nspname NOT LIKE 'pg_%' AND nspname NOT IN ('public','information_schema')) AND NOT EXISTS(SELECT FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname NOT LIKE 'pg_%' AND n.nspname<>'information_schema') AND NOT EXISTS(SELECT FROM pg_type t JOIN pg_namespace n ON n.oid=t.typnamespace WHERE n.nspname NOT LIKE 'pg_%' AND n.nspname<>'information_schema') AND NOT EXISTS(SELECT FROM pg_default_acl) AND NOT EXISTS(SELECT FROM pg_extension WHERE extname<>'plpgsql'); COMMIT;"
++
++
++def m1_require_supported_settings(metadata):
++    # This synthetic profile does not replay ALTER DATABASE/ROLE SET. Reject
++    # even empty-config rows; missing observation is not evidence of absence.
++    check(isinstance(metadata,dict) and metadata.get('dbRoleSettings')==[], 'm1_db_role_settings_unsupported')
++
++
++def m1_capture_initial_roles(exercise):
++    with exercise.io.lock_exclusive():
++        check(not exercise.io.exists('m1-initial-roles.json'),'m1_initial_roles_already_recorded')
++        values=[json.loads(exercise.query('BEGIN READ ONLY;'+M1_ROLES_QUERY+'COMMIT;',role)) for role in ('source','copy','restore')]
++        for metadata in values:m1_require_supported_settings(metadata)
++        check(values[0]==values[1]==values[2],'m1_initial_image_roles_differ')
++        names={row['name'] for row in values[0]['roles']}
++        check('postgres' in names and all(n=='postgres' or n.startswith('pg_') for n in names),'m1_initial_non_system_role')
++        exercise.persist('m1-initial-roles.json',exercise.record('INITIAL_IMAGE_ROLES_READBACK',rolesAndDatabase=values[0]))
++
++class M1BoundSafety:
++    def __init__(self,helper,allocation,expected_sha):
++        check(isinstance(expected_sha,str) and re.fullmatch(r'[a-f0-9]{64}',expected_sha) and helper.digest(json.dumps(allocation,sort_keys=True,separators=(',',':')).encode())==expected_sha,'m1_independent_caller_pin_required')
++        check(allocation.get('purpose')=='owned-start-a-copy' and allocation.get('contractVersion')=='GHA-owned-copy.v1' and allocation.get('sourceCommit')==M1_BASE_COMMIT,'m1_scope_invalid')
++        check(allocation.get('attempt')=='1' and isinstance(allocation.get('runId'),str) and re.fullmatch(r'[1-9][0-9]{0,19}',allocation['runId']),'m1_run_invalid')
++        check(len({allocation[r]['id'] for r in ('source','copy','restore')})==3,'m1_distinct_resources_required')
++        self.helper=helper;self.allocation=json.loads(json.dumps(allocation))
++    def __getattr__(self,name):return getattr(self.helper,name)
++
++def m1_quote(value):
++    return "'"+(json.dumps(value,ensure_ascii=False) if isinstance(value,(dict,list)) else str(value)).replace("'","''")+"'"
++
++
++def m1_claim(actor,query):
++    return 'BEGIN; SELECT set_config(\'request.jwt.claims\','+m1_quote({'sub':actor,'role':'authenticated'})+',true); SET LOCAL ROLE authenticated; '+query+'; COMMIT;'
++
++
++def m1_contract(raw,version):
++    rows=[]
++    for line in raw.splitlines():
++        try:value=json.loads(line)
++        except ValueError:continue
++        if isinstance(value,dict) and value.get('contractVersion')==version:rows.append(value)
++    check(len(rows)==1,'m1_contract_readback');return rows[0]
++
++
++def m1_read(exercise,actor,relation,role='copy'):
++    return m1_contract(exercise.query(m1_claim(actor,'SELECT public.load_consultation('+m1_quote(relation)+",'2026-10-01','2026-10-31')"),role),'consultation-read.v1')
++
++
++def m1_send(exercise,actor,command,token,role='copy'):
++    value={'contractVersion':'consultation-request.v1','expectedActorId':actor,'clientToken':token,'command':command}
++    return m1_contract(exercise.query(m1_claim(actor,'SELECT public.command_consultation('+m1_quote(value)+'::jsonb)'),role),'consultation-write.v1')
++
++
++def m1_bootstrap_source(exercise):
++    # Only a newly allocated empty synthetic source; NEVER a primary installer.
++    with exercise.io.lock_exclusive():
++        check(not exercise.io.exists('m1-bootstrap-intent.json'),'m1_bootstrap_no_replay')
++        check(json.loads(exercise.query('BEGIN READ ONLY;'+M1_RELATIONS_QUERY+'COMMIT;','source'))==[],'m1_source_not_empty')
++        check(exercise.query(M1_EMPTY_CATALOG_QUERY,'source').strip()=='t','m1_source_catalog_not_empty')
++        m1_require_supported_settings(json.loads(exercise.query('BEGIN READ ONLY;'+M1_ROLES_QUERY+'COMMIT;','source')))
++        raw_files=[]
++        for name,pin in M1_BASELINE_PINS:
++            raw=(exercise.repo/name).read_bytes();check(exercise.guard.digest(raw)==pin,'m1_baseline_file_changed');raw_files.append(raw)
++        exercise.persist('m1-bootstrap-intent.json',exercise.record('BASELINE_BOOTSTRAP_INTENT',source=M1_BASE_COMMIT))
++        for raw in raw_files[:9]:exercise.query(raw.decode('utf-8'),'source')
++        exercise.query(M1_RISK_FIXTURE,'source')
++        exercise.query(exercise.guard.atomic_payload({p:raw for (p,_),raw in zip(M1_BASELINE_PINS[9:],raw_files[9:])}),'source')
++        a,b,owner,other=['00000000-0000-4000-8000-%012d'%i for i in range(1,5)]
++        key,action=['10000000-0000-4000-8000-%012d'%i for i in (1,2)]
++        exercise.query('INSERT INTO auth.users(id) VALUES '+','.join('('+m1_quote(x)+')' for x in (a,b,owner,other))+'; INSERT INTO public.profiles(id,role) VALUES '+','.join('('+m1_quote(x)+','+m1_quote('user' if x in (a,b) else 'admin')+')' for x in (a,b,owner,other))+'; INSERT INTO public.consultation_advisors(user_id,display_name,is_owner) VALUES ('+m1_quote(owner)+",'Synthetic owner',true),("+m1_quote(other)+",'Synthetic unrelated',false);",'source')
++        debt=[{'debt_key':'m1-nonzero-debt','title':'Synthetic debt restore canary','kind':'loan','balance_toman':250000,'currency':'IRT','balance_as_of':'2026-10-29','next_installment_toman':None,'next_due_on':None,'note':None}]
++        exercise.query(m1_claim(a,'SELECT public.record_member_debts('+m1_quote(debt)+"::jsonb,0,'m1-owned-baseline-debt')"),'source')
++        exercise.query(m1_claim(a,"SELECT public.record_member_goals('{\"contractVersion\":1,\"goals\":[]}'::jsonb,'synthetic-goals-v1',0)"),'source')
++        relation=m1_send(exercise,a,{'kind':'grant','advisorId':owner,'clientLabel':'Synthetic member A'},'m1-baseline-grant','source')['id']
++        basis=m1_read(exercise,owner,relation,'source')['dossier']['basis']
++        body={'topic':'Synthetic topic','goal':'Synthetic goal','clientSummary':'Synthetic summary','rationale':'Synthetic reason','limitations':'Synthetic only','reviewOn':'2099-12-31','basis':basis,'researchVersionIds':[],'evidence':[{'label':'Synthetic source','url':None,'asOf':'2026-10-29'}],'actions':[{'actionKey':action,'title':'Synthetic action','dueOn':'2099-12-31','responsible':'member'}]}
++        saved=m1_send(exercise,owner,{'kind':'save','relationshipId':relation,'sessionKey':key,'baseVersion':0,'body':body,'privateNote':'SYNTHETIC_PRIVATE_CANARY'},'m1-baseline-save','source')
++        for stage in ('submit','approve','publish'):
++            current=next(x for x in m1_read(exercise,owner,relation,'source')['sessions'] if x['id']==saved['id'])
++            m1_send(exercise,owner,{'kind':stage,'relationshipId':relation,'sessionId':saved['id'],'contentHash':current['contentHash'],'note':None},'m1-baseline-'+stage,'source')
++        feedback={'kind':'feedback','relationshipId':relation,'sessionId':saved['id'],'actionKey':action,'baseVersion':0,'status':'doing','text':None}
++        m1_send(exercise,a,feedback,'m1-baseline-doing','source')
++        result=json.loads(exercise.query('BEGIN READ ONLY;'+checks(exercise.guard,False)+'COMMIT;','source'));exercise.guard.all_passed(result,9)
++        fixture={'actor':a,'relation':relation,'feedback':feedback}
++        exercise.persist('m1-fixture.json',fixture)
++        exercise.persist('m1-bootstrap-readback.json',exercise.record('BASELINE_SYNTHETIC_SQL_READY',mode='SQL_CLAIMS_NOT_AUTH',nonzeroDebt=True))
++        return fixture
++
++
++def m1_apply_and_history(exercise):
++    with exercise.io.lock_exclusive():
++        check(not exercise.io.exists('apply-intent.json'),'owned_apply_no_replay')
++        backup=exercise.io.read('m1-backup-readback.json')
++        check(exercise.full_snapshot('source')==exercise.full_snapshot('copy')==backup['before'],'m1_preapply_baseline_changed')
++        exercise.kernel(False);before=exercise.snapshot()
++        intent=exercise.record('APPLY_INTENT',before=before);exercise.persist('apply-intent.json',intent)
++        try:exercise.query(payload(exercise.guard,'apply',exercise.repo))
++        except Exception:
++            return exercise.apply_readback_locked(intent,response_lost=True)
++        observed=exercise.apply_readback_locked(intent,response_lost=False)
++        check(observed['state']=='MATCHED_TARGET_STATE_READBACK','m1_apply_unresolved')
++    # A separate root-owned phase uses the same copy and explicit SQL claims.
++    # No Auth/API/Chrome acceptance or verified reader deployment is claimed.
++    with exercise.io.lock_exclusive():
++        check(not exercise.io.exists('m1-history-intent.json'),'m1_history_no_replay')
++        fixture=exercise.io.read('m1-fixture.json');baseline=exercise.snapshot();financial_before={k:v for k,v in exercise.full_snapshot('copy')['tables'].items() if k.startswith('public.member_')}
++        exercise.persist('m1-history-intent.json',exercise.record('SQL_CLAIMS_HISTORY_INTENT'))
++        # Exact historical rehearsal fixture token, NOT a deployed-reader assertion.
++        exercise.query("UPDATE consultation_private.feedback_rollout SET enabled=true,reader_sha='"+'a'*40+"',reviewed_at=now() WHERE singleton;")
++        for version,status in ((1,'partial'),(2,'not_done')):
++            m1_send(exercise,fixture['actor'],{**fixture['feedback'],'baseVersion':version,'status':status,'text':'Synthetic '+status},'m1-extended-'+status)
++        original=m1_read(exercise,fixture['actor'],fixture['relation'])
++        check([r['status'] for r in original['actions']]==['doing','partial','not_done'],'m1_extended_history_missing')
++        exercise.query('UPDATE consultation_private.feedback_rollout SET enabled=false WHERE singleton;')
++        current=m1_read(exercise,fixture['actor'],fixture['relation'])
++        check(current['capabilities']['extendedFeedbackWrite'] is False and current['actions']==original['actions'],'m1_off_history_changed')
++        before_rollback=exercise.full_snapshot('copy')
++        exercise.query(payload(exercise.guard,'rollback',exercise.repo),expected_error='PT409')
++        after_rollback=exercise.full_snapshot('copy')
++        check(before_rollback==after_rollback and {k:v for k,v in after_rollback['tables'].items() if k.startswith('public.member_')}==financial_before,'m1_posthistory_rollback_changed')
++        check(exercise.full_snapshot('source')==exercise.io.read('m1-backup-readback.json')['before'],'m1_source_changed')
++        exercise.kernel(True)
++        result=exercise.record('PASS_M1_SQL_COPY_ONLY',historyRows=3,partialNotDoneRetained=True,sqlRollbackState='PT409',fullConsumer='NOT_WIRED',authAcceptance=False,readerAcceptance=False,mode='SQL_CLAIMS_NOT_AUTH')
++        exercise.persist('m1-history-readback.json',result);return result
++
++
++def m1_prewrite_inverse_on_third(exercise):
++    with exercise.io.lock_exclusive():
++        check(not exercise.io.exists('m1-third-apply-intent.json'),'m1_third_no_replay')
++        before=exercise.full_snapshot('restore')
++        exercise.persist('m1-third-apply-intent.json',exercise.record('THIRD_PREWRITE_APPLY_INTENT'))
++        exercise.query(payload(exercise.guard,'apply',exercise.repo),'restore')
++        exercise.persist('m1-third-inverse-intent.json',exercise.record('THIRD_PREWRITE_INVERSE_INTENT'))
++        exercise.query(payload(exercise.guard,'rollback',exercise.repo),'restore')
++        check(exercise.full_snapshot('restore')==before,'m1_prewrite_inverse_changed')
++        result=exercise.record('PREWRITE_SQL_INVERSE_MATCHED',role='restore',afterNewHistory=False)
++        exercise.persist('m1-third-readback.json',result);return result
++
++
++M1_BASELINE_PINS=[('sql/test/supabase_bootstrap.sql', '90547ffbcecedbb4dd4c5b33740b8d300b7dee726ee681365204bf789a7912c9'), ('sql/test/profile_explicit_grants.sql', '02be92d59318897ebdd8c1b5a5fa6b7f9b53da51291e3c2deb42ea8b1b852fe3'), ('sql/test/portfolio_precondition.sql', '5addf0e685d33468b492f47644e8817f5b57363ee0c1341f2f825de674343a5b'), ('sql/phase32_member_holdings.sql', '12c40070fb9eeb918d83b8227565e7369be62fe3dcc845ac29a6a0a87ac6f780'), ('supabase/migrations/20261003094257_recovery_personal_balance_sheet_core.sql', '9954c8b0c7f01f8c39f1a90e67439368fdc1694941058e6d7293a94a12c0937f'), ('sql/phase34_research_workbook_versions.sql', 'd3193cac78f70b4d0a25372cf8927aace9933b5e117b2e2ebe7806110cdc4148'), ('supabase/migrations/20261019215549_personal_cash_flow_versions.sql', 'd02837f317acacff3cf2bd602430149382019266265bef8fb7ec79ffa7de144d'), ('sql/member_goals_versions_20261023.sql', 'd4959780f909fee5f5c3a22285bc778de19b3370bdb949ac55434b2cbc622dc6'), ('sql/consultation_workflow.sql', '4e389c57b98827a8297f8bc0cfa26a43e0570ab4b125ec92f9844f970b27e236'), ('sql/consultation_roster.sql', '03ccf7c622640ca508d8f60f6b1e8825de959ab038679c8cd798b87f331b5523'), ('sql/consultation_replies.sql', '57702c0090d643fa3eacd765ac19aecb36acd7254a161524dbe6b9326da4f49a')]
++M1_RISK_FIXTURE='CREATE TABLE public.risk_assessments(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid NOT NULL,total_score integer NOT NULL,risk_category text NOT NULL,answers_json jsonb,created_at timestamptz NOT NULL DEFAULT now());CREATE TABLE public.risk_revalidations(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),user_id uuid NOT NULL,expired_at timestamptz NOT NULL DEFAULT now(),reason text,created_by uuid,created_at timestamptz NOT NULL DEFAULT now());ALTER TABLE public.risk_assessments ENABLE ROW LEVEL SECURITY;ALTER TABLE public.risk_revalidations ENABLE ROW LEVEL SECURITY;REVOKE ALL ON public.risk_assessments,public.risk_revalidations FROM PUBLIC,anon,authenticated,service_role;'
++
++if __name__ == '__main__':
++    try:
++        main()
++    except Exception:
++        print(json.dumps({'status': 'BLOCKED', 'reason': 'feedback_verification_or_execution_failed_readback_required', 'automaticReplay': False}))
++        raise SystemExit(2)
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -28,7 +28,7 @@
+         type: choice
+         required: false
+         default: assembled-member-admin-v1
+-        options: [assembled-member-admin-v1, p03-composition-e0-v1]
++        options: [assembled-member-admin-v1, p03-composition-e0-v1, owned-start-a-copy]
+       candidate_sha:
+         description: Exact reviewed app SHA required for composition only
+         type: string
+@@ -409,21 +409,40 @@
+       - name: Exact isolated app and SQL Git copy
+         uses: actions/checkout@v4
+         with:
+-          ref: ${{ inputs.acceptance_profile == 'p03-composition-e0-v1' && 'e0b930927563d7f9f6d79e848917c4ba0d77ed6f' || 'f07e0543c46cea88822dc0d400080b5bb94bef91' }}
++          ref: ${{ inputs.acceptance_profile == 'owned-start-a-copy' && '0d63a8b64e4975a3c9dab3f1f579f91302602b01' || inputs.acceptance_profile == 'p03-composition-e0-v1' && 'e0b930927563d7f9f6d79e848917c4ba0d77ed6f' || 'f07e0543c46cea88822dc0d400080b5bb94bef91' }}
+           path: assembled-candidate
+           persist-credentials: false
+       - uses: actions/setup-node@v4
++        if: ${{ inputs.acceptance_profile != 'owned-start-a-copy' }}
+         with:
+           node-version: ${{ env.NODE_VERSION }}
+           cache: npm
+           cache-dependency-path: assembled-candidate/package-lock.json
+       - name: Existing controller dependency lock only
++        if: ${{ inputs.acceptance_profile != 'owned-start-a-copy' }}
+         run: npm ci --ignore-scripts
+       - name: Offline allocation and receipt boundaries only
+-        run: python3 scripts/testing/assembled-native-ci/test_run.py -v
++        run: ${{ inputs.acceptance_profile == 'owned-start-a-copy' && 'python3 scripts/testing/assembled-native-ci/test_run.py M1SourceContracts -v' || 'python3 scripts/testing/assembled-native-ci/test_run.py -v' }}
++      - name: Explicit M1 platform manifest preload and sanitized identity verification
++        if: ${{ inputs.acceptance_profile == 'owned-start-a-copy' }}
++        run: |
++          docker pull --platform linux/amd64 postgres@sha256:aa90e97ee862e558111d34cfb8b2c4bec768c2b039fb791341686928560263b3
++          python3 - <<'PY'
++          import json, subprocess
++          ref='postgres@sha256:aa90e97ee862e558111d34cfb8b2c4bec768c2b039fb791341686928560263b3'
++          raw=subprocess.run(['docker','image','inspect',ref],check=True,capture_output=True,timeout=15).stdout
++          rows=json.loads(raw)
++          assert len(rows)==1
++          r=rows[0]
++          assert r.get('Id')=='sha256:79bd7c99e923138f136f8009d6bffa66e21e9d4fda5c0c561b00fc9c90cfe537'
++          assert ref in (r.get('RepoDigests') or [])
++          assert r.get('Os')=='linux' and r.get('Architecture')=='amd64'
++          print(json.dumps({'imageConfigMatched':True,'repoDigestMatched':True,'platformMatched':True}))
++          PY
+       - name: Bind allocation, verify sealed capsule and prepare the exact copy
+         run: python3 scripts/testing/assembled-native-ci/run.py prepare
+       - name: Existing dependency lock only
++        if: ${{ inputs.acceptance_profile != 'owned-start-a-copy' }}
+         working-directory: assembled-candidate
+         run: npm ci
+       - name: One bounded owned native attempt with private stdout

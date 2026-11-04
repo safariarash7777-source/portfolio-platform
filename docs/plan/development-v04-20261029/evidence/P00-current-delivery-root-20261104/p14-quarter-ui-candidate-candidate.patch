@@ -1,0 +1,491 @@
+diff --git a/components/symbol/QuarterlyCharts.tsx b/components/symbol/QuarterlyCharts.tsx
+index 6b5bd53..4a0ae07 100644
+--- a/components/symbol/QuarterlyCharts.tsx
++++ b/components/symbol/QuarterlyCharts.tsx
+@@ -18,6 +18,8 @@ import {
+   YAxis,
+ } from "recharts";
+ import MeasuredResponsiveContainer from "./MeasuredResponsiveContainer";
++import SourceChartFrame from "./MonthlySourceChartFrame";
++import { QuarterSourceLabel, TtmPointSources } from "./QuarterlyPointSources";
+ import type { DerivedQuarter, TtmPoint } from "@/lib/core/quarterly";
+ import { useEffect, useState } from "react";
+ import { toPersianDigits } from "@/lib/format";
+@@ -98,6 +100,7 @@ export default function QuarterlyCharts({
+     name: faQ(q.label),
+     درآمد: q.revenue != null ? q.revenue / 10_000 : null,
+     "سود خالص": q.netProfit != null ? q.netProfit / 10_000 : null,
++    ...(previewControls ? { sourceQuarter: q } : {}),
+   }));
+ 
+   const marginData = last12.map((q) => ({
+@@ -105,6 +108,7 @@ export default function QuarterlyCharts({
+     ناخالص: q.grossMargin,
+     عملیاتی: q.operatingMargin,
+     خالص: q.netMargin,
++    ...(previewControls ? { sourceQuarter: q } : {}),
+   }));
+ 
+   const peData = peSeries.map((p) => ({ name: faQ(p.label), pe: p.pe }));
+@@ -153,13 +157,17 @@ export default function QuarterlyCharts({
+             .filter(Boolean)
+             .join(" ")}
+         >
+-          <div style={{ width: "100%", height: 250 }} dir="ltr">
++          <SourceChartFrame enabled={previewControls} height={250} width="100%">{(trigger, portal) => (
+             <MeasuredResponsiveContainer>
+               <BarChart data={revData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
+                 <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
+                 <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-35} height={50} textAnchor="end" />
+                 <YAxis tick={{ fontSize: 10 }} width={54} tickFormatter={(value: number) => toPersianDigits(String(value))} />
+                 <Tooltip
++                  trigger={trigger}
++                  portal={portal}
++                  wrapperStyle={previewControls ? { pointerEvents: "auto", maxWidth: "min(280px, 75vw)", overflowWrap: "anywhere" } : undefined}
++                  labelFormatter={previewControls ? (label, payload) => <QuarterSourceLabel label={label} payload={payload} /> : undefined}
+                   formatter={(v: unknown, name: unknown) => [v == null ? "—" : `${nf1.format(Number(v))} میلیارد تومان`, String(name)]}
+                   contentStyle={tooltipStyle}
+                 />
+@@ -168,7 +176,7 @@ export default function QuarterlyCharts({
+                 <Bar dataKey="سود خالص" fill="var(--gold)" radius={[3, 3, 0, 0]} />
+               </BarChart>
+             </MeasuredResponsiveContainer>
+-          </div>
++          )}</SourceChartFrame>
+         </Card>
+ 
+         <Card
+@@ -176,13 +184,17 @@ export default function QuarterlyCharts({
+           question="کیفیت سودآوری (حاشیهٔ ناخالص، عملیاتی، خالص) رو به بهبود است یا افت؟"
+           note="حاشیه = نسبت به درآمد همان فصل (٪)؛ فصل بدون درآمد مثبت نقطه ندارد."
+         >
+-          <div style={{ width: "100%", height: 250 }} dir="ltr">
++          <SourceChartFrame enabled={previewControls} height={250} width="100%">{(trigger, portal) => (
+             <MeasuredResponsiveContainer>
+               <LineChart data={marginData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
+                 <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
+                 <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-35} height={50} textAnchor="end" />
+                 <YAxis tick={{ fontSize: 10 }} width={38} tickFormatter={(value: number) => toPersianDigits(String(value))} />
+                 <Tooltip
++                  trigger={trigger}
++                  portal={portal}
++                  wrapperStyle={previewControls ? { pointerEvents: "auto", maxWidth: "min(280px, 75vw)", overflowWrap: "anywhere" } : undefined}
++                  labelFormatter={previewControls ? (label, payload) => <QuarterSourceLabel label={label} payload={payload} margins /> : undefined}
+                   formatter={(v: unknown, name: unknown) => [v == null ? "—" : `٪${nf1.format(Number(v))}`, String(name)]}
+                   contentStyle={tooltipStyle}
+                 />
+@@ -192,11 +204,19 @@ export default function QuarterlyCharts({
+                 <Line type="monotone" dataKey="خالص" stroke="var(--success)" dot={{ r: 2 }} connectNulls={false} />
+               </LineChart>
+             </MeasuredResponsiveContainer>
+-          </div>
++          )}</SourceChartFrame>
+         </Card>
+       </div>
+ 
+       <div className="mt-4">
++        {previewControls && ttm.length > 0 ? <details className="mb-4 rounded-lg border border-border p-3" dir="rtl">
++          <summary className="cursor-pointer text-sm font-semibold">منابع سود هر سهم دوازده‌ماهه</summary>
++          <p className="mt-2 text-xs leading-6">برای هر بازه، گزارش‌های چهار فصل و گزارش سرمایه را جداگانه ببینید.</p>
++          {ttm.map((point, index) => <details key={`${point.periodEnd}-${index}`} className="mt-3 rounded-lg border border-border p-3">
++            <summary className="cursor-pointer text-sm">دوازده‌ماهه منتهی به {faDigits(point.periodEnd)}</summary>
++            <TtmPointSources point={point} />
++          </details>)}
++        </details> : null}
+         {peData.filter((p) => p.pe != null).length >= 2 ? (
+           <Card
+             title="P/E دوازده‌ماهه (TTM)"
+diff --git a/package.json b/package.json
+index 151f59b..e5dbf9e 100644
+--- a/package.json
++++ b/package.json
+@@ -15,7 +15,7 @@
+     "lint:ci": "eslint . --max-warnings=0",
+     "typecheck": "tsc --noEmit",
+     "test:calc": "tsx --test lib/fundamental/calc.test.ts lib/fundamental/n30.test.ts lib/fundamental/amendment.test.ts lib/fundamental/wiring.test.ts lib/fundamental/read-binding.test.ts lib/fundamental/monthly-quantity-binding.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/cadence.test.ts lib/fundamental/read-status.test.ts lib/fundamental/b2.test.ts",
+-    "test:core": "tsx --test components/admin/ResearchCaseFiles.test.tsx scripts/testing/consultation/native-api.test.mjs lib/consultation/contracts.test.ts lib/consultation/server.test.ts lib/consultation/request.test.ts components/consultation/consultation-ui.test.tsx components/consultation/workspace.test.ts lib/portfolio/budget.test.ts components/portfolio/budget/budget-ui.test.tsx lib/portfolio/goals.test.ts lib/portfolio/goalsServer.test.ts lib/portfolio/goalsRequest.test.ts components/portfolio/goals/workspace.test.ts components/portfolio/goals/draft.test.tsx lib/public-design/contracts.test.ts app/api/admin/desk/preferences/route.test.ts components/admin/useDeskAccountPreferences.test.ts lib/desk/preference-requests.test.ts lib/desk/preferences.test.ts lib/desk/workspace-read.test.ts lib/media/global-layout.test.mjs lib/media/presentation.test.ts lib/media/archive-filters.test.ts lib/media/content-read.test.ts lib/intelligence/research-policy.test.ts lib/core/history.test.ts lib/commodity-quality.test.ts components/market/GoldCurrencyBoard.test.ts lib/intelligence/operational-agents.test.ts lib/intelligence/operational-agents-view.test.ts components/market/MarketDesk.test.ts components/market/CommodityBoard.test.ts lib/core/bulkReturns.test.ts app/api/symbol-detail/route.test.ts lib/visible-poll.test.ts lib/zarinpal.test.mjs \"app/(auth)/login/callback-error.test.ts\" app/auth/callback/route.test.ts \"app/(auth)/login/page.test.ts\" components/learn/Term.test.ts app/api/codal-list/route.test.ts components/symbol/CodalReportsTab.test.ts lib/core/companyReportDiscovery.test.ts lib/codal-feed.test.ts components/dashboard/saveRiskAssessment.test.ts lib/liara-public-env.test.js lib/telegram/private-chat.test.ts lib/telegram-feed.test.ts lib/content-sync-boundary.test.ts lib/core/portfolioScenario.test.mjs lib/core/scenarioInput.test.ts lib/core/scenarioLabels.test.ts lib/supabase/errors.test.ts lib/core/symbolLiveness.test.ts lib/access-standing.test.ts lib/core/marketDesk.test.ts lib/core/changeRadar.test.ts lib/core/fundBubble.test.ts lib/core/fundPeers.test.ts lib/core/fundComparison.test.ts components/market/FundComparisonPanel.test.tsx lib/market-price.test.ts lib/market-ticker-select.test.ts lib/market-freshness.test.ts lib/public-claims.test.ts lib/ops/backup-scripts.test.ts lib/site-url.test.ts lib/core/engine.test.ts lib/core/backtest.test.ts lib/core/allocation.test.ts lib/core/regime.test.ts lib/core/terminal.test.ts lib/core/narrative.test.ts lib/core/trend.test.ts lib/core/fx.test.ts lib/core/breadth.test.ts lib/track/analyses.test.ts lib/core/indexTrend.test.ts lib/core/fundReturns.test.ts lib/core/screener.test.ts lib/core/fundamentalPresets.test.ts lib/core/marketToday.test.ts lib/fundamental/n30.test.ts lib/fundamental/monthly-quantity-binding.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/fundamentalCard.test.ts lib/glossary.test.ts lib/learn.test.ts lib/intelligence/contracts.test.ts lib/fx/engine.test.ts lib/leads/webhook.test.ts lib/leads/grants.test.ts lib/health/status.test.ts lib/supabase/service-role.test.ts lib/cron/ledger.test.ts lib/desk/contracts.test.ts lib/desk/access.test.ts lib/desk/sources.test.ts lib/desk/service.test.ts lib/intelligence/staging-fixture.test.ts lib/intelligence/workflow.test.ts lib/intelligence/service.test.ts lib/intelligence/board.test.ts lib/intelligence/ui-tokens.test.ts lib/core/cadence.test.ts lib/intelligence/research-workbook.test.ts lib/intelligence/agent-readiness.test.ts lib/intelligence/research-drafts-view.test.ts lib/intelligence/research-universe.test.ts lib/intelligence/research-universe-readiness.test.ts lib/intelligence/forecast-scorecard.test.ts lib/intelligence/research-work-planner.test.ts lib/intelligence/command-desk.test.ts lib/intelligence/reference-portfolio.test.ts lib/intelligence/event-inbox.test.ts lib/intelligence/analysis-memory.test.ts lib/desk/navigation.test.ts lib/desk/clock.test.ts lib/desk/registry.test.ts lib/intelligence/approval-queue.test.ts lib/drafts/service.test.ts lib/drafts/contracts.test.ts lib/core/fundCategory.test.ts lib/core/contrast.test.ts lib/market-nav.test.ts lib/format.test.ts lib/core/marketHeadline.test.ts components/account/returnPath.test.ts components/account/loginFlow.test.ts components/account/accountSubtitle.test.ts components/symbol/chartDate.test.ts components/admin/ResearchWorkbook.test.ts lib/intelligence/p07-private-persistence.test.ts lib/intelligence/workbook-store.test.ts lib/portfolio/balanceSheet.test.ts lib/portfolio/cashFlow.test.ts lib/portfolio/cashFlowRequest.test.ts lib/portfolio/cashFlowServer.test.ts components/portfolio/cashflow/cashflow-ui.test.tsx components/portfolio/cashflow/draft.test.tsx components/portfolio/cashflow/workspace.test.ts components/dashboard/cashFlowDiscovery.test.ts lib/portfolio/financialHttp.test.ts lib/portfolio/prices.test.ts lib/portfolio/rebalance.test.ts lib/portfolio/targetContract.test.ts lib/portfolio/units.test.ts lib/portfolio/valuation.test.ts lib/portfolio/view.test.ts lib/market-bounded.test.ts lib/portfolio/service-read.test.ts app/api/admin/intelligence/workbooks/route.test.ts components/portfolio/financial-forms.test.ts components/portfolio/investment-scope.test.ts components/market/recovery-null-render.test.ts lib/market-family-reader.test.ts components/market/family-status-render.test.ts lib/auth/password-recovery.test.ts app/market/funds/page.test.ts components/account/signupFlow.test.ts lib/market-stored.test.ts components/market/b2-ui-render.test.ts app/codal/page.test.ts components/symbol/MonthlySalesCharts.test.tsx components/symbol/monthly-point-provenance.test.ts components/symbol/MeasuredResponsiveContainer.test.mjs && tsx \"app/symbol/[symbol]/page.test.ts\" && node --import ./scripts/testing/b2-offline-guard.mjs scripts/ops/coverage-plan-core.test.mjs && node --import ./scripts/testing/b2-offline-guard.mjs scripts/ops/p02-coverage.test.mjs",
++    "test:core": "tsx --test components/admin/ResearchCaseFiles.test.tsx scripts/testing/consultation/native-api.test.mjs lib/consultation/contracts.test.ts lib/consultation/server.test.ts lib/consultation/request.test.ts components/consultation/consultation-ui.test.tsx components/consultation/workspace.test.ts lib/portfolio/budget.test.ts components/portfolio/budget/budget-ui.test.tsx lib/portfolio/goals.test.ts lib/portfolio/goalsServer.test.ts lib/portfolio/goalsRequest.test.ts components/portfolio/goals/workspace.test.ts components/portfolio/goals/draft.test.tsx lib/public-design/contracts.test.ts app/api/admin/desk/preferences/route.test.ts components/admin/useDeskAccountPreferences.test.ts lib/desk/preference-requests.test.ts lib/desk/preferences.test.ts lib/desk/workspace-read.test.ts lib/media/global-layout.test.mjs lib/media/presentation.test.ts lib/media/archive-filters.test.ts lib/media/content-read.test.ts lib/intelligence/research-policy.test.ts lib/core/history.test.ts lib/commodity-quality.test.ts components/market/GoldCurrencyBoard.test.ts lib/intelligence/operational-agents.test.ts lib/intelligence/operational-agents-view.test.ts components/market/MarketDesk.test.ts components/market/CommodityBoard.test.ts lib/core/bulkReturns.test.ts app/api/symbol-detail/route.test.ts lib/visible-poll.test.ts lib/zarinpal.test.mjs \"app/(auth)/login/callback-error.test.ts\" app/auth/callback/route.test.ts \"app/(auth)/login/page.test.ts\" components/learn/Term.test.ts app/api/codal-list/route.test.ts components/symbol/CodalReportsTab.test.ts lib/core/companyReportDiscovery.test.ts lib/codal-feed.test.ts components/dashboard/saveRiskAssessment.test.ts lib/liara-public-env.test.js lib/telegram/private-chat.test.ts lib/telegram-feed.test.ts lib/content-sync-boundary.test.ts lib/core/portfolioScenario.test.mjs lib/core/scenarioInput.test.ts lib/core/scenarioLabels.test.ts lib/supabase/errors.test.ts lib/core/symbolLiveness.test.ts lib/access-standing.test.ts lib/core/marketDesk.test.ts lib/core/changeRadar.test.ts lib/core/fundBubble.test.ts lib/core/fundPeers.test.ts lib/core/fundComparison.test.ts components/market/FundComparisonPanel.test.tsx lib/market-price.test.ts lib/market-ticker-select.test.ts lib/market-freshness.test.ts lib/public-claims.test.ts lib/ops/backup-scripts.test.ts lib/site-url.test.ts lib/core/engine.test.ts lib/core/backtest.test.ts lib/core/allocation.test.ts lib/core/regime.test.ts lib/core/terminal.test.ts lib/core/narrative.test.ts lib/core/trend.test.ts lib/core/fx.test.ts lib/core/breadth.test.ts lib/track/analyses.test.ts lib/core/indexTrend.test.ts lib/core/fundReturns.test.ts lib/core/screener.test.ts lib/core/fundamentalPresets.test.ts lib/core/marketToday.test.ts lib/fundamental/n30.test.ts lib/fundamental/monthly-quantity-binding.test.ts lib/core/monthlyReport.test.ts lib/core/quarterly.test.ts lib/core/jalali.test.ts lib/core/vocab.test.ts lib/core/marketRadar.test.ts lib/core/fundamentalCard.test.ts lib/glossary.test.ts lib/learn.test.ts lib/intelligence/contracts.test.ts lib/fx/engine.test.ts lib/leads/webhook.test.ts lib/leads/grants.test.ts lib/health/status.test.ts lib/supabase/service-role.test.ts lib/cron/ledger.test.ts lib/desk/contracts.test.ts lib/desk/access.test.ts lib/desk/sources.test.ts lib/desk/service.test.ts lib/intelligence/staging-fixture.test.ts lib/intelligence/workflow.test.ts lib/intelligence/service.test.ts lib/intelligence/board.test.ts lib/intelligence/ui-tokens.test.ts lib/core/cadence.test.ts lib/intelligence/research-workbook.test.ts lib/intelligence/agent-readiness.test.ts lib/intelligence/research-drafts-view.test.ts lib/intelligence/research-universe.test.ts lib/intelligence/research-universe-readiness.test.ts lib/intelligence/forecast-scorecard.test.ts lib/intelligence/research-work-planner.test.ts lib/intelligence/command-desk.test.ts lib/intelligence/reference-portfolio.test.ts lib/intelligence/event-inbox.test.ts lib/intelligence/analysis-memory.test.ts lib/desk/navigation.test.ts lib/desk/clock.test.ts lib/desk/registry.test.ts lib/intelligence/approval-queue.test.ts lib/drafts/service.test.ts lib/drafts/contracts.test.ts lib/core/fundCategory.test.ts lib/core/contrast.test.ts lib/market-nav.test.ts lib/format.test.ts lib/core/marketHeadline.test.ts components/account/returnPath.test.ts components/account/loginFlow.test.ts components/account/accountSubtitle.test.ts components/symbol/chartDate.test.ts components/admin/ResearchWorkbook.test.ts lib/intelligence/p07-private-persistence.test.ts lib/intelligence/workbook-store.test.ts lib/portfolio/balanceSheet.test.ts lib/portfolio/cashFlow.test.ts lib/portfolio/cashFlowRequest.test.ts lib/portfolio/cashFlowServer.test.ts components/portfolio/cashflow/cashflow-ui.test.tsx components/portfolio/cashflow/draft.test.tsx components/portfolio/cashflow/workspace.test.ts components/dashboard/cashFlowDiscovery.test.ts lib/portfolio/financialHttp.test.ts lib/portfolio/prices.test.ts lib/portfolio/rebalance.test.ts lib/portfolio/targetContract.test.ts lib/portfolio/units.test.ts lib/portfolio/valuation.test.ts lib/portfolio/view.test.ts lib/market-bounded.test.ts lib/portfolio/service-read.test.ts app/api/admin/intelligence/workbooks/route.test.ts components/portfolio/financial-forms.test.ts components/portfolio/investment-scope.test.ts components/market/recovery-null-render.test.ts lib/market-family-reader.test.ts components/market/family-status-render.test.ts lib/auth/password-recovery.test.ts app/market/funds/page.test.ts components/account/signupFlow.test.ts lib/market-stored.test.ts components/market/b2-ui-render.test.ts app/codal/page.test.ts components/symbol/MonthlySalesCharts.test.tsx components/symbol/monthly-point-provenance.test.ts components/symbol/QuarterlyPointSources.test.tsx components/symbol/MeasuredResponsiveContainer.test.mjs && tsx \"app/symbol/[symbol]/page.test.ts\" && node --import ./scripts/testing/b2-offline-guard.mjs scripts/ops/coverage-plan-core.test.mjs && node --import ./scripts/testing/b2-offline-guard.mjs scripts/ops/p02-coverage.test.mjs",
+     "test:db": "tsx --test --test-concurrency=1 lib/security/ime-storage.integration.test.ts lib/core/symbolLiveness.integration.test.ts lib/core/memberImport.integration.test.ts lib/core/changeRadar.integration.test.ts lib/ops/backup-restore.integration.test.ts lib/leads/leads.integration.test.ts lib/cron/ledger.integration.test.ts lib/intelligence/intelligence.integration.test.ts lib/intelligence/workflow.integration.test.ts lib/security/grants.integration.test.ts lib/security/create-payment-containment.integration.test.ts lib/intelligence/workbook-store.integration.test.ts lib/portfolio/recovery.integration.test.ts lib/auth/signup-profile.integration.test.ts && node scripts/testing/cash-flow/run.mjs --ci-local && node scripts/testing/goals/run.mjs --ci-local && node scripts/testing/consultation/run.mjs --ci-local",
+     "test:deploy": "node --test scripts/deploy/relay-gate.test.mjs scripts/ops/relay-health-receipt.test.mjs scripts/ops/liara-runtime-probe.test.mjs scripts/ops/liara-binding-discovery.test.mjs scripts/ops/liara-binding-discovery-runner.test.mjs scripts/ops/liara-vm-status.test.mjs scripts/ops/liara-backend-recovery.test.mjs scripts/ops/research-source-read.test.mjs scripts/ops/folad-primary-sources.test.mjs",
+     "test:relay": "node --test relay/capitalization-json.test.mjs relay/capitalization-response.test.mjs && node --test relay/brsapi-transport.test.mjs && node --test relay/history-sections.test.mjs && node --test relay/eod.test.mjs && node --test relay/eod-write.test.mjs && node relay/brsapi-client.test.mjs && node relay/brsapi-legacy-meter.test.mjs && node relay/brsapi-coverage.test.mjs && node relay/brsapi-stop-behaviour.test.mjs && node relay/symbol-detail.test.mjs && node relay/breadth.test.mjs && node relay/candle-backfill.test.mjs && node relay/codal.test.mjs && node relay/codal-archive.test.mjs && node --input-type=module --eval \"process.env.SKIP_LIVE='1'; await import('./relay/codal-engine.test.mjs')\" && node --test relay/daily-fx.test.mjs && node --test relay/codal-n10-admission.test.mjs && node --test relay/codal-coverage.test.mjs && node --test relay/commodity.test.mjs && node relay/ime.test.mjs && node relay/symbols-util.test.mjs && node relay/server-auth.test.mjs && node --test relay/options.test.mjs && node --test relay/market-retention.test.mjs relay/market-retention-server.test.mjs relay/brsapi-budget-notification.test.mjs && node --test --test-concurrency=1 relay/equities-mapper.test.mjs && node --test --test-concurrency=1 relay/market-readonly-server.test.mjs && node --test --test-concurrency=1 relay/codal-engine-cycle.test.mjs",
+diff --git a/components/symbol/MonthlySourceChartFrame.tsx b/components/symbol/MonthlySourceChartFrame.tsx
+index 3d51051..b920b8a 100644
+--- a/components/symbol/MonthlySourceChartFrame.tsx
++++ b/components/symbol/MonthlySourceChartFrame.tsx
+@@ -1,20 +1,23 @@
+ import React, { useState } from "react";
+ 
+ const isSource = (target: EventTarget | null) => target instanceof Element
+-  && target.closest("[data-monthly-point-source]") !== null;
++  && target.closest("[data-monthly-point-source], [data-chart-point-source]") !== null;
+ 
+ /** Recharts 3 keeps click and keyboard selection separately. A click selection
+  * wins over keyboard selection, so keyboard navigation must use the hover lane.
+  * Do not populate the hover lane with pointer events: those would win over the
+  * keyboard selection too. Pointer selection is deliberate click/tap only.
+  */
+-export default function MonthlySourceChartFrame({ enabled, children }: {
++export default function MonthlySourceChartFrame({ enabled, children, height = 280, width }: {
+   enabled: boolean;
++  height?: number;
++  width?: React.CSSProperties["width"];
+   children: (trigger: "click" | "hover" | undefined, portal?: HTMLDivElement | null) => React.ReactNode;
+ }) {
+   const [trigger, setTrigger] = useState<"click" | "hover">("click");
+   const [portal, setPortal] = useState<HTMLDivElement | null>(null);
+-  if (!enabled) return <div style={{ height: 280 }} dir="ltr">{children(undefined)}</div>;
++  const chartStyle = { ...(width === undefined ? {} : { width }), height };
++  if (!enabled) return <div style={chartStyle} dir="ltr">{children(undefined)}</div>;
+   return <>
+     <p className="mb-2 text-xs leading-5" dir="rtl">
+       برای دیدن منبع، روی نقطه کلیک یا لمس کنید. جزئیات زیر نمودار نمایش داده می‌شوند. با صفحه‌کلید، نمودار را انتخاب کنید و از کلیدهای چپ و راست استفاده کنید؛ با Tab به پیوند منبع بروید. Escape جزئیات را می‌بندد.
+@@ -34,7 +37,7 @@ export default function MonthlySourceChartFrame({ enabled, children }: {
+           && (isSource(event.relatedTarget) || isSource(event.target))) event.stopPropagation();
+       }}
+     >
+-      <div style={{ height: 280 }}>{children(trigger, portal)}</div>
++      <div style={chartStyle}>{children(trigger, portal)}</div>
+       {/* Recharts' default portal precedes its SVG. This host follows the chart
+           in DOM order, so native Tab reaches the link; no scripted focus. With
+           an explicit portal Recharts uses normal flow, preventing chart overlap. */}
+diff --git a/components/symbol/QuarterlyPointSources.tsx b/components/symbol/QuarterlyPointSources.tsx
+new file mode 100644
+--- /dev/null
++++ b/components/symbol/QuarterlyPointSources.tsx
+@@ -0,0 +1,111 @@
++import React from "react";
++import type { DerivedQuarter, TtmPoint } from "@/lib/core/quarterly";
++import { fiscalChainKey } from "@/lib/core/quarterly";
++import type { QuarterAmountsSource, QuarterReportSource } from "@/lib/core/quarterly-provenance";
++import { toPersianDigits } from "@/lib/format";
++import CodalSourceLink from "./CodalSourceLink";
++
++type Period = Pick<DerivedQuarter, "fy" | "q" | "periodEnd">;
++type TooltipItem = { dataKey?: unknown; value?: unknown; payload?: unknown };
++const clockStyle = { display: "block", whiteSpace: "normal", overflowWrap: "anywhere", wordBreak: "break-all", textAlign: "left" } as const;
++const text = (value: string | number | null | undefined) => value == null || value === "" ? "نامعلوم" : toPersianDigits(String(value));
++const unknown = <span className="block">منبع این دوره نامعلوم است.</span>;
++
++/** Validate only the presentation binding; never select reports or recalculate values. */
++function amountsFor(period: Period, amounts: QuarterAmountsSource | null | undefined): QuarterAmountsSource | null {
++  if (!amounts || ![1, 2, 3, 4].includes(period.q)) return null;
++  const expected = period.q === 1 ? "reported" : "difference";
++  if (amounts.operation !== expected || amounts.contributors.length !== (period.q === 1 ? 1 : 2)) return null;
++  const current = amounts.contributors.find(c => c.role === "current")?.report;
++  const previous = amounts.contributors.find(c => c.role === "previous")?.report;
++  if (!current || current.periodEnd !== period.periodEnd || current.periodMonths !== period.q * 3) return null;
++  const chain = fiscalChainKey({ period_end: current.periodEnd, period_months: current.periodMonths });
++  if (!chain || Number(chain.slice(0, 4)) !== period.fy) return null;
++  if (period.q > 1 && (!previous || previous.periodMonths !== (period.q - 1) * 3
++    || fiscalChainKey({ period_end: previous.periodEnd, period_months: previous.periodMonths }) !== chain
++    || (current.id !== null && current.id === previous.id))) return null;
++  return amounts;
++}
++
++function ReportDetails({ source, heading }: { source: QuarterReportSource | null | undefined; heading: string }) {
++  const record = source?.record;
++  const bound = source?.binding === "matched" && Number.isSafeInteger(source.id) && source.id! > 0
++    && record?.id === source.id && record.financialPeriodEnd === source.periodEnd;
++  return <span className="mt-2 block border-t border-border pt-2 text-xs leading-5" dir="rtl">
++    <span className="block font-semibold">{heading}</span>
++    {!bound ? <span className="block">منبع این گزارش نامعلوم است.</span> : <>
++      <span className="block">پایان دورهٔ گزارش: {text(source.periodEnd)}؛ دورهٔ {text(source.periodMonths)}ماهه</span>
++      <span className="block">واحد ارقام گزارش: {text(source.unit)}</span>
++      <span className="block">انتشار گزارش (زمان محلی): {text(record.publishedAt)}</span>
++      <span className="block">دریافت گزارش (ثبت اصلی): <bdi dir="ltr" style={clockStyle}>{record.capturedAtRaw ?? "نامعلوم"}</bdi></span>
++      <span className="block">دریافت گزارش (UTC): <bdi dir="ltr" style={clockStyle}>{record.capturedAt ?? "نامعلوم"}</bdi></span>
++      {record.amendment ? <span className="block">اصلاحیهٔ گزارش</span> : null}
++      <CodalSourceLink url={record.sourceUrl} className="block underline" fallback={<span className="block">پیوند گزارش در کدال نامعلوم است.</span>}>
++        گزارش {text(source.periodEnd)} در کدال
++      </CodalSourceLink>
++    </>}
++  </span>;
++}
++
++function AmountSources({ period, amounts, margins = false }: { period: Period; amounts: QuarterAmountsSource | null | undefined; margins?: boolean }) {
++  const matched = amountsFor(period, amounts);
++  if (!matched) return unknown;
++  return <span className="block" dir="rtl">
++    <span className="block font-semibold">{matched.operation === "reported" ? "گزارش همین دوره" : "تفاضل دو گزارش"}</span>
++    {matched.operation === "difference" ? <span className="block">رقم فصل از گزارش تجمیعی این دوره منهای گزارش تجمیعی دورهٔ قبل به دست آمده است.</span> : null}
++    {margins ? <span className="block">حاشیهٔ سود، نسبت سود به درآمد همان فصل است؛ منشأ هر دو در گزارش‌های زیر آمده است.</span> : null}
++    {matched.contributors.map(c => <ReportDetails key={c.role} source={c.report}
++      heading={c.role === "current" ? "گزارش همین دوره" : "گزارش تجمیعی دورهٔ قبل"} />)}
++  </span>;
++}
++
++export function QuarterSourceLabel({ label, payload, margins = false }: { label: unknown; payload: ReadonlyArray<TooltipItem> | undefined; margins?: boolean }) {
++  const keys = margins ? ["ناخالص", "عملیاتی", "خالص"] : ["درآمد", "سود خالص"];
++  const entries = (payload ?? []).filter(item => typeof item.dataKey === "string" && keys.includes(item.dataKey)
++    && typeof item.value === "number" && Number.isFinite(item.value));
++  const candidates = entries.map(item => item.payload && typeof item.payload === "object"
++    ? (item.payload as { sourceQuarter?: DerivedQuarter }).sourceQuarter : undefined);
++  const quarter = candidates.length > 0 && candidates.every(q => q === candidates[0]) ? candidates[0] : undefined;
++  return <span data-chart-point-source="" dir="rtl" style={{ whiteSpace: "normal", overflowWrap: "anywhere" }}
++    onClick={event => event.stopPropagation()} onFocus={event => event.stopPropagation()}
++    onKeyDown={event => { if (event.key !== "Escape") event.stopPropagation(); }}>
++    <span className="block font-semibold">{typeof label === "string" || typeof label === "number" ? text(label) : ""}</span>
++    {quarter && !quarter.adjusted ? <AmountSources period={quarter} amounts={quarter.provenance?.amounts} margins={margins} /> : unknown}
++  </span>;
++}
++
++export function TtmPointSources({ point }: { point: TtmPoint }) {
++  const window = point.provenance?.netProfit;
++  const last = window?.[3];
++  const boundWindow = window?.length === 4 && new Set(window.map(q => q.periodEnd)).size === 4
++    && last?.periodEnd === point.periodEnd && point.label === `Q${last.q} ${last.fy}`
++    && window.every((quarter, index) => {
++      const chain = fiscalChainKey({ period_end: quarter.periodEnd, period_months: quarter.q * 3 });
++      if (!chain || Number(chain.slice(0, 4)) !== quarter.fy) return false;
++      if (index === 0) return true;
++      const previous = window[index - 1];
++      const month = (end: string) => Number(end.slice(0, 4)) * 12 + Number(end.slice(5, 7));
++      return quarter.q === (previous.q === 4 ? 1 : previous.q + 1)
++        && quarter.fy === previous.fy + (previous.q === 4 ? 1 : 0)
++        && month(quarter.periodEnd) - month(previous.periodEnd) === 3;
++    });
++  const lastAmounts = last ? amountsFor(last as Period, last.amounts) : null;
++  const current = lastAmounts?.contributors.find(c => c.role === "current")?.report;
++  const capital = point.provenance?.capital;
++  const boundCapital = boundWindow && last && capital && (!current || current.id === capital.id)
++    && capital.periodEnd === point.periodEnd && capital.periodMonths === last.q * 3
++    && Number(fiscalChainKey({ period_end: capital.periodEnd, period_months: capital.periodMonths })?.slice(0, 4)) === last.fy;
++  return <div className="space-y-3 text-xs leading-6" dir="rtl">
++    <p className="font-semibold">چهار فصل سازندهٔ دوازده‌ماهه</p>
++    {boundWindow ? window.map((quarter, index) => <section key={`${quarter.periodEnd}-${index}`}>
++      <h5 className="font-semibold">فصل منتهی به {text(quarter.periodEnd)}</h5>
++      <AmountSources period={quarter as Period} amounts={quarter.amounts} />
++    </section>) : <p>منابع چهار فصل این بازه نامعلوم است.</p>}
++    <section>
++      <h5 className="font-semibold">سرمایهٔ مبنای سود هر سهم</h5>
++      <p>سرمایه از گزارش فصل آخر این بازه گرفته شده است و منشأ آن جداگانه بررسی می‌شود.</p>
++      <ReportDetails source={boundCapital ? capital : null} heading="گزارش سرمایه" />
++    </section>
++    <p>منبع مستقل قیمت P/E در این بخش نامعلوم است؛ زمان گزارش‌های بالا مربوط به قیمت نیست.</p>
++  </div>;
++}
+diff --git a/components/symbol/QuarterlyPointSources.test.tsx b/components/symbol/QuarterlyPointSources.test.tsx
+new file mode 100644
+--- /dev/null
++++ b/components/symbol/QuarterlyPointSources.test.tsx
+@@ -0,0 +1,220 @@
++import test from "node:test";
++import assert from "node:assert/strict";
++import { readFileSync } from "node:fs";
++import { createRequire } from "node:module";
++import vm from "node:vm";
++import ts from "typescript";
++import * as React from "react";
++import { renderToStaticMarkup } from "react-dom/server";
++import { deriveQuarters, ttmSeries, type QuarterInput, type DerivedQuarter, type TtmPoint } from "../../lib/core/quarterly";
++
++const require = createRequire(import.meta.url);
++function view(name: string, reactOverride?: unknown, elementType?: unknown): Record<string, React.ComponentType<Record<string, unknown>>> {
++  const source = readFileSync(new URL(`./${name}.tsx`, import.meta.url), "utf8"), compiled = { exports: {} };
++  const js = ts.transpileModule(source, { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
++  vm.runInNewContext(js, { module: compiled, exports: compiled.exports, React, Element: elementType, require: (id: string) =>
++    id === "react" && reactOverride ? reactOverride : id === "./CodalSourceLink" ? view("CodalSourceLink") : require(id.startsWith("@/") ? `../../${id.slice(2)}` : id) });
++  return compiled.exports;
++}
++const sources = view("QuarterlyPointSources");
++function reports(years = 1): QuarterInput[] {
++  return Array.from({ length: years * 4 }, (_, i) => {
++    const q = i % 4 + 1, year = 1403 + Math.floor(i / 4), end = `${year}-${["03-31", "06-31", "09-30", "12-29"][q - 1]}`;
++    return { id: 700 + i, period_end: end, period_months: q * 3, audited: false, unit: "میلیون ریال", scope: "company",
++      capital: 100000, revenue: q * 100000, gross_profit: q * 40000, operating_profit: q * 30000, net_profit: q * 20000,
++      record: { id: 700 + i, financialPeriodEnd: end, storedPeriodEnd: null, sourceUrl: `https://codal.ir/Reports/Decision.aspx?LetterSerial=source-${700 + i}`,
++        publishedAt: "1405/01/01 10:00:00", publishedDateRaw: null, publishedTimeRaw: null, publishedAtUtc: null, publicationUtcConfidence: "unknown",
++        capturedAtRaw: "2026-10-25T13:45:56.894105+03:30", capturedAt: "2026-10-25T10:15:56.894Z", parserVersion: null, parserVersionSource: null, amendment: false } };
++  });
++}
++const quarterLabel = (quarter: DerivedQuarter, margins = false, value: number | null = 1) => renderToStaticMarkup(React.createElement(sources.QuarterSourceLabel, {
++  label: "فصل آزمون", margins, payload: [{ dataKey: margins ? "خالص" : "سود خالص", value, payload: { sourceQuarter: quarter } }],
++}));
++const ttmLabel = (point: TtmPoint) => renderToStaticMarkup(React.createElement(sources.TtmPointSources, { point }));
++const links = (html: string) => [...html.matchAll(/href="([^"]+)"/g)].map(m => m[1]);
++
++type Trace = { component: string; props: Record<string, unknown> };
++function charts(quarters: DerivedQuarter[], previewControls: boolean, range = 12, peSeries: Array<{ label: string; pe: number | null }> = []) {
++  const traces: Trace[] = [], source = readFileSync(new URL("./QuarterlyCharts.tsx", import.meta.url), "utf8");
++  const js = ts.transpileModule(source, { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
++  const components = ["Bar", "BarChart", "CartesianGrid", "Line", "LineChart", "Legend", "ReferenceLine", "Tooltip", "XAxis", "YAxis"];
++  const recharts = Object.fromEntries(components.map(component => [component, (props: Record<string, unknown> & { children?: React.ReactNode }) => {
++    traces.push({ component, props });return React.createElement("div", { "data-chart": component }, props.children);
++  }]));
++  const compiled = { exports: {} as { default: React.ComponentType<Record<string, unknown>> } };
++  vm.runInNewContext(js, { module: compiled, exports: compiled.exports, React, require: (id: string) => {
++    if (id === "react") return { ...React, useState: () => [range, () => {}], useEffect() {} };
++    if (id === "recharts") return recharts;
++    if (id === "./MeasuredResponsiveContainer") return { default: ({ children }: { children: React.ReactNode }) => React.createElement(React.Fragment, null, children) };
++    if (id === "./MonthlySourceChartFrame") return view("MonthlySourceChartFrame");
++    if (id === "./QuarterlyPointSources") return sources;
++    return require(id.startsWith("@/") ? `../../${id.slice(2)}` : id);
++  } });
++  const snapshot = structuredClone(quarters), ttm = ttmSeries(quarters);
++  const html = renderToStaticMarkup(React.createElement(compiled.exports.default, { quarters, ttm, peSeries, currentPe: null, sourceTitle: "مرجع بسته", previewControls }));
++  assert.deepEqual(quarters, snapshot, "source rendering must not mutate financial or provenance inputs");
++  return { html, traces };
++}
++
++test("Preview uses the existing frame and exact selected quarters for both amount and margin source tooltips", () => {
++  const quarters = deriveQuarters(reports(4)), shown = charts(quarters, true, 4);
++  const plots = shown.traces.filter(t => ["BarChart", "LineChart"].includes(t.component));
++  assert.equal(plots.length, 2);
++  for (const plot of plots) {
++    const data = plot.props.data as Array<{ sourceQuarter: DerivedQuarter }>;
++    assert.equal(data.length, 4);data.forEach((point, i) => assert.equal(point.sourceQuarter, quarters[12 + i]));
++  }
++  const tips = shown.traces.filter(t => t.component === "Tooltip");
++  for (const tip of tips) { assert.equal(tip.props.trigger, "click");assert.equal(tip.props.portal, null);assert.equal(typeof tip.props.labelFormatter, "function"); }
++  assert.equal((shown.html.match(/data-monthly-source-portal/g) ?? []).length, 2);
++  assert.equal((shown.html.match(/style="width:100%;height:250px"/g) ?? []).length, 2);
++});
++
++test("direct report source uses its own record and exact raw clock with safe native links", () => {
++  const html = quarterLabel(deriveQuarters(reports())[0]);
++  assert.ok(html.includes("گزارش همین دوره"));assert.deepEqual(links(html), ["https://codal.ir/Reports/Decision.aspx?LetterSerial=source-700"]);
++  assert.ok(html.includes("2026-10-25T13:45:56.894105+03:30"));assert.ok(html.includes("2026-10-25T10:15:56.894Z"));
++  assert.ok(html.includes('dir="ltr" style="display:block;white-space:normal;overflow-wrap:anywhere;word-break:break-all;text-align:left"'));
++  assert.ok(html.includes('target="_blank" rel="noopener noreferrer"'));
++  assert.ok(!/matched|binding|source-703|مرجع بسته/.test(html));
++});
++
++test("difference and margin sources show both actual reports, without replacing them with the latest report", () => {
++  const q = deriveQuarters(reports())[1];
++  for (const margins of [false, true]) {
++    const html = quarterLabel(q, margins);
++    assert.ok(html.includes("تفاضل دو گزارش"));assert.ok(html.includes("گزارش تجمیعی دورهٔ قبل"));
++    assert.deepEqual(links(html), [701, 700].map(id => `https://codal.ir/Reports/Decision.aspx?LetterSerial=source-${id}`));
++    assert.ok(!html.includes("source-703"));
++    if (margins) assert.ok(html.includes("نسبت سود به درآمد همان فصل"));
++  }
++});
++
++test("reported zero keeps source; absent/nonfinite tooltip values and contradictory payloads have no borrowed links", () => {
++  const quarters = deriveQuarters(reports());
++  assert.equal(links(quarterLabel(quarters[0], false, 0)).length, 1);
++  for (const value of [null, NaN, Infinity]) assert.equal(links(quarterLabel(quarters[0], false, value)).length, 0);
++  const html = renderToStaticMarkup(React.createElement(sources.QuarterSourceLabel, { label: "فصل", payload: [
++    { dataKey: "درآمد", value: 1, payload: { sourceQuarter: quarters[0] } },
++    { dataKey: "سود خالص", value: 1, payload: { sourceQuarter: quarters[1] } },
++  ] }));
++  assert.ok(html.includes("منبع این دوره نامعلوم"));assert.equal(links(html).length, 0);
++});
++
++test("mismatched/unknown identities and periods suppress only unverifiable report details", () => {
++  const original = deriveQuarters(reports())[1];
++  for (const change of ["id", "date", "binding", "missing"] as const) {
++    const q = structuredClone(original), source = q.provenance!.amounts.contributors[0].report;
++    if (change === "id") source.record!.id = 9999;
++    if (change === "date") source.record!.financialPeriodEnd = "1405-12-29";
++    if (change === "binding") source.binding = "ambiguous_identity";
++    if (change === "missing") source.record = null;
++    const html = quarterLabel(q);
++    assert.ok(html.includes("منبع این گزارش نامعلوم"));assert.deepEqual(links(html), ["https://codal.ir/Reports/Decision.aspx?LetterSerial=source-700"]);
++  }
++  const q = structuredClone(original);q.provenance!.amounts.contributors.pop();
++  assert.equal(links(quarterLabel(q)).length, 0);
++  const wrongPeriod = structuredClone(original);wrongPeriod.periodEnd = "1405-06-31";
++  assert.equal(links(quarterLabel(wrongPeriod)).length, 0);
++});
++
++test("unsafe source URL is rejected and null clocks stay unknown", () => {
++  const q = deriveQuarters(reports())[0], record = q.provenance!.amounts.contributors[0].report.record!;
++  record.sourceUrl = "javascript:alert(1)";record.capturedAtRaw = null;record.capturedAt = null;record.publishedAt = null;
++  const html = quarterLabel(q);
++  assert.equal(links(html).length, 0);assert.ok(!html.includes("javascript:"));assert.ok(html.includes("پیوند گزارش در کدال نامعلوم"));
++  assert.ok(html.includes("انتشار گزارش (زمان محلی): نامعلوم"));
++});
++
++test("gaps and rejected differences keep their existing financial holes and do not present a valid report chain", () => {
++  const inputs = reports();inputs[1].revenue = 1;
++  const q = deriveQuarters(inputs)[1];assert.equal(q.revenue, null);assert.equal(q.adjusted, true);
++  assert.equal(links(quarterLabel(q)).length, 0);
++  const gap = deriveQuarters(reports().filter(r => r.period_months !== 6))[2];
++  assert.equal(gap.netProfit, null);assert.equal(links(quarterLabel(gap)).length, 0);
++  const shown = charts([gap], true), data = shown.traces.find(t => t.component === "BarChart")!.props.data as Array<Record<string, unknown>>;
++  assert.equal(data[0]["درآمد"], null);assert.equal(data[0]["سود خالص"], null);
++});
++
++test("a genuine quarterly loss retains its two-report source and negative margin without becoming an unavailable gap", () => {
++  // Synthetic loss: unlike rejected revenue adjustments, a negative profit is valid.
++  const inputs = reports();inputs[2].net_profit = inputs[1].net_profit - 50000;
++  const quarters = deriveQuarters(inputs), loss = quarters[2];
++  assert.equal(loss.netProfit, -50000);assert.equal(loss.netMargin, -50);assert.equal(loss.adjusted, false);
++  for (const [margins, value] of [[false, -50000], [true, -50]] as const)
++    assert.deepEqual(links(quarterLabel(loss, margins, value)), [702, 701].map(id => `https://codal.ir/Reports/Decision.aspx?LetterSerial=source-${id}`));
++  const shown = charts(quarters, true), data = shown.traces.find(t => t.component === "BarChart")!.props.data as Array<Record<string, unknown>>;
++  assert.equal(data[2]["سود خالص"], -5);
++});
++
++test("TTM sources show all four quarter chains and final capital, independently of historical P/E availability", () => {
++  const quarters = deriveQuarters(reports()), point = ttmSeries(quarters)[0], html = ttmLabel(point);
++  assert.ok(html.includes("چهار فصل سازندهٔ دوازده‌ماهه"));assert.ok(html.includes("سرمایهٔ مبنای سود هر سهم"));
++  assert.deepEqual(links(html).map(url => Number(url.split("source-")[1])), [700, 701, 700, 702, 701, 703, 702, 703]);
++  assert.ok(html.includes("منبع مستقل قیمت P/E در این بخش نامعلوم"));
++  const shown = charts(quarters, true);
++  assert.ok(shown.html.includes("منابع سود هر سهم دوازده‌ماهه"));assert.ok(shown.html.includes("دوازده‌ماهه منتهی به ۱۴۰۳-۱۲-۲۹"));
++  assert.ok(shown.html.includes("قیمت تاریخی پایان فصل"));
++  assert.equal(shown.traces.filter(t => t.component === "LineChart").length, 1, "no new EPS/P-E plot is fabricated");
++});
++
++test("TTM missing/contradictory provenance and unrelated capital remain unknown", () => {
++  const point = ttmSeries(deriveQuarters(reports()))[0];
++  const missing = structuredClone(point);delete missing.provenance;
++  assert.ok(ttmLabel(missing).includes("منابع چهار فصل این بازه نامعلوم"));assert.equal(links(ttmLabel(missing)).length, 0);
++  const partial = structuredClone(point);partial.provenance!.netProfit[1].amounts = null;
++  assert.ok(ttmLabel(partial).includes("منبع این دوره نامعلوم"));assert.equal(links(ttmLabel(partial)).length, 6);
++  const finalProfitUnknown = structuredClone(point);finalProfitUnknown.provenance!.netProfit[3].amounts = null;
++  assert.equal(links(ttmLabel(finalProfitUnknown)).length, 6, "independently bound capital survives missing profit metadata");
++  const wrong = structuredClone(point);wrong.provenance!.netProfit[3].periodEnd = "1405-12-29";
++  assert.equal(links(ttmLabel(wrong)).length, 0);
++  const reordered = structuredClone(point);[reordered.provenance!.netProfit[0], reordered.provenance!.netProfit[1]] = [reordered.provenance!.netProfit[1], reordered.provenance!.netProfit[0]];
++  assert.equal(links(ttmLabel(reordered)).length, 0);
++  const capital = structuredClone(point);capital.provenance!.capital = capital.provenance!.netProfit[0].amounts!.contributors[0].report;
++  assert.equal(links(ttmLabel(capital)).length, 7);
++});
++
++test("nonPreview keeps original point shapes and tooltips; P/E source and format are unchanged in either mode", () => {
++  const quarters = deriveQuarters(reports()), pe = [{ label: "Q3 1403", pe: 4.5 }, { label: "Q4 1403", pe: 5.5 }];
++  for (const preview of [false, true]) {
++    const shown = charts(quarters, preview, 12, pe), tips = shown.traces.filter(t => t.component === "Tooltip");
++    const last = tips[2].props;
++    assert.equal(last.labelFormatter, undefined);assert.equal(last.portal, undefined);assert.equal(last.trigger, undefined);
++    assert.deepEqual(Array.from((last.formatter as (v: unknown, n: unknown) => string[])(null, "P/E")), ["—", "P/E"]);
++    if (!preview) {
++      assert.ok(!shown.html.includes("منابع سود هر سهم دوازده‌ماهه"));assert.ok(!shown.html.includes("data-monthly-source-portal"));
++      for (const tip of tips) { assert.equal(tip.props.labelFormatter, undefined);assert.equal(tip.props.trigger, undefined);assert.equal(tip.props.portal, undefined); }
++      for (const plot of shown.traces.filter(t => ["BarChart", "LineChart"].includes(t.component)))
++        assert.ok((plot.props.data as Array<Record<string, unknown>>).every(p => !Object.hasOwn(p, "sourceQuarter")));
++    }
++  }
++});
++
++test("quarter source label uses the shared frame marker and preserves native link defaults and Escape", () => {
++  const component = sources.QuarterSourceLabel as (props: Record<string, unknown>) => React.ReactElement;
++  const label = component({ label: "فصل", payload: [] }), props = label.props as Record<string, unknown>;
++  assert.equal(props["data-chart-point-source"], "");
++  for (const [handler, key, expected] of [["onClick", "", true], ["onFocus", "", true], ["onKeyDown", "Enter", true], ["onKeyDown", "Escape", false]] as const) {
++    let stopped = false;
++    (props[handler] as (event: unknown) => void)({ key, stopPropagation() { stopped = true; }, preventDefault() { assert.fail("native defaults must remain"); } });
++    assert.equal(stopped, expected);
++  }
++});
++
++test("the existing shared frame recognizes quarterly source links in both focus directions without changing pointer mode", () => {
++  class ElementTarget {
++    constructor(public source: boolean) {}
++    closest(selector: string) { return this.source && selector.includes("[data-chart-point-source]") ? this : null; }
++  }
++  let calls = 0, mode = "hover";
++  const frame = view("MonthlySourceChartFrame", { ...React, useState: () => calls++ === 0 ? [mode, (value: string) => { mode = value; }] : [null, () => {}] }, ElementTarget).default as (props: Record<string, unknown>) => React.ReactElement;
++  const outer = frame({ enabled: true, height: 250, width: "100%", children: () => null });
++  const element = (outer.props as { children: React.ReactElement[] }).children[1];
++  const props = element.props as Record<string, (event: unknown) => void>, source = new ElementTarget(true), svg = new ElementTarget(false);
++  props.onPointerDownCapture({ target: source });assert.equal(mode, "hover");
++  for (const [target, relatedTarget] of [[svg, source], [source, svg]]) {
++    let stopped = false;
++    props.onBlurCapture({ target, relatedTarget, currentTarget: { contains: () => true }, stopPropagation() { stopped = true; } });
++    assert.equal(stopped, true);
++  }
++});

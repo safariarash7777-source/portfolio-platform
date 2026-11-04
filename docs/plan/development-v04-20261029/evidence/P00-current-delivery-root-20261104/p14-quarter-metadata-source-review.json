@@ -1,0 +1,28 @@
+{
+  "schema": "root-p14-quarterly-source-adoption.v1",
+  "atUtc": "2026-11-04T13:03:09.071523+00:00",
+  "base": "4e4765bdef751b99047ac12996208c0f2b85c5de",
+  "manifestSha256": "63b9cd8d4b67d70c74d42a733bf878db79d383d4351eabb2ac54e991dd0900c0",
+  "packetFilesVerified": 46,
+  "patchSha256": "3e2f9fe4fecfa2fca4eacac34e982b8c100ac33df85de1a3ac30f563b9b6ac7e",
+  "changed": [
+    "lib/core/quarterly.ts",
+    "lib/core/quarterly.test.ts",
+    "lib/fundamental/types.ts",
+    "lib/fundamental/supabase.ts",
+    "lib/fundamental/wiring.test.ts",
+    "app/symbol/[symbol]/page.tsx",
+    "lib/core/quarterly-provenance.ts"
+  ],
+  "sourceContract": "optional record on actual n10Periods input; Preview-only forwarding to quarter inputs",
+  "quarterSource": "actual current/previous rows used by existing reported/difference calculation; invalid/ambiguous metadata remains unknown without changing financial values",
+  "ttmSource": "all four actual quarter windows and repeated difference contributors; independent last capital source",
+  "legacy": "no record field means original output shape; arithmetic, dedupe, filtering and formatter remain unchanged",
+  "sourceMeaning": "matched is row identity only, not freshness or financial validity",
+  "appearanceChanged": false,
+  "priceOrPeClockInferred": false,
+  "newFetchOrSql": false,
+  "fullRuntimeAcceptance": "PENDING_NEW_CANDIDATE_NOT_TRANSFERRED",
+  "previousUsablePreview": "4e4765b / dpl_GWHjd8YqCXPHm2rjuFKAYL4hLSgR",
+  "productionChanged": false
+}

@@ -1,0 +1,154 @@
+{
+  "atUtc": "2026-11-04T13:20:10.381214+00:00",
+  "scope": "READONLY_SOURCE_PROPOSAL_NOT_IMPLEMENTED",
+  "application": "f3aa9bd51d06e308b08b56651cac4733ea49af8e",
+  "helper": "67aeda9ff84fb1d3e936fc39564c0e551b3ff17e",
+  "callerObserved": "ea6776887564eacaaeb61d7f8a32386181a66aa5",
+  "applicationTree": "b576021a2248f6887319f4ee226df79e906dbe45",
+  "pins": {
+    "scripts/isolated-e2e/workbook-browser.mjs": {
+      "helper": {
+        "exists": true,
+        "sha256": "9f05208a449daff9f036819b27c06862a0295f8da94738e35cca541c3dc88150",
+        "blob": "b81070e058171a32ff5ddf100011baf0ca96bcaf"
+      },
+      "application": {
+        "exists": false,
+        "sha256": null,
+        "blob": null
+      }
+    },
+    "scripts/isolated-e2e/workbook-native-auth.mjs": {
+      "helper": {
+        "exists": true,
+        "sha256": "613a741ff0dcc8b31f63f40d259fbca70c1407628a924f4a42bc6957b2921e5f",
+        "blob": "e606d97bd0028c1eaf353bb04cf021ae18a6a06d"
+      },
+      "application": {
+        "exists": false,
+        "sha256": null,
+        "blob": null
+      }
+    },
+    "scripts/isolated-e2e/native-auth-runtime.mjs": {
+      "helper": {
+        "exists": true,
+        "sha256": "f9fff9fdec11ef3a9a52f949ccbccd2e24f17cab2285c396c7c73a907586c101",
+        "blob": "cee0370fe8be0d21c263de5ddfd40aecb5d19ab0"
+      },
+      "application": {
+        "exists": false,
+        "sha256": null,
+        "blob": null
+      }
+    },
+    "scripts/isolated-e2e/native-auth-gateway.mjs": {
+      "helper": {
+        "exists": true,
+        "sha256": "d4b971d7f1770bd7e4d415d44a45f51a6e01f60a4b4737383040f1590b530867",
+        "blob": "63382febd6915d93a27d9b1434f07aed63a2976a"
+      },
+      "application": {
+        "exists": false,
+        "sha256": null,
+        "blob": null
+      }
+    },
+    "sql/test/supabase_bootstrap.sql": {
+      "helper": {
+        "exists": true,
+        "sha256": "90547ffbcecedbb4dd4c5b33740b8d300b7dee726ee681365204bf789a7912c9",
+        "blob": "2d33ea0ab8c20ca942999ce7c11dc99e8555a31e"
+      },
+      "application": {
+        "exists": true,
+        "sha256": "90547ffbcecedbb4dd4c5b33740b8d300b7dee726ee681365204bf789a7912c9",
+        "blob": "2d33ea0ab8c20ca942999ce7c11dc99e8555a31e"
+      }
+    },
+    "sql/test/profile_explicit_grants.sql": {
+      "helper": {
+        "exists": true,
+        "sha256": "02be92d59318897ebdd8c1b5a5fa6b7f9b53da51291e3c2deb42ea8b1b852fe3",
+        "blob": "94639f289300a48d388b47ab2cc5da6868f8894c"
+      },
+      "application": {
+        "exists": true,
+        "sha256": "02be92d59318897ebdd8c1b5a5fa6b7f9b53da51291e3c2deb42ea8b1b852fe3",
+        "blob": "94639f289300a48d388b47ab2cc5da6868f8894c"
+      }
+    },
+    "sql/phase34_research_workbook_versions.sql": {
+      "helper": {
+        "exists": true,
+        "sha256": "d3193cac78f70b4d0a25372cf8927aace9933b5e117b2e2ebe7806110cdc4148",
+        "blob": "4ec039c252fc8cd1fca9c24db7c9a3c43770bfba"
+      },
+      "application": {
+        "exists": true,
+        "sha256": "d3193cac78f70b4d0a25372cf8927aace9933b5e117b2e2ebe7806110cdc4148",
+        "blob": "4ec039c252fc8cd1fca9c24db7c9a3c43770bfba"
+      }
+    },
+    "docs/ops/research-workbook-recovery-20261029/intent-store.candidate.sql": {
+      "helper": {
+        "exists": true,
+        "sha256": "bd0d6700fb9fa6415c94d6db9d9695d8a4bc013856f3e0098c7abbf457f749e6",
+        "blob": "7e3f7c7f85cb26281851e844c31f3c1ad0e5d9b1"
+      },
+      "application": {
+        "exists": true,
+        "sha256": "bd0d6700fb9fa6415c94d6db9d9695d8a4bc013856f3e0098c7abbf457f749e6",
+        "blob": "7e3f7c7f85cb26281851e844c31f3c1ad0e5d9b1"
+      }
+    },
+    "package.json": {
+      "helper": {
+        "exists": true,
+        "sha256": "7f9c39dce9a097a8baf412daeba5009c2feb50cf14acc8c04027e9618c1c93c5",
+        "blob": "52994b2dd348bb0fd27c8016509ac17e26616019"
+      },
+      "application": {
+        "exists": true,
+        "sha256": "e0570e5ce84b3c6c71d1caa6e9c6d59dc40cc0b9f98e1835458f64f51d1103cf",
+        "blob": "b10ded459db82156f23cb1def192b0a20b65bed9"
+      }
+    },
+    "package-lock.json": {
+      "helper": {
+        "exists": true,
+        "sha256": "98819c5b5297d75054bdb70d8e98c81caa5b16c4bde3f80a97e9628d322ff6e5",
+        "blob": "dddfa8d6a4f705383ccbdc3e9a1afd03ff24e305"
+      },
+      "application": {
+        "exists": true,
+        "sha256": "98819c5b5297d75054bdb70d8e98c81caa5b16c4bde3f80a97e9628d322ff6e5",
+        "blob": "dddfa8d6a4f705383ccbdc3e9a1afd03ff24e305"
+      }
+    },
+    "components/admin/ResearchWorkbook.tsx": {
+      "helper": {
+        "exists": true,
+        "sha256": "106ba44911d61110d1e67b051aac72f0c359a382df2b634e395eeb895f093990",
+        "blob": "5e21eef71e3004ded0cecf8c4253683c996f95ea"
+      },
+      "application": {
+        "exists": true,
+        "sha256": "106ba44911d61110d1e67b051aac72f0c359a382df2b634e395eeb895f093990",
+        "blob": "5e21eef71e3004ded0cecf8c4253683c996f95ea"
+      }
+    },
+    "lib/intelligence/workbook-save-intent.ts": {
+      "helper": {
+        "exists": true,
+        "sha256": "7c27387f631074fee543951eaae4596e3e0214f6dc72709280bc4845f5da050e",
+        "blob": "a5e2ee1b490a2faac2d53f7f801ccd9deb859b75"
+      },
+      "application": {
+        "exists": true,
+        "sha256": "7c27387f631074fee543951eaae4596e3e0214f6dc72709280bc4845f5da050e",
+        "blob": "a5e2ee1b490a2faac2d53f7f801ccd9deb859b75"
+      }
+    }
+  }
+}

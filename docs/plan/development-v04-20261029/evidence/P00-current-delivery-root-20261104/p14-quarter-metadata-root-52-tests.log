@@ -1,0 +1,71 @@
+✔ fyOf: سال مالی تقویمی از پایان دوره‌های میانی و سالانه یکی است (1.7319ms)
+✔ fyOf: سال مالی غیرتقویمی (پایان شهریور) — هر دو دوره به یک FY می‌روند (0.2526ms)
+✔ زنجیرهٔ کامل: چهار فصل با تفاضل درست (0.8686ms)
+✔ حلقهٔ غایب: بدون ۶ماهه، Q2 و Q3 هر دو null — هرگز تقسیم نمی‌شود (0.2545ms)
+✔ دو نسخه از یک دوره: حسابرسی‌شده مقدم است (0.2618ms)
+✔ اصلاحیهٔ متأخر (id بزرگ‌تر) در نسخه‌های هم‌سطح مقدم است (0.1442ms)
+✔ تفاضل منفی نامعقول در درآمد → فصل null + پرچم adjusted (0.2384ms)
+✔ حاشیه‌ها فقط با درآمد مثبت؛ درصد درست (0.2173ms)
+✔ EPS TTM: فقط با ۴ فصل متوالی کامل؛ فرمول ×۱۰۰۰÷سرمایه (0.6697ms)
+✔ EPS TTM: پنجرهٔ دارای فصل null حذف می‌شود (هیچ نقطه بدون ۴ فصل کامل) (0.5043ms)
+✔ peOf: قیمت یا EPS نامعتبر → null (هیچ P/E منفی/ساختگی) (0.188ms)
+✔ rolling4: میانگین ۴فصله فقط با پنجرهٔ کامل (0.1728ms)
+✔ سال مالی جاری ناقص: فصل‌های آینده حذف، فصل‌های موجود می‌مانند (0.1959ms)
+✔ quarter provenance follows the actual direct/difference inputs and preserves financial results and source precision (1.5645ms)
+✔ legacy callers retain their exact quarterly and TTM output shape without provenance (0.2093ms)
+✔ unknown, wrong-period and mismatched row metadata never become financial null or a neighboring source (0.6543ms)
+✔ invalid and ambiguous database identities fail closed only for metadata (0.411ms)
+✔ metadata follows the winning input object, never a discarded newer URL/clock or same-period report (0.1598ms)
+✔ missing/incompatible links keep unavailable provenance; rejected differences retain the two checked reports (0.4904ms)
+✔ TTM retains all four actual quarter calculations, repeated difference contributors, and only final capital (0.4637ms)
+✔ TTM preserves legacy/missing contributor slots as unknown without borrowing another quarter's metadata (0.1792ms)
+✔ noncalendar fiscal chains keep their own period identities; invalid periods do not gain admission through metadata (0.3216ms)
+✔ matched metadata cannot certify nonfinite values, invent margins on zero revenue, or create missing capital (0.8905ms)
+▶ تشخیصِ اصلاحیه از عنوان
+  ✔ عنوانِ دارای «اصلاحیه» شناخته می‌شود (0.8102ms)
+  ✔ املای عربیِ «اصلاحيه» هم شناخته می‌شود (0.1423ms)
+  ✔ عنوانِ عادی اصلاحیه نیست و ورودیِ خالی نمی‌شکند (0.1191ms)
+✔ تشخیصِ اصلاحیه از عنوان (2.1743ms)
+▶ تقدمِ اصلاحیه بر نسخهٔ اولیه
+  ✔ اصلاحیه حتی با id کمتر برنده است — موردِ واقعیِ فولاد (0.6081ms)
+  ✔ وقتی ارقام فرق دارند، رقمِ اصلاحیه انتخاب می‌شود — موردِ واقعیِ شپنا (0.179ms)
+  ✔ حسابرسی‌شده همچنان بر اصلاحیهٔ حسابرسی‌نشده مقدم است (0.1578ms)
+  ✔ بینِ دو اصلاحیه، جدیدترین id برنده است (0.3831ms)
+  ✔ بینِ دو نسخهٔ عادی، رفتارِ قبلی حفظ شده (0.2341ms)
+  ✔ دوره‌های متفاوت با هم قاطی نمی‌شوند (0.2381ms)
+✔ تقدمِ اصلاحیه بر نسخهٔ اولیه (2.33ms)
+▶ زمانِ انتشار در تساوی
+  ✔ فخاس سالانهٔ ۱۴۰۳ (شناسه و عنوانِ واقعی): جداگانه (۰۳/۰۶) بر تلفیقیِ دیرتر (۰۴/۱۳) (0.4072ms)
+  ✔ ذوب ۶ماههٔ ۱۴۰۴ (واقعی): جداگانه (۰۸/۰۱) بر تلفیقیِ دیرتر (۰۸/۳۰) (0.1625ms)
+  ✔ فملی ۹ماههٔ ۱۴۰۴ (واقعی، هم‌دامنه): انتشارِ ۱۱/۰۸ بر ۱۱/۰۷ با وجودِ `id` کمتر (0.3244ms)
+  ✔ پاریز: از سه اصلاحیه، آخرین منتشرشده — نه قدیمی‌ترین با بزرگ‌ترین `id` (0.2272ms)
+  ✔ زمان بالای اصلاحیه نمی‌نشیند: تلفیقیِ دیرتر جای اصلاحیه را نمی‌گیرد (حآفرین) (0.1567ms)
+  ✔ حسابرسی همچنان بالای زمان است (0.1151ms)
+  ✔ زمانِ نامعلوم یا ناقص → برگشت به `id`، نه حدس (0.1357ms)
+  ✔ زمانِ دقیقاً یکسان → `id` (یکی از ۶ گروهِ واقعی) (0.1192ms)
+✔ زمانِ انتشار در تساوی (2.029ms)
+▶ publishKey
+  ✔ رقمِ فارسی و عربی → لاتین، شکلِ قابلِ مقایسه (15.2727ms)
+  ✔ شکلِ نامعتبر → null (0.6114ms)
+✔ publishKey (16.0351ms)
+▶ دامنه: جداگانه بر تلفیقی (B-056)
+  ✔ تشخیصِ «تلفیقی» با ی/ک عربی (0.4806ms)
+  ✔ جداگانهٔ حسابرسی‌نشده بر تلفیقیِ حسابرسی‌شده و اصلاحیهٔ تلفیقی مقدم است (0.248ms)
+✔ دامنه: جداگانه بر تلفیقی (B-056) (0.8483ms)
+✔ کارت و فصل‌ها روی یک دوره یک گزارش را می‌بینند — گزارشِ جداگانهٔ شرکت، نه تلفیقیِ دیرتر (59.6843ms)
+✔ گزارشِ جداگانه بر تلفیقیِ همان دوره مقدم است — حتی اگر تلفیقی دیرتر آمده باشد (4.7305ms)
+✔ دورهٔ فقط‌تلفیقی: منبع با هشدار حفظ می‌شود ولی وارد فصل‌ها نمی‌شود (3.7102ms)
+✔ زنجیرهٔ فصلی دامنه‌ها را قاطی نمی‌کند: ۳ماههٔ جداگانه + ۶ماههٔ فقط‌تلفیقی ⇒ Q2 تهی (5.8239ms)
+codal_reports: ن-۱۰ reached limit 400 — oldest periods truncated
+✔ limit: رشدِ ردیف تازه‌ترین دوره را نمی‌اندازد (id کمتر ولی period_end تازه‌تر) (16.0282ms)
+✔ شپنا ۳ماههٔ ۱۴۰۳ (واقعی): Q1 از اصلاحیه، نه نسخهٔ اولیهٔ باطل — همان که کارت می‌بیند (1.6032ms)
+✔ each selected period carries its own immutable record into quarters and TTM, not the main bundle record (3.1152ms)
+✔ per-period unknown clocks and unsafe URL stay null; stored period is not substituted for financial period (1.3467ms)
+ℹ tests 52
+ℹ suites 5
+ℹ pass 52
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1006.5771

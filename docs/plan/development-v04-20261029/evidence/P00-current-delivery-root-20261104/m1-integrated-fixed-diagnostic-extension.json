@@ -1,0 +1,12 @@
+{
+  "schema": "root-m1-fixed-diagnostic-extension.v1",
+  "addedExactSourceLiterals": [
+    "m1_full_restore_mismatch",
+    "owned_query_failed",
+    "m1_image_inspect_failed"
+  ],
+  "sourceVerification": "literals read from the adopted adapter source; no regex or arbitrary text accepted",
+  "privacy": "each exact code accepted; same code with private suffix rejected; no raw cause/SQL/body exposed",
+  "phaseMeaning": "last observed phase only, not proven failure cause",
+  "authorityBudgetsWorkflowSchemaUnchanged": true
+}

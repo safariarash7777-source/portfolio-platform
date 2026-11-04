@@ -1,0 +1,27 @@
+{
+  "schema": "root-exact-source-linux-ci-readback.v1",
+  "atUtc": "2026-11-04T13:56:29.288Z",
+  "run": 41836983234,
+  "source": "499166f81d1074ec7c906bac49706507b253fee1",
+  "actualCiMerge": "68527a8198d448187c135d571773cc340d23b431",
+  "tree": "c4d4046e8e15ad4539975a173bd57eb2c27b6459",
+  "parents": [
+    "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+    "499166f81d1074ec7c906bac49706507b253fee1"
+  ],
+  "fiveGates": "SUCCESS",
+  "native": "SKIPPED",
+  "core": {
+    "job": 126598324892,
+    "characters": 1283021,
+    "errors": []
+  },
+  "db": {
+    "job": 126598324956,
+    "characters": 3280082,
+    "errors": []
+  },
+  "fullLogsRead": true,
+  "actualMergeObjectFetchedAndTreeVerified": true,
+  "productionChanged": false
+}
