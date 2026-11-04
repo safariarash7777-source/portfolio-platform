@@ -104,7 +104,7 @@ function sharedBudget() {
     softBudget: Number(process.env.BRSAPI_DAILY_SOFT || 6000),
     hardCeiling: Number(process.env.BRSAPI_DAILY_HARD || 9000),
     leaseSize: Number(process.env.BRSAPI_LEASE_SIZE || 50),
-    degradedCeiling: Number(process.env.BRSAPI_DEGRADED_CEILING || 100),
+    degradedCeiling: 0 /* Emergency unleased allowance is disabled, including env overrides. */,
     onError: (e) => console.error("brsapi budget store:", errMsg(e)),
   });
   return sharedBudgetInstance;
@@ -133,7 +133,7 @@ function commodityBudget() {
     softBudget: Number(process.env.BRSAPI_COMMODITY_SOFT || 900),
     hardCeiling: Number(process.env.BRSAPI_COMMODITY_HARD || 1200),
     leaseSize: Number(process.env.BRSAPI_COMMODITY_LEASE || 20),
-    degradedCeiling: Number(process.env.BRSAPI_COMMODITY_DEGRADED || 20),
+    degradedCeiling: 0 /* Emergency unleased allowance is disabled, including env overrides. */,
     onError: (e) => console.error("commodity budget store:", errMsg(e)),
   });
   return commodityBudgetInstance;
