@@ -10,6 +10,17 @@ import { collectControlPlane, collectReceipt, sanitizeDebug, errorCategory, tran
 const storedUrl = 'https://portfolio-platform-fawn.vercel.app/api/codal-list?symbol=' + encodeURIComponent('فولاد');
 const storedBody = { source: 'codal_feed', coverage: 'stored-announcements', data: [{ private: 'NEVER_EMIT_PRIVATE_VALUE' }] };
 const secret = 'NEVER_EMIT_PRIVATE_VALUE';
+test('enforced runtime requires explicit installed-schema evidence in passive acceptance', async () => {
+  const d = debug(); d.brsapiLegacy.enforced = true;
+  const fetchImpl = async url => new Response(url.endsWith('/debug') ? JSON.stringify(d)
+    : url.endsWith('/healthz') ? 'ok' : JSON.stringify(storedBody));
+  for (const applied of [false, true]) {
+    const r = await collectReceipt({ token: secret, phase28Applied: applied, fetchImpl });
+    assert.equal(r.debug.acceptance, applied ? 'passed' : 'failed');
+    assert.equal(r.debug.data.budget.providerAccountUsage, null);
+    assert.equal(r.debug.data.budget.legacy.budget.accountingScope, 'internal_allocation_not_provider_usage');
+  }
+});
 function debug() {
   return { now: 1793066400000, warmedUp: true, lastRefresh: 1793066300000, ageSec: 100,
     historySections: { written: ['gold', 'currency'], missing: [] },

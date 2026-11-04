@@ -61,7 +61,8 @@ env:
   DEBUG_URL: "https://arsadata.liara.run/debug"
   # وضعیتِ واقعیِ Production (۲۰۲۶-۰۹-۱۴): نه `brsapi_budget_days` هست نه
   # `brsapi_budget_lease`. اگر روزی phase28 اجرا شد، این را آگاهانه `true` کن.
-  PHASE28_APPLIED: "false"
+  # Installed and contract-checked on reviewed backend 2026-11-04T22:44Z.
+  PHASE28_APPLIED: "true"
 
 jobs:
   deploy:

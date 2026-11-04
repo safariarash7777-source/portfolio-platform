@@ -116,7 +116,7 @@ const okFlags = {
   PORT: "3400",
   IR_HISTORY_SECTIONS: null,
   BRSAPI_CLIENT_ENABLED: null,
-  BRSAPI_BUDGET_ENFORCE_LEGACY: null,
+  BRSAPI_BUDGET_ENFORCE_LEGACY: "0",
   BRSAPI_KEY_SET: true,
   SUPABASE_URL_SET: true,
   SUPABASE_SERVICE_ROLE_KEY_SET: true,
@@ -125,7 +125,7 @@ const okFlags = {
 const flags = (over = {}) => JSON.stringify({ ...okFlags, ...over });
 
 test("پیش‌پرواز: وضعیتِ سالم عبور می‌کند", () => {
-  const r = evaluateFlags(flags());
+  const r = evaluateFlags(flags(), { phase28Applied: true });
   assert.equal(r.ok, true, r.failures.join(" | "));
   assert.deepEqual(r.flags.effectiveSections, ["gold", "currency"]);
   assert.equal(r.flags.debugReachable, true);
@@ -151,6 +151,9 @@ test("پیش‌پرواز: نوعِ اشتباه رد می‌شود", () => {
 });
 
 test("پیش‌پرواز: بدونِ phase28، هر دو پرچم انتشار را رد می‌کنند", () => {
+  assert.equal(evaluateFlags(flags({ BRSAPI_BUDGET_ENFORCE_LEGACY: null })).ok, false,
+    "unset flag now enforces and requires the installed schema");
+  assert.equal(evaluateFlags(flags({ BRSAPI_BUDGET_ENFORCE_LEGACY: null }), { phase28Applied: true }).ok, true);
   const a = evaluateFlags(flags({ BRSAPI_BUDGET_ENFORCE_LEGACY: "1" }));
   assert.equal(a.ok, false);
   assert.match(a.failures.join(" "), /بی‌شمارش/);

@@ -83,7 +83,7 @@ function codalDetails(engine, archive) {
 }
 
 const operation = x => ({ ok: boolean(x?.ok), lastRun: clock(x?.lastRun), lastDate: date(x?.lastDate ?? x?.lastJdate), rows: number(x?.rows), error: errorCategory(x?.error ?? x?.lastError), skipped: x?.skipped == null ? null : true });
-const budget = x => ({ available: boolean(x?.available), persistent: boolean(x?.persistent), day: date(x?.day), ...counts(x, ['softBudget', 'hardCeiling', 'used', 'remaining', 'rejectedByBudget']), softExhausted: boolean(x?.softExhausted), store: { healthy: boolean(x?.store?.healthy), errors: number(x?.store?.errors), error: errorCategory(x?.store?.lastError), ...safeErrorCodes(x?.store?.lastError) } });
+const budget = x => ({ accountingScope: 'internal_allocation_not_provider_usage', accountingState: choice(x?.accountingState, ['confirmed_internal_estimate', 'unknown']), available: boolean(x?.available), persistent: boolean(x?.persistent), day: date(x?.day), ...counts(x, ['softBudget', 'hardCeiling', 'used', 'remaining', 'rejectedByBudget']), softExhausted: boolean(x?.softExhausted), store: { healthy: boolean(x?.store?.healthy), errors: number(x?.store?.errors), error: errorCategory(x?.store?.lastError), ...safeErrorCodes(x?.store?.lastError) } });
 
 // IME scheduling days are Gregorian Tehran days, not timestamps. Target
 // disclosure dates are Jalali days. Preserve both precisions explicitly.
@@ -226,7 +226,7 @@ export async function collectControlPlane({ token, fetchImpl = fetch, timeoutMs 
     limitations: ['Environment values arrive in API memory only; names and booleans for one reviewed backend URL comparison are emitted.', 'Control-plane metadata is not proof of running process code, collector exclusion, budget or ingestion success.'] };
 }
 
-export async function collectReceipt({ token, controlPlaneToken, fetchImpl = fetch, now = () => new Date().toISOString() } = {}) {
+export async function collectReceipt({ token, controlPlaneToken, phase28Applied = false, fetchImpl = fetch, now = () => new Date().toISOString() } = {}) {
   const request = async (url, kind) => {
     if (kind === 'debug' && !token) return { status: 'missing_credential', httpStatus: null, error: null };
     try {
@@ -247,7 +247,7 @@ export async function collectReceipt({ token, controlPlaneToken, fetchImpl = fet
         }
         const t = d.brsapiTransport;
         const spacingPassed = observedBrsTransportPolicy(t);
-        return { status: 'read', httpStatus, error: null, acceptance: evaluateDebug(raw, { phase28Applied: false }).ok ? 'passed' : 'failed', spacing: spacingPassed ? 'passed' : 'failed', data: sanitizeDebug(d) };
+        return { status: 'read', httpStatus, error: null, acceptance: evaluateDebug(raw, { phase28Applied }).ok ? 'passed' : 'failed', spacing: spacingPassed ? 'passed' : 'failed', data: sanitizeDebug(d) };
       } catch { return { status: 'invalid_response', httpStatus, error: kind === 'storedRead' ? 'invalid_stored_read_payload' : 'invalid_debug_payload' }; }
     } catch (error) { return { status: 'connection_error', httpStatus: null, error: transportError(error) }; }
   };
@@ -258,7 +258,7 @@ export async function collectReceipt({ token, controlPlaneToken, fetchImpl = fet
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
-    const receipt = await collectReceipt({ token: process.env.RELAY_TOKEN, controlPlaneToken: process.env.LIARA_API_TOKEN });
+    const receipt = await collectReceipt({ token: process.env.RELAY_TOKEN, controlPlaneToken: process.env.LIARA_API_TOKEN, phase28Applied: process.env.PHASE28_APPLIED === 'true' });
     await writeFile('relay-health-receipt.json', JSON.stringify(receipt, null, 2) + '\n', { mode: 0o600 });
     console.log(JSON.stringify(receipt));
     if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, '```json\n' + JSON.stringify(receipt, null, 2) + '\n```\n');
