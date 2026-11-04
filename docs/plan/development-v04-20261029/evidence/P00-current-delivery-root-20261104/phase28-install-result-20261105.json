@@ -1,0 +1,27 @@
+{
+  "exit": 0,
+  "result": {
+    "at": "2026-11-04T22:44:11.407876+00:00",
+    "status": "INSTALLED_CONTRACT_VERIFIED",
+    "sqlSha256": "1f9c7e8a07edb4bf5161ae751e89c91df5045bd48265c3b4a3dde59590c1882d",
+    "source": {
+      "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+      "healthy": true,
+      "restarts": 0
+    },
+    "schema": {
+      "table": "brsapi_budget_days",
+      "lease": "brsapi_budget_lease(text,integer,integer)",
+      "release": "brsapi_budget_release(text,integer)"
+    },
+    "counterReset": false,
+    "providerCalls": 0,
+    "testsRolledBack": true,
+    "providerAccountUsage": null,
+    "providerResetAt": null,
+    "accountingScope": "internal allocations since first_lease_at; prior consumption unknown",
+    "rollback": "No removal/reset of counters; retain schema. Revert caller configuration/code if needed.",
+    "enforcementChanged": false
+  },
+  "error": null
+}
