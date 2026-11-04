@@ -45,6 +45,24 @@ OVERLAY_NAMES = {'assembled-auth-runtime.mjs', 'assembled-auth-gateway.mjs', 'as
 # Failure diagnostics only. Literal codes from the reviewed frozen sources;
 # never forward an arbitrary exception/message or a regex-matching user string.
 NATIVE_FAILURE_CODES = frozenset({
+    # Literal failures from the frozen summary phase and its existing wait().
+    # Diagnostics only: no arbitrary text, pattern expansion or status acceptance.
+    'p03_composition_http_200',
+    'p03_composition_http_201',
+    'p03_composition_summary_missing',
+    'p03_composition_published_basis',
+    'p03_composition_ticket_link_version',
+    'p03_composition_foreign_rpc_denial',
+    'p03_composition_feedback_rows',
+    'p03_composition_feedback_financial_change',
+    'p09_browser_fixture_capability_not_read_not_ready',
+    'p09_browser_fixture_capability_not_read_read_failed',
+    'p09_browser_uncertain_ui_not_seen_not_ready',
+    'p09_browser_uncertain_ui_not_seen_read_failed',
+    'p09_browser_advisor_not_ready_not_ready',
+    'p09_browser_advisor_not_ready_read_failed',
+    'p09_browser_advisor_reply_not_read_not_ready',
+    'p09_browser_advisor_reply_not_read_read_failed',
     'p03_composition_shared_admission_stopped',
     'p03_composition_stopped',
     'p03_composition_result_shape',

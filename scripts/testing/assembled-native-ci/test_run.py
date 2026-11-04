@@ -1114,5 +1114,35 @@ class SummaryPreparationAwait(unittest.TestCase):
             self.assertEqual(result.returncode,0,output)
             self.assertTrue(valid_guarded_pure_output(output,8),output)
 
+class SummaryBoundedFailureProjection(unittest.TestCase):
+    def test_frozen_literal_codes_only_and_private_unknown_text_remains_absent(self):
+        literal_codes = [
+            'p03_composition_http_200', 'p03_composition_http_201',
+            'p03_composition_summary_missing', 'p03_composition_published_basis',
+            'p03_composition_ticket_link_version', 'p03_composition_foreign_rpc_denial',
+            'p03_composition_feedback_rows', 'p03_composition_feedback_financial_change',
+            'p09_browser_fixture_capability_not_read_not_ready',
+            'p09_browser_fixture_capability_not_read_read_failed',
+            'p09_browser_uncertain_ui_not_seen_not_ready',
+            'p09_browser_uncertain_ui_not_seen_read_failed',
+            'p09_browser_advisor_not_ready_not_ready',
+            'p09_browser_advisor_not_ready_read_failed',
+            'p09_browser_advisor_reply_not_read_not_ready',
+            'p09_browser_advisor_reply_not_read_read_failed',
+        ]
+        for code in literal_codes:
+            raw = ('P03_ASSEMBLED_FAILURE ' + json.dumps({
+                'reason': code, 'message': 'PRIVATE_DO_NOT_PROJECT',
+            })).encode()
+            result = runner.project_failure_log(raw)
+            self.assertEqual(result['nativeFailureCode'], code)
+            self.assertNotIn('PRIVATE_DO_NOT_PROJECT', json.dumps(result))
+            for unknown in [code + '_PRIVATE_DO_NOT_PROJECT', code + '_timeout']:
+                raw = ('P03_ASSEMBLED_FAILURE ' + json.dumps({'reason': unknown})).encode()
+                result = runner.project_failure_log(raw)
+                self.assertIsNone(result['nativeFailureCode'])
+                self.assertNotIn('PRIVATE_DO_NOT_PROJECT', json.dumps(result))
+
+
 if __name__ == '__main__':
     unittest.main()
