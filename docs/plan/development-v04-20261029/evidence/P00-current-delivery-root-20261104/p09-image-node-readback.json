@@ -1,0 +1,66 @@
+{
+  "role": "node",
+  "repository": "docker.io/library/node",
+  "historicalReference": "sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34",
+  "status": "PUBLIC_REGISTRY_MAPPING_VERIFIED_NOT_PRELOADED",
+  "atUtc": "2026-11-04T14:12:38.530071+00:00",
+  "anonymousPublicRegistryOnly": true,
+  "dockerPullOrLoad": false,
+  "credentialForwardedToCdn": false,
+  "signedRedirectPrintedOrPersisted": false,
+  "manifestReads": [
+    {
+      "digest": "sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34",
+      "bytes": 6406,
+      "headers": {
+        "Content-Type": "application/vnd.oci.image.index.v1+json",
+        "Docker-Content-Digest": "sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34",
+        "Date": "Wed, 04 Nov 2026 14:12:40 GMT"
+      },
+      "mediaType": "application/vnd.oci.image.index.v1+json"
+    },
+    {
+      "digest": "sha256:48f53c3f0105ccddcc5e4f520347398dfc0ba9b3008fbfd98a2add27e5797957",
+      "bytes": 1720,
+      "headers": {
+        "Content-Type": "application/vnd.oci.image.manifest.v1+json",
+        "Docker-Content-Digest": "sha256:48f53c3f0105ccddcc5e4f520347398dfc0ba9b3008fbfd98a2add27e5797957",
+        "Date": "Wed, 04 Nov 2026 14:12:41 GMT"
+      },
+      "mediaType": "application/vnd.oci.image.manifest.v1+json"
+    }
+  ],
+  "platformDescriptor": {
+    "annotations": {
+      "com.docker.official-images.bashbrew.arch": "amd64",
+      "org.opencontainers.image.base.digest": "sha256:59855d3dceb3ae53991193bd03301e082b2a7faa56a514b03527ae0ec2ce3a95",
+      "org.opencontainers.image.base.name": "alpine:3.23",
+      "org.opencontainers.image.created": "2026-01-28T03:30:43Z",
+      "org.opencontainers.image.revision": "893511202f3e478d6b23e76b5658b93be6e906b7",
+      "org.opencontainers.image.source": "https://github.com/nodejs/docker-node.git#893511202f3e478d6b23e76b5658b93be6e906b7:22/alpine3.23",
+      "org.opencontainers.image.url": "https://hub.docker.com/_/node",
+      "org.opencontainers.image.version": "22-alpine"
+    },
+    "digest": "sha256:48f53c3f0105ccddcc5e4f520347398dfc0ba9b3008fbfd98a2add27e5797957",
+    "mediaType": "application/vnd.oci.image.manifest.v1+json",
+    "platform": {
+      "architecture": "amd64",
+      "os": "linux"
+    },
+    "size": 1720
+  },
+  "mapping": {
+    "reference": "node@sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34",
+    "manifest": "node@sha256:48f53c3f0105ccddcc5e4f520347398dfc0ba9b3008fbfd98a2add27e5797957",
+    "config": "sha256:463254b4a8121318a9f8861a08bdde48fcfd528848534e7ba742b3ce5146fd17",
+    "os": "linux",
+    "architecture": "amd64"
+  },
+  "configDescriptor": {
+    "mediaType": "application/vnd.oci.image.config.v1+json",
+    "digest": "sha256:463254b4a8121318a9f8861a08bdde48fcfd528848534e7ba742b3ce5146fd17",
+    "size": 6522
+  },
+  "created": "2026-01-28T03:31:02.216106285Z",
+  "configDigestAndSizeVerified": true
+}

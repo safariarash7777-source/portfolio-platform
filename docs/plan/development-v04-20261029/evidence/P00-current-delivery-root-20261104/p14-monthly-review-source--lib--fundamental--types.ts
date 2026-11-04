@@ -1,0 +1,157 @@
+// قرارداد دادهٔ نرمال‌شدهٔ موتور بنیادی کدال (WP4).
+// اسکیمای ن-۱۰ دقیقاً مطابق نمونهٔ اعتبارسنجی‌شدهٔ docs/i1-fameli-1404.md §۷ است —
+// پارسر اکسل آینده باید همین شکل را تولید کند تا UI بدون تغییر کار کند.
+// اسکیمای ن-۳۰ (فعالیت ماهانه) برای فاز بعدی تعریف شده؛ تا وقتی دادهٔ واقعی
+// (اکسل کدال) نیامده هیچ مقداری برایش ساخته نمی‌شود (قانون ۳ بریف).
+
+/** یک ردیف صورت سود و زیان (واحد: میلیون ریال). */
+export interface IncomeStatement {
+  revenue: number;
+  cogs: number;
+  gross_profit: number;
+  sga?: number;
+  other_op_income?: number;
+  other_op_expense?: number;
+  operating_profit: number;
+  finance_cost?: number;
+  pretax_profit?: number;
+  tax?: number;
+  net_profit: number;
+  eps_rial?: number;
+}
+
+/** ردیف روند چندسالهٔ فروش (جدول رسمی خود گزارش). */
+export interface SalesTrendRow {
+  fy: number; // سال مالی جلالی، مثل 1404
+  revenue: number;
+  cogs: number;
+}
+
+/** برآورد خودِ شرکت — هرگز به‌عنوان عدد قطعی ارائه نمی‌شود (قانون ۷). */
+export interface CompanyEstimate {
+  revenue: number;
+  cogs: number;
+  is_estimate: true;
+  source: string;
+}
+
+/** دادهٔ نرمال‌شدهٔ گزارش ن-۱۰ (صورت‌های مالی) — مطابق codal_reports.data. */
+export interface CodalN10Data {
+  symbol: string;
+  company_name: string;
+  report_kind: "ن-۱۰";
+  period_end: string; // جلالی YYYY-MM-DD مثل "1404-12-29"
+  period_months: number;
+  audited: boolean;
+  restated_prior: boolean;
+  unit: string; // «میلیون ریال»
+  capital: number;
+  auditor?: string;
+  standalone: IncomeStatement & { prior?: IncomeStatement };
+  consolidated?: Partial<IncomeStatement> & {
+    net_profit_parent?: number;
+    eps_base_rial?: number;
+  };
+  sales_trend_5y?: SalesTrendRow[];
+  company_estimate_1405?: CompanyEstimate;
+  dividend?: {
+    fy1403_net: number;
+    board_proposed: number;
+    agm_approved: number;
+    retained_end_1403: number;
+  };
+}
+
+/** یک محصول در گزارش ماهانهٔ ن-۳۰ — از اکسل کدال پارس می‌شود و پر است
+ *  (اندازه‌گیریِ Production ۲۰۲۶-۰۹-۰۶: ۴٬۷۷۹ گزارش روی ۳۱۵ نماد، همه با آرایهٔ
+ *  ناتهی؛ `sales_qty` در ۴٬۷۶۴ و `sales_rate` در ۴٬۷۵۹ گزارش موجود).
+ *  مصرف‌کننده: `lib/core/monthlyReport.ts` (سریِ نرخ، ترکیبِ محصول، تولید/فروش). */
+export type N30Market = "داخلی" | "صادراتی" | "خدمات" | "نامشخص";
+
+export interface N30ProductRow {
+  /** Explicit row denominator, when present; null never inherits a report unit. */
+  qty_unit?: string | null;
+  product_name: string;
+  market: N30Market;
+  /** Absent on historical rows; their market labels are not header-verified. */
+  market_basis?: "section_header" | "unknown";
+  production_qty: number | null;
+  sales_qty: number | null;
+  sales_rate: number | null; // ریال بر واحد
+  sales_amount: number | null; // میلیون ریال
+}
+
+/** دادهٔ نرمال‌شدهٔ گزارش ن-۳۰ (فعالیت ماهانه). */
+export interface CodalN30Data {
+  symbol: string;
+  report_kind: "ن-۳۰";
+  period_end: string; // ماه جلالی
+  fiscal_year: number;
+  products: N30ProductRow[];
+  period_total_amount: number;
+  fy_cumulative_amount: number | null;
+  /** Declared by the producer; absence must never imply million rial. */
+  unit?: string | null;
+  unit_basis?: string | null;
+  qty_unit?: string | null;
+}
+
+/** متادیتای منبع هر گزارش — شفافیت مبدأ داده در UI (قانون ۳). */
+export type ReportScope = "company" | "consolidated_ambiguous" | "unknown";
+
+export interface ReportSource {
+  title: string; // مثل «صورت‌های مالی ۱۲ماههٔ حسابرسی‌شدهٔ ۱۴۰۴»
+  source_url: string | null; // URL اطلاعیهٔ codal.ir؛ تا نیامده null می‌ماند
+  /** Source Jalali date/time text, not a verified UTC publication instant. */
+  publishedAt?: string | null;
+  /** Selected immutable rows only; storage capture never proves source freshness or job success. */
+  records?: Array<{
+    /** Never synthesize an ID when a malformed row has no valid database identity. */
+    id: number | null;
+    sourceUrl: string | null;
+    storedPeriodEnd: string | null;
+    financialPeriodEnd: string | null;
+    /** Existing normalized source-local Jalali text; no UTC conversion. */
+    publishedAt: string | null;
+    publishedDateRaw: string | null;
+    publishedTimeRaw: string | null;
+    publishedAtUtc: null;
+    publicationUtcConfidence: "unknown";
+    /** Valid source timestamp verbatim, retaining its offset and fractional precision. */
+    capturedAtRaw: string | null;
+    /** UTC normalization at JavaScript millisecond precision; use raw for source precision. */
+    capturedAt: string | null;
+    parserVersion: number | null;
+    parserVersionSource: "raw" | "source_url" | null;
+    amendment: boolean;
+  }>;
+  verified: boolean; // اعتبارسنجی حسابی انجام شده؟ جزئیات در verification_note.
+  verification_note?: string;
+  /**
+   * دامنهٔ ارقام. `consolidated_ambiguous` یعنی از گزارشِ تلفیقی آمده و ممکن است
+   * رقمِ گروه باشد (B-056) — UI نباید آن را قطعی به شرکت نسبت دهد.
+   */
+  scope?: ReportScope;
+}
+
+/** Metadata of one selected immutable row; never a bundle-level substitute. */
+export type ReportRecord = NonNullable<ReportSource["records"]>[number];
+
+/** بستهٔ دادهٔ بنیادی یک نماد که به صفحهٔ نماد تزریق می‌شود. */
+export interface SymbolFundamentals {
+  symbol: string;
+  n10: { data: CodalN10Data; source: ReportSource } | null;
+  n30: { data: CodalN30Data[]; source: ReportSource } | null;
+  /** Stored monthly reports omitted from calculations because the amount unit is unknown. */
+  n30Unavailable?: { unitUnknown: number; latestPeriod: string | null };
+  /** Selected stored N10 rows excluded from calculations; never rewritten. */
+  n10Unavailable?: { unitUnknown: number; scopeUnknown: number; scopeAmbiguous: number; latestPeriod: string | null };
+  /**
+   * T3: ورودیِ فصل‌سازی — **یک ردیف برای هر دوره**، همان که `dedupeByPeriod`
+   * برای کارت انتخاب کرده (حسابرسی ← اصلاحیه ← زمانِ انتشار ← id). انتخابِ
+   * دوباره در پایین‌دست ممنوع است؛ دو قاعده یعنی دو پاسخ در یک صفحه.
+   */
+  n10Periods?: Array<{ id: number; data: CodalN10Data; scope?: ReportScope; record?: ReportRecord | null }>;
+  /** Legacy summary; the reader now quarantines ambiguous/unknown period scopes. */
+  n10PeriodsScope?: "company" | "consolidated_ambiguous";
+}

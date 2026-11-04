@@ -1,0 +1,11 @@
+{
+  "schema": "root-preview-env-metadata-readback-limits.v1",
+  "atUtc": "2026-11-04T14:21:25.401Z",
+  "rowsReturned": 47,
+  "rowsContainingRedactedMetadata": 9,
+  "valuesRequested": false,
+  "knownReadOnlyPreviewPairRestore": "VERIFIED_FROM_UNREDACTED_IDS_AND_BRANCH_FIELDS",
+  "allOther45MetadataEquality": "NOT_INDEPENDENTLY_PROVEN_FOR_REDACTED_ROWS",
+  "knownMutationScope": "only two prior existing FUNDAMENTAL_READ settings; original branch restored; no value/Auth/Production write",
+  "correction": "Earlier other45MetadataUnchanged=true must not be read as a complete independent readback of all rows; connector redacts some metadata."
+}

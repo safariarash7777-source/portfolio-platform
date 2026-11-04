@@ -1,0 +1,29 @@
+{
+  "schema": "root-m1-phase-fixed-linux-ci.v1",
+  "atUtc": "2026-11-04T14:22:19.015Z",
+  "run": 41843695529,
+  "source": "45c5a8b86b1ef1f38cf74463e9891db4aa3922fb",
+  "actualMerge": "ce846b0afd880c482f6474e42199d88428ca8ec5",
+  "tree": "f5f1c9cdb1ca348d01ea0b8c5be6886244bf5f79",
+  "parents": [
+    "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+    "45c5a8b86b1ef1f38cf74463e9891db4aa3922fb"
+  ],
+  "ordinaryFiveGates": "SUCCESS",
+  "nativeInOrdinaryRun": "SKIPPED",
+  "actualLinuxOfflineMethods": 90,
+  "fullLogsRead": [
+    {
+      "job": 126621592691,
+      "characters": 1282755,
+      "errors": []
+    },
+    {
+      "job": 126621592667,
+      "characters": 3280405,
+      "errors": []
+    }
+  ],
+  "actualMergeFetchedAndVerified": true,
+  "productionChanged": false
+}

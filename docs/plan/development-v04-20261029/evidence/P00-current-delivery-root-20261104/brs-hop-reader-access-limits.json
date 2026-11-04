@@ -1,0 +1,20 @@
+{
+  "schema": "root-market-reader-access-limits.v1",
+  "atUtc": "2026-11-04T14:24:38.340164+00:00",
+  "deployment": "dpl_Bu4kE93mjnno5SJtffNkuobRWr5V",
+  "traceOperation": "get_project_trace",
+  "request": "vghcr-1793801278117-934aeb6f6f0b",
+  "traceStatus": 403,
+  "traceCode": "forbidden",
+  "traceRetry": false,
+  "mappedVercelCliFoundInPathOrGlobalNpm": false,
+  "cliInstalled": false,
+  "currentRuntimeLog": "headers/upstream402 in actual 2aa preview, not a proven BRS provider failure",
+  "actualUpstreamOrigin": "UNKNOWN_WITH_CURRENT_EVIDENCE",
+  "publicAssets": "16 immutable JS reads exposed no backend origin; absence is not backend identity evidence",
+  "csp": "Supabase wildcard is an allowlist, not proof of actual server destination",
+  "financialReadCycle": "UNKNOWN",
+  "serverMutated": false,
+  "providerRequests": 0,
+  "credentialsRead": false
+}

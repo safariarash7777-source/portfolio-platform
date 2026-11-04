@@ -1,0 +1,56 @@
+{
+  "role": "auth",
+  "repository": "docker.io/supabase/gotrue",
+  "historicalReference": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+  "status": "PUBLIC_REGISTRY_MAPPING_VERIFIED_NOT_PRELOADED",
+  "atUtc": "2026-11-04T14:12:38.530071+00:00",
+  "anonymousPublicRegistryOnly": true,
+  "dockerPullOrLoad": false,
+  "credentialForwardedToCdn": false,
+  "signedRedirectPrintedOrPersisted": false,
+  "manifestReads": [
+    {
+      "digest": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+      "bytes": 1609,
+      "headers": {
+        "Content-Type": "application/vnd.oci.image.index.v1+json",
+        "Docker-Content-Digest": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+        "Date": "Wed, 04 Nov 2026 14:12:40 GMT"
+      },
+      "mediaType": "application/vnd.oci.image.index.v1+json"
+    },
+    {
+      "digest": "sha256:839f529492d116b4e8b7777c953a27c381d34c15a744b1bcefde5eefaa1f9f9f",
+      "bytes": 1431,
+      "headers": {
+        "Content-Type": "application/vnd.oci.image.manifest.v1+json",
+        "Docker-Content-Digest": "sha256:839f529492d116b4e8b7777c953a27c381d34c15a744b1bcefde5eefaa1f9f9f",
+        "Date": "Wed, 04 Nov 2026 14:12:41 GMT"
+      },
+      "mediaType": "application/vnd.oci.image.manifest.v1+json"
+    }
+  ],
+  "platformDescriptor": {
+    "mediaType": "application/vnd.oci.image.manifest.v1+json",
+    "digest": "sha256:839f529492d116b4e8b7777c953a27c381d34c15a744b1bcefde5eefaa1f9f9f",
+    "size": 1431,
+    "platform": {
+      "architecture": "amd64",
+      "os": "linux"
+    }
+  },
+  "mapping": {
+    "reference": "supabase/gotrue@sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+    "manifest": "supabase/gotrue@sha256:839f529492d116b4e8b7777c953a27c381d34c15a744b1bcefde5eefaa1f9f9f",
+    "config": "sha256:1181bff5ba4ce440013a63cef9f4cf13024c432d705c9b1fbc9e5b949e852f48",
+    "os": "linux",
+    "architecture": "amd64"
+  },
+  "configDescriptor": {
+    "mediaType": "application/vnd.oci.image.config.v1+json",
+    "digest": "sha256:1181bff5ba4ce440013a63cef9f4cf13024c432d705c9b1fbc9e5b949e852f48",
+    "size": 2335
+  },
+  "created": "2026-09-09T15:34:47.361073768Z",
+  "configDigestAndSizeVerified": true
+}

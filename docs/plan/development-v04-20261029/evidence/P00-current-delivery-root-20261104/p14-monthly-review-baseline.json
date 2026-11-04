@@ -1,0 +1,71 @@
+{
+  "base": "2aa0cc46e0adb5c73e24bb752706e3168c94fc94",
+  "files": [
+    {
+      "path": "components/symbol/MonthlySalesCharts.tsx",
+      "sha256": "99d074596829fb433ecca82959528c841b741ed61dd99c27467990c9a779cf42"
+    },
+    {
+      "path": "components/symbol/MonthlySourceChartFrame.tsx",
+      "sha256": "9554491a7631d077f40cbdbd57c05e68b84275e6fa2c2c1f94c7e299b799e6d1"
+    },
+    {
+      "path": "components/symbol/MonthlyPointSourceLabel.tsx",
+      "sha256": "e40827d58c55a447cc6c1a1d7d7837d64f080a4a378bead827d756c4861e5b08"
+    },
+    {
+      "path": "components/symbol/monthly-point-provenance.ts",
+      "sha256": "1b61673725b9fe4157ccdbb505c0fdc0cb820718910413111ed885d156bc47d7"
+    },
+    {
+      "path": "components/symbol/MeasuredResponsiveContainer.tsx",
+      "sha256": "ad342538fb69a0f790885e471e9894c967130bb7a0aab476c9033ffc96cc1b21"
+    },
+    {
+      "path": "components/symbol/CodalSourceLink.tsx",
+      "sha256": "3ddec6c3bf3e91140c4a9f9bd205114e04fe656198896b1b2268cda96dd2bc95"
+    },
+    {
+      "path": "lib/core/monthlyReport.ts",
+      "sha256": "7359f0ccb5881fe9deb0770c0f4e0bb726c916d38779db6f7d599abe40dc21f3"
+    },
+    {
+      "path": "lib/core/monthly-quantity.ts",
+      "sha256": "244b6925cd80a65984d956e3ca671b364a7a353e182ccf8dd7aee76877d78b2d"
+    },
+    {
+      "path": "lib/fundamental/types.ts",
+      "sha256": "8e0719ca44c9882005c35de6bf5ca6304b65c78247314ac479558d7742fef4e1"
+    },
+    {
+      "path": "lib/format.ts",
+      "sha256": "434790b4d1e4ddf7a5b39a2c7a0321ec81844849ca92287b2cdbf8fe40c79ac5"
+    }
+  ],
+  "rootBrowserReceiptSha256": "6bea2ce6082a86b715a744277df3ff47d62bcb5d94c8698d3041b7c9b0f57dba",
+  "rootActions": {
+    "rect": {
+      "x": 37,
+      "y": 265.640625,
+      "width": 301,
+      "height": 280
+    },
+    "tap": {
+      "x": 157.4,
+      "y": 355.640625
+    },
+    "keyboard": [
+      "focus",
+      "ArrowLeft",
+      "ArrowLeft",
+      "focus",
+      "ArrowLeft",
+      "ArrowLeft",
+      "ArrowLeft",
+      "ArrowLeft",
+      "ArrowLeft"
+    ],
+    "activeElement": "not recorded",
+    "status": "UNCONFIRMED"
+  }
+}

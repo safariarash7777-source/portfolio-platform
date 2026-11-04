@@ -1,0 +1,10 @@
+{
+  "schema": "root-preview-public-connect-src-origin.v1",
+  "atUtc": "2026-11-04T14:17:45.819Z",
+  "source": "2aa0cc46e0adb5c73e24bb752706e3168c94fc94",
+  "deployment": "dpl_Bu4kE93mjnno5SJtffNkuobRWr5V",
+  "from": "cached headers of the actual successful company reload; no new request or credential access",
+  "connectSrc": "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+  "serverRuntimeDestinationProven": false,
+  "scope": "CSP network allowlist derived by next.config.js; not an HTTP trace of the server-side stored read"
+}

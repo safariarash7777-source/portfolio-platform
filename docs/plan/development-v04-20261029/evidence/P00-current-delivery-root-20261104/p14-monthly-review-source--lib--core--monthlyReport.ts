@@ -1,0 +1,581 @@
+// lib/core/monthlyReport.ts — T1 «شناسنامهٔ بنیادی نماد» (دادهٔ ماهانهٔ ن-۳۰).
+// محاسبات خالص و قطعی برای ۵ چارت سؤال‌محور صفحهٔ نماد.
+// قواعد حاکم: دادهٔ ناموجود = null (هرگز درون‌یابی/عدد ساختگی)؛ ماه بدون گزارش
+// = گپ واقعی؛ واحد مبالغ «میلیون ریال» (تأییدشده از سورس موتور کدال —
+// relay/codal.mjs خط ۳۹۲: اعتبارسنجی مبلغ ≈ فروش×نرخ÷10^6).
+// روایت‌ها فقط template‌ای و قطعی‌اند — هیچ ارزش‌داوری تجویزی.
+
+import type { CodalN30Data, N30Market } from "@/lib/fundamental/types";
+import { monthlyMarket, monthlyMarketUnavailableReason, withKnownMonthlyQuantities, type MonthlyMarketUnavailableReason, type QuantityWitnessedReport, type QuantityWitnessedProduct, type MonthlyQuantityWitness } from "./monthly-quantity";
+
+/* ── انواع خروجی ─────────────────────────────────────────────────────────── */
+
+/** نام ماه‌های جلالی برای برچسب محور (شمارهٔ ماه ۱..۱۲). */
+export const JALALI_MONTHS = [
+  "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
+  "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند",
+] as const;
+
+/** یک ماه از سال مالی — value=null یعنی گزارشی برای آن ماه نیامده (گپ واقعی). */
+export interface FYMonthPoint {
+  /** شمارهٔ ماه جلالی ۱..۱۲ (تقویمی، نه ترتیب سال مالی). */
+  monthNo: number;
+  /** برچسب ماه جلالی مثل «دی». */
+  monthLabel: string;
+  /** کلید یکتای ماه مثل "1404-10". */
+  monthKey: string;
+  /** فروش ماه (میلیون ریال) — null = گزارش نیامده. */
+  amount: number | null;
+  /** تجمیعی از ابتدای سال مالی (میلیون ریال) — null = گزارش نیامده. */
+  cumulative: number | null;
+}
+
+/** سری نرخ فروش یک (محصول×بازار) — گپ واقعی برای ماه بدون رکورد. */
+export interface RateSeries {
+  productName: string;
+  market: N30Market;
+  label: string; // «محصول — داخلی»
+  /** Declared common unit of the observed contributing rows; never a conversion. */
+  quantityUnit: string | null;
+  rateUnit: { numerator: "ریال"; denominator: string } | null;
+  points: {
+    monthKey: string;
+    monthLabel: string;
+    rate: number | null;
+    quantityUnit: string | null;
+    rateUnit: RateSeries["rateUnit"];
+  }[];
+}
+
+/** یک قلم از ترکیب فروش آخرین ماه. */
+export interface MixSlice {
+  name: string;
+  market: N30Market | null; // null برای «سایر» ترکیبی؛ نامشخص یک بازار تأییدنشده است.
+  amount: number; // میلیون ریال
+  sharePct: number | null;
+}
+
+/** نقطهٔ مقایسهٔ تولید/فروش محصول اصلی. */
+export interface ProdSalesPoint {
+  monthKey: string;
+  monthLabel: string;
+  production: number | null;
+  sales: number | null;
+  unavailableReason: "missing-report" | "missing-product" | "incomplete-quantity" | null;
+  quantityUnit: string | null;
+}
+
+/** A scoped goods-market view, never a replacement for the old aggregate. */
+export interface QuantitySeries {
+  productName: string;
+  market: "داخلی" | "صادراتی";
+  label: string;
+  scope: "main-product-goods-market";
+  points: Array<ProdSalesPoint & {
+    scopeUnavailableReason: "missing-report" | "missing-source" | "missing-market-row" | "unverified-market" | "ambiguous-row" | "incomplete-source-coverage" | "incomplete-quantity" | null;
+    witnesses: MonthlyQuantityWitness[];
+  }>;
+}
+
+export interface MonthlySales {
+  /** Common denominator of observed output contributors, not missing calendar slots. */
+  quantityUnit: string | null;
+  /** سال مالی جاری (جلالی، مثل ۱۴۰۵) و قبلی. */
+  currentFY: number;
+  priorFY: number | null;
+  /** ۱۲ ماه سال مالی جاری به ترتیب سال مالی (ماه اول سال مالی اول). */
+  currentMonths: FYMonthPoint[];
+  /** همان ۱۲ اسلات برای سال مالی قبل (هم‌ترتیب با currentMonths). */
+  priorMonths: FYMonthPoint[] | null;
+  /** میانگین فروش ماه‌های دارای گزارش سال جاری (میلیون ریال) — null اگر هیچ. */
+  avgCurrent: number | null;
+  /** آخرین تجمیعی سال جاری و مقدار هم‌دورهٔ سال قبل (تا همان ماه). */
+  cumulativeCurrent: number | null;
+  cumulativePriorSamePoint: number | null;
+  /** سری نرخ ۱–۳ (محصول×بازار) پرسهم در کل بازهٔ موجود. */
+  rateSeries: RateSeries[];
+  /** ترکیب فروش آخرین ماه دارای گزارش. */
+  latestMonthKey: string | null;
+  latestMonthLabel: string | null;
+  latestMix: MixSlice[];
+  latestDomesticAmount: number | null;
+  latestExportAmount: number | null;
+  latestExportSharePct: number | null;
+  marketUnavailableReason: MonthlyMarketUnavailableReason;
+  /** تولید/فروش محصول اصلی روی محور تقویمی؛ دادهٔ ناقص null است. */
+  mainProductName: string | null;
+  prodVsSales: ProdSalesPoint[];
+  /** Present only for the new witnessed quantity path; services are separate. */
+  quantitySeries?: QuantitySeries[];
+  /** تعداد گزارش‌های یکتای استفاده‌شده. */
+  reportCount: number;
+}
+
+/* ── ابزار ───────────────────────────────────────────────────────────────── */
+
+function pct(numerator: number, denominator: number): number | null {
+  if (!isFinite(numerator) || !isFinite(denominator) || denominator === 0) return null;
+  return Math.round((numerator / denominator) * 1000) / 10;
+}
+
+/** C42 metadata contract only; existing numeric outputs are never replaced. */
+function commonQuantityUnit(units: Array<string | null>): string | null {
+  return units.length > 0 && units[0] !== null && units.every(unit => unit === units[0])
+    ? units[0] : null;
+}
+
+function productUnitMetadata(
+  report: CodalN30Data,
+  product: CodalN30Data["products"][number] | undefined,
+  rate: number | null,
+): Pick<RateSeries["points"][number], "quantityUnit" | "rateUnit"> {
+  if (!product) return { quantityUnit: null, rateUnit: null };
+  const market = monthlyMarket(product);
+  if (market !== "داخلی" && market !== "صادراتی") return { quantityUnit: null, rateUnit: null };
+  // Quantity and rate use independent gates in this exact row's scope.
+  // Explicit null cannot inherit, and a quantity-only unit never supplies a rate.
+  const checked = withKnownMonthlyQuantities({ ...report, products: [product] });
+  const quantityUnit = checked.qty_unit ?? null;
+  return {
+    quantityUnit,
+    rateUnit: quantityUnit && rate !== null && checked.products[0].sales_rate != null
+      ? { numerator: "ریال", denominator: quantityUnit } : null,
+  };
+}
+
+/* ── نرخِ فروشِ معنادار ────────────────────────────────────────────────────
+ *
+ * چرا این گارد لازم شد: ممیزیِ دادهٔ واقعیِ Production (۳۳٬۸۴۸ ردیفِ محصول از
+ * ۳۱۶ نماد) نشان داد `sales_rate` همیشه یک «نرخ» نیست. سه الگوی خراب:
+ *
+ *  • **۳۰۲ ردیف** علامتِ مقدار و مبلغ‌شان مخالفِ هم است — مثلاً `دزهراوی`،
+ *    «آمپول»، مقدار `+۰.۰۱` و مبلغ `−۱۳٬۷۱۰` (میلیون ریال) که نرخِ
+ *    **منفیِ ۱.۳۷ تریلیون ریال بر واحد** می‌دهد. اینها ردیفِ تعدیل‌اند و مقدارِ
+ *    باقی‌مانده در ستونِ مقدار فقط پس‌ماندِ گردکردنِ اکسل است.
+ *  • **۱٬۵۳۳ ردیف** نرخِ صفر یا منفی دارند. قیمتِ واحد نه صفر می‌شود نه منفی.
+ *  • **۴۲ ردیف** مقدارشان صفر است ولی نرخ دارند — تقسیم بر صفر.
+ *
+ * بدونِ این گارد همان عددها مستقیم وارد نمودارِ نرخ می‌شدند و مقیاسِ نمودار را
+ * نابود می‌کردند. حالا آن ماه **گپِ صادق** می‌شود، نه یک عددِ بی‌معنا.
+ *
+ * ⚠️ **آنچه این گارد نمی‌گیرد، و عمداً نمی‌گیرد:** ۱٬۶۶۰ ردیف نرخِ بزرگ‌تر از
+ * ۱e۱۰ ریال بر واحد دارند در حالی که علامت‌هاشان سازگار است. برای اینها هیچ
+ * آستانهٔ مقداریِ قابلِ دفاعی وجود ندارد — واحدِ محصولات یکسان نیست (تن، عدد،
+ * کیلووات‌ساعت، …) و یک آستانهٔ اختراعی می‌تواند دادهٔ درست را پنهان کند.
+ * آستانه‌گذاری بدونِ مبنا از نمایشِ دادهٔ مشکوک بدتر است؛ این محدودیت مستند
+ * می‌ماند تا با واحدِ محصول (که هنوز پارس نمی‌شود) حل شود.
+ *
+ * ردیف‌های «برگشت از فروش» (مقدار و مبلغ هر دو منفی، نرخ مثبت) — ۲٬۱۴۹ ردیف —
+ * سالم‌اند و عبور می‌کنند؛ آن یک واقعیتِ حسابداری است، نه خطای پارس.
+ *
+ * ⚠️ **دربارهٔ گاردِ تناقضِ علامت:** در دادهٔ امروز این گارد **افزونه** است —
+ * هر ۳۰۲ ردیفِ دارای تناقضِ علامت نرخِ منفی هم دارند، پس گاردِ «نرخِ نامثبت»
+ * زودتر می‌گیردشان. اول همین باعث شد گاردِ علامت **توخالی** باشد: با غیرفعال
+ * کردنش هیچ تستی قرمز نمی‌شد. نگه داشته شد چون منطقاً درست است (نرخِ مثبت با
+ * علامت‌های متناقض هم بی‌معناست و اگر پارسر روزی قدرمطلق بگیرد تنها مانع
+ * همین است) ولی حالا یک تستِ صریح **مستقیماً** آزمایشش می‌کند تا افزونه‌بودن
+ * با آزمون‌نشدن اشتباه گرفته نشود.
+ */
+export function meaningfulRate(
+  p: { sales_qty: number | null; sales_rate: number | null; sales_amount: number | null } | null,
+): number | null {
+  if (!p) return null;
+  const rate = p.sales_rate;
+  if (typeof rate !== "number" || !isFinite(rate) || rate <= 0) return null;
+
+  const q = p.sales_qty;
+  if (typeof q !== "number" || !isFinite(q) || q === 0) return null;
+
+  const amt = p.sales_amount;
+  if (typeof amt === "number" && isFinite(amt) && amt !== 0 && Math.sign(q) !== Math.sign(amt)) {
+    return null;
+  }
+  return rate;
+}
+
+/** کلید ماه "YYYY-MM" از period_end جلالی؛ نامعتبر → null. */
+export function monthKeyOf(periodEnd: string): string | null {
+  const m = String(periodEnd).match(/^(\d{4})-(\d{2})/);
+  if (!m) return null;
+  const mo = Number(m[2]);
+  if (mo < 1 || mo > 12) return null;
+  return `${m[1]}-${m[2]}`;
+}
+
+/** Presentation axis between observed month keys; no report, value or fiscal period is created. */
+export function monthlyCalendarKeys(keys: readonly string[]): string[] {
+  const sortedKeys = [...new Set(keys)].sort();
+  if (!sortedKeys.length || sortedKeys.some(key => monthKeyOf(key) !== key)) return [];
+  const monthIndex = (key: string) => Number(key.slice(0, 4)) * 12 + Number(key.slice(5, 7)) - 1;
+  const first = monthIndex(sortedKeys[0]);
+  const last = monthIndex(sortedKeys[sortedKeys.length - 1]);
+  const calendar: string[] = [];
+  for (let index = first; index <= last; index++) {
+    const year = Math.floor(index / 12);
+    const month = index % 12 + 1;
+    calendar.push(`${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}`);
+  }
+  return calendar;
+}
+
+/** یکتاسازی گزارش‌ها بر اساس ماه — ورودی باید از جدید به قدیم مرتب باشد
+ * (اولین دیده‌شده برنده است = جدیدترین اصلاحیه). گزارش با جمع صفر وقتی
+ * نسخهٔ دیگری از همان ماه موجود است کنار گذاشته می‌شود. */
+export function dedupeByMonth(reports: CodalN30Data[]): Map<string, CodalN30Data> {
+  const byMonth = new Map<string, CodalN30Data>();
+  for (const r of reports) {
+    if (!r || !Array.isArray(r.products)) continue;
+    const key = monthKeyOf(r.period_end);
+    if (!key) continue;
+    const prev = byMonth.get(key);
+    if (!prev) { byMonth.set(key, r); continue; }
+    // اگر نسخهٔ نگه‌داشته جمعِ صفر دارد و این نسخه جمع ناصفر، جایگزین شود.
+    const prevTotal = prev.period_total_amount ?? 0;
+    const curTotal = r.period_total_amount ?? 0;
+    if (prevTotal === 0 && curTotal > 0) byMonth.set(key, r);
+  }
+  return byMonth;
+}
+
+/** ترتیب ماه‌های یک سال مالی که با ماه startMonth شروع می‌شود (۱..۱۲). */
+export function fyMonthOrder(startMonth: number): number[] {
+  const out: number[] = [];
+  for (let i = 0; i < 12; i++) out.push(((startMonth - 1 + i) % 12) + 1);
+  return out;
+}
+
+/** استنتاج ماه شروع سال مالی از داده: ماه بعدِ ماهِ fy_cumulative≈period_total
+ * قابل‌اتکا نیست؛ به‌جای آن از fiscal_year موتور استفاده می‌کنیم:
+ * موتور fiscal_year را سال جلالیِ period_end می‌گذارد، پس برای شرکت با سال مالی
+ * غیرمنطبق (مثلاً منتهی به شهریور) ماه‌های نیمهٔ دوم سالِ قبل هم همان fiscal_year
+ * را می‌گیرند؟ خیر — موتور صرفاً پیشوند سال را می‌گیرد. راه قطعی و صادق:
+ * گروه‌بندی بر اساس «سال مالی = سالِ جلالیِ period_end» و محور تقویمی فروردین…اسفند.
+ * برای شرکت‌های سال مالی غیرمنطبق، تجمیعی fy_cumulative_amount خودِ گزارش
+ * مرجع است (ازابتدای «سال مالی» واقعی شرکت) و صادقانه همان را نشان می‌دهیم. */
+export function groupByFY(byMonth: Map<string, CodalN30Data>): Map<number, Map<number, CodalN30Data>> {
+  const byFY = new Map<number, Map<number, CodalN30Data>>();
+  for (const [key, r] of byMonth) {
+    const y = Number(key.slice(0, 4));
+    const mo = Number(key.slice(5, 7));
+    if (!byFY.has(y)) byFY.set(y, new Map());
+    byFY.get(y)!.set(mo, r);
+  }
+  return byFY;
+}
+
+function buildFYMonths(fy: number, months: Map<number, CodalN30Data> | undefined): FYMonthPoint[] {
+  const out: FYMonthPoint[] = [];
+  for (let mo = 1; mo <= 12; mo++) {
+    const r = months?.get(mo) ?? null;
+    out.push({
+      monthNo: mo,
+      monthLabel: JALALI_MONTHS[mo - 1],
+      monthKey: `${fy}-${String(mo).padStart(2, "0")}`,
+      amount: r ? (r.period_total_amount ?? null) : null,
+      cumulative: r ? (r.fy_cumulative_amount ?? null) : null,
+    });
+  }
+  return out;
+}
+
+/* ── محاسبهٔ اصلی ────────────────────────────────────────────────────────── */
+
+/** ساخت مدل کامل «شناسنامهٔ فروش ماهانه» از گزارش‌های ن-۳۰ یک نماد.
+ * ورودی: گزارش‌ها از جدید به قدیم (خروجی supabase.ts همین است).
+ * خروجی null یعنی هیچ گزارش قابل‌استفاده‌ای وجود ندارد — بخش رندر نشود. */
+export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null {
+  const byMonth = dedupeByMonth(reports ?? []);
+  if (byMonth.size === 0) return null;
+
+  const byFY = groupByFY(byMonth);
+  const years = [...byFY.keys()].sort((a, b) => b - a);
+  const currentFY = years[0];
+  // A missing prior fiscal year is a gap, not permission to compare two years apart.
+  const priorFY = byFY.has(currentFY - 1) ? currentFY - 1 : null;
+
+  const currentMonths = buildFYMonths(currentFY, byFY.get(currentFY));
+  const priorMonths = priorFY !== null ? buildFYMonths(priorFY, byFY.get(priorFY)) : null;
+
+  const curVals = currentMonths.filter((m) => m.amount !== null).map((m) => m.amount as number);
+  const avgCurrent = curVals.length > 0
+    ? Math.round(curVals.reduce((a, b) => a + b, 0) / curVals.length)
+    : null;
+
+  // تجمیعی: آخرین ماهِ دارای گزارش سال جاری + هم‌نقطهٔ سال قبل (همان شمارهٔ ماه).
+  let cumulativeCurrent: number | null = null;
+  let cumulativePriorSamePoint: number | null = null;
+  let lastReportedMonthNo: number | null = null;
+  for (let i = currentMonths.length - 1; i >= 0; i--) {
+    if (currentMonths[i].cumulative !== null) {
+      cumulativeCurrent = currentMonths[i].cumulative;
+      lastReportedMonthNo = currentMonths[i].monthNo;
+      break;
+    }
+  }
+  if (lastReportedMonthNo !== null && priorMonths) {
+    const same = priorMonths.find((m) => m.monthNo === lastReportedMonthNo);
+    cumulativePriorSamePoint = same?.cumulative ?? null;
+  }
+
+  // سری نرخ ۱–۳ (محصول×بازار) پرسهم؛ گپ واقعی برای ماه بدون رکورد.
+  const sortedKeys = [...byMonth.keys()].sort();
+  const comboTotals = new Map<string, { name: string; market: N30Market; rawMarket: N30Market; amount: number }>();
+  for (const key of sortedKeys) {
+    const r = byMonth.get(key)!;
+    for (const p of r.products) {
+      if (!p.product_name || p.sales_amount == null) continue;
+      const market = monthlyMarket(p);
+      // Keep the existing row/series identity; an unknown label cannot merge two valid rates.
+      const ck = `${p.product_name}|${p.market}`;
+      const prev = comboTotals.get(ck);
+      if (prev) { prev.amount += p.sales_amount; if (prev.market !== market) prev.market = "نامشخص"; }
+      else comboTotals.set(ck, { name: p.product_name, market, rawMarket: p.market, amount: p.sales_amount });
+    }
+  }
+  const topCombos = [...comboTotals.values()].sort((a, b) => b.amount - a.amount).slice(0, 3);
+  // Shared presentation slots only: never invent a report or change a reported rate.
+  const rateMonthKeys = monthlyCalendarKeys(sortedKeys);
+  const rateSeries: RateSeries[] = topCombos.map((c) => {
+    const observedUnits: Array<string | null> = [];
+    const rateDenominators: Array<string | null> = [];
+    const points = rateMonthKeys.map((key) => {
+      const r = byMonth.get(key);
+      const p = r?.products.find(
+        (x) => x.product_name === c.name && x.market === c.rawMarket,
+      );
+      const mo = Number(key.slice(5, 7));
+      const rate = meaningfulRate(p ?? null);
+      const metadata = r ? productUnitMetadata(r, p, rate) : { quantityUnit: null, rateUnit: null };
+      if (p) observedUnits.push(metadata.quantityUnit);
+      if (rate !== null) rateDenominators.push(metadata.rateUnit?.denominator ?? null);
+      return { monthKey: key, monthLabel: JALALI_MONTHS[mo - 1], rate, ...metadata };
+    });
+    const denominator = commonQuantityUnit(rateDenominators);
+    return {
+      productName: c.name,
+      market: c.market,
+      label: `${c.name} — ${c.market === "نامشخص" ? "تفکیک نامعلوم" : c.market}`,
+      quantityUnit: commonQuantityUnit(observedUnits),
+      rateUnit: denominator ? { numerator: "ریال" as const, denominator } : null,
+      points,
+    };
+  });
+
+  // ترکیب فروش آخرین ماه دارای گزارش.
+  const latestKey = sortedKeys.length > 0 ? sortedKeys[sortedKeys.length - 1] : null;
+  let latestMix: MixSlice[] = [];
+  let latestDomesticAmount: number | null = null;
+  let latestExportAmount: number | null = null;
+  let latestExportSharePct: number | null = null;
+  let latestMonthLabel: string | null = null;
+  let marketUnavailableReason: MonthlyMarketUnavailableReason = null;
+  if (latestKey) {
+    const r = byMonth.get(latestKey)!;
+    marketUnavailableReason = monthlyMarketUnavailableReason(r);
+    latestMonthLabel = JALALI_MONTHS[Number(latestKey.slice(5, 7)) - 1];
+    let dom = 0, exp = 0;
+    const items: { name: string; market: N30Market; amount: number }[] = [];
+    for (const p of r.products) {
+      if (!p.product_name || p.sales_amount == null || p.sales_amount <= 0) continue;
+      const market = monthlyMarket(p);
+      if (market === "صادراتی") exp += p.sales_amount; else if (market === "داخلی") dom += p.sales_amount;
+      items.push({ name: p.product_name, market, amount: p.sales_amount });
+    }
+    const total = items.reduce((sum, p) => sum + p.amount, 0);
+    latestDomesticAmount = marketUnavailableReason ? null : dom;
+    latestExportAmount = marketUnavailableReason ? null : exp;
+    latestExportSharePct = !marketUnavailableReason && total > 0 ? pct(exp, total) : null;
+    const ranked = items.sort((a, b) => b.amount - a.amount);
+    const remaining = ranked.slice(6);
+    // Keep unverified rows explicit instead of relabelling them as the mixed "other" bucket.
+    const top = [...ranked.slice(0, 6), ...remaining.filter(x => x.market === "نامشخص")];
+    const rest = remaining.filter(x => x.market !== "نامشخص").reduce((a, x) => a + x.amount, 0);
+    latestMix = top.map((x) => ({
+      name: x.name, market: x.market, amount: x.amount, sharePct: pct(x.amount, total),
+    }));
+    if (rest > 0) latestMix.push({ name: "سایر", market: null, amount: rest, sharePct: pct(rest, total) });
+  }
+
+  // تولید در برابر فروش محصول اصلی (پرسهم‌ترین محصول صرف‌نظر از بازار).
+  const prodTotals = new Map<string, number>();
+  for (const key of sortedKeys) {
+    for (const p of byMonth.get(key)!.products) {
+      if (!p.product_name || p.sales_amount == null) continue;
+      prodTotals.set(p.product_name, (prodTotals.get(p.product_name) ?? 0) + p.sales_amount);
+    }
+  }
+  const mainProductName = [...prodTotals.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? null;
+  const prodVsSales: ProdSalesPoint[] = [];
+  if (mainProductName) {
+    for (const key of rateMonthKeys) {
+      const r = byMonth.get(key);
+      const rows = r?.products.filter(p => p.product_name === mainProductName) ?? [];
+      const unavailableReason: ProdSalesPoint["unavailableReason"] = !r
+        ? "missing-report"
+        : rows.length === 0
+          ? "missing-product"
+          : rows.some(p => p.production_qty == null || p.sales_qty == null
+            || !Number.isFinite(p.production_qty) || !Number.isFinite(p.sales_qty))
+            ? "incomplete-quantity"
+            : null;
+      prodVsSales.push({
+        monthKey: key,
+        monthLabel: JALALI_MONTHS[Number(key.slice(5, 7)) - 1],
+        production: unavailableReason ? null : rows.reduce((sum, p) => sum + p.production_qty!, 0),
+        sales: unavailableReason ? null : rows.reduce((sum, p) => sum + p.sales_qty!, 0),
+        unavailableReason,
+        quantityUnit: unavailableReason ? null : commonQuantityUnit(rows.map(p => productUnitMetadata(r!, p, null).quantityUnit)),
+      });
+    }
+  }
+
+  const quantitySeries: QuantitySeries[] = [];
+  if (mainProductName) {
+    const markets = new Set<"داخلی" | "صادراتی">();
+    for (const key of sortedKeys) {
+      const r = byMonth.get(key)! as QuantityWitnessedReport;
+      const source = r.quantity_source;
+      if (source?.symbol !== r.symbol || source.periodEnd !== r.period_end || !Array.isArray(source.rows)) continue;
+      for (const row of source.rows) {
+        if (row?.productName === mainProductName && (row.market === "داخلی" || row.market === "صادراتی")
+          && typeof row.rawUnit === "string" && row.rawUnit.replace(/[\s\u200c]+/g, "") === "هزارتن") markets.add(row.market);
+      }
+    }
+    for (const market of markets) {
+      const points: QuantitySeries["points"] = rateMonthKeys.map(key => {
+        const r = byMonth.get(key) as QuantityWitnessedReport | undefined;
+        const source = r?.quantity_source;
+        const observations = source && Array.isArray(source.rows) ? source.rows.filter(row => row?.productName === mainProductName) : [];
+        const expected = observations.filter(row => row.market === market);
+        const mainRows = r?.products.filter(row => row.product_name === mainProductName) ?? [];
+        const rows = mainRows.filter(row => monthlyMarket(row) === market);
+        const rowIndices = rows.map(row => row.quantity_witness?.rowIndex);
+        const expectedIndices = expected.map(row => row.rowIndex);
+        const unit = r ? commonQuantityUnit(rows.map(row => productUnitMetadata(r, row, null).quantityUnit)) : null;
+        const reason: QuantitySeries["points"][number]["scopeUnavailableReason"] = !r ? "missing-report"
+          : !source || source.symbol !== r.symbol || source.periodEnd !== r.period_end ? "missing-source"
+          : observations.some(row => !["داخلی", "صادراتی", "خدمات"].includes(row.market)) || mainRows.some(row => monthlyMarket(row) === "نامشخص") ? "unverified-market"
+          : !expected.length ? "missing-market-row"
+          : new Set(rowIndices).size !== rowIndices.length || new Set(expectedIndices).size !== expectedIndices.length ? "ambiguous-row"
+          : expected.some(row => row.admitted !== true) || rows.length !== expected.length || rowIndices.some(index => !expectedIndices.includes(index!)) ? "incomplete-source-coverage"
+          : !unit || rows.some(row => !row.quantity_witness || row.production_qty === null || row.sales_qty === null
+            || !Number.isFinite(row.production_qty) || !Number.isFinite(row.sales_qty)) ? "incomplete-quantity" : null;
+        return {
+          monthKey: key, monthLabel: JALALI_MONTHS[Number(key.slice(5, 7)) - 1],
+          production: reason ? null : rows.reduce((sum, row) => sum + row.production_qty!, 0),
+          sales: reason ? null : rows.reduce((sum, row) => sum + row.sales_qty!, 0),
+          quantityUnit: reason ? null : unit,
+          unavailableReason: reason === "missing-report" ? "missing-report" : reason === "missing-market-row" ? "missing-product" : reason ? "incomplete-quantity" : null,
+          scopeUnavailableReason: reason,
+          witnesses: reason ? [] : rows.map(row => ({ ...(row as QuantityWitnessedProduct).quantity_witness! })),
+        };
+      });
+      quantitySeries.push({ productName: mainProductName, market, label: `${mainProductName} — کالای ${market}`, scope: "main-product-goods-market", points });
+    }
+  }
+
+  return {
+    quantityUnit: commonQuantityUnit([
+      ...rateSeries.map(series => series.quantityUnit),
+      ...prodVsSales.filter(point => point.unavailableReason === null).map(point => point.quantityUnit),
+    ]),
+    currentFY,
+    priorFY,
+    currentMonths,
+    priorMonths,
+    avgCurrent,
+    cumulativeCurrent,
+    cumulativePriorSamePoint,
+    rateSeries,
+    latestMonthKey: latestKey,
+    latestMonthLabel,
+    latestMix,
+    latestDomesticAmount,
+    latestExportAmount,
+    latestExportSharePct,
+    marketUnavailableReason,
+    mainProductName,
+    prodVsSales,
+    ...(quantitySeries.length ? { quantitySeries } : {}),
+    reportCount: byMonth.size,
+  };
+}
+
+/* ── روایت‌های template‌ای (متن خام با ارقام لاتین؛ UI فارسی‌سازی می‌کند) ── */
+
+function pctText(v: number): string {
+  const a = Math.abs(v);
+  return `${a % 1 === 0 ? a.toFixed(0) : a.toFixed(1)} درصد`;
+}
+
+/** روایت چارت ۱: فروش آخرین ماه نسبت به میانگین سال جاری. */
+export function narrativeMonthlyVsAvg(m: MonthlySales): string | null {
+  if (m.avgCurrent === null || m.avgCurrent === 0 || !m.latestMonthLabel) return null;
+  let latestAmount: number | null = null;
+  for (let i = m.currentMonths.length - 1; i >= 0; i--) {
+    if (m.currentMonths[i].amount !== null) { latestAmount = m.currentMonths[i].amount; break; }
+  }
+  if (latestAmount === null) return null;
+  const diff = pct(latestAmount - m.avgCurrent, m.avgCurrent);
+  if (diff === null || diff === 0) return null;
+  return diff > 0
+    ? `فروش ${m.latestMonthLabel} حدود ${pctText(diff)} بالاتر از میانگین ماهانهٔ سال ${m.currentFY} است.`
+    : `فروش ${m.latestMonthLabel} حدود ${pctText(diff)} پایین‌تر از میانگین ماهانهٔ سال ${m.currentFY} است.`;
+}
+
+/** روایت چارت ۲: تجمیعی سال جاری در برابر هم‌دورهٔ سال قبل. */
+export function narrativeCumulative(m: MonthlySales): string | null {
+  if (m.cumulativeCurrent === null || m.cumulativePriorSamePoint === null || m.cumulativePriorSamePoint === 0) return null;
+  const g = pct(m.cumulativeCurrent - m.cumulativePriorSamePoint, Math.abs(m.cumulativePriorSamePoint));
+  if (g === null || g === 0) return null;
+  return g > 0
+    ? `فروش تجمیعی از ابتدای سال مالی ${m.currentFY} نسبت به دورهٔ مشابه سال قبل ${pctText(g)} بیشتر است.`
+    : `فروش تجمیعی از ابتدای سال مالی ${m.currentFY} نسبت به دورهٔ مشابه سال قبل ${pctText(g)} کمتر است.`;
+}
+
+/** روایت چارت ۳: نرخ فروش آخرین ماهِ سری اول نسبت به میانگین کل بازه. */
+export function narrativeRate(m: MonthlySales): string | null {
+  const s = m.rateSeries[0];
+  if (!s) return null;
+  const vals = s.points.filter((p) => p.rate !== null).map((p) => p.rate as number);
+  if (vals.length < 2) return null;
+  const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+  if (avg === 0) return null;
+  let last: { monthLabel: string; rate: number } | null = null;
+  for (let i = s.points.length - 1; i >= 0; i--) {
+    if (s.points[i].rate !== null) { last = { monthLabel: s.points[i].monthLabel, rate: s.points[i].rate as number }; break; }
+  }
+  if (!last) return null;
+  const diff = pct(last.rate - avg, avg);
+  if (diff === null || diff === 0) return null;
+  return diff > 0
+    ? `نرخ فروش ${s.productName} در ${last.monthLabel} حدود ${pctText(diff)} بالاتر از میانگین بازهٔ گزارش‌شده است.`
+    : `نرخ فروش ${s.productName} در ${last.monthLabel} حدود ${pctText(diff)} پایین‌تر از میانگین بازهٔ گزارش‌شده است.`;
+}
+
+/** روایت چارت ۴: سهم صادرات آخرین ماه. */
+export function narrativeMix(m: MonthlySales): string | null {
+  if (m.marketUnavailableReason === "signed-market-adjustment" && m.latestMonthLabel)
+    return `در ${m.latestMonthLabel} مبلغ اصلاحی/منفی وجود دارد؛ محاسبهٔ سهم صادرات با روش فعلی قابل اتکا نیست.`;
+  if (m.marketUnavailableReason === "incomplete-market-coverage" && m.latestMonthLabel)
+    return `در ${m.latestMonthLabel} پوشش مبلغ ردیف‌های بازار کامل نیست؛ سهم صادرات نامعلوم است.`;
+  if (m.marketUnavailableReason && m.latestMonthLabel)
+    return `در ${m.latestMonthLabel} تفکیک کامل و تأییدشدهٔ بازار در دسترس نیست؛ سهم صادرات نامعلوم است.`;
+  if (m.latestExportSharePct === null || !m.latestMonthLabel) return null;
+  if (m.latestExportSharePct === 0 && m.latestExportAmount !== null && m.latestExportAmount > 0)
+    return `در ${m.latestMonthLabel} سهم صادرات مثبت و کمتر از یک‌دهم درصد است.`;
+  if (m.latestExportSharePct === 0)
+    return `در ${m.latestMonthLabel} سهم صادرات از فروش با تفکیک تأییدشده صفر است.`;
+  return `در ${m.latestMonthLabel} حدود ${pctText(m.latestExportSharePct)} از فروش صادراتی بوده است.`;
+}
+
+/** روایت چارت ۵: انبارش/تخلیهٔ موجودی محصول اصلی در آخرین ماه. */
+export function narrativeProdVsSales(m: MonthlySales): string | null {
+  const last = m.prodVsSales.length > 0 ? m.prodVsSales[m.prodVsSales.length - 1] : null;
+  if (!last || !m.mainProductName || last.production === null || last.sales === null || last.sales === 0) return null;
+  const ratio = pct(last.production - last.sales, last.sales);
+  if (ratio === null || ratio === 0) return null;
+  return ratio > 0
+    ? `در ${last.monthLabel} تولید ${m.mainProductName} حدود ${pctText(ratio)} بیشتر از فروش بوده است (افزایش موجودی).`
+    : `در ${last.monthLabel} تولید ${m.mainProductName} حدود ${pctText(ratio)} کمتر از فروش بوده است (فروش از موجودی).`;
+}

@@ -1,0 +1,222 @@
+{
+  "schema": "root-exact-preview-public-client-origins.v1",
+  "atUtc": "2026-11-04T14:16:49.863078+00:00",
+  "source": "2aa0cc46e0adb5c73e24bb752706e3168c94fc94",
+  "deployment": "dpl_Bu4kE93mjnno5SJtffNkuobRWr5V",
+  "scope": "only immutable public JS already requested by the actual browser; origins and digests only, no key/JWT/config body",
+  "publicAssetGetCount": 16,
+  "providerRequests": 0,
+  "postOrSqlOrServerMutation": false,
+  "assets": [
+    {
+      "assetPath": "/_next/static/chunks/1255-60d8dc7c8c9309a1.js",
+      "readOnly": true,
+      "bodyPersisted": false,
+      "status": "PUBLIC_ASSET_READ",
+      "bytes": 174644,
+      "sha256": "e4d8c5c6049bb57c1efb5600248c3a8b3de621c4ed75d0e01160757f9c295b7f",
+      "origins": [
+        "https://nextjs.org",
+        "https://react.dev"
+      ],
+      "supabaseTokenPresent": false,
+      "liaraTokenPresent": false
+    },
+    {
+      "assetPath": "/_next/static/chunks/1545-e7fb6452e04098ad.js",
+      "readOnly": true,
+      "bodyPersisted": false,
+      "status": "PUBLIC_ASSET_READ",
+      "bytes": 14960,
+      "sha256": "f78ed9939717ce896671ae26805981b7833585902cb89ecd2d83c9fbbce313d0",
+      "origins": [],
+      "supabaseTokenPresent": false,
+      "liaraTokenPresent": false
+    },
+    {
+      "assetPath": "/_next/static/chunks/2287-d0a13c11a3ad0980.js",
+      "readOnly": true,
+      "bodyPersisted": false,
+      "status": "PUBLIC_ASSET_READ",
+      "bytes": 9738,
+      "sha256": "f18343487461d40d49d4cb4e4da08016181ebe9ed34c06aabe5309a415698ec4",
+      "origins": [],
+      "supabaseTokenPresent": false,
+      "liaraTokenPresent": false
+    },
+    {
+      "assetPath": "/_next/static/chunks/2412-50bb95a06d778a49.js",
+      "readOnly": true,
+      "bodyPersisted": false,
+      "status": "PUBLIC_ASSET_READ",
+      "bytes": 103631,
+      "sha256": "76c948c210b29239e7c65c60d45391f9b3b04dad8b5794252eb629422b2fddee",
+      "origins": [],
+      "supabaseTokenPresent": false,
+      "liaraTokenPresent": false
+    },
+    {
+      "assetPath": "/_next/static/chunks/2473-cd6d92efe10b616a.js",
+      "readOnly": true,
+      "bodyPersisted": false,
+      "status": "PUBLIC_ASSET_READ",
+      "bytes": 15332,
+      "sha256": "c62289e19ecaaf16ff041c9b3581872cfdbbac46730cb9bc373d12858122de25",
+      "origins": [
+        "http://www.w3.org",
+        "https://nextjs.org"
+      ],
+      "supabaseTokenPresent": false,
+      "liaraTokenPresent": false
+    },
+    {
+      "assetPath": "/_next/static/chunks/2619-04bc32f026a0d946.js",
+      "readOnly": true,
+      "bodyPersisted": false,
+      "status": "PUBLIC_ASSET_READ",
+      "bytes": 8564,
+      "sha256": "a9b6c2213ea787a015c0169d198b4a90d7a44a0cc17abb0d132e8362d3016ced",
+      "origins": [],
+      "supabaseTokenPresent": false,
+      "liaraTokenPresent": false
+    },
+    {
+      "assetPath": "/_next/static/chunks/4787-cdefad716dc78e6f.js",
+      "readOnly": true,
+      "bodyPersisted": false,
+      "status": "PUBLIC_ASSET_READ",
+      "bytes": 8262,
+      "sha256": "38504846c32571b64f6b2042980cd43025ad7691a9a5e31f6e975060dac3156b",
+      "origins": [
+        "https://codal.ir"
+      ],
+      "supabaseTokenPresent": false,
+      "liaraTokenPresent": false
+    },
+    {
+      "assetPath": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js",
+      "readOnly": true,
+      "bodyPersisted": false,
+      "status": "PUBLIC_ASSET_READ",
+      "bytes": 173025,
+      "sha256": "5421e13a91a9389517b66179f3b4b5eaa0d95245438066d4d7b19ac30aeb809b",
+      "origins": [
+        "http://www.w3.org",
+        "https://react.dev"
+      ],
+      "supabaseTokenPresent": false,
+      "liaraTokenPresent": false
+    },
+    {
+      "assetPath": "/_next/static/chunks/5325-aff43f442ed94447.js",
+      "readOnly": true,
+      "bodyPersisted": false,
+      "status": "PUBLIC_ASSET_READ",
+      "bytes": 17670,
+      "sha256": "059328a8f95d1dd9bc6b608af290cf3f25d65811fa906ef2033c1f5c566c4215",
+      "origins": [],
+      "supabaseTokenPresent": false,
+      "liaraTokenPresent": false
+    },
+    {
+      "assetPath": "/_next/static/chunks/6698-a1b4aaf792e2d6bf.js",
+      "readOnly": true,
+      "bodyPersisted": false,
+      "status": "PUBLIC_ASSET_READ",
+      "bytes": 7290,
+      "sha256": "750535c7898ee21e5af8966f7cbd779b2d6c9860d85a64e09e63542b03bba734",
+      "origins": [],
+      "supabaseTokenPresent": false,
+      "liaraTokenPresent": false
+    },
+    {
+      "assetPath": "/_next/static/chunks/6740-7ddb8a9f1d500af3.js",
+      "readOnly": true,
+      "bodyPersisted": false,
+      "status": "PUBLIC_ASSET_READ",
+      "bytes": 10567,
+      "sha256": "1a613571ec5e9bf21eaac49c3023e193f7123f377cae2a8275f3439020dbcf04",
+      "origins": [],
+      "supabaseTokenPresent": false,
+      "liaraTokenPresent": false
+    },
+    {
+      "assetPath": "/_next/static/chunks/9612-22d0ecbe80f54ecc.js",
+      "readOnly": true,
+      "bodyPersisted": false,
+      "status": "PUBLIC_ASSET_READ",
+      "bytes": 288862,
+      "sha256": "c8909487783ab6a8e5bf2aaaeff5aec31d24bbc2ec6f105e2badc3b69e57e9de",
+      "origins": [
+        "http://www.w3.org",
+        "https://bit.ly",
+        "https://redux-toolkit.js.org",
+        "https://redux.js.org"
+      ],
+      "supabaseTokenPresent": false,
+      "liaraTokenPresent": false
+    },
+    {
+      "assetPath": "/_next/static/chunks/app/symbol/%5Bsymbol%5D/page-fa2afd451d225916.js",
+      "readOnly": true,
+      "bodyPersisted": false,
+      "status": "PUBLIC_ASSET_READ",
+      "bytes": 127896,
+      "sha256": "03a0a6202565f151a228c2c9d96b94d7639d52fd2406752b18fa344583213ee8",
+      "origins": [
+        "https://codal.ir"
+      ],
+      "supabaseTokenPresent": false,
+      "liaraTokenPresent": false
+    },
+    {
+      "assetPath": "/_next/static/chunks/d0709137-02608d4546722e55.js",
+      "readOnly": true,
+      "bodyPersisted": false,
+      "status": "PUBLIC_ASSET_READ",
+      "bytes": 160492,
+      "sha256": "0cc689511d4efab38384fc6293ae9e7ef2744c1636d9bdc727f07a49429a7adb",
+      "origins": [
+        "http://www.w3.org",
+        "https://www.tradingview.com"
+      ],
+      "supabaseTokenPresent": false,
+      "liaraTokenPresent": false
+    },
+    {
+      "assetPath": "/_next/static/chunks/main-app-b7ac91ae224968d9.js",
+      "readOnly": true,
+      "bodyPersisted": false,
+      "status": "PUBLIC_ASSET_READ",
+      "bytes": 572,
+      "sha256": "081da4c60742c182eab35c4348553597e464242c3fea2e19da2ef1d4485f011a",
+      "origins": [],
+      "supabaseTokenPresent": false,
+      "liaraTokenPresent": false
+    },
+    {
+      "assetPath": "/_next/static/chunks/webpack-0cd5a77e5b2d4660.js",
+      "readOnly": true,
+      "bodyPersisted": false,
+      "status": "PUBLIC_ASSET_READ",
+      "bytes": 3788,
+      "sha256": "e946aa5c9ea17534bed09c3e7d30cd6077e9cd3b292dda2b105d119d61430461",
+      "origins": [
+        "https://vercel.live"
+      ],
+      "supabaseTokenPresent": false,
+      "liaraTokenPresent": false
+    }
+  ],
+  "allOrigins": [
+    "http://www.w3.org",
+    "https://bit.ly",
+    "https://codal.ir",
+    "https://nextjs.org",
+    "https://react.dev",
+    "https://redux-toolkit.js.org",
+    "https://redux.js.org",
+    "https://vercel.live",
+    "https://www.tradingview.com"
+  ]
+}

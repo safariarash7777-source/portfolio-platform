@@ -1,0 +1,90 @@
+{
+  "status": "OFFLINE_REVIEW_NO_PRODUCT_PATCH_LIVE_UNCONFIRMED",
+  "base": "2aa0cc46e0adb5c73e24bb752706e3168c94fc94",
+  "unchangedSinceAccepted4e": [
+    "components/symbol/MonthlySalesCharts.tsx",
+    "components/symbol/MonthlyPointSourceLabel.tsx",
+    "components/symbol/monthly-point-provenance.ts",
+    "components/symbol/MeasuredResponsiveContainer.tsx",
+    "lib/core/monthlyReport.ts"
+  ],
+  "offlineCasesPassed": 5,
+  "productFilesChanged": 0,
+  "browserAcceptance": false,
+  "checkoutHead": "5fe459f5cf61a5cb7c01a70c23ba86270191c2ec",
+  "checkoutStatus": "",
+  "files": [
+    {
+      "path": "baseline.json",
+      "sha256": "27e7be8a978d81f3f2162ec35e68cb0a6d990cb4bea01a50d133764114f9e902"
+    },
+    {
+      "path": "library-evidence.json",
+      "sha256": "4bec661f8540343e19b3e6bb40f71750d3ce581ba266dd399591df511b6a1bc3"
+    },
+    {
+      "path": "prepare.mjs",
+      "sha256": "b852cfbb698a6aa719334b76595d107fa15a42252b7209eb6a865b28a0323a5d"
+    },
+    {
+      "path": "probe-first.log",
+      "sha256": "022bc155753acc344ce117c70453c797d267fd942380a9499d397a013441714a"
+    },
+    {
+      "path": "probe.cjs",
+      "sha256": "229d891ce4d523378a80b34057b5a60389a9ae92e1dbf2074c9883c9d826b457"
+    },
+    {
+      "path": "probe.json",
+      "sha256": "7ed2e6ce1337a13acf32b955909f59b558fed54419bd45f017c01ecba9ec1ad1"
+    },
+    {
+      "path": "RESULT.fa.md",
+      "sha256": "143d2174ad337c55eb62a694d576e211eb52c5591c7d2202032498f86ca1dfa7"
+    },
+    {
+      "path": "seal.mjs",
+      "sha256": "307d1f8793f933cb219ef3d586ddf96ba9e3bad2b2c5724337c0a7e69b9b797f"
+    },
+    {
+      "path": "source/components/symbol/CodalSourceLink.tsx",
+      "sha256": "3ddec6c3bf3e91140c4a9f9bd205114e04fe656198896b1b2268cda96dd2bc95"
+    },
+    {
+      "path": "source/components/symbol/MeasuredResponsiveContainer.tsx",
+      "sha256": "ad342538fb69a0f790885e471e9894c967130bb7a0aab476c9033ffc96cc1b21"
+    },
+    {
+      "path": "source/components/symbol/monthly-point-provenance.ts",
+      "sha256": "1b61673725b9fe4157ccdbb505c0fdc0cb820718910413111ed885d156bc47d7"
+    },
+    {
+      "path": "source/components/symbol/MonthlyPointSourceLabel.tsx",
+      "sha256": "e40827d58c55a447cc6c1a1d7d7837d64f080a4a378bead827d756c4861e5b08"
+    },
+    {
+      "path": "source/components/symbol/MonthlySalesCharts.tsx",
+      "sha256": "99d074596829fb433ecca82959528c841b741ed61dd99c27467990c9a779cf42"
+    },
+    {
+      "path": "source/components/symbol/MonthlySourceChartFrame.tsx",
+      "sha256": "9554491a7631d077f40cbdbd57c05e68b84275e6fa2c2c1f94c7e299b799e6d1"
+    },
+    {
+      "path": "source/lib/core/monthly-quantity.ts",
+      "sha256": "244b6925cd80a65984d956e3ca671b364a7a353e182ccf8dd7aee76877d78b2d"
+    },
+    {
+      "path": "source/lib/core/monthlyReport.ts",
+      "sha256": "7359f0ccb5881fe9deb0770c0f4e0bb726c916d38779db6f7d599abe40dc21f3"
+    },
+    {
+      "path": "source/lib/format.ts",
+      "sha256": "434790b4d1e4ddf7a5b39a2c7a0321ec81844849ca92287b2cdbf8fe40c79ac5"
+    },
+    {
+      "path": "source/lib/fundamental/types.ts",
+      "sha256": "8e0719ca44c9882005c35de6bf5ca6304b65c78247314ac479558d7742fef4e1"
+    }
+  ]
+}

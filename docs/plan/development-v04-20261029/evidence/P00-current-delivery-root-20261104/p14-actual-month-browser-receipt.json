@@ -1,0 +1,477 @@
+{
+  "schema": "root-monthly-actual-bar-after-reload.v1",
+  "source": "2aa0cc46e0adb5c73e24bb752706e3168c94fc94",
+  "deployment": "dpl_Bu4kE93mjnno5SJtffNkuobRWr5V",
+  "startedAt": "2026-11-04T14:06:38.998Z",
+  "browser": "156.0.8078.80",
+  "emulatedTouch": true,
+  "realHardwareAcceptance": false,
+  "requests": [
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/35d9eb37be8f3c35-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/4ff1260a1bda0420-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/7009a0e6afae0c20-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/902e9716815fb483-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/css/ee04187d2ae996e6.css"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/css/98893245a284ed5d.css"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/image"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/webpack-0cd5a77e5b2d4660.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/1255-60d8dc7c8c9309a1.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/main-app-b7ac91ae224968d9.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/d0709137-02608d4546722e55.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2619-04bc32f026a0d946.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2473-cd6d92efe10b616a.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2412-50bb95a06d778a49.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/5325-aff43f442ed94447.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/6740-7ddb8a9f1d500af3.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/6698-a1b4aaf792e2d6bf.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2287-d0a13c11a3ad0980.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/4787-cdefad716dc78e6f.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/1545-e7fb6452e04098ad.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/app/symbol/%5Bsymbol%5D/page-fa2afd451d225916.js"
+    },
+    {
+      "method": "GET",
+      "host": "vercel.live",
+      "path": "/_next-live/feedback/feedback.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/35d9eb37be8f3c35-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/4ff1260a1bda0420-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/7009a0e6afae0c20-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/902e9716815fb483-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/css/ee04187d2ae996e6.css"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/css/98893245a284ed5d.css"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/image"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/webpack-0cd5a77e5b2d4660.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/1255-60d8dc7c8c9309a1.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/main-app-b7ac91ae224968d9.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/d0709137-02608d4546722e55.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2619-04bc32f026a0d946.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2473-cd6d92efe10b616a.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2412-50bb95a06d778a49.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/5325-aff43f442ed94447.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/6740-7ddb8a9f1d500af3.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/6698-a1b4aaf792e2d6bf.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2287-d0a13c11a3ad0980.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/4787-cdefad716dc78e6f.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/1545-e7fb6452e04098ad.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/app/symbol/%5Bsymbol%5D/page-fa2afd451d225916.js"
+    },
+    {
+      "method": "GET",
+      "host": "vercel.live",
+      "path": "/_next-live/feedback/feedback.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    }
+  ],
+  "errors": [],
+  "stages": [
+    {
+      "name": "same-view-year-reload",
+      "http": 200,
+      "url": "https://portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1405&quarters=12#fundamental",
+      "plotCount": 8
+    },
+    {
+      "name": "actual-visible-bar-touch-after-reload",
+      "barBox": {
+        "x": 160.39169311523438,
+        "y": 318.603515625,
+        "width": 15,
+        "height": 179.037109375
+      },
+      "plotBox": {
+        "x": 37,
+        "y": 265.640625,
+        "width": 301,
+        "height": 280
+      },
+      "tap": {
+        "x": 167.89169311523438,
+        "y": 324.603515625
+      },
+      "text": "شهریور\nمنشأ سال ۱۴۰۵\nپایان دورهٔ گزارش: ۱۴۰۵-۰۶-۳۱\nواحد مبلغ گزارش: میلیون ریال\nانتشار در کدال (زمان محلی): ۱۴۰۵/۰۷/۲۹ ۲۰:۵۰:۲۶\nدریافت رکورد (متن اصلی):\n2026-10-25T10:15:56.894105+00:00\nدریافت رکورد (UTC):\n2026-10-25T10:15:56.894Z\nپایان دورهٔ ذخیره‌شده: ۲۰۲۶-۰۹-۲۲\nاصلاحیهٔ گزارش\nاطلاعیهٔ همین رکورد\n\nسال ۱۴۰۵ : ۶۳٫۹ همت",
+      "links": [
+        {
+          "text": "اطلاعیهٔ همین رکورد",
+          "href": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1"
+        }
+      ]
+    },
+    {
+      "name": "touch-source-containment",
+      "geometry": {
+        "viewport": 375,
+        "pageWidth": 375,
+        "panel": {
+          "x": 58,
+          "right": 338,
+          "y": 545.640625,
+          "bottom": 848.640625
+        },
+        "textRects": [
+          {
+            "x": 69,
+            "right": 268.6875
+          },
+          {
+            "x": 69,
+            "right": 218.96875
+          }
+        ],
+        "insideViewport": true,
+        "insidePanel": true
+      }
+    },
+    {
+      "name": "touch-native-source-link",
+      "expectedHref": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+      "final": "https://codal.ir/Reports/MonthlyActivity.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d",
+      "initialRequest": {
+        "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+        "method": "GET",
+        "from": null
+      }
+    },
+    {
+      "name": "keyboard-observed-selection",
+      "trace": [
+        {
+          "key": "ArrowLeft",
+          "active": {
+            "tag": "svg",
+            "role": "application"
+          },
+          "text": ""
+        },
+        {
+          "key": "ArrowLeft",
+          "active": {
+            "tag": "svg",
+            "role": "application"
+          },
+          "text": ""
+        },
+        {
+          "key": "ArrowLeft",
+          "active": {
+            "tag": "svg",
+            "role": "application"
+          },
+          "text": ""
+        },
+        {
+          "key": "ArrowLeft",
+          "active": {
+            "tag": "svg",
+            "role": "application"
+          },
+          "text": ""
+        },
+        {
+          "key": "ArrowLeft",
+          "active": {
+            "tag": "svg",
+            "role": "application"
+          },
+          "text": "شهریور\nمنشأ سال ۱۴۰۵\nپایان دورهٔ گزارش: ۱۴۰۵-۰۶-۳۱\nواحد مبلغ گزارش: میلیون ریال\nانتشار در کدال (زمان محلی): ۱۴۰۵/۰۷/۲۹ ۲۰:۵۰:۲۶\nدریافت رکورد (متن اصلی):\n2026-10-25T10:15:56.894105+00:00\nدریافت رکورد (UTC):\n2026-10-25T10:15:56.894Z\nپایان دورهٔ ذخیره‌شده: ۲۰۲۶-۰۹-۲۲\nاصلاحیهٔ گزارش\nاطلاعیهٔ همین رکورد\n\nسال ۱۴۰۵ : ۶۳٫۹ همت"
+        }
+      ]
+    },
+    {
+      "name": "natural-tab-shifttab-enter",
+      "tabFocus": {
+        "tag": "A",
+        "text": "اطلاعیهٔ همین رکورد",
+        "href": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1"
+      },
+      "backFocus": {
+        "tag": "svg",
+        "role": "application"
+      },
+      "final": "https://codal.ir/Reports/MonthlyActivity.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d",
+      "initialRequest": {
+        "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+        "method": "GET",
+        "from": null
+      }
+    },
+    {
+      "name": "escape-closes-source",
+      "sourceVisible": false
+    }
+  ],
+  "codalNavigations": [
+    {
+      "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+      "method": "GET",
+      "from": null
+    },
+    {
+      "url": "https://codal.ir/Reports/MonthlyActivity.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d",
+      "method": "GET",
+      "from": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1"
+    },
+    {
+      "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+      "method": "GET",
+      "from": null
+    },
+    {
+      "url": "https://codal.ir/Reports/MonthlyActivity.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d",
+      "method": "GET",
+      "from": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1"
+    }
+  ],
+  "http": 200,
+  "apiMutations": [],
+  "status": "PASS_BOUNDED_MONTHLY_SOURCE_AFTER_RELOAD",
+  "productionChanged": false,
+  "humanVisualAcceptance": false,
+  "limits": "one actual existing monthly report after dossier1405 reload; not all17 capabilities, all periods or actual device acceptance",
+  "finishedAt": "2026-11-04T14:08:15.542Z"
+}

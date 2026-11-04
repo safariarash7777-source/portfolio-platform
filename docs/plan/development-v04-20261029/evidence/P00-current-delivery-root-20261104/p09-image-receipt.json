@@ -1,0 +1,188 @@
+{
+  "schema": "root-p09-public-image-mappings.v1",
+  "results": [
+    {
+      "role": "auth",
+      "repository": "docker.io/supabase/gotrue",
+      "historicalReference": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+      "status": "PUBLIC_REGISTRY_MAPPING_VERIFIED_NOT_PRELOADED",
+      "atUtc": "2026-11-04T14:12:38.530071+00:00",
+      "anonymousPublicRegistryOnly": true,
+      "dockerPullOrLoad": false,
+      "credentialForwardedToCdn": false,
+      "signedRedirectPrintedOrPersisted": false,
+      "manifestReads": [
+        {
+          "digest": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+          "bytes": 1609,
+          "headers": {
+            "Content-Type": "application/vnd.oci.image.index.v1+json",
+            "Docker-Content-Digest": "sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+            "Date": "Wed, 04 Nov 2026 14:12:40 GMT"
+          },
+          "mediaType": "application/vnd.oci.image.index.v1+json"
+        },
+        {
+          "digest": "sha256:839f529492d116b4e8b7777c953a27c381d34c15a744b1bcefde5eefaa1f9f9f",
+          "bytes": 1431,
+          "headers": {
+            "Content-Type": "application/vnd.oci.image.manifest.v1+json",
+            "Docker-Content-Digest": "sha256:839f529492d116b4e8b7777c953a27c381d34c15a744b1bcefde5eefaa1f9f9f",
+            "Date": "Wed, 04 Nov 2026 14:12:41 GMT"
+          },
+          "mediaType": "application/vnd.oci.image.manifest.v1+json"
+        }
+      ],
+      "platformDescriptor": {
+        "mediaType": "application/vnd.oci.image.manifest.v1+json",
+        "digest": "sha256:839f529492d116b4e8b7777c953a27c381d34c15a744b1bcefde5eefaa1f9f9f",
+        "size": 1431,
+        "platform": {
+          "architecture": "amd64",
+          "os": "linux"
+        }
+      },
+      "mapping": {
+        "reference": "supabase/gotrue@sha256:1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
+        "manifest": "supabase/gotrue@sha256:839f529492d116b4e8b7777c953a27c381d34c15a744b1bcefde5eefaa1f9f9f",
+        "config": "sha256:1181bff5ba4ce440013a63cef9f4cf13024c432d705c9b1fbc9e5b949e852f48",
+        "os": "linux",
+        "architecture": "amd64"
+      },
+      "configDescriptor": {
+        "mediaType": "application/vnd.oci.image.config.v1+json",
+        "digest": "sha256:1181bff5ba4ce440013a63cef9f4cf13024c432d705c9b1fbc9e5b949e852f48",
+        "size": 2335
+      },
+      "created": "2026-09-09T15:34:47.361073768Z",
+      "configDigestAndSizeVerified": true
+    },
+    {
+      "role": "rest",
+      "repository": "docker.io/postgrest/postgrest",
+      "historicalReference": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+      "status": "PUBLIC_REGISTRY_MAPPING_VERIFIED_NOT_PRELOADED",
+      "atUtc": "2026-11-04T14:12:38.517071+00:00",
+      "anonymousPublicRegistryOnly": true,
+      "dockerPullOrLoad": false,
+      "credentialForwardedToCdn": false,
+      "signedRedirectPrintedOrPersisted": false,
+      "manifestReads": [
+        {
+          "digest": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+          "bytes": 1137,
+          "headers": {
+            "Content-Type": "application/vnd.oci.image.index.v1+json",
+            "Docker-Content-Digest": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+            "Date": "Wed, 04 Nov 2026 14:12:40 GMT"
+          },
+          "mediaType": "application/vnd.oci.image.index.v1+json"
+        },
+        {
+          "digest": "sha256:aa7e96af2d01219a09bc00c75de28171b1f9fda17ea455a931e4fb6d317089e0",
+          "bytes": 527,
+          "headers": {
+            "Content-Type": "application/vnd.docker.distribution.manifest.v2+json",
+            "Docker-Content-Digest": "sha256:aa7e96af2d01219a09bc00c75de28171b1f9fda17ea455a931e4fb6d317089e0",
+            "Date": "Wed, 04 Nov 2026 14:12:41 GMT"
+          },
+          "mediaType": "application/vnd.docker.distribution.manifest.v2+json"
+        }
+      ],
+      "platformDescriptor": {
+        "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+        "digest": "sha256:aa7e96af2d01219a09bc00c75de28171b1f9fda17ea455a931e4fb6d317089e0",
+        "size": 527,
+        "platform": {
+          "architecture": "amd64",
+          "os": "linux"
+        }
+      },
+      "mapping": {
+        "reference": "postgrest/postgrest@sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+        "manifest": "postgrest/postgrest@sha256:aa7e96af2d01219a09bc00c75de28171b1f9fda17ea455a931e4fb6d317089e0",
+        "config": "sha256:fc3d286fec899d5a5bebbb98eac771ced1ccaa44deac8ce2fc23fe5d262eb3d9",
+        "os": "linux",
+        "architecture": "amd64"
+      },
+      "configDescriptor": {
+        "mediaType": "application/vnd.docker.container.image.v1+json",
+        "size": 485,
+        "digest": "sha256:fc3d286fec899d5a5bebbb98eac771ced1ccaa44deac8ce2fc23fe5d262eb3d9"
+      },
+      "created": "2025-07-10T07:36:53+00:00",
+      "configDigestAndSizeVerified": true
+    },
+    {
+      "role": "node",
+      "repository": "docker.io/library/node",
+      "historicalReference": "sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34",
+      "status": "PUBLIC_REGISTRY_MAPPING_VERIFIED_NOT_PRELOADED",
+      "atUtc": "2026-11-04T14:12:38.530071+00:00",
+      "anonymousPublicRegistryOnly": true,
+      "dockerPullOrLoad": false,
+      "credentialForwardedToCdn": false,
+      "signedRedirectPrintedOrPersisted": false,
+      "manifestReads": [
+        {
+          "digest": "sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34",
+          "bytes": 6406,
+          "headers": {
+            "Content-Type": "application/vnd.oci.image.index.v1+json",
+            "Docker-Content-Digest": "sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34",
+            "Date": "Wed, 04 Nov 2026 14:12:40 GMT"
+          },
+          "mediaType": "application/vnd.oci.image.index.v1+json"
+        },
+        {
+          "digest": "sha256:48f53c3f0105ccddcc5e4f520347398dfc0ba9b3008fbfd98a2add27e5797957",
+          "bytes": 1720,
+          "headers": {
+            "Content-Type": "application/vnd.oci.image.manifest.v1+json",
+            "Docker-Content-Digest": "sha256:48f53c3f0105ccddcc5e4f520347398dfc0ba9b3008fbfd98a2add27e5797957",
+            "Date": "Wed, 04 Nov 2026 14:12:41 GMT"
+          },
+          "mediaType": "application/vnd.oci.image.manifest.v1+json"
+        }
+      ],
+      "platformDescriptor": {
+        "annotations": {
+          "com.docker.official-images.bashbrew.arch": "amd64",
+          "org.opencontainers.image.base.digest": "sha256:59855d3dceb3ae53991193bd03301e082b2a7faa56a514b03527ae0ec2ce3a95",
+          "org.opencontainers.image.base.name": "alpine:3.23",
+          "org.opencontainers.image.created": "2026-01-28T03:30:43Z",
+          "org.opencontainers.image.revision": "893511202f3e478d6b23e76b5658b93be6e906b7",
+          "org.opencontainers.image.source": "https://github.com/nodejs/docker-node.git#893511202f3e478d6b23e76b5658b93be6e906b7:22/alpine3.23",
+          "org.opencontainers.image.url": "https://hub.docker.com/_/node",
+          "org.opencontainers.image.version": "22-alpine"
+        },
+        "digest": "sha256:48f53c3f0105ccddcc5e4f520347398dfc0ba9b3008fbfd98a2add27e5797957",
+        "mediaType": "application/vnd.oci.image.manifest.v1+json",
+        "platform": {
+          "architecture": "amd64",
+          "os": "linux"
+        },
+        "size": 1720
+      },
+      "mapping": {
+        "reference": "node@sha256:e4bf2a82ad0a4037d28035ae71529873c069b13eb0455466ae0bc13363826e34",
+        "manifest": "node@sha256:48f53c3f0105ccddcc5e4f520347398dfc0ba9b3008fbfd98a2add27e5797957",
+        "config": "sha256:463254b4a8121318a9f8861a08bdde48fcfd528848534e7ba742b3ce5146fd17",
+        "os": "linux",
+        "architecture": "amd64"
+      },
+      "configDescriptor": {
+        "mediaType": "application/vnd.oci.image.config.v1+json",
+        "digest": "sha256:463254b4a8121318a9f8861a08bdde48fcfd528848534e7ba742b3ce5146fd17",
+        "size": 6522
+      },
+      "created": "2026-01-28T03:31:02.216106285Z",
+      "configDigestAndSizeVerified": true
+    }
+  ],
+  "readOnly": true,
+  "serverChanged": false,
+  "imagePullOrLoad": false,
+  "candidateFilesChanged": false,
+  "nativeExecuted": false
+}

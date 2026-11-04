@@ -1,0 +1,211 @@
+{
+  "base": "2aa0cc46e0adb5c73e24bb752706e3168c94fc94",
+  "recharts": "3.9.1",
+  "fixture": "synthetic September-only calendar from exact source model; not live readback",
+  "direction": "right-to-left",
+  "data": [
+    {
+      "label": "فروردین",
+      "current": null,
+      "currentMonthKey": "1405-01"
+    },
+    {
+      "label": "اردیبهشت",
+      "current": null,
+      "currentMonthKey": "1405-02"
+    },
+    {
+      "label": "خرداد",
+      "current": null,
+      "currentMonthKey": "1405-03"
+    },
+    {
+      "label": "تیر",
+      "current": null,
+      "currentMonthKey": "1405-04"
+    },
+    {
+      "label": "مرداد",
+      "current": null,
+      "currentMonthKey": "1405-05"
+    },
+    {
+      "label": "شهریور",
+      "current": 100000000,
+      "currentMonthKey": "1405-06"
+    },
+    {
+      "label": "مهر",
+      "current": null,
+      "currentMonthKey": "1405-07"
+    },
+    {
+      "label": "آبان",
+      "current": null,
+      "currentMonthKey": "1405-08"
+    },
+    {
+      "label": "آذر",
+      "current": null,
+      "currentMonthKey": "1405-09"
+    },
+    {
+      "label": "دی",
+      "current": null,
+      "currentMonthKey": "1405-10"
+    },
+    {
+      "label": "بهمن",
+      "current": null,
+      "currentMonthKey": "1405-11"
+    },
+    {
+      "label": "اسفند",
+      "current": null,
+      "currentMonthKey": "1405-12"
+    }
+  ],
+  "ticks": [
+    {
+      "coordinate": 225.54166666666669,
+      "value": "فروردین",
+      "index": 0,
+      "offset": 9.458333333333334
+    },
+    {
+      "coordinate": 206.62500000000003,
+      "value": "اردیبهشت",
+      "index": 1,
+      "offset": 9.458333333333334
+    },
+    {
+      "coordinate": 187.70833333333334,
+      "value": "خرداد",
+      "index": 2,
+      "offset": 9.458333333333334
+    },
+    {
+      "coordinate": 168.79166666666669,
+      "value": "تیر",
+      "index": 3,
+      "offset": 9.458333333333334
+    },
+    {
+      "coordinate": 149.87500000000003,
+      "value": "مرداد",
+      "index": 4,
+      "offset": 9.458333333333334
+    },
+    {
+      "coordinate": 130.95833333333334,
+      "value": "شهریور",
+      "index": 5,
+      "offset": 9.458333333333334
+    },
+    {
+      "coordinate": 112.04166666666667,
+      "value": "مهر",
+      "index": 6,
+      "offset": 9.458333333333334
+    },
+    {
+      "coordinate": 93.125,
+      "value": "آبان",
+      "index": 7,
+      "offset": 9.458333333333334
+    },
+    {
+      "coordinate": 74.20833333333333,
+      "value": "آذر",
+      "index": 8,
+      "offset": 9.458333333333334
+    },
+    {
+      "coordinate": 55.29166666666667,
+      "value": "دی",
+      "index": 9,
+      "offset": 9.458333333333334
+    },
+    {
+      "coordinate": 36.375,
+      "value": "بهمن",
+      "index": 10,
+      "offset": 9.458333333333334
+    },
+    {
+      "coordinate": 17.458333333333336,
+      "value": "اسفند",
+      "index": 11,
+      "offset": 9.458333333333334
+    }
+  ],
+  "rootTap": {
+    "index": "6",
+    "label": "مهر",
+    "keyboard": null,
+    "click": "6",
+    "payloadValues": [
+      null
+    ],
+    "visiblePayloadCount": 0
+  },
+  "initialFocus": {
+    "index": "0",
+    "label": "فروردین",
+    "keyboard": "0",
+    "click": "6",
+    "payloadValues": [
+      null
+    ],
+    "visiblePayloadCount": 0
+  },
+  "afterTwoLeft": {
+    "index": "2",
+    "label": "خرداد",
+    "keyboard": "2",
+    "click": "6",
+    "payloadValues": [
+      null
+    ],
+    "visiblePayloadCount": 0
+  },
+  "afterRefocusAndFiveMoreLeft": {
+    "index": "7",
+    "label": "آبان",
+    "keyboard": "7",
+    "click": "6",
+    "payloadValues": [
+      null
+    ],
+    "visiblePayloadCount": 0
+  },
+  "freshFocusAndFiveLeft": {
+    "index": "5",
+    "label": "شهریور",
+    "keyboard": "5",
+    "click": null,
+    "payloadValues": [
+      100000000
+    ],
+    "visiblePayloadCount": 1
+  },
+  "clickAtKnownMonth": {
+    "coordinate": 130.95833333333334,
+    "snapshot": {
+      "index": "5",
+      "label": "شهریور",
+      "keyboard": null,
+      "click": "5",
+      "payloadValues": [
+        100000000
+      ],
+      "visiblePayloadCount": 1
+    }
+  },
+  "limitations": [
+    "DOM focus and hydration not observed",
+    "no browser or real touch event",
+    "synthetic amount is not the live value",
+    "same data/size assumption must be checked by root"
+  ]
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "path": "package.json",
+    "sha256": "2a51583aedbb677771dce74309061cfd850cf6a9840132786e13aad5a9e9294b"
+  },
+  {
+    "path": "lib/state/store.js",
+    "sha256": "f5f55d77c60ca654f6e76708d5ace2a0ae7d3e8cf4454f98d664fbb056a04fa6"
+  },
+  {
+    "path": "lib/state/keyboardEventsMiddleware.js",
+    "sha256": "feb6364a8e55aee36463d9127e1d4a96af0b54d60d32357e583fa7858218fa95"
+  },
+  {
+    "path": "lib/state/mouseEventsMiddleware.js",
+    "sha256": "4fb050d034fe447947f5cbe5119541eea152498c74a26ecf9c237d957c482f61"
+  },
+  {
+    "path": "lib/state/selectors/axisSelectors.js",
+    "sha256": "358b56a946156f99fc4ee76995be655fbb92b3666c90160d3a58f918311201ab"
+  },
+  {
+    "path": "lib/state/selectors/selectors.js",
+    "sha256": "b8db0b76cafa952287949ac88819fce4a366f10f53007031e635aca5ea4291cc"
+  },
+  {
+    "path": "lib/state/selectors/tooltipSelectors.js",
+    "sha256": "62e0623a122eddeb2de0c1eb44dfd3ede7231a6984600bc55fe297ed5989b7d2"
+  },
+  {
+    "path": "lib/util/getRelativeCoordinate.js",
+    "sha256": "4fdceb1c26af711285d0e1a887525d5d7397a1229c148c79c8196a59974e8949"
+  },
+  {
+    "path": "lib/component/Tooltip.js",
+    "sha256": "72106104ab336cb9b511796eb1be341f3650b96a250ed7d4b49a7c9a98189008"
+  }
+]

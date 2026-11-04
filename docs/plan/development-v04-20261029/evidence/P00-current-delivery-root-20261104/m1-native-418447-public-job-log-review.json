@@ -1,0 +1,12 @@
+{
+  "job": 126628066221,
+  "characters": 35840,
+  "errors": [],
+  "source": "45c5a8b86b1ef1f38cf74463e9891db4aa3922fb",
+  "app": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+  "fullPublicJobLogRead": true,
+  "privateRuntimeLogRead": false,
+  "actualDetachedSourcesObserved": true,
+  "nativePreflightMethods": 17,
+  "preloadPrepareExecuteFinalizeUpload": "SUCCESS"
+}

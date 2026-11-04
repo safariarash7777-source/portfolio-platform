@@ -1,0 +1,42 @@
+{
+  "schema": "root-m1-sql-copy-independent-readback.v1",
+  "atUtc": "2026-11-04T14:22:20.068733+00:00",
+  "artifact": 13329844848,
+  "zipSha256": "bd4f6fa438dfa6ff6a166664e5b9be92c8d2d16b4cf18609ab408549918dbad5",
+  "receiptSha256": "c22a3a642c1d3281e02bc036db54d7d4cb73319d021791aff8a5ba3ad4a84e52",
+  "binding": {
+    "repository": "safariarash7777-source/portfolio-platform",
+    "workflowCommit": "45c5a8b86b1ef1f38cf74463e9891db4aa3922fb",
+    "runId": "41844781241",
+    "attempt": 1,
+    "allocationId": "26c5fc62-81dc-4e7b-a626-b4225d0e3334",
+    "executionAllocationId": "2d96ad48-b4d8-5a93-b695-7d8e08b36088"
+  },
+  "status": "PASS_M1_SQL_COPY_ONLY",
+  "cleanup": "CONFIRMED",
+  "evidence": {
+    "adapterSha256": "88da3b8b1699e0bfb0655d0fbba49bac0220aa8069abea0a654faa074788f353",
+    "archiveBytes": 215041,
+    "archiveSha256": "141201d699e12574c821a125d0b3cb5ab5afc124a2fc39ff279d1d963d393f4b",
+    "historyRows": 3,
+    "partialNotDoneRetained": true,
+    "payloadSha256": "c53de46a216a57b90afaff760c0474cb5d95911f56ff022832fd1536affae8a8",
+    "posthistorySqlRollback": "PT409",
+    "prewriteInverseMatched": true,
+    "restoredCopies": 2,
+    "restoredSnapshotSha256": "a18c61941e0831c30e97530dd683e9499b5c823c5354dc096e8dfbedf7f7d0b7",
+    "scope": "quiescent synthetic SQL copy only; no concurrent or primary backup claim",
+    "sourceCommit": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+    "unsupportedDatabaseRoleSettings": "OBSERVED_EMPTY"
+  },
+  "primaryInstall": "NOT_APPLIED",
+  "fullConsumer": "NOT_WIRED",
+  "authBrowserAcceptance": false,
+  "serviceEntitlement": "NOT_CONNECTED",
+  "fixtureReaderAttestation": "SYNTHETIC_NOT_AN_ACTUAL_READER_DEPLOYMENT",
+  "currentPrimaryRestorableBackup": "NOT_PROVEN",
+  "unsupportedSettingsScope": "observed empty in fresh isolated same-image copies; arbitrary role/database settings not supported",
+  "privateRuntimeLogReadOrUploaded": false,
+  "oldRunOrAllocationReplayed": false,
+  "publicProjectorAuthority": "reviewed exact controller validates full recipe/allocation/identity journals and independently issued hash, archive bytes, both restore snapshots and inverse/history bindings before PASS; private bodies not independently reopened by root"
+}

@@ -1,0 +1,56 @@
+{
+  "role": "rest",
+  "repository": "docker.io/postgrest/postgrest",
+  "historicalReference": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+  "status": "PUBLIC_REGISTRY_MAPPING_VERIFIED_NOT_PRELOADED",
+  "atUtc": "2026-11-04T14:12:38.517071+00:00",
+  "anonymousPublicRegistryOnly": true,
+  "dockerPullOrLoad": false,
+  "credentialForwardedToCdn": false,
+  "signedRedirectPrintedOrPersisted": false,
+  "manifestReads": [
+    {
+      "digest": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+      "bytes": 1137,
+      "headers": {
+        "Content-Type": "application/vnd.oci.image.index.v1+json",
+        "Docker-Content-Digest": "sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+        "Date": "Wed, 04 Nov 2026 14:12:40 GMT"
+      },
+      "mediaType": "application/vnd.oci.image.index.v1+json"
+    },
+    {
+      "digest": "sha256:aa7e96af2d01219a09bc00c75de28171b1f9fda17ea455a931e4fb6d317089e0",
+      "bytes": 527,
+      "headers": {
+        "Content-Type": "application/vnd.docker.distribution.manifest.v2+json",
+        "Docker-Content-Digest": "sha256:aa7e96af2d01219a09bc00c75de28171b1f9fda17ea455a931e4fb6d317089e0",
+        "Date": "Wed, 04 Nov 2026 14:12:41 GMT"
+      },
+      "mediaType": "application/vnd.docker.distribution.manifest.v2+json"
+    }
+  ],
+  "platformDescriptor": {
+    "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+    "digest": "sha256:aa7e96af2d01219a09bc00c75de28171b1f9fda17ea455a931e4fb6d317089e0",
+    "size": 527,
+    "platform": {
+      "architecture": "amd64",
+      "os": "linux"
+    }
+  },
+  "mapping": {
+    "reference": "postgrest/postgrest@sha256:c9dc201e555f5d8e37e7f39cdd4df0229774996e213bfd7de8d10ac609030f2c",
+    "manifest": "postgrest/postgrest@sha256:aa7e96af2d01219a09bc00c75de28171b1f9fda17ea455a931e4fb6d317089e0",
+    "config": "sha256:fc3d286fec899d5a5bebbb98eac771ced1ccaa44deac8ce2fc23fe5d262eb3d9",
+    "os": "linux",
+    "architecture": "amd64"
+  },
+  "configDescriptor": {
+    "mediaType": "application/vnd.docker.container.image.v1+json",
+    "size": 485,
+    "digest": "sha256:fc3d286fec899d5a5bebbb98eac771ced1ccaa44deac8ce2fc23fe5d262eb3d9"
+  },
+  "created": "2025-07-10T07:36:53+00:00",
+  "configDigestAndSizeVerified": true
+}

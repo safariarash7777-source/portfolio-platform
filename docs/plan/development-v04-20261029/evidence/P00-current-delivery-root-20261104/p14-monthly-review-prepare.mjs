@@ -1,0 +1,12 @@
+import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+const here=path.dirname(fileURLToPath(import.meta.url)),repo=path.resolve(here,'../../start-a-finance-v04-20261029');
+const base='2aa0cc46e0adb5c73e24bb752706e3168c94fc94',names=['components/symbol/MonthlySalesCharts.tsx','components/symbol/MonthlySourceChartFrame.tsx','components/symbol/MonthlyPointSourceLabel.tsx','components/symbol/monthly-point-provenance.ts','components/symbol/MeasuredResponsiveContainer.tsx','components/symbol/CodalSourceLink.tsx','lib/core/monthlyReport.ts','lib/core/monthly-quantity.ts','lib/fundamental/types.ts','lib/format.ts'];
+const sha=b=>createHash('sha256').update(b).digest('hex');
+const files=names.map(name=>{const b=execFileSync('git',['show',`${base}:${name}`],{cwd:repo});const p=path.join(here,'source',name);mkdirSync(path.dirname(p),{recursive:true});writeFileSync(p,b);return{path:name,sha256:sha(b)};});
+const receipt=readFileSync(path.join(here,'../p14-quarterly-source-ui-root-20261104/browser-receipt.json'));
+writeFileSync(path.join(here,'baseline.json'),JSON.stringify({base,files,rootBrowserReceiptSha256:sha(receipt),rootActions:{rect:{x:37,y:265.640625,width:301,height:280},tap:{x:157.4,y:355.640625},keyboard:['focus','ArrowLeft','ArrowLeft','focus','ArrowLeft','ArrowLeft','ArrowLeft','ArrowLeft','ArrowLeft'],activeElement:'not recorded',status:'UNCONFIRMED'}},null,2)+'\n');
+console.log({base,files:files.length});

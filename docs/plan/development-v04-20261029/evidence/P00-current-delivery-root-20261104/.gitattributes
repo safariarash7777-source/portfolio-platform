@@ -69,3 +69,7 @@ p14-quarter-* -text -whitespace
 p09-main-f3-* -text -whitespace
 p09-f3-* -text -whitespace
 brs-hop-* -text -whitespace
+
+p14-actual-month-* -text -whitespace
+p14-monthly-review-* -text -whitespace
+p09-image-* -text -whitespace
