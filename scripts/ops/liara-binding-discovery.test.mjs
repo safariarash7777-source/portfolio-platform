@@ -1,0 +1,72 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {EventEmitter} from 'node:events';
+import {FIXED_DISCOVERY_SOURCE} from './liara-binding-discovery-command.mjs';
+import {discoverBinding} from './liara-binding-discovery.mjs';
+const nonce='a'.repeat(32),secret='NEVER_EMIT_PRIVATE_VALUE',release='b'.repeat(24);
+const node=(extra={})=>({exe:'/usr/bin/node',cwd:'/app',argv:['node','server.mjs'],...extra});
+function command(processes={},mode='ok'){
+  let output='',closed=0,entriesRead=0,now=0,fd=0;const handles=new Map(),reads=[],calls=new Map();
+  const fake={constants:{O_RDONLY:0,O_NOFOLLOW:131072,O_NONBLOCK:2048},
+    opendirSync:path=>{assert.equal(path,'/proc');if(mode==='proc-unavailable')throw Error(secret);let index=0;const names=['999',...Object.keys(processes)];return {readSync(){entriesRead++;if(mode==='cap')return {name:'nonpid'};if(mode==='deadline'){now=1001;return {name:'nonpid'};}return index<names.length?{name:names[index++]}:null;},closeSync(){closed++;}};},
+    readlinkSync:path=>{const m=/^\/proc\/(\d+)\/(exe|cwd)$/.exec(path);assert.ok(m);if(processes[m[1]].unreadable)throw Error(secret);return processes[m[1]][m[2]];},
+    openSync:(path,flags)=>{assert.equal(flags,133120);const m=/^\/proc\/(\d+)\/(stat|cmdline)$/.exec(path);assert.ok(m,'only proc stat/cmdline permitted');reads.push(path);const p=processes[m[1]];if(p.unreadable)throw Error(secret);const n=(calls.get(path)||0)+1;calls.set(path,n);let text;
+      if(m[2]==='stat'){const changed=(mode==='initial-reuse'&&n>=2)||(mode==='final-reuse'&&n>=3);text=m[1]+' (node) '+Array.from({length:20},(_,i)=>i===19?(changed?'124':'123'):'0').join(' ');}
+      else text=(mode==='argv-change'&&n>=2?['node',secret]:p.argv).join('\0')+'\0';
+      handles.set(++fd,{data:Buffer.from(text),offset:0});return fd;},
+    fstatSync:n=>({isFile:()=>mode!=='fifo',size:mode==='oversize'?8193:handles.get(n).data.length,dev:1,ino:n,mtimeMs:1,ctimeMs:1}),
+    readSync:(n,buffer,offset,length)=>{const h=handles.get(n),count=Math.min(length,h.data.length-h.offset);h.data.copy(buffer,offset,h.offset,h.offset+count);h.offset+=count;return count;},closeSync:n=>handles.delete(n)};
+  const c=vm.createContext({Buffer,require:name=>{if(name==='node:fs')return fake;if(name==='node:perf_hooks')return {performance:{now:()=>now}};throw Error('forbidden import');},process:{pid:999,argv:['node',nonce],stdout:{write:s=>{output+=s;}}}});
+  vm.runInContext(FIXED_DISCOVERY_SOURCE,c);assert.equal(handles.size,0);assert.equal(closed,mode==='proc-unavailable'?0:1);assert.equal(output.includes(secret),false);assert.equal(output.includes('/app'),false);assert.equal(output.includes('/usr/'),false);
+  assert.deepEqual(Object.keys(JSON.parse(output)),['version','nonce','state','reason','count','pid','startTicks','exeKind','cwdKind','entryKind']);
+  return {receipt:JSON.parse(output),reads,entriesRead};
+}
+test('all six exe/cwd hypotheses and exact entry forms yield only candidate enums',()=>{
+  for(const exe of ['/usr/bin/node','/usr/local/bin/node'])for(const cwd of ['/app','/usr/src/app','/usr/src/relay'])for(const absolute of [false,true])for(const arg0 of ['node',exe]){
+    const r=command({'7':node({exe,cwd,argv:[arg0,absolute?cwd+'/server.mjs':'server.mjs']})}).receipt;
+    assert.equal(r.state,'discovered_candidate');assert.equal(r.reason,'stable_candidate');assert.equal(r.count,1);assert.equal(r.pid,7);assert.equal(r.startTicks,'123');assert.equal(r.entryKind,absolute?'absolute_server':'relative_server');
+  }
+});
+test('out-of-hypothesis node/nodejs and extra or mismatched argv never fake uniqueness',()=>{
+  for(const bad of [node({exe:'/other/node'}),node({exe:'/other/nodejs'}),node({exe:'/usr/bin/node (deleted)'}),node({cwd:'/other'}),node({argv:['node','server.mjs',secret]}),node({argv:['/usr/local/bin/node','server.mjs']}),node({argv:['node','/other/server.mjs']})]){
+    const r=command({'7':node(),'8':bad}).receipt;assert.equal(r.state,'unresolved');assert.equal(r.count,null);assert.equal(r.pid,null);
+  }
+});
+test('complete census reports exact zero or multiple and excludes only verified nonnode or exact self PID',()=>{
+  assert.equal(command().receipt.count,0);
+  assert.equal(command({'7':node(),'8':node(),'9':node()}).receipt.count,3);
+  const r=command({'7':node(),'8':{exe:'/bin/sh',cwd:'/',argv:['sh']}}).receipt;assert.equal(r.state,'discovered_candidate');
+});
+test('unreadable siblings, PID reuse, exec argv change and malformed proc data remain unresolved',()=>{
+  assert.equal(command({'7':node(),'8':node({unreadable:true})}).receipt.count,null);
+  for(const mode of ['initial-reuse','final-reuse','argv-change','fifo','oversize']){const r=command({'7':node()},mode).receipt;assert.equal(r.state,'unresolved');assert.equal(r.pid,null);assert.equal(r.reason,['initial-reuse','final-reuse','argv-change'].includes(mode)?'identity_changed':'identity_unreadable');}
+});
+test('incremental census is capped and closed on elapsed deadline without app/env/code reads',()=>{
+  const capped=command({},'cap'),expired=command({},'deadline');assert.equal(capped.entriesRead,4097);assert.equal(capped.receipt.reason,'pid_limit');assert.equal(expired.entriesRead,1);assert.equal(expired.receipt.reason,'deadline');
+  assert.ok(command({'7':node()}).reads.every(p=>/^\/proc\/7\/(stat|cmdline)$/.test(p)));
+});
+test('public discovery gate is closed before getters, with no activation options',async()=>{
+  const r=await discoverBinding(new Proxy({},{get(){throw Error(secret);}}));assert.equal(r.state,'discovery_not_adopted');assert.equal(r.remoteHalt,'not_started');
+});
+test('fixed reasons identify failure categories without raw messages or candidate identity',()=>{
+  for(const [processes,mode,reason] of [[{},'proc-unavailable','proc_unavailable'],[{'7':node({unreadable:true})},'ok','identity_unreadable'],[{'7':node({exe:'/other/nodejs'})},'ok','node_exe_outside_allowlist'],[{'7':node({cwd:'/other'})},'ok','node_cwd_outside_allowlist'],[{'7':node({argv:['node','bad.mjs']})},'ok','node_entry_outside_allowlist'],[{},'ok','zero_candidate'],[{'7':node(),'8':node()},'ok','multiple_candidates']]){
+    const r=command(processes,mode).receipt;assert.equal(r.reason,reason);assert.equal(r.state,'unresolved');for(const k of ['pid','startTicks','exeKind','cwdKind','entryKind'])assert.equal(r[k],null);
+  }
+});
+function offline(){const s=readFileSync(new URL('./liara-binding-discovery.mjs',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replaceAll('export ','').replace('const DISCOVERY_ADOPTED = false','const DISCOVERY_ADOPTED = true').replace('},15000)','},20)');const c=vm.createContext({createHash,FIXED_DISCOVERY_SOURCE,Buffer,URL,URLSearchParams,TextDecoder,AbortController,setTimeout,clearTimeout});vm.runInContext(s,c);return vm.runInContext('discoverBinding',c);}
+async function protocol(mode='ok'){
+  let gets=0,ws=0,starts=0;
+  const r=await offline()({token:secret,nonce,fetchImpl:async(url,init)=>{gets++;assert.equal(url,'https://api.liara.ir/v1/projects/arsadata/releases?page=1&count=100');assert.equal(init.method,'GET');assert.equal(init.redirect,'error');if(mode==='get-stall'||(mode==='post-stall'&&gets===2))return new Promise(()=>{});if(mode==='http')return new Response(secret,{status:401});const id=mode==='release-change'&&gets===2?'c'.repeat(24):release;let text=JSON.stringify({currentRelease:id,releases:[{_id:id,state:'READY'}]});if(mode==='duplicate-release')text=text.replace('"currentRelease":','"currentRelease":"'+release+'","currentRelease":');return new Response(mode==='body-limit'?'x'.repeat(1048577):text);},connect:url=>{
+    ws++;const u=new URL(url);assert.equal(u.origin,'wss://api.iran.liara.ir');assert.equal(u.searchParams.get('project_id'),'arsadata');assert.equal(u.searchParams.get('token'),secret);assert.equal(u.searchParams.get('cmd').includes(secret),false);
+    const socket=new EventEmitter();socket.close=()=>{};socket.send=text=>{starts++;assert.equal(JSON.parse(text).action,'start');queueMicrotask(()=>{if(mode==='ws-stall')return;if(mode==='empty'){socket.emit('close',1000);return;}let text=JSON.stringify({version:1,nonce,state:'discovered_candidate',reason:'stable_candidate',count:1,pid:7,startTicks:'123',exeKind:'node_usr',cwdKind:'app',entryKind:'relative_server'});
+      if(mode==='nonce')text=text.replace(nonce,'d'.repeat(32));if(mode==='duplicate-frame-key')text=text.replace('"version":1','"version":1,"version":1');if(mode==='secret-field')text=text.replace('"version":1','"version":1,"argv":"'+secret+'"');if(mode==='ansi')text='\u001b[0m'+text;if(mode==='frame-limit')text='x'.repeat(8193);
+      socket.emit('message',text);if(mode==='extra-frame')socket.emit('message',text);if(mode==='socket-error')socket.emit('error',Error(secret));socket.emit('close',mode==='unclean'?1006:1000);
+    });};queueMicrotask(()=>socket.emit('open'));return socket;
+  }});assert.equal(JSON.stringify(r).includes(secret),false);assert.equal(JSON.stringify(r).includes('Sha256'),false);assert.equal(r.remoteHalt,'unknown');assert.ok(gets<=2&&ws<=1&&starts<=1);return {r,gets,ws,starts};
+}
+test('offline protocol has exactly two release GETs, one socket/start and no automatic adoption',async()=>{const p=await protocol();assert.equal(p.r.state,'candidate_only_not_adopted');assert.equal(p.gets,2);assert.equal(p.ws,1);assert.equal(p.starts,1);assert.equal((await discoverBinding()).state,'discovery_not_adopted');});
+test('protocol adversarial schema/frames/identity/errors are redacted and fail closed',async()=>{for(const mode of ['http','body-limit','duplicate-release','release-change','nonce','duplicate-frame-key','secret-field','ansi','frame-limit','extra-frame','socket-error','empty','unclean'])assert.equal((await protocol(mode)).r.state,'protocol_rejected',mode);});
+test('deadline covers preflight, socket and postflight, no remote stop claim or retry',async()=>{for(const mode of ['get-stall','ws-stall','post-stall'])assert.ok(['deadline','protocol_rejected'].includes((await protocol(mode)).r.state));});
