@@ -388,7 +388,7 @@ jobs:
       - name: Exact isolated app and SQL Git copy
         uses: actions/checkout@v4
         with:
-          ref: 4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a
+          ref: f07e0543c46cea88822dc0d400080b5bb94bef91
           path: assembled-candidate
           persist-credentials: false
       - uses: actions/setup-node@v4

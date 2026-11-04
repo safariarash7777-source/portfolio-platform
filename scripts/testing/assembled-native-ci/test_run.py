@@ -113,8 +113,21 @@ class CapsuleAndReceipt(unittest.TestCase):
         cls.temp = tempfile.TemporaryDirectory()
         cls.private = Path(cls.temp.name)
         cls.capsule = cls.private / 'capsule'; cls.capsule.mkdir()
-        cls.raw = (HERE / 'sealed-v3-stage-observation.tar').read_bytes()
+        cls.raw = (HERE / 'sealed-v4b-app-f07.tar').read_bytes()
         cls.contract = runner.unpack_capsule(cls.raw, cls.capsule)
+        cls.stage_raw = (HERE / 'sealed-v3-stage-observation.tar').read_bytes()
+        if hashlib.sha256(cls.stage_raw).hexdigest() != '57d35ddc07e2883bb2dd5b0a7e051625a235c1294e3c5283e06ecec4438ccd81':
+            raise AssertionError('preserved_stage_capsule_changed')
+        cls.stage_capsule = cls.private / 'stage-capsule'; cls.stage_capsule.mkdir()
+        with tarfile.open(fileobj=io.BytesIO(cls.stage_raw)) as archive:
+            for member in archive.getmembers():
+                relative = Path(member.name)
+                if not member.isfile() or relative.is_absolute() or '..' in relative.parts:
+                    raise AssertionError('invalid_stage_source_fixture')
+                target = cls.stage_capsule / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                with target.open('xb') as handle:
+                    handle.write(archive.extractfile(member).read())
         cls.parent_raw = (HERE / 'sealed-v2.tar').read_bytes()
         if hashlib.sha256(cls.parent_raw).hexdigest() != 'f5020a6afebcc685b2e713a7f895646f2a5718ee04b72c846edccec41adb86fc':
             raise AssertionError('preserved_parent_capsule_changed')
@@ -149,9 +162,10 @@ class CapsuleAndReceipt(unittest.TestCase):
             self.assertEqual(list(Path(destination).iterdir()), [])
 
     def test_stage_capsule_binding_preserves_parent_and_all_other_helper_bytes(self):
-        self.assertEqual(runner.CAPSULE, '57d35ddc07e2883bb2dd5b0a7e051625a235c1294e3c5283e06ecec4438ccd81')
-        self.assertEqual(runner.DRIVER, '94e50f1ede5cb926e8daf7a677e1e5b84de72540df25edec6b97dec0865bc511')
-        with tarfile.open(fileobj=io.BytesIO(self.parent_raw)) as parent, tarfile.open(fileobj=io.BytesIO(self.raw)) as child:
+        self.assertEqual(hashlib.sha256(self.stage_raw).hexdigest(), '57d35ddc07e2883bb2dd5b0a7e051625a235c1294e3c5283e06ecec4438ccd81')
+        stage_contract_raw = (self.stage_capsule / 'overlay/scripts/testing/consultation-tickets/assembled-overlay.json').read_bytes()
+        self.assertEqual(hashlib.sha256(stage_contract_raw).hexdigest(), '94e50f1ede5cb926e8daf7a677e1e5b84de72540df25edec6b97dec0865bc511')
+        with tarfile.open(fileobj=io.BytesIO(self.parent_raw)) as parent, tarfile.open(fileobj=io.BytesIO(self.stage_raw)) as child:
             self.assertEqual(parent.getnames(), child.getnames())
             changed = [name for name in parent.getnames()
                        if parent.extractfile(name).read() != child.extractfile(name).read()]
@@ -159,20 +173,54 @@ class CapsuleAndReceipt(unittest.TestCase):
         self.assertEqual(set(changed), {prefix + name for name in
                          ['assembled-member-scenario.mjs', 'assembled-native.mjs', 'assembled-overlay.json']})
         parent_contract = json.loads((self.parent_capsule / prefix / 'assembled-overlay.json').read_bytes())
-        self.assertEqual({**parent_contract, 'files': []}, {**self.contract, 'files': []})
+        self.assertEqual({**parent_contract, 'files': []}, {**json.loads(stage_contract_raw), 'files': []})
         with tempfile.TemporaryDirectory() as destination:
             with self.assertRaises(ValueError): runner.unpack_capsule(self.parent_raw, Path(destination))
             self.assertEqual(list(Path(destination).iterdir()), [])
 
     def test_actual_sealed_stage_observer_offline_without_browser_or_network(self):
         env = {key: os.environ[key] for key in ['PATH', 'LANG', 'CI', 'SYSTEMROOT', 'WINDIR'] if key in os.environ}
-        env.update(ASSEMBLED_STAGE_PARENT_ROOT=str(self.parent_capsule), ASSEMBLED_STAGE_CANDIDATE_ROOT=str(self.capsule))
+        env.update(ASSEMBLED_STAGE_PARENT_ROOT=str(self.parent_capsule), ASSEMBLED_STAGE_CANDIDATE_ROOT=str(self.stage_capsule))
         result = subprocess.run([shutil.which('node'), '--test', str(HERE / 'stages.test.mjs')], env=env, capture_output=True)
         output = result.stdout.decode('utf8')
         self.assertEqual(result.returncode, 0, output + result.stderr.decode('utf8'))
         self.assertIn('tests 6', output)
         self.assertIn('pass 6', output)
         self.assertIn('fail 0', output)
+
+    def test_f07_child_keeps_stage_history_and_changes_only_reviewed_source_bindings(self):
+        self.assertEqual(runner.CAPSULE, '04899c1754525365daad2fbe2b11bd9c7c1c3a417d751bd36151332aaca7d2f4')
+        self.assertEqual(runner.DRIVER, '0103a765d4862c27a22089414c6a59bcb555dac3f36913ddf48b373e751ecb2a')
+        prefix = 'overlay/scripts/testing/consultation-tickets/'
+        before = self.stage_capsule / prefix
+        after = self.capsule / prefix
+        old_contract = json.loads((before / 'assembled-overlay.json').read_bytes())
+        self.assertEqual(old_contract['candidateCommit'], '4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a')
+        self.assertEqual(old_contract['candidateTree'], 'c96d462d72505f2471c54c8e7e5293fe2b39b3d1')
+        helpers = {Path(pin['path']).name for pin in old_contract['files']} - {'assembled-native-profile.mjs', 'assembled-native-source.json'}
+        self.assertEqual(len(helpers), 6)
+        for name in helpers - {'assembled-auth-runtime.mjs'}:
+            self.assertEqual((before / name).read_bytes(), (after / name).read_bytes())
+        old_pin = b"export const assembledCandidateSha='4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a';"
+        new_pin = b"export const assembledCandidateSha='f07e0543c46cea88822dc0d400080b5bb94bef91';"
+        runtime = (after / 'assembled-auth-runtime.mjs').read_bytes()
+        self.assertEqual(runtime.count(new_pin), 1)
+        self.assertEqual(runtime.replace(new_pin, old_pin), (before / 'assembled-auth-runtime.mjs').read_bytes())
+        old_source = json.loads((before / 'assembled-native-source.json').read_bytes())
+        new_source = json.loads((after / 'assembled-native-source.json').read_bytes())
+        self.assertEqual(len(new_source['files']), 26)
+        self.assertEqual(len(new_source['bootstrap']), 17)
+        self.assertEqual(len(self.contract['additionalBootstrap']), 1)
+        source_paths = {pin['path'] for pin in new_source['files']}
+        extra_paths = {pin['path'] for pin in self.contract['additionalBootstrap']}
+        self.assertEqual(len(source_paths | extra_paths), 27)
+        self.assertEqual(len(runner.expected_sql(self.private)), 18)
+        expected = {**old_source, 'candidateCommit': runner.CANDIDATE,
+                    'candidateTree': runner.TREE, 'sourceObjects': new_source['sourceObjects']}
+        self.assertEqual(expected, new_source)
+        with tempfile.TemporaryDirectory() as destination:
+            with self.assertRaises(ValueError): runner.unpack_capsule(self.stage_raw, Path(destination))
+            self.assertEqual(list(Path(destination).iterdir()), [])
 
     def intent_fixture(self, folder):
         paths = ['/api/portfolio/holdings', '/api/personal-finance/cash-flow', '/api/consultation']
@@ -209,8 +257,8 @@ class CapsuleAndReceipt(unittest.TestCase):
         result = subprocess.run([shutil.which('node'), '--test', str(HERE / 'receipt.test.mjs')], env=env, capture_output=True)
         self.assertEqual(result.returncode, 0, result.stdout.decode('utf8') + result.stderr.decode('utf8'))
         output = result.stdout.decode('utf8')
-        self.assertIn('tests 25', output)
-        self.assertIn('pass 25', output)
+        self.assertIn('tests 26', output)
+        self.assertIn('pass 26', output)
         self.assertIn('fail 0', output)
 
     def test_failure_counts_attest_partial_sql_and_intents_without_claiming_effects(self):
@@ -579,8 +627,8 @@ class StageProjection(unittest.TestCase):
 
     def test_existing_chrome_app_tree_and_fourteen_native_checks_are_pinned(self):
         self.assertEqual(runner.CHROME, '95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72')
-        self.assertEqual(runner.CANDIDATE, '4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a')
-        self.assertEqual(runner.TREE, 'c96d462d72505f2471c54c8e7e5293fe2b39b3d1')
+        self.assertEqual(runner.CANDIDATE, 'f07e0543c46cea88822dc0d400080b5bb94bef91')
+        self.assertEqual(runner.TREE, '8e43eab0bd66705b5455713ea15dd5c1d9c5f81a')
         self.assertEqual(len(set(runner.OBSERVED_CHECKS)), 14)
 
 
@@ -594,7 +642,7 @@ class Workflow(unittest.TestCase):
         # The sole authorized execution-frame delta is the reviewed capsule filename.
         prepare = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'prepare')
         filenames = [node for node in ast.walk(prepare) if isinstance(node, ast.Constant)
-                     and node.value == 'sealed-v3-stage-observation.tar']
+                     and node.value == 'sealed-v4b-app-f07.tar']
         self.assertEqual(len(filenames), 1)
         filenames[0].value = 'sealed-v2.tar'
         names = {'context', 'actual_context', 'paths', 'private_json', 'safe_env', 'expected_sql',

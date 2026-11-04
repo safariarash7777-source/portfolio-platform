@@ -1,6 +1,6 @@
 # Optional assembled native dispatch
 
-This controller connects the reviewed v3 stage-observation capsule to the existing GitHub Actions
+This controller connects the reviewed v4b app-f07 capsule to the existing GitHub Actions
 Linux runner. It never runs on a PR, ordinary push or default manual dispatch.
 The existing five ordinary CI jobs retain their full original content and gate.
 
@@ -23,12 +23,19 @@ authorized dispatch uses a fresh allocation UUID.
 
 Two checkouts keep the workflow/controller separate from product source. The
 app/SQL checkout must be exact commit
-`4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a`, tree
-`c96d462d72505f2471c54c8e7e5293fe2b39b3d1`. The sealed capsule SHA256 is
-`57d35ddc07e2883bb2dd5b0a7e051625a235c1294e3c5283e06ecec4438ccd81`
-(`sealed-v3-stage-observation.tar`);
+`f07e0543c46cea88822dc0d400080b5bb94bef91`, tree
+`8e43eab0bd66705b5455713ea15dd5c1d9c5f81a`. The sealed capsule SHA256 is
+`04899c1754525365daad2fbe2b11bd9c7c1c3a417d751bd36151332aaca7d2f4`
+(`sealed-v4b-app-f07.tar`);
 its detached eight-helper contract is
-`94e50f1ede5cb926e8daf7a677e1e5b84de72540df25edec6b97dec0865bc511`.
+`0103a765d4862c27a22089414c6a59bcb555dac3f36913ddf48b373e751ecb2a`.
+The frozen v3 capsule and its historical tests remain at SHA256
+`57d35ddc07e2883bb2dd5b0a7e051625a235c1294e3c5283e06ecec4438ccd81`,
+with detached contract `94e50f1ede5cb926e8daf7a677e1e5b84de72540df25edec6b97dec0865bc511`.
+The v4b child changes source bindings and one candidate-SHA literal in the auth
+helper; the other five runtime helpers and all stage/POST/cleanup behavior remain
+byte-exact. Its 26 source entries plus one additional SQL pin preserve 27
+fingerprints and eighteen SQL files. Prior failed runs remain historical evidence.
 The parent `sealed-v2.tar` remains preserved with SHA256
 `f5020a6afebcc685b2e713a7f895646f2a5718ee04b72c846edccec41adb86fc`.
 The capsule and original materializer are verified before copying new helpers.

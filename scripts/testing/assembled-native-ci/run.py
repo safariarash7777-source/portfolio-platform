@@ -23,10 +23,10 @@ import uuid
 HERE = Path(__file__).resolve().parent
 CONTROL = HERE.parents[2]
 REPOSITORY = 'safariarash7777-source/portfolio-platform'
-CANDIDATE = '4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a'
-TREE = 'c96d462d72505f2471c54c8e7e5293fe2b39b3d1'
-CAPSULE = '57d35ddc07e2883bb2dd5b0a7e051625a235c1294e3c5283e06ecec4438ccd81'
-DRIVER = '94e50f1ede5cb926e8daf7a677e1e5b84de72540df25edec6b97dec0865bc511'
+CANDIDATE = 'f07e0543c46cea88822dc0d400080b5bb94bef91'
+TREE = '8e43eab0bd66705b5455713ea15dd5c1d9c5f81a'
+CAPSULE = '04899c1754525365daad2fbe2b11bd9c7c1c3a417d751bd36151332aaca7d2f4'
+DRIVER = '0103a765d4862c27a22089414c6a59bcb555dac3f36913ddf48b373e751ecb2a'
 CHROME = '95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72'
 LABEL = 'p03.assembled-native-lab'
 PREFIX = 'assembled-member-admin-'
@@ -645,7 +645,7 @@ def prepare():
         need(config.returncode == 1 and not config.stdout, 'assembled_git_credential_not_allowed')
     capsule_dir = private / 'capsule'
     capsule_dir.mkdir(mode=0o700)
-    unpack_capsule((HERE / 'sealed-v3-stage-observation.tar').read_bytes(), capsule_dir)
+    unpack_capsule((HERE / 'sealed-v4b-app-f07.tar').read_bytes(), capsule_dir)
     need(Path('/opt/google/chrome/chrome').is_file()
          and sha(Path('/opt/google/chrome/chrome').read_bytes()) == CHROME, 'assembled_existing_chrome_pin_required')
     need(Path('/var/run/docker.sock').is_socket(), 'assembled_existing_local_docker_required')
