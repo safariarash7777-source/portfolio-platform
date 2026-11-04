@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "sealedAtUTC": "2026-11-04T14:08:41.169589+00:00",
+  "verdict": "SOURCE_PROPOSAL_NOT_ADOPTED",
+  "base": "499166f81d1074ec7c906bac49706507b253fee1",
+  "proposedTree": "3af01c7a843ce6ec0eac356cf5bcffcf9dccd0eb",
+  "application": "f3aa9bd51d06e308b08b56651cac4733ea49af8e",
+  "helperBase": "67aeda9ff84fb1d3e936fc39564c0e551b3ff17e",
+  "sourcePins": {
+    "scripts/testing/assembled-native-ci/run.py": {
+      "sha256": "770ba7c6d1cd5c6e2fafc367d91796af559e4c142c89af73649dfdf4a0f53fc0",
+      "bytes": 118344,
+      "blob": "4dcfab90ad04f8905ba1f40f7a7cda8010e549c5",
+      "baseSha256": "eb092aa4568fa5dfb9f8a09a4e35c5e6d06b43537dba245d9001184cd684a33f"
+    },
+    "scripts/testing/assembled-native-ci/test_run.py": {
+      "sha256": "b3a4493c1ff3a6ed5e26b9fc3898edc26997b0f3c357e0c3e2dddc443714a7ae",
+      "bytes": 132400,
+      "blob": "625cb31ac01d78623d9faf1f03ca34f22369c679",
+      "baseSha256": "9fa69a9d519e462df039ddbd717c59ccf312806f668fdf6c660267f4eb64b1e4"
+    },
+    ".github/workflows/ci.yml": {
+      "sha256": "225cd7659a2313f1c1612fdcb5b659cc8006e163c7b42ce9e9309765e51e7c99",
+      "bytes": 29108,
+      "blob": "44a6d72f30053c0178b97f91782dab270f9e8cd0",
+      "baseSha256": "d19b882cb5fc0e186a0654e9c3532c6ca3d31bda788af7b62d0cbb083dff840c"
+    },
+    "scripts/testing/assembled-native-ci/workbook-f3-manifest.json": {
+      "sha256": "121a784135d9f912423a567fbbbdc5c4ce513c19aca381f45767edafde173a14",
+      "bytes": 2966,
+      "blob": "a0558f60a64faa9c516624b6ba365de6e17b5c03",
+      "baseSha256": null
+    },
+    "scripts/testing/assembled-native-ci/sealed-workbook-f3.tar": {
+      "sha256": "c439ec1163865b2353eb64e713632ff94406a2f94c46fd0c9bda45006402b52d",
+      "bytes": 92160,
+      "blob": "d144af0706def6c01888815788af7ff27a8faa20",
+      "baseSha256": null
+    },
+    ".gitattributes": {
+      "sha256": "d1399b91cf4297647bdb9fe973ae75af7a77672fc110f8eb5d093d2ae3b14a7b",
+      "bytes": 876,
+      "blob": "216d82df047c62e7f3e9803f01493ff9c9fe9967",
+      "baseSha256": "b50958659aff9d668942be522aec2217f19f30850fa69f025aec479164bda7ae"
+    }
+  },
+  "artifacts": {
+    "PROPOSED.patch": "f7237f9603deda1760a9bd7845b5253d6090927c8d2b4f6fa13cd79970cf7268",
+    "reconstruction-proof.json": "602c9ccb83fbd94b251fa83fb7e31de24e537de1e3558083409145199413d413",
+    "README.md": "7c9e47f84b68ace92c1ca2a69880035fe0b4712a8a2c187448f17b8f784470df",
+    "full-suite5.log": "cf5a64ae015677ea5e031f26ebbe140fc839edd22e94633622c0029cd7514570",
+    "target-tests-final.log": "eb22edc025ee09321d9251a3aff2ac920b6db497de192ec75433a101e257bb7e"
+  },
+  "tests": {
+    "fullOffline": {
+      "passed": 93,
+      "failed": 0,
+      "log": "full-suite5.log"
+    },
+    "finalTargeted": {
+      "passed": 5,
+      "failed": 0,
+      "log": "target-tests-final.log"
+    },
+    "oldMethodsUnchanged": 88,
+    "newMethods": 5,
+    "helperSyntaxChecks": 4,
+    "runtime": "Node24.22.1 local; future ordinary LinuxNode22 CI required"
+  },
+  "images": "DB metadata mapped; Auth/REST/Node incomplete => fail closed",
+  "native": "NOT_RUN",
+  "deployment": "NOT_DEPLOYED",
+  "peer": "PENDING",
+  "rootSharedMutation": false,
+  "limits": [
+    "No live Auth/browser/SQL/cleanup acceptance",
+    "Current shared root M1 adoption not included; exact base499 retained",
+    "Private index proof only; no shared Git index/ref changes",
+    "Root alone may adopt/integrate and authorize a fresh allocation"
+  ]
+}

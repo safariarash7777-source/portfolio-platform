@@ -1,6 +1,6 @@
 {
-  ".gitattributes": "939f835561c9459e875a11460ee3fe3571f3a5df79af0f6df5706f1530563282",
-  "REVIEW.fa.md": "292bfd23e31a0697b5e5730164d30a9c0c56b3b07e3196a920ef3931dcb07363",
+  ".gitattributes": "ffd1c046721a747feb2adc3177ac825ffbc2669d173ca1b7f58987783851d3b4",
+  "REVIEW.fa.md": "b10ad5c123aa73abc436d8f28e5cf9bfd0683517f59e0b46b909a6f67c4df049",
   "assembled-source-main-inventory.json": "9f34a6afb70963a12719ab159082bad62b19f79854e22f044fa158f675a9bc27",
   "assembly-v2-local-source-review.json": "b784252e0c148cf983084455576c059764df97fe4570eee22b3ccf751257eb4f",
   "backend-binding-actual.json": "3ced57898cacf782c7dee86e6d6530f9d3f7e00b1d58af6fcc841bfc69fc5fd6",
@@ -219,6 +219,9 @@
   "p09-f3-component-trace-REVIEW.fa.md": "c10e26366d0a5ff39e94290e2ec4aacd9b351a691a8be4d31f22e6ecf0bd4165",
   "p09-f3-native-coupling-map.md": "3d2b0ce553e22756ea7aea485263aee47fb966cfb5b487139f076228a45bccc6",
   "p09-f3-native-source-pins.json": "9733155c209774f108572618b9a075c886c853f65d379a0a94dc60a6a423cf33",
+  "p09-gateway-r1-native-auth-gateway.mjs.txt": "d4b971d7f1770bd7e4d415d44a45f51a6e01f60a4b4737383040f1590b530867",
+  "p09-gateway-r1-packet-receipt.json": "bbb10ebbf6dd9395dd513a706c77b7dec8db6ea11fd594ceac3b93f55b464819",
+  "p09-gateway-r1-root-review.json": "33c4e6d2e53bc221b73d01c0d8b13ddf43a16a2a2c19ee9d7dce18645a642f09",
   "p09-image-auth-manifest-1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b.json": "1736a63078f5922b198c4cbe50f80ab9a2d3b54fe8b7b6cfb2e9dc5dbbc12c6b",
   "p09-image-auth-manifest-839f529492d116b4e8b7777c953a27c381d34c15a744b1bcefde5eefaa1f9f9f.json": "839f529492d116b4e8b7777c953a27c381d34c15a744b1bcefde5eefaa1f9f9f",
   "p09-image-auth-readback.json": "eebaa9dcfe6a5b4025f7e2bf9888a571ddb54468ede1b80b8eaeae2d1232ff34",

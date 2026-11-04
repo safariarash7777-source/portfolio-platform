@@ -1,3 +1,13 @@
+# P09؛ نقص P2 ابزار پذیرش مانع اجرای وابسته شد، محصول تغییر نکرد
+
+[مرور مستقل root بر منبع دقیق R1](p09-gateway-r1-root-review.json)، [gateway واقعیِ بسته](p09-gateway-r1-native-auth-gateway.mjs.txt) و [رسید frozen مجری](p09-gateway-r1-packet-receipt.json): helperدروازه درخواست‌هایAuth/RESTرا مستقیمhttp.requestمی‌فرستد؛ transportوالد وCDPمرورگر، fetchفرایند جداگانهNextرا نمی‌بینند. middlewareبرنامهf3درgetUserمی‌تواند هنگامGETصفحه refreshPOST بسازد. بنابراین **پوشش همهٔ نوشتن‌ها و GET-onlyسمت سرور در R1 اثبات نشده**؛ P2باز و R1برایadoption/nativeرد است. actualextraPOST، دورزدنRLSیاخرابی محصول مشاهده نشده؛ این نقص در ابزار اثبات پذیرش است. ۹۳آفلاین PASSآن را نمی‌بندد.
+
+Cبا همان نویسنده R2را اصلاح می‌کند: مرزgateway/ingressپیشforward، تطبیق intent/action/session/table/bodyوpoisonرویunknown/bypass/ابهام؛ بدونتغییرappf3،هارنس/workflowموازییاافزایش۲۴سقف. insertهای داخلی واقعی رویresearch_workbook_save_intents/versions/reviewsباهمانعملیاتبیرونیمرتبط‌اند و نباید دوباره سهمیه بگیرند؛ RPCفرضیجایقراردادواقعی نمی‌آید. برخیرد403/409وreplayباoutcomeمعلوم200می‌توانندبدونinnerwriteباشند. پسازR2peer/root/CILinux و تخصیص تازه اجازه اجرای وابسته خواهدبود؛ P09nativeهنوزNOT_RUN و controllerهمان45است.
+
+این مانع فقط پذیرش وابسته پژوهش را می‌بندد. موفقیتM1SQLcopy418447 و Preview2aa/منابع سود و ماهانه پسreload محفوظ‌اند. A مستقل helperواقعیreader/consumer partial/not_done موجود را باe0/0d63 وPRها تطبیق می‌دهد؛ ساخت موازی یا نصب مقصد در کار نیست. حق خدمت/پشتیبان مقصد/readerواقعی همچنان جدا بازند.
+
+### تحویل‌های پیشین با شاهد نسخهٔ خودشان
+
 # تحویل واقعی: تمرین نصب/بازیابی Linux پذیرفتهٔ محدود و منبع ماهانه پس از reload
 
 **چه چیزی واقعاً بسته شد؟** معیار تمرین SQL روی کپی جدا و معیار استفادهٔ منبع ماهانه پس reload در نسخهٔ2aa شاهد پذیرش گرفتند. هیچ بستهٔ کامل P00–P15 تازه پایان‌یافته اعلام نشده؛ ۸۵تعهد مصوب حفظ است. نصب مقصد، reader واقعی پیش از writer، حساب/مرورگر مصرف‌کنندهٔ کامل و حق همان خدمت همچنان جدا بازند.

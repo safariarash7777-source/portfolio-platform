@@ -1,0 +1,37 @@
+{
+  "schema": "root-p09-r1-gateway-admission-source-review.v1",
+  "atUtc": "2026-11-04T14:37:09.158041+00:00",
+  "severity": "P2",
+  "verdict": "DO_NOT_ADOPT_OR_RUN_R1",
+  "packetBase": "499166f81d1074ec7c906bac49706507b253fee1",
+  "packetProposedTree": "3af01c7a843ce6ec0eac356cf5bcffcf9dccd0eb",
+  "packetReceiptSha256": "bbb10ebbf6dd9395dd513a706c77b7dec8db6ea11fd594ceac3b93f55b464819",
+  "application": "f3aa9bd51d06e308b08b56651cac4733ea49af8e",
+  "sourceHashes": {
+    "gateway": "d4b971d7f1770bd7e4d415d44a45f51a6e01f60a4b4737383040f1590b530867",
+    "runtime": "583caef187fd7f12d31bc3f1d7cbc96ba3c5802c89dee91fcdde97655090289a",
+    "browser": "05a54200631c4e2818d0f354f8fe62131fdcd526afbad3dac837fde8146a4735",
+    "middleware.ts": "c8fba36a5c59f6fdd39d36498f697466735880e5932e5aaddb829a91695313c2",
+    "lib/supabase/server.ts": "f002294c8adc8e724531de7cddc369e3b127c661021fa9f48e5980323d9535ae",
+    "app/api/admin/intelligence/workbooks/route.ts": "4bfbb753dc399d20d984d0c87fed53d703a7f3e7ae7f056e202f257137b12eaf"
+  },
+  "finding": "The sealed gateway forwards /auth/v1 and /rest/v1 with http.request outside parent transport admission and browser CDP. Next is a separate child; its middleware/server Supabase client may issue a refresh POST during a page GET. R1 therefore does not establish global pre-send or actual GET-only server behavior.",
+  "actualUnexpectedPostObserved": false,
+  "productVulnerabilityOrRlsBypassEstablished": false,
+  "nativeP09Executed": false,
+  "sharedControllerOrAppChanged": false,
+  "sourceOnlyRead": true,
+  "priorNinetyThreeOfflinePassIsNotCoverageOfThisBoundary": true,
+  "correctionOwner": "C with existing writer; root adoption/runtime; same existing job and same f3 app",
+  "constraints": [
+    "Do not patch appf3 or add a parallel runner/workflow.",
+    "Control at actual gateway/ingress before forwarding; poison unknown, bypass or ambiguous writes.",
+    "Bind authenticated outer operation/intent/session and actual table/action/body to legitimate inner writes; do not charge the same accepted outer mutation twice.",
+    "Actual f3 store writes three REST tables: research_workbook_save_intents, research_workbook_versions and research_workbook_reviews. Do not invent an RPC-only contract.",
+    "Keep24 outer mutation caps and exact9-native/7-browser roster; no quota increase to hide unexpected refresh.",
+    "Enforce read-only after fresh authentication across parent, browser and server child.",
+    "Bound buffering/deadlines; no private JWT/body in public diagnostics; unknown write never replayed.",
+    "Peer R2 plus root review and fresh Linux CI/allocation required before runtime."
+  ],
+  "independentProgress": "M1 SQL-copy pass418447 and bounded live monthly/quarterly Preview acceptance remain unaffected."
+}

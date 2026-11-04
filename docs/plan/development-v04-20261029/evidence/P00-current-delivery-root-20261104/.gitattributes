@@ -73,3 +73,5 @@ brs-hop-* -text -whitespace
 p14-actual-month-* -text -whitespace
 p14-monthly-review-* -text -whitespace
 p09-image-* -text -whitespace
+
+p09-gateway-* -text -whitespace
