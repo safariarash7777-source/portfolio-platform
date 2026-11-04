@@ -1,0 +1,26 @@
+{
+  "atUtc": "2026-11-04T18:03:26.265802+00:00",
+  "request": {
+    "workflow": "deploy-relay.yml",
+    "ref": "main",
+    "expectedHead": "ad90bc2c9d1a1d7f13853cd481c6b471ea735b1d",
+    "inputs": {
+      "sha": "73c4b3ab769fe915f15c32206e5c8de7c6159a48",
+      "record_only": "false",
+      "image": "",
+      "allow_older": "false"
+    },
+    "purpose": "AUTHORIZED_EXISTING_RELAY_RATE_FIX"
+  },
+  "automaticRetry": false,
+  "credentialSource": "EXISTING_GIT_CREDENTIAL_MEMORY_ONLY",
+  "workflowRegistryReadback": {
+    "existingPublisherOnly": true,
+    "sourceCi": 41879903533,
+    "priorDeploymentId": 7140686262,
+    "priorImage": "apps/6a5351feb95bf1e50c1ee34f:12qvoyo45aeb",
+    "noSqlMigration": true,
+    "noPlanOrCostChange": true,
+    "passiveAcceptanceOnly": true
+  }
+}

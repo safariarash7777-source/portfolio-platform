@@ -1,0 +1,236 @@
+✔ N30 producer hashes actual response bytes and carries their receipt into the existing insert payload (58.2021ms)
+✔ a UTF8 BOM is retained in the byte hash while decoded table values match the original text behavior (32.6643ms)
+✔ a redirected, absent or different response reference cannot create a new quantity witness (65.6118ms)
+✔ announcement claims cannot replace the response bytes or the source document's monthly period (19.158ms)
+✔ quantity proof requires the existing official download route while legacy parsing still preserves money (87.3897ms)
+✔ a failed body read follows the existing retry path and cannot create a partial capture (3019.8138ms)
+✔ copied, directly parsed or modified data cannot mint a capture receipt (73.8363ms)
+✔ an intact parsed object cannot donate its receipt to another announcement, period, symbol or kind (67.6429ms)
+✔ N10 keeps the original text decoder, admission path and payload without monthly capture metadata (21.7066ms)
+  ok  n10 parsed
+  ok  n10 revenue
+  ok  n10 cogs abs
+  ok  n10 gross
+  ok  n10 operating
+  ok  n10 net
+  ok  n10 eps
+  ok  n10 prior revenue
+  ok  n10 prior net
+  ok  n10 capital
+  ok  n10 rejects inconsistent table
+  ok  n10 null without income table
+  ok  n30 parsed
+  ok  n30 one product with month sales
+  ok  n30 product name
+  ok  n30 month qty
+  ok  n30 month rate
+  ok  n30 month amount
+  ok  n30 month production
+  ok  n30 period total
+  ok  n30 fy cumulative
+  ok  n30 fiscal year
+  ok  n30 unit recorded
+  ok  n30 period months
+  ok  n30 null without product table
+  ok  bank fixture exists
+  ok  bank n10 parsed via fallback
+  ok  bank statement_type
+  ok  bank revenue (درآمد عملیاتی)
+  ok  bank cogs (هزینه سود سپرده‌ها)
+  ok  bank gross
+  ok  bank operating
+  ok  bank net
+  ok  bank eps (خالص هر سهم)
+  ok  bank capital
+  ok  bank prior revenue
+  ok  bank prior net
+  ok  bank arithmetic
+  ok  bank direct === fallback
+  ok  insurance parsed
+  ok  insurance statement_type
+  ok  insurance revenue
+  ok  insurance cogs
+  ok  insurance net
+  ok  insurance eps
+  ok  bank normalizer rejects industrial table
+  ok  bank rejects inconsistent gross
+  ok  سربرگ «میلیون ریال» خوانده می‌شود
+  ok  سربرگ «ریال» با «میلیون ریال» اشتباه نمی‌شود
+  ok  سربرگِ بی‌واحد null می‌دهد
+  ok  سازگاریِ حسابی مقیاسِ میلیون را پیدا می‌کند
+  ok  سازگاریِ حسابی مقیاسِ ریال را پیدا می‌کند
+  ok  ردیف‌های ناسازگار هیچ مقیاسی نمی‌دهند
+  ok  بدونِ شاهد (نبودِ نرخ) استنتاج نمی‌شود
+  ok  سربرگ و حساب هم‌سو ⇒ واحد معتبر
+  ok  دو شاهد جدا ثبت می‌شوند
+  ok  سربرگِ تنها basis جدا می‌گیرد
+  ok  حسابِ تنها basis جدا می‌گیرد
+  ok  تعارضِ سربرگ و حساب ⇒ واحد اعلام نمی‌شود
+  ok  در تعارض هم هر دو شاهد نگه داشته می‌شوند
+  ok  قالبِ ناشناخته ⇒ unresolved
+  ok  واحدِ ن-۳۰ از خودِ گزارش استخراج شد
+  ok  پایهٔ اثباتِ واحد ثبت شد
+  ok  دورهٔ مقایسه یک ماه است
+  ok  واحد مقدار از ستون همان ردیف استخراج می‌شود
+  ok  واحدِ مبلغ با واحدِ مقدار قاطی نشده
+  ok  جدولِ بدونِ محصول null می‌دهد (تعمیم ساخته نمی‌شود)
+
+ALL TESTS PASSED
+  ok  actual N30 keeps the exact archived HTML hash
+  ok  actual N30 preserves reported monthly and cumulative money
+  ok  actual N30 raw quantity and rate cells are unchanged
+  ok  actual N30 preserves section provenance
+  ok  actual N30 binds source identity period and row
+  ok  default normalizer does not invent a byte-bound source context
+  ok  claimed hash without bytes cannot create quantity witnesses
+  ok  claimed hash without bytes cannot rewrite raw money or values
+  ok  wrong hash cannot create quantity witnesses
+  ok  wrong hash cannot rewrite raw money or values
+  ok  wrong bytes cannot create quantity witnesses
+  ok  wrong bytes cannot rewrite raw money or values
+  ok  missing source reference cannot create quantity witnesses
+  ok  missing source reference cannot rewrite raw money or values
+  ok  blank source reference cannot create quantity witnesses
+  ok  blank source reference cannot rewrite raw money or values
+  ok  oversized source reference cannot create quantity witnesses
+  ok  oversized source reference cannot rewrite raw money or values
+  ok  mismatched symbol cannot create quantity witnesses
+  ok  mismatched symbol cannot rewrite raw money or values
+  ok  mismatched period cannot create quantity witnesses
+  ok  mismatched period cannot rewrite raw money or values
+  ok  missing version cannot create quantity witnesses
+  ok  missing version cannot rewrite raw money or values
+  ok  two missing symbol fields cannot certify a source
+  ok  matching claimed hash cannot authenticate different tables
+  ok  byte-bound tables without the unit header cannot create a source witness
+  ok  byte-bound wrong production column cannot create a source witness
+  ok  byte-bound wrong sales column cannot create a source witness
+  ok  a short physical product row remains an explicit unadmitted coverage observation
+  ok  a claimed period cannot replace the actual monthly header
+  ok  unknown section cannot inherit a domestic market
+  ok  offline actual parser never requests a provider
+QUANTITY_FIXTURE_TESTS_PASSED
+✔ N30 producer hashes actual response bytes and carries their receipt into the existing insert payload (70.0738ms)
+✔ a UTF8 BOM is retained in the byte hash while decoded table values match the original text behavior (37.6422ms)
+✔ a redirected, absent or different response reference cannot create a new quantity witness (63.7338ms)
+✔ announcement claims cannot replace the response bytes or the source document's monthly period (19.0952ms)
+✔ quantity proof requires the existing official download route while legacy parsing still preserves money (57.8103ms)
+✔ a failed body read follows the existing retry path and cannot create a partial capture (3031.6234ms)
+✔ copied, directly parsed or modified data cannot mint a capture receipt (91.4614ms)
+✔ an intact parsed object cannot donate its receipt to another announcement, period, symbol or kind (65.3306ms)
+✔ N10 keeps the original text decoder, admission path and payload without monthly capture metadata (19.9676ms)
+✔ commodity missing or nonnumeric provider fields remain null (1.3795ms)
+✔ commodity legitimate zero, signed changes and decimal strings retain source units (0.2095ms)
+✔ documented grouped contract retains categories, nullable fields and all source clocks/units (1.0624ms)
+✔ malformed, missing-group, duplicate and empty batches are rejected atomically (0.7398ms)
+✔ existing account key does not implicitly enable the feed (22.5292ms)
+✔ explicit activation reuses the account key; explicit key and disable remain supported (8.842ms)
+✔ legacy fetch uses documented endpoint and shared transport with one metered attempt (43.5145ms)
+✔ singleflight shares an in-progress request and quota reservation (5.2003ms)
+✔ invalid/source-failed cycles preserve good rows and original receipt without leaking keys (6.1608ms)
+✔ local daily cap stops calls and cannot be configured above 300 (149.4875ms)
+✔ local allowance resets only for the next Tehran calendar day (5.3473ms)
+✔ SHA: تزریقِ فرمان و ورودیِ مبهم رد می‌شوند (3.0976ms)
+✔ SHA: فقط ۴۰ رقمِ کامل به‌عنوان resolve‌شده پذیرفته می‌شود (0.437ms)
+✔ انتشار: SHAِ بیرونِ تاریخچهٔ main رد می‌شود — پیش از لمسِ توکن (0.3814ms)
+✔ انتشار: بدونِ CIِ موفقِ همان SHA رد می‌شود، و test:relay جایگزینش نیست (0.3259ms)
+✔ انتشار: ترتیبِ دروازه‌ها — تاریخچه پیش از CI بررسی می‌شود (0.1743ms)
+✔ انتشار: CIِ دیرتمام‌شدهٔ کامیتِ قدیمی نسخهٔ جدیدتر را عقب نمی‌برد (0.1546ms)
+✔ انتشار: بازگشتِ صریح اجازهٔ رفتن به کامیتِ قدیمی‌تر را می‌دهد — ولی CI همچنان لازم است (0.1646ms)
+✔ انتشار: مبنا آخرین انتشارِ موفق است، نه HEAD^ — pushِ چندکامیتی جا نمی‌ماند (0.1913ms)
+✔ انتشار: بدونِ مبنا، فقط اجرای دستی منتشر می‌کند (0.238ms)
+✔ انتشار: همان SHAِ مستقر دوباره منتشر نمی‌شود (0.3239ms)
+✔ پیش‌پرواز: وضعیتِ سالم عبور می‌کند (0.9975ms)
+✔ پیش‌پرواز: خروجیِ بدشکل رد می‌شود — «پیدا شدنِ FLAGS» کافی نیست (0.1952ms)
+✔ پیش‌پرواز: کلیدِ مفقود رد می‌شود (0.1293ms)
+✔ پیش‌پرواز: نوعِ اشتباه رد می‌شود (0.2138ms)
+✔ پیش‌پرواز: بدونِ phase28، هر دو پرچم انتشار را رد می‌کنند (0.1641ms)
+✔ پیش‌پرواز: سکرتِ حیاتیِ غایب رد می‌شود (0.1114ms)
+✔ پیش‌پرواز: IR_HISTORY_SECTIONS بیرونِ هدف رد می‌شود، برابرِ هدف نه (0.289ms)
+✔ پیش‌پرواز: نبودِ RELAY_TOKEN انتشار را رد نمی‌کند ولی پذیرش را غیرِممکن اعلام می‌کند (0.153ms)
+✔ rate release requires the complete observed local contract; missing, old and forged-ready values fail closed (0.9391ms)
+✔ پذیرش: پاسخِ سالم قبول می‌شود (0.1068ms)
+✔ پذیرش: {} رد می‌شود (0.1024ms)
+✔ پذیرش: نبودِ historySections یعنی نسخهٔ قدیمی — رد (0.1218ms)
+✔ پذیرش: written نامطلوب رد می‌شود (0.1601ms)
+✔ پذیرش: missing ناخالی رد می‌شود (0.1478ms)
+✔ پذیرش: فیلدِ مفقود یا نوعِ اشتباه رد می‌شود (0.158ms)
+✔ پذیرش: enforced=true رد می‌شود (0.0881ms)
+✔ پذیرش: پاسخِ بدشکل رد می‌شود (0.1562ms)
+✔ CLI: stdoutِ هر زیرفرمانِ خروجی‌ساز فقط key=value است (412.1053ms)
+✔ CLI: شکستِ دروازه کدِ خروجِ ۱ می‌دهد و چیزی روی stdout نمی‌ریزد (263.5794ms)
+✔ پذیرش: brsapiClient.enabled=true بدونِ phase28 رد می‌شود (0.1372ms)
+✔ پذیرش: با phase28 اجراشده، هر دو پرچمِ روشن مانع نیستند (0.0979ms)
+✔ پذیرش: بدونِ phase28، هر دو مستقل از هم رد می‌کنند (0.1014ms)
+✔ گزارش: published_at موجود ولی گامِ publish شکست‌خورده «منتشر شد» نیست (0.1764ms)
+✔ گزارش: فقط outcome موفق + زمانِ انتشار «منتشر شد» می‌سازد (0.1108ms)
+✔ گزارش: دروازه که رد کند، انتشار «انجام نشد» است نه شکست (0.1134ms)
+✔ گزارش: پذیرشِ ناموفق و در انتظار از هم جدا می‌مانند (0.1207ms)
+✔ گزارش: بازگشت، پذیرشِ نسخهٔ هدف را «اعمال‌نشدنی» ثبت می‌کند نه رد (0.083ms)
+✔ workflow: automatic deployment requires explicit true admission using Actions string equality (0.3024ms)
+✔ workflow: enabling automatic admission preserves CI, main and push gates (0.1532ms)
+✔ workflow: manual job admission remains available without automatic opt-in (0.1013ms)
+✔ workflow: checkout صریحاً به main مقید است (0.1795ms)
+✔ workflow: SHAِ منطقِ دروازه ثبت و گزارش می‌شود (0.0819ms)
+✔ workflow: گزارش به outcome واقعیِ گامِ publish نگاه می‌کند (0.0703ms)
+✔ workflow: published_at پس از دستورِ deploy نوشته می‌شود، نه پیش از آن (0.1019ms)
+✔ workflow: پذیرش همان واقعیتِ phase28 را می‌گیرد (0.0855ms)
+✔ گزارش: متنِ بازگشت، بررسیِ سلامت و تازگی را کنار نمی‌گذارد (0.0864ms)
+✔ کاوش: فرمان encode می‌شود، چون CLI خودش نمی‌کند (0.126ms)
+✔ کاوش: منبع هیچ فاصله‌ای ندارد — سرور روی فاصله تکه می‌کند (0.1318ms)
+✔ کاوش: فرمانِ کامل دقیقاً سه توکن می‌شود، همان‌طور که سرور تکه می‌کند (0.1666ms)
+✔ کاوش: اسکریپت واقعاً اجرا می‌شود و JSONِ قابلِ تشخیص می‌دهد (57.2914ms)
+✔ کاوش: منبع نه `+` دارد نه `&` — همان چیزی که نسخهٔ اولِ کاوش را شکست (0.1629ms)
+✔ کاوش: هیچ نامِ سکرتی مقدارش را چاپ نمی‌کند (0.0982ms)
+✔ پاک‌سازی: توکن و شکل‌های شبیهِ سکرت حذف می‌شوند (0.2406ms)
+✔ پاک‌سازی: سکرتِ ناشناخته هم با الگو گرفته می‌شود (0.083ms)
+✔ پاک‌سازی: خروجیِ بلند بریده می‌شود (0.2135ms)
+✔ تشخیص: شکستِ اجرا از شکستِ استخراج جدا می‌شود (0.4013ms)
+✔ تشخیص: علتِ شکستِ اجرا نام‌گذاری می‌شود، نه اینکه یک جملهٔ کلی بگیرد (0.237ms)
+✔ تشخیص: **هر** حالتِ شکست جلوی انتشار را می‌گیرد (0.1549ms)
+✔ تشخیص: خروجیِ سالم پذیرفته می‌شود، حتی با نویز دور و برش (0.1126ms)
+✔ تشخیص: خروجیِ کاوش به evaluateFlags وصل می‌شود و ساختار همان‌جا سنجیده می‌شود (0.094ms)
+✔ تشخیص: گزارش، خروجیِ پاک‌سازی‌شده را همراه دارد تا تشخیص ممکن باشد (0.102ms)
+✔ workflow: خروجیِ liara به فایل می‌رود و کدِ خروج جدا نگه داشته می‌شود (0.1181ms)
+✔ workflow: فرمانِ کاوش از ماژول می‌آید، نه دست‌ساز در YAML (0.0801ms)
+✔ workflow: پیش‌پرواز هنوز راهِ عبور ندارد (0.0888ms)
+✔ workflow: راستی‌آزمایی پیش از دفترداری می‌آید (0.126ms)
+✔ workflow: شکستِ یک گام، راستی‌آزماییِ چیزی که مستقر شده را پنهان نمی‌کند (0.2111ms)
+✔ workflow: مبنا دیگر با push کردنِ ref ثبت نمی‌شود (0.1321ms)
+✔ workflow: شناسهٔ نسخه از تگِ ایمیج می‌آید، چون CLI شماره نمی‌دهد (0.1119ms)
+﹣ Liara probe: noninteractive runner gets a TTY and preserves failure and quoted arguments (0.0597ms) # SKIP
+✔ health credential scope rejects extra use and write commands (1.0919ms)
+✔ discovery workflow is isolated, manual main attempt1, bounded and source-pinned (0.4474ms)
+✔ discovery trusted inline bootstrap rejects bad pins, symlinks and contexts before runner execution (139.6622ms)
+✔ سلامت: یک workflowِ جدا هست که چیزی منتشر نمی‌کند (0.2374ms)
+✔ سلامت: نبودِ RELAY_TOKEN «موفق» نمی‌شود، «در انتظار» می‌شود (0.1079ms)
+✔ مبنا: فقط deploymentهای موفقِ همین محیط انتخاب می‌شوند (0.0851ms)
+✔ ثبتِ سابقه: مسیرِ record_only هیچ چیزی منتشر نمی‌کند (0.139ms)
+✔ ثبتِ سابقه: «منتشرشده» با «سلامتِ تأییدشده» یکی نمی‌شود (0.0742ms)
+✔ allowlist keeps aggregate clocks and failure categories without raw errors, names, URLs or secrets (4.2212ms)
+✔ missing or malformed fields remain unknown rather than zero or raw strings (0.6283ms)
+✔ one sample uses only four fixed passive GETs, rejects redirects and sends token only to relay debug (39.5765ms)
+✔ missing credential skips debug; TLS failures preserve only exact allowed cause code without origin attribution (1.6014ms)
+✔ HTTP failure bodies are discarded and malformed/oversize debug is rejected without retry (7.7912ms)
+✔ existing acceptance and spacing guards remain fail closed (1.6372ms)
+✔ workflow preserves existing gates and adds one receipt invocation with sanitized artifact (14.3364ms)
+✔ IME actual debug shape preserves day precision, storage completion and bounded sanitized targets (1.3161ms)
+✔ actual CLI accepts protected root401 only with valid public stored read; rejects502 and invalid read (655.361ms)
+✔ Codal exact reasons and versioned diagnostics preserve real counts without names or success inference (1.1954ms)
+✔ Codal diagnostics drop unknown versions, malformed counters and secret-bearing reason strings (0.805ms)
+✔ HTTP and SQL details require fixed producer prefixes and exact code allowlists, never raw error scans (1.8655ms)
+✔ control-plane uses only two fixed GETs and projects exact current identity without values or image strings (1.3964ms)
+✔ current release never falls back to newest and malformed or duplicate identities remain unconfirmed (1.3463ms)
+✔ control-plane error responses are endpoint scoped and discarded without retry (0.9679ms)
+✔ control-plane body limit, stalled fetch/body deadlines and invalid schema fail closed (66.1457ms)
+✔ control-plane rejection does not alter passive acceptance and credentials never cross destinations (1.2137ms)
+✔ environment names distinguish explicit empty from incomplete schema without inspecting values (1.84ms)
+✔ reviewed backend binding inspects only the single URL in RAM and never emits it (3.892ms)
+ℹ tests 125
+ℹ suites 0
+ℹ pass 124
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 3680.9292

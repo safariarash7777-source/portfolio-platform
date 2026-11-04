@@ -1,0 +1,706 @@
+breadth unit tests:
+  ✓ صف خرید: بهترین تقاضا روی سقف دامنه و عرضهٔ صفر
+  ✓ صف خرید نیست وقتی عرضه موجود است
+  ✓ صف خرید نیست وقتی تقاضا زیر سقف است
+  ✓ فیلد غایب → قضاوت نمی‌شود (false، هیچ حدسی)
+  ✓ صف فروش: بهترین عرضه روی کف دامنه و تقاضای صفر
+  ✓ صف فروش نیست وقتی تقاضا موجود است
+  ✓ نبض: مثبت/منفی/خنثی/کل فقط از معامله‌شده‌ها
+  ✓ صف‌ها: یک صف خرید و یک صف فروش
+  ✓ ارزش صف خرید = حجم سطر اول × قیمت × ۱۰ (ریال)
+  ✓ ارزش صف فروش = حجم سطر اول عرضه × قیمت × ۱۰ (ریال)
+  ✓ خالص پول حقیقی = Σ(buyI−sellI)×پایانی×۱۰ (ریال)
+  ✓ سرانهٔ خرید حقیقی = ارزش خرید حقیقی ÷ شمار خریداران
+  ✓ ارزش معاملات جمع value معامله‌شده‌ها (ریال)
+  ✓ ورودی خالی → صفرها و nullهای صادق
+
+14 passed, 0 failed
+✔ relay\breadth.test.mjs (125.449ms)
+✔ budget-stop notification covers admission and a throwing observer cannot send or change rejection (3.2785ms)
+✔ budget-stop notification covers reserve and a throwing observer cannot send or change rejection (1.4484ms)
+✔ ordinary HTTP rejection never reports a budget stop (47.2923ms)
+brsapi-client:
+  ✓ ۴xxِ غیرِ ۴۲۹ هرگز retry نمی‌شود — قاعدهٔ Q1
+  ✓ backoff نمایی است و سقف دارد
+  ✓ full jitter: کفِ بازه صفر است، نه پایه
+  ✓ کلیدِ dedup به ترتیبِ پارامترها وابسته نیست
+  ✓ سطل: ۱۰ req/s یعنی فاصلهٔ ۱۰۰ms، نه ۱۰تا در یک لحظه
+  ✓ سطل: مرزِ پنجره تراکم نمی‌سازد
+  ✓ سطل: پس از ۴۲۹ نرخِ سراسری کند می‌شود
+  ✓ کلیدِ API در params رد می‌شود
+  ✓ کلید به URL اضافه می‌شود ولی در کلیدِ dedup نیست
+  ✓ dedupِ درپرواز: دو فراخوانِ هم‌زمان یک درخواست می‌شوند
+  ✓ کشِ کوتاه‌مدت درخواستِ دوم را حذف می‌کند
+  ✓ کش پس از انقضای TTL دوباره درخواست می‌زند
+  ✓ هم‌زمانی هرگز از سقف بالاتر نمی‌رود
+  ✓ ۴۲۹ تا سقفِ تلاش retry می‌شود و بعد شکست می‌خورد
+  ✓ ۵xx retry می‌شود و اگر بعداً موفق شد، موفق برمی‌گردد
+  ✓ ۴۰۳ فوراً شکست می‌خورد — یک تلاش، نه چهار
+  ✓ Retry-After بر محاسبهٔ backoff مقدم است
+  ✓ کارِ تعاملی قبل از پس‌زمینه خدمت می‌گیرد
+  ✓ تلاشِ تعاملی کمتر است — ۲ نه ۴
+  ✓ متریک «نفرستادیم» را از «فرستادیم و خطا نداد» جدا می‌کند
+  ✓ متریکِ صف عمق و انتظار را ثبت می‌کند
+  ✓ نرخ در عمل رعایت می‌شود: ۲۰ درخواست ≥ ۱٫۹ ثانیه طول می‌کشد
+  ✓ پرچم پیش‌فرض خاموش است — مسیرِ قدیمی دست‌نخورده می‌ماند
+  ✓ مهلتِ صف جدا از مهلتِ درخواست است
+  ✓ سقفِ هر طبقه: bulk در soft، critical در hard، standard وسط
+  ✓ سقفِ سخت بر همه مقدم است، حتی اگر soft بزرگ‌تر تنظیم شده باشد
+  ✓ bulk در softBudget می‌ایستد ولی critical ادامه می‌دهد
+  ✓ standard پیش از critical می‌ایستد — تنزلِ تدریجی
+  ✓ در سقفِ سخت هیچ طبقه‌ای عبور نمی‌کند — حتی critical
+  ✓ شمارنده با تغییرِ روزِ تهران صفر می‌شود
+  ✓ متریکِ بودجه used/remaining/rejected را جدا گزارش می‌کند
+  ✓ درخواستِ ردشده به‌خاطرِ بودجه اصلاً روی سیم نمی‌رود
+  ✓ bulk قربانی می‌شود تا critical زنده بماند
+  ✓ retryها هم از بودجه کم می‌کنند
+  ✓ بودجه می‌تواند وسطِ زنجیرهٔ retry تمام شود و صریح خطا بدهد
+  ✓ هیچ ترکیبی از producerها نمی‌تواند از سقفِ سخت رد شود
+  ✓ در کمبودِ بودجه، سهمِ critical از bulk بیشتر است
+  ✓ budgetClass نامعتبر رد می‌شود، نه اینکه بی‌صدا standard شود
+  ✓ پیش‌فرضِ budgetClass همان standard است
+  ✓ dedup بودجه مصرف نمی‌کند
+  ✓ بودجهٔ ماندگار: اجاره تکه‌تکه گرفته می‌شود، نه یک‌جا
+  ✓ restart شمارنده را صفر نمی‌کند — فرایندِ تازه از همان جا ادامه می‌دهد
+  ✓ هیچ ترکیبی از فرایندها از سقفِ سراسری رد نمی‌شود
+  ✓ اجارهٔ خرج‌نشده روی خاموشیِ مرتب پس داده می‌شود
+  ✓ انبارِ خراب بی‌صدا بودجه را باز نمی‌کند — رد می‌شود
+  ✓ در خرابیِ انبار فقط critical و فقط تا سقفِ اضطراریِ شمرده‌شده عبور می‌کند
+  ✓ «اجاره ته کشید» با «بودجه تمام شد» یکی شمرده نمی‌شود
+  ✓ سقفِ انبار حاکم است — فرایند نمی‌تواند سقفِ سخاوتمندانه‌ترِ خودش را نگه دارد
+  ✓ retry هم از بودجهٔ ماندگار کم می‌کند
+  ✓ عوض‌شدنِ روز اجارهٔ تازه می‌گیرد و شمارنده را از نو می‌شمارد
+  ✓ makeSupabaseLeaseStore بدونِ env چیزی برنمی‌گرداند، نه اینکه بی‌کلید تماس بگیرد
+  ✓ makeSupabaseLeaseStore پاسخِ بی‌شکل را قبول نمی‌کند
+  ✓ makeSupabaseLeaseStore خطای HTTP را خطا می‌کند، نه صفر
+  ✓ local deferral brs_transport_aborted is neither retried nor counted as a provider network error
+  ✓ local deferral brs_transport_queue_full is neither retried nor counted as a provider network error
+  ✓ local deferral brs_transport_wait_failed is neither retried nor counted as a provider network error
+  ✓ local deferral brs_transport_clock_invalid is neither retried nor counted as a provider network error
+
+57 passed, 0 failed
+✔ relay\brsapi-client.test.mjs (1646.5159ms)
+brsapi-coverage:
+  ✓ parser strategy is not a provider call; new transport or import removes its narrow exception
+  ✓ شمارش‌ها با هم قاطی نمی‌شوند — call site و endpoint و کلید سه چیزند
+  ✓ هر نقطهٔ تماسِ اعلام‌شده واقعاً در همان فایل هست
+  ✓ هر نقطه هم مسیرِ کلاینت دارد هم شمارشِ مسیرِ قدیمی
+  ✓ هیچ endpointِ BrsApiای بیرون از سقف نمانده
+  ✓ کلیدِ کامودیتی در شمارندهٔ کلیدِ اصلی ریخته نمی‌شود
+
+6 passed, 0 failed
+✔ relay\brsapi-coverage.test.mjs (155.9015ms)
+brsapi-legacy-meter:
+  ✓ مصرفِ مسیرِ قدیمی در همان بودجه شمرده می‌شود، نه جای دیگر
+  ✓ پیش‌فرض فقط می‌شمارد — رفتارِ امروزِ Production را عوض نمی‌کند
+  ✓ با سوییچِ اجرا، همان مورد رد می‌شود
+  ✓ نبودِ شمارنده پنهان نمی‌شود — خودش یک عدد است
+  ✓ قبل از رزرو، اجاره شارژ می‌شود
+  ✓ سوییچِ اجرا از پرچمِ کلاینت جداست
+  ✓ طبقهٔ بودجه به بودجه منتقل می‌شود، نه اینکه همه standard شوند
+  ✓ enforcement روشن + شمارنده غایب = توقف، نه ارسالِ بی‌حساب
+  ✓ «شمارنده نیست» با «سهمیه تمام شد» یکی نیست
+  ✓ هشدارِ عملیاتی فقط وقتی بلند می‌شود که قول داده باشیم و نتوانیم نگهش داریم
+  ✓ نشمردن به تفکیکِ producer دیده می‌شود، نه یک عددِ کلی
+
+11 passed, 0 failed
+✔ relay\brsapi-legacy-meter.test.mjs (109.8056ms)
+brsapi-stop-behaviour:
+  ✓ چرخهٔ سالم کش را پر می‌کند
+  ✓ بدونِ شمارنده در enforcement: هیچ درخواستی روی سیم نمی‌رود
+  ✓ کشِ سالم با خالی بازنویسی نمی‌شود — دادهٔ کهنه می‌ماند
+  ✓ وقتی هیچ کشِ قبلی نیست، خالی سرو می‌شود — و این عمدی است
+  ✓ هشدارِ عملیاتی بلند می‌شود، بی‌صدا نمی‌گذرد
+  ✓ بدونِ enforcement همان وضعیت عبور می‌کند — رفتارِ امروزِ Production
+  ✓ BudgetUnavailableError از خطای سهمیه قابلِ تفکیک است
+
+7 passed, 0 failed
+✔ relay\brsapi-stop-behaviour.test.mjs (114.6047ms)
+✔ cold start waits a full window; simultaneous calls remain spaced (57.2798ms)
+✔ cold window starts at construction; readiness does not spend a request (1.7592ms)
+✔ rolling windows include failures, retries and different provider keys/hosts (33.5886ms)
+✔ oversleep cannot bunch subsequent starts (1.6369ms)
+✔ early wakeups recheck the clock without an unsafe test override (2.5611ms)
+✔ already-aborted and cold-start-aborted calls consume no attempts (1.6915ms)
+✔ backward or nonfinite clocks poison this instance without sending (1.7616ms)
+✔ a new process-local instance must wait a fresh full window (0.5467ms)
+✔ queue remains bounded and queued cancellations cannot send (10.0401ms)
+✔ non-provider reads bypass a waiting provider; custom provider hosts join (0.7706ms)
+✔ sleep failures are sanitized and do not trigger a send or retry (0.4373ms)
+✔ all production producers use the shared transport with client disabled too (3.8476ms)
+candle-backfill unit tests:
+  ✓ جلالی ۱۴۰۴/۰۴/۲۷ → میلادی 2025-07-18
+  ✓ جلالی ۱۴۰۳/۱۲/۳۰ (کبیسه) → میلادی معتبر
+  ✓ متن جلالی با ارقام فارسی → ایزو
+  ✓ متن خراب → null
+  ✓ کندل معتبر نگاشت می‌شود — ریال دست‌نخورده
+  ✓ کندل با close صفر یا منفی حذف می‌شود
+  ✓ کندل با تاریخ نامعتبر حذف می‌شود
+  ✓ درج با on_conflict=symbol,trade_date انجام می‌شود
+  ✓ هدر Prefer شامل resolution=ignore-duplicates و return=minimal است
+  ✓ existingDates حذف شده (باگ Max Rows دیگر ممکن نیست)
+  ✓ کد رله فقط INSERT دارد — هیچ UPDATE/DELETE به symbol_history
+  ✓ مهاجرت v4: پاک کردن failed برای رد دوباره از مسیر ignore-duplicates
+
+12 passed, 0 failed
+✔ relay\candle-backfill.test.mjs (158.0276ms)
+✔ unsafe numeric lexeme and quoted amount survive exactly, other fields keep native types (4.7295ms)
+✔ null, negative, fractional, nonnumeric and unit-bearing values never become invented amounts (0.8065ms)
+✔ scientific and decimal integer forms canonicalize without floating arithmetic (0.4544ms)
+✔ nested objects, arrays and escaped property names are handled; string contents are untouched (0.3523ms)
+✔ duplicate key policy matches native last-key-wins including null (0.2647ms)
+✔ invalid JSON and oversized input reject without echoing payload (13.576ms)
+✔ token and exponent limits abstain without unbounded expansion (0.4502ms)
+✔ two existing endpoints preserve all legacy fields and reconstruct only exact-cap metadata (65.8657ms)
+✔ actual budget client shares one natural request for concurrent and cached consumers (38.5777ms)
+✔ actual AllSymbols mapper propagates exact cap through serialized snapshot on budget and legacy paths (12.2121ms)
+✔ actual Symbol cache preserves numeric mv and exact cap without a second request (14.5398ms)
+✔ jdateKey: جلالی اسلش‌دار → عدد قابل مقایسه (2.1296ms)
+✔ jdateKey: ارقام فارسی و خط‌تیره (0.5857ms)
+✔ jdateKey: نامعتبر → null (0.2363ms)
+✔ مرزهای آرشیو: مقایسهٔ عددی درست کار می‌کند (0.3875ms)
+✔ سقف بودجهٔ روزانه صریح و مثبت است (0.2259ms)
+✔ counts beyond a server cap and continues after short pages (68.9336ms)
+✔ later page failure never returns partial coverage (1.6605ms)
+✔ rejects repeated, unordered, unsafe or unrelated identities (2.3095ms)
+✔ preserves bigint string cursors and escapes symbol filters (1.2427ms)
+✔ bounded read fails closed if a complete result is not reached (25.7518ms)
+✔ empty universe makes no requests (0.3395ms)
+codal-engine feed error: brs_transport_queue_full
+codal-engine feed error: brs_transport_aborted
+codal_feed push: codal_feed HTTP 503: {"error":"mock failure"}
+codal-engine feed error: codal_feed HTTP 503: {"error":"mock failure"}
+codal_feed push: codal_feed insert invalid schema
+codal-engine feed error: codal_feed insert invalid schema
+codal-engine feed error: announcement invalid date/link or feed order
+codal-engine feed error: announcement invalid date/link or feed order
+codal-engine state save: state save HTTP 503
+codal-engine report failure: persistence/exception
+codal-engine backfill error: market snapshot HTTP 503
+codal-engine feed error: announcement invalid schema
+✔ local announcement deferral keeps watermark and failure ledger and does not retry (64.1407ms)
+✔ local report deferral is not a parse failure or a blocked report (9.7807ms)
+✔ 503 feed write keeps the watermark and retries the same announcement (10.0998ms)
+✔ 140 fresh rows cannot acknowledge a gap after the six-page cap (16.3181ms)
+✔ publication date is independent of financial period and no time column is invented (7.272ms)
+✔ absent publication date stays null instead of using date_title (7.7569ms)
+✔ ignore-duplicates counts returned rows rather than submitted rows (8.8331ms)
+✔ invalid feed insert response fails without advancing watermark (8.3021ms)
+✔ invalid announcement schema rejects while a legitimate empty page is accepted (5.5491ms)
+✔ same-time known link cannot hide a new link later in the group (12.3342ms)
+✔ unorderable or unsorted announcements fail without acknowledging them (15.2727ms)
+✔ state save failure rolls back the in-memory acknowledgement for retry (12.0197ms)
+✔ parsed-report insert returns its actual insert count and keeps raw publication provenance (8.6256ms)
+✔ report download cap keeps retryable work behind the watermark (85.1249ms)
+✔ parse or report-write failures remain unhealthy and unacknowledged (25.1132ms)
+✔ invalid persisted state stops before provider or writes (5.5831ms)
+✔ market snapshot failure is not reported as a healthy empty queue (11.2475ms)
+✔ invalid announcement schema leaves the cycle unhealthy without retrying schema errors (9.2316ms)
+✔ stored report overrides an old blocked ledger without downloading again (12.3044ms)
+✔ metadata-only report cannot release a blocked ledger or advance watermark (9.5382ms)
+codal-archive: symbols=[نمونه] pages=3 dl=1 inserted=0 failed=0 budget=4/200 coverage n30=1 n10=1
+codal-engine report failure: persistence/exception
+codal-engine report failure: persistence/exception
+codal-engine report failure: persistence/exception
+✔ archive duplicate response counts zero actual inserts (1830.33ms)
+▶ null collision is never acknowledged for fails 0/1/2
+  ✔ engine, fails=0 (8.3847ms)
+  ✔ engine, fails=1 (6.5643ms)
+  ✔ engine, fails=2 (6.6138ms)
+codal-archive: symbols=[نمونه] pages=3 dl=1 inserted=0 failed=1 budget=4/200 coverage n30=0 n10=0
+  ✔ archive, fails=0 (1826.0208ms)
+codal-archive: symbols=[نمونه] pages=3 dl=1 inserted=0 failed=1 budget=4/200 coverage n30=0 n10=0
+  ✔ archive, fails=1 (1823.0251ms)
+codal-archive: symbols=[نمونه] pages=3 dl=1 inserted=0 failed=1 budget=4/200 coverage n30=0 n10=0
+  ✔ archive, fails=2 (1825.8213ms)
+✔ null collision is never acknowledged for fails 0/1/2 (5497.9325ms)
+▶ valid collision acknowledges persistence with inserted zero for fails 0/1/2
+  ✔ engine, fails=0 (5.3859ms)
+  ✔ engine, fails=1 (5.0344ms)
+  ✔ engine, fails=2 (5.4939ms)
+codal-archive: symbols=[نمونه] pages=3 dl=1 inserted=0 failed=0 budget=4/200 coverage n30=1 n10=1
+  ✔ archive, fails=0 (1821.1406ms)
+codal-archive: symbols=[نمونه] pages=3 dl=1 inserted=0 failed=0 budget=4/200 coverage n30=1 n10=1
+  ✔ archive, fails=1 (1827.0534ms)
+codal-archive: symbols=[نمونه] pages=3 dl=1 inserted=0 failed=0 budget=4/200 coverage n30=1 n10=1
+codal-engine backfill error: covered reports HTTP 503
+  ✔ archive, fails=2 (1824.1351ms)
+✔ valid collision acknowledges persistence with inserted zero for fails 0/1/2 (5489.5405ms)
+▶ N10 admission rejection keeps inserted zero, watermark and ledger
+  ✔ unknown unit (5.0067ms)
+  ✔ unknown scope (3.7612ms)
+  ✔ consolidated (3.8573ms)
+  ✔ blank operating (4.2982ms)
+  ✔ missing capital (4.6966ms)
+  ✔ bank current EPS zero pv2 blocker (5.0715ms)
+✔ N10 admission rejection keeps inserted zero, watermark and ledger (27.3909ms)
+✔ prospective N10 rejection preserves full paginated coverage without scheduling redundant backfill (7.4592ms)
+✔ a failed later coverage page stops backfill requests rather than using partial counts (5.5201ms)
+▶ content-free diagnostics distinguish report failure stages in feed and backfill without changing attempts
+  ✔ feed: download/exception (9016.0978ms)
+  ✔ feed: admission/rejected (4.3792ms)
+  ✔ feed: persistence/exception (6.5939ms)
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+  ✔ backfill: download/exception (10527.603ms)
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+  ✔ backfill: admission/rejected (1517.2214ms)
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+  ✔ backfill: persistence/exception (1515.8212ms)
+✔ content-free diagnostics distinguish report failure stages in feed and backfill without changing attempts (22589.2479ms)
+✔ diagnostics survive persisted restart; legacy state upgrades and successful cycles reset only lastCycle (9.0069ms)
+✔ untrusted diagnostic fields are discarded and counters saturate without blocking collection (6.1159ms)
+▶ reason diagnostics preserve retry/block, requests, ledger, state writes and watermark in feed and backfill
+  ✔ feed: ن-۱۰/scope_unknown (9.4948ms)
+  ✔ feed: ن-۱۰/unit_unverified (10.81ms)
+  ✔ feed: ن-۳۰/short_rows (8.2993ms)
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+codal-engine backfill نمونه: inserted=0 parseFailed=0
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+  ✔ backfill: ن-۱۰/scope_unknown (50.0923ms)
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+codal-engine backfill نمونه: inserted=0 parseFailed=0
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+  ✔ backfill: ن-۱۰/unit_unverified (46.5251ms)
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+codal-engine backfill نمونه: inserted=0 parseFailed=0
+  ✔ backfill: ن-۳۰/short_rows (61.4871ms)
+✔ reason diagnostics preserve retry/block, requests, ledger, state writes and watermark in feed and backfill (187.6355ms)
+✔ reason diagnostics whitelist persisted enums and safe bounded counters; legacy and unknown versions reset (9.5114ms)
+▶ observed equity title with در retains engine write identity and request limits
+  ✔ qualified local capital proof (15.4002ms)
+  ✔ unknown capital scope stays rejected (4.8926ms)
+✔ observed equity title with در retains engine write identity and request limits (20.666ms)
+codal-engine unit tests:
+  ✓ sentKey: تاریخ+ساعت فارسی به کلید عددی مرتب‌شونده
+  ✓ sentKey: بدون ساعت — صفر پُر می‌شود
+  ✓ sentKey: ترتیب درست بین دو اطلاعیه
+  ✓ sentKey: ورودی خراب → 0
+  ✓ classify: ن-۳۰ ماهانه
+  ✓ classify: ن-۱۰ صورت مالی
+  ✓ classify: پورتفوی رد می‌شود
+  ✓ classify: مجمع/آگهی رد می‌شود
+  ✓ feedCategory: ن-۳۰ → ماهانه
+  ✓ feedCategory: ن-۱۰ → صورت مالی
+  ✓ feedCategory: شفاف‌سازی از عنوان
+  ✓ feedCategory: مجمع
+  ✓ feedCategory: ناشناخته → سایر
+
+13 passed, 0 failed
+✔ relay\codal-engine.test.mjs (169.4192ms)
+✔ extractor retains exact local title, adjacent description and container span (104.8045ms)
+✔ real Vanovin generic title cannot certify standalone scope (108.5762ms)
+✔ context-qualified Vanovin preserves its former finite observed output (191.7534ms)
+✔ industrial valid admission does not reinterpret the legacy output (8.3574ms)
+✔ unit elsewhere in the workbook cannot rescue the income statement (4.6961ms)
+✔ conflicting local units reject but unrelated units do not contaminate admission (11.7996ms)
+▶ amount unit declarations in the selected table headers must agree
+  ✔ ارقام به هزار ریال (2.0121ms)
+  ✔ ارقام به ریال (1.8219ms)
+  ✔ ارقام به میلیون تومان (2.4099ms)
+  ✔ ارقام به میلیون ریال و هزار ریال (2.3109ms)
+  ✔ ارقام به هزار ریال؛ سود هر سهم (ریال) (2.0339ms)
+  ✔ prior amount column (1.7591ms)
+✔ amount unit declarations in the selected table headers must agree (14.9262ms)
+▶ matching amount headers and explicit EPS units keep their separate dimensions
+  ✔ ارقام به میلیون ریال (3.3152ms)
+  ✔ سود هر سهم (ریال) (3.3907ms)
+  ✔ ریال/سهم (3.2443ms)
+  ✔ ارقام به میلیون ریال؛ سود هر سهم (ریال) (3.9012ms)
+✔ matching amount headers and explicit EPS units keep their separate dimensions (18.9574ms)
+✔ equity table header units cannot contradict their own local amount description (2.8617ms)
+▶ selected income and equity header scope cannot contradict standalone context
+  ✔ income: تلفیقی (1.0372ms)
+  ✔ income: صورت سود و زیان تلفیقی (1.1102ms)
+  ✔ equity: تلفیقی (2.9529ms)
+  ✔ equity: صورت تغییرات حقوق مالکانه تلفیقی (3.8104ms)
+✔ selected income and equity header scope cannot contradict standalone context (10.1838ms)
+▶ repeated capital columns reject even when both observed balances agree
+  ✔ second capital column: 500 (3.0931ms)
+  ✔ second capital column: 600 (2.9053ms)
+✔ repeated capital columns reject even when both observed balances agree (6.8191ms)
+▶ independent from inflation is not an explicit standalone statement scope
+  ✔ income (1.0071ms)
+  ✔ equity (3.284ms)
+✔ independent from inflation is not an explicit standalone statement scope (4.9319ms)
+✔ unknown, consolidated, conflicting and subsidiary scope reject (3.073ms)
+✔ consolidated before standalone cannot select the consolidated numbers (7.2646ms)
+✔ two eligible standalone income tables are ambiguous (5.5026ms)
+✔ every mandatory current amount must be finite and observed (32.3903ms)
+✔ explicit current zeros and industrial EPS zero stay zero (3.3675ms)
+✔ current/prior dates and month counts must be clear and match (10.9854ms)
+✔ prior incomplete rejects, truly absent prior is omitted (9.7676ms)
+✔ prior arithmetic is validated without deriving replacement values (1.9411ms)
+✔ capital needs positive evidence in the same scope, unit and period (14.5075ms)
+✔ bank valid values, capital and prior EPS zero keep legacy interpretation (3.309ms)
+✔ bank current EPS zero requiring legacy semantic correction is rejected under pv2 (2.8994ms)
+✔ EPS must have an observed rial/share denominator and finite value (6.5868ms)
+✔ unscoped ancestor or neighboring title is never borrowed (0.7739ms)
+✔ N30 and the legacy table-only API remain identical (0.8038ms)
+✔ merged, missing or shifted column geometry is rejected (0.6207ms)
+✔ title and description inside the table are not adjacent container context (0.2903ms)
+✔ script words cannot create scope evidence or numeric observations (0.8725ms)
+✔ duplicate capital balances and a later unrelated balance reject (3.9857ms)
+✔ insurance retains observed legacy mapping with local witnesses (2.799ms)
+✔ a partially reported prior EPS cannot be silently omitted (2.3662ms)
+✔ unrelated independence words and negated declarations are not witnesses (2.5866ms)
+✔ fixed rejection reasons retain the real Vanovin scope and period limitations (192.9487ms)
+▶ fixed rejection reasons describe the first existing N10 guard without report content
+  ✔ context_invalid (0.4802ms)
+  ✔ geometry_ambiguous (0.2358ms)
+  ✔ scope_unknown (0.5358ms)
+  ✔ scope_unsupported (0.8613ms)
+  ✔ statement_ambiguous (1.9148ms)
+  ✔ unit_unverified (0.9165ms)
+  ✔ values_unobserved (1.0829ms)
+  ✔ values_unobserved (1.1254ms)
+  ✔ period_unverified (1.1999ms)
+  ✔ arithmetic_mismatch (1.2122ms)
+  ✔ capital_unverified (1.477ms)
+  ✔ normalized_identity_mismatch (2.1855ms)
+  ✔ eps_unverified (2.4928ms)
+  ✔ eps_unverified (1.5926ms)
+  ✔ internal_exception (0.9896ms)
+✔ fixed rejection reasons describe the first existing N10 guard without report content (20.9898ms)
+▶ fixed rejection reasons aggregate N30 row guards once per rejected report only
+  ✔ unsupported_layout (0.1714ms)
+  ✔ short_rows (0.1339ms)
+  ✔ missing_sales (0.1089ms)
+  ✔ zero_sales_only (0.1092ms)
+  ✔ arithmetic_mismatch (0.1061ms)
+  ✔ mixed_rows (0.1018ms)
+  ✔ no_product_rows (0.0999ms)
+✔ fixed rejection reasons aggregate N30 row guards once per rejected report only (2.8475ms)
+✔ a failing diagnostic observer cannot change admission outputs (7.4292ms)
+▶ observed equity title with در preserves qualified proof and rejects incompatible proof
+  ✔ only the witnessed grammatical word changes; observed normalized data stays identical (3.9253ms)
+  ✔ scope unknown (1.695ms)
+  ✔ consolidated scope (2.1881ms)
+  ✔ independent from inflation is not standalone (1.8903ms)
+  ✔ explicitly negated standalone scope (2.0696ms)
+  ✔ different period (2.6582ms)
+  ✔ different amount unit (3.2104ms)
+  ✔ non-positive capital (2.7737ms)
+✔ observed equity title with در preserves qualified proof and rejects incompatible proof (82.4579ms)
+✔ N30 producer hashes actual response bytes and carries their receipt into the existing insert payload (85.9628ms)
+✔ a UTF8 BOM is retained in the byte hash while decoded table values match the original text behavior (43.3497ms)
+✔ a redirected, absent or different response reference cannot create a new quantity witness (101.9604ms)
+✔ announcement claims cannot replace the response bytes or the source document's monthly period (23.0146ms)
+✔ quantity proof requires the existing official download route while legacy parsing still preserves money (113.4683ms)
+✔ a failed body read follows the existing retry path and cannot create a partial capture (3035.3815ms)
+✔ copied, directly parsed or modified data cannot mint a capture receipt (90.4207ms)
+✔ an intact parsed object cannot donate its receipt to another announcement, period, symbol or kind (63.1281ms)
+✔ N10 keeps the original text decoder, admission path and payload without monthly capture metadata (22.1096ms)
+  ok  n10 parsed
+  ok  n10 revenue
+  ok  n10 cogs abs
+  ok  n10 gross
+  ok  n10 operating
+  ok  n10 net
+  ok  n10 eps
+  ok  n10 prior revenue
+  ok  n10 prior net
+  ok  n10 capital
+  ok  n10 rejects inconsistent table
+  ok  n10 null without income table
+  ok  n30 parsed
+  ok  n30 one product with month sales
+  ok  n30 product name
+  ok  n30 month qty
+  ok  n30 month rate
+  ok  n30 month amount
+  ok  n30 month production
+  ok  n30 period total
+  ok  n30 fy cumulative
+  ok  n30 fiscal year
+  ok  n30 unit recorded
+  ok  n30 period months
+  ok  n30 null without product table
+  ok  bank fixture exists
+  ok  bank n10 parsed via fallback
+  ok  bank statement_type
+  ok  bank revenue (درآمد عملیاتی)
+  ok  bank cogs (هزینه سود سپرده‌ها)
+  ok  bank gross
+  ok  bank operating
+  ok  bank net
+  ok  bank eps (خالص هر سهم)
+  ok  bank capital
+  ok  bank prior revenue
+  ok  bank prior net
+  ok  bank arithmetic
+  ok  bank direct === fallback
+  ok  insurance parsed
+  ok  insurance statement_type
+  ok  insurance revenue
+  ok  insurance cogs
+  ok  insurance net
+  ok  insurance eps
+  ok  bank normalizer rejects industrial table
+  ok  bank rejects inconsistent gross
+  ok  سربرگ «میلیون ریال» خوانده می‌شود
+  ok  سربرگ «ریال» با «میلیون ریال» اشتباه نمی‌شود
+  ok  سربرگِ بی‌واحد null می‌دهد
+  ok  سازگاریِ حسابی مقیاسِ میلیون را پیدا می‌کند
+  ok  سازگاریِ حسابی مقیاسِ ریال را پیدا می‌کند
+  ok  ردیف‌های ناسازگار هیچ مقیاسی نمی‌دهند
+  ok  بدونِ شاهد (نبودِ نرخ) استنتاج نمی‌شود
+  ok  سربرگ و حساب هم‌سو ⇒ واحد معتبر
+  ok  دو شاهد جدا ثبت می‌شوند
+  ok  سربرگِ تنها basis جدا می‌گیرد
+  ok  حسابِ تنها basis جدا می‌گیرد
+  ok  تعارضِ سربرگ و حساب ⇒ واحد اعلام نمی‌شود
+  ok  در تعارض هم هر دو شاهد نگه داشته می‌شوند
+  ok  قالبِ ناشناخته ⇒ unresolved
+  ok  واحدِ ن-۳۰ از خودِ گزارش استخراج شد
+  ok  پایهٔ اثباتِ واحد ثبت شد
+  ok  دورهٔ مقایسه یک ماه است
+  ok  واحد مقدار از ستون همان ردیف استخراج می‌شود
+  ok  واحدِ مبلغ با واحدِ مقدار قاطی نشده
+  ok  جدولِ بدونِ محصول null می‌دهد (تعمیم ساخته نمی‌شود)
+
+ALL TESTS PASSED
+  ok  actual N30 keeps the exact archived HTML hash
+  ok  actual N30 preserves reported monthly and cumulative money
+  ok  actual N30 raw quantity and rate cells are unchanged
+  ok  actual N30 preserves section provenance
+  ok  actual N30 binds source identity period and row
+  ok  default normalizer does not invent a byte-bound source context
+  ok  claimed hash without bytes cannot create quantity witnesses
+  ok  claimed hash without bytes cannot rewrite raw money or values
+  ok  wrong hash cannot create quantity witnesses
+  ok  wrong hash cannot rewrite raw money or values
+  ok  wrong bytes cannot create quantity witnesses
+  ok  wrong bytes cannot rewrite raw money or values
+  ok  missing source reference cannot create quantity witnesses
+  ok  missing source reference cannot rewrite raw money or values
+  ok  blank source reference cannot create quantity witnesses
+  ok  blank source reference cannot rewrite raw money or values
+  ok  oversized source reference cannot create quantity witnesses
+  ok  oversized source reference cannot rewrite raw money or values
+  ok  mismatched symbol cannot create quantity witnesses
+  ok  mismatched symbol cannot rewrite raw money or values
+  ok  mismatched period cannot create quantity witnesses
+  ok  mismatched period cannot rewrite raw money or values
+  ok  missing version cannot create quantity witnesses
+  ok  missing version cannot rewrite raw money or values
+  ok  two missing symbol fields cannot certify a source
+  ok  matching claimed hash cannot authenticate different tables
+  ok  byte-bound tables without the unit header cannot create a source witness
+  ok  byte-bound wrong production column cannot create a source witness
+  ok  byte-bound wrong sales column cannot create a source witness
+  ok  a short physical product row remains an explicit unadmitted coverage observation
+  ok  a claimed period cannot replace the actual monthly header
+  ok  unknown section cannot inherit a domestic market
+  ok  offline actual parser never requests a provider
+QUANTITY_FIXTURE_TESTS_PASSED
+✔ N30 producer hashes actual response bytes and carries their receipt into the existing insert payload (88.5746ms)
+✔ a UTF8 BOM is retained in the byte hash while decoded table values match the original text behavior (49.1562ms)
+✔ a redirected, absent or different response reference cannot create a new quantity witness (94.7994ms)
+✔ announcement claims cannot replace the response bytes or the source document's monthly period (25.9009ms)
+✔ quantity proof requires the existing official download route while legacy parsing still preserves money (92.9887ms)
+✔ a failed body read follows the existing retry path and cannot create a partial capture (3024.6285ms)
+✔ copied, directly parsed or modified data cannot mint a capture receipt (92.6735ms)
+✔ an intact parsed object cannot donate its receipt to another announcement, period, symbol or kind (62.2873ms)
+✔ N10 keeps the original text decoder, admission path and payload without monthly capture metadata (21.4029ms)
+✔ commodity missing or nonnumeric provider fields remain null (1.8441ms)
+✔ commodity legitimate zero, signed changes and decimal strings retain source units (0.4273ms)
+✔ documented grouped contract retains categories, nullable fields and all source clocks/units (1.5996ms)
+✔ malformed, missing-group, duplicate and empty batches are rejected atomically (0.9727ms)
+✔ existing account key does not implicitly enable the feed (39.1914ms)
+✔ explicit activation reuses the account key; explicit key and disable remain supported (12.1438ms)
+✔ legacy fetch uses documented endpoint and shared transport with one metered attempt (54.973ms)
+✔ singleflight shares an in-progress request and quota reservation (3.416ms)
+✔ invalid/source-failed cycles preserve good rows and original receipt without leaking keys (8.3611ms)
+✔ local daily cap stops calls and cannot be configured above 300 (188.6726ms)
+✔ local allowance resets only for the next Tehran calendar day (6.1145ms)
+✔ daily FX uses independently valid source date/time and explicit raw toman (7.334ms)
+✔ unknown/stale/future clocks and unproved units never reach the request port (6.7172ms)
+✔ FX failed writes and unreadable conflict readbacks never claim completion (43.8983ms)
+✔ successful FX insert preserves source-derived date and price without another conversion (1.1603ms)
+✔ 409 completes only after exact readback of date, rate and source; every mismatch stays retryable (9.7972ms)
+✔ server wires the guarded writer and carries raw currency unit instead of attesting the forced label (2.0815ms)
+✔ writtenAfterClose: ۰۰:۰۶ همان روز پیش از بسته‌شدن است؛ ۱۴:۳۰ و روزِ بعد پس از آن (41.7648ms)
+✔ گذار: برچسبِ اشغال‌شده با ردیفِ پیش از بسته‌شدن — پایانیِ جلسه دور ریخته نمی‌شود (280.9402ms)
+✔ restart در همان روز: هیچ ردیفِ تکراری، stash همان (380.3463ms)
+✔ نیمه‌شبِ بعد: هیچ نوشتنی؛ جلسهٔ بعد ساعتِ ۱۴:۳۰ با برچسبِ درست (37.0626ms)
+✔ تعطیلی: شاخص همان جلسهٔ قبل را می‌گوید — برچسبِ تازه ساخته نمی‌شود (170.6536ms)
+✔ فیدِ کهنه: شاخص جلو رفته ولی نمادها همان جلسهٔ قبل‌اند — نوشته نمی‌شود (11.7558ms)
+✔ retry: شکستِ دستهٔ دوم جلسه را قفل نمی‌کند؛ تلاشِ بعد فقط غایب‌ها را درج می‌کند (73.8189ms)
+✔ ردیفِ منبعِ دیگر (کندل) دسته را نمی‌شکند و بازنویسی نمی‌شود (2.7411ms)
+✔ کمتر از کفِ ردیف: نوشته می‌شود ولی جلسه کامل علامت نمی‌خورد (1.6016ms)
+✔ کلیدِ یکتای جعلی واقعاً اعمال می‌شود: درجِ بی ignore-duplicates روی تکراری 409 می‌دهد (0.3968ms)
+✔ server.mjs: نوشتن از writeEodHistory، و چرخهٔ ناقص (بودجه) چیزی نمی‌نویسد (0.3573ms)
+✔ ساعتِ تهران هرگز «24» نیست — ۴۸ ساعت با گامِ ۱۰ دقیقه (118.0425ms)
+✔ لحظهٔ نوشتنِ Production: ۰۰:۰۶ شنبه ساعتِ ۰ است، نه ۲۴ (2.2519ms)
+✔ دروازهٔ «پس از بسته‌شدن» با NaN بسته می‌ماند (0.5225ms)
+✔ پخشِ بودجه: ۰۰:۰۵ تهران تقریباً ۲۴ ساعت تا نیمه‌شب مانده، نه عددِ منفی (2.1366ms)
+✔ تاریخِ جلسهٔ منبع: جلالی با رقمِ لاتین یا فارسی → میلادی (1.3299ms)
+✔ تاریخِ منبعِ ناموجود یا نامعتبر → null، هرگز حدس (0.4181ms)
+✔ بازتولیدِ Production: ۰۰:۰۶ شنبه با دادهٔ چهارشنبه هیچ ردیفی نمی‌سازد (1.1531ms)
+✔ چهارشنبه ۱۴:۳۰: برچسب همان چهارشنبه است (1.1072ms)
+✔ برچسب از منبع می‌آید نه از تقویم: یکشنبه‌ای که منبع هنوز شنبه را می‌گوید (1.0891ms)
+✔ بدونِ تاریخِ منبع هیچ ردیفی ساخته نمی‌شود (D2) (1.021ms)
+✔ پنجشنبه و جمعه چیزی نوشته نمی‌شود (0.8864ms)
+✔ نگاشتِ ردیف دست نخورده: زیرنماد، حق‌تقدم و بی‌معامله بیرون؛ تومان→ریال؛ NAV در raw (2.7141ms)
+✔ server.mjs: نوشتنِ پایانِ روز از planEodHistory و writeEodHistory می‌گذرد (0.6318ms)
+✔ هیچ خوانشِ ساعتی در رله `hour12: false` ندارد (21.1208ms)
+✔ equities preserve real zero and signed changes, EPS and PE (9.2078ms)
+✔ missing, empty, malformed and nonfinite equity measurements stay null (28.1634ms)
+✔ negative volumes, values and market capitalization are unknown (3.1213ms)
+✔ missing or invalid closing price does not borrow the last price (23.7576ms)
+✔ invalid last prices cannot create an equity row (18.9063ms)
+✔ best-effort measurements omit missing values but preserve actual zero quantities (17.1776ms)
+✔ industry identifiers require positive safe integers (32.6619ms)
+✔ fund classification, source clocks, quarantine and sort still use the same response (4.0851ms)
+✔ the written sections are configurable and default to the consumed pair (2.8992ms)
+✔ the unread sections are no longer hard-coded into the write path (0.7223ms)
+✔ a section that the source did not return is recorded, not silently dropped (0.5123ms)
+✔ retention stays configurable and its status stays observable (0.4546ms)
+✔ the source-side sub-ticker filter is still applied before symbol_history (1.9316ms)
+✔ nothing in the relay deletes from symbol_history (0.5609ms)
+✔ mapCertRow: قیمت‌ها ریال→تومان و tval هزارریال→تومان (×۱۰۰) (1.8164ms)
+✔ mapCertRow: فیلد غایب/نامعتبر → null، نه صفر ساختگی (0.2673ms)
+✔ mapCertRow: pc غایب → close از pl پر می‌شود (0.1643ms)
+✔ IME numeric absence stays null; genuine zero is retained (0.8412ms)
+✔ certificate history keeps each quote's source day across midnight and holidays (4.6527ms)
+✔ certificate history rejects missing, invalid and future source dates (0.9062ms)
+✔ certificate history rejects normalized non-leap dates but keeps a real leap day (1.6228ms)
+✔ physical storage failure stays incomplete without extra same-day provider requests (46.3863ms)
+✔ certificate writer persists source day after retaining a quote overnight (7.202ms)
+✔ mapPhysicalRow: اعداد خام ریال حفظ می‌شود و تاریخ جلالی نرمال (خط‌تیره) (0.7009ms)
+✔ mapPhysicalRow: تاریخ از قبل خط‌تیره‌دار دست نمی‌خورد (0.3293ms)
+✔ mapCommodityRow: دلار خام می‌ماند (هیچ تبدیل ریالی) (0.3779ms)
+✔ physical DB retries are bounded, retain pending rows, and never refetch today's provider (22.8479ms)
+✔ physical partial success is retained while only the failed DB target retries (9.1591ms)
+✔ physical lost response replays identical complete keys without a provider retry (8.1242ms)
+✔ physical source failures never retry same day, including the permissive legacy path (7.2838ms)
+✔ physical day rollover expires exhausted storage and reports abandoned pending observations (9.3509ms)
+✔ completed empty physical targets expire so a later backfill re-reads the source (6.6768ms)
+✔ physical unknown cannot certify an empty successful day (5.7631ms)
+✔ physical unverified no_data cannot certify an empty successful day (4.5393ms)
+✔ physical contradictory no_data cannot certify an empty successful day (4.9158ms)
+✔ physical rejected cannot certify an empty successful day (4.4406ms)
+✔ physical error cannot certify an empty successful day (5.2471ms)
+✔ physical unknown status cannot certify an empty successful day (6.3919ms)
+✔ physical null producer blocks the entire target and exposes rejection count (6.1509ms)
+✔ physical blank price blocks the entire target and exposes rejection count (6.2135ms)
+✔ physical boolean volume blocks the entire target and exposes rejection count (6.4631ms)
+✔ physical array price blocks the entire target and exposes rejection count (6.0556ms)
+✔ physical invalid date blocks the entire target and exposes rejection count (6.3761ms)
+✔ physical wrong date blocks the entire target and exposes rejection count (6.3216ms)
+✔ physical valid zero values survive admission; simultaneous callers share one cycle (6.8871ms)
+✔ a rejected target does not discard its successful neighbour or claim cycle completeness (7.5796ms)
+✔ a valid empty array completes a target without fabricating a database row (6.3856ms)
+✔ physical request spanning midnight does not start a second old-cycle provider job (4.497ms)
+PASSIVE_GET_EVIDENCE:{"client":"0","scenario":"cold","before":{"upstream":0,"writes":0,"dbReads":0},"after":{"upstream":0,"writes":0,"dbReads":0},"providerCallsFromGet":0,"dbReadsFromGet":0,"dbWritesFromGet":0,"statuses":[503,503,503]}
+✔ actual server GET /market.json is passive with cold cache (client=0) (2091.9852ms)
+PASSIVE_GET_EVIDENCE:{"client":"0","scenario":"warm","before":{"upstream":5,"writes":3,"dbReads":2},"after":{"upstream":5,"writes":3,"dbReads":2},"providerCallsFromGet":0,"dbReadsFromGet":0,"dbWritesFromGet":0,"statuses":[200,200,200]}
+✔ actual server GET /market.json is passive with warm cache (client=0) (1994.8219ms)
+PASSIVE_GET_EVIDENCE:{"client":"0","scenario":"stale","before":{"upstream":5,"writes":3,"dbReads":2},"after":{"upstream":5,"writes":3,"dbReads":2},"providerCallsFromGet":0,"dbReadsFromGet":0,"dbWritesFromGet":0,"statuses":[200,200,200]}
+✔ actual server GET /market.json is passive with stale cache (client=0) (1980.9396ms)
+PASSIVE_GET_EVIDENCE:{"client":"1","scenario":"cold","before":{"upstream":0,"writes":0,"dbReads":0},"after":{"upstream":0,"writes":0,"dbReads":0},"providerCallsFromGet":0,"dbReadsFromGet":0,"dbWritesFromGet":0,"statuses":[503,503,503]}
+✔ actual server GET /market.json is passive with cold cache (client=1) (1958.6574ms)
+PASSIVE_GET_EVIDENCE:{"client":"1","scenario":"warm","before":{"upstream":5,"writes":3,"dbReads":2},"after":{"upstream":5,"writes":3,"dbReads":2},"providerCallsFromGet":0,"dbReadsFromGet":0,"dbWritesFromGet":0,"statuses":[200,200,200]}
+✔ actual server GET /market.json is passive with warm cache (client=1) (2276.0081ms)
+PASSIVE_GET_EVIDENCE:{"client":"1","scenario":"stale","before":{"upstream":5,"writes":3,"dbReads":2},"after":{"upstream":5,"writes":3,"dbReads":2},"providerCallsFromGet":0,"dbReadsFromGet":0,"dbWritesFromGet":0,"statuses":[200,200,200]}
+✔ actual server GET /market.json is passive with stale cache (client=1) (2275.7876ms)
+✔ actual relay: healthy → partial timeout → recovery preserves failed rows and advances options independently (305.0009ms)
+✔ actual relay: all sources fail in a warm cycle; served metadata reports error and no snapshot/history write (268.0897ms)
+✔ actual relay: cold all-source failure yields 503 and leaves persisted snapshots untouched (218.4874ms)
+✔ actual relay: explicit successful empty arrays clear old data rather than pretending failure (199.0956ms)
+✔ actual relay: cold partial cycle keeps the successful options independently and marks other families unavailable (190.7829ms)
+✔ actual relay: restart hydrates stored rows before a partial source failure, preserving their prior receipt/source clock (197.8679ms)
+✔ actual relay: one missing currency field retains only currency while gold and stocks advance (194.3481ms)
+✔ actual relay: unknown-baseline blocks partial latest replacement (178.0728ms)
+✔ actual relay: malformed-baseline blocks partial latest replacement (175.4833ms)
+✔ actual relay: next natural cycle retries baseline and fills unknown families without replacing current healthy options (186.7729ms)
+✔ actual relay: malformed nonempty option and core responses cannot clear warm data (205.0216ms)
+✔ actual relay: retained rows do not become EOD stock/FX/index/breadth records after close (187.7803ms)
+✔ actual relay: recovered sources do reach the existing EOD writers after close (179.9922ms)
+✔ actual relay: fresh transport cannot relabel yesterday USD as today or attest an absent source unit (378.5931ms)
+✔ actual relay: boolean source USD price cannot become a synthetic daily observation (192.0048ms)
+✔ actual relay: valid stocks cannot disguise an unusable nonempty fund family (181.2864ms)
+✔ actual relay CLIENT_ENABLED=1: mid-cycle budget rejection blocks partial latest/history/EOD writes despite successful families (2000.9944ms)
+✔ actual relay CLIENT_ENABLED=1: ordinary source timeout remains a partial update without a budget stop (3435.24ms)
+✔ commodity survives restart failure with its own receipt and never borrows a core clock (5.0362ms)
+✔ commodity success uses this cycle; failed refresh retains original receipt; legacy receipt is specific (0.9065ms)
+✔ retains rows/source clocks immutably, and gives fresh history only to successful families (1.4081ms)
+✔ unknown legacy empty arrays do not become known successful emptiness (0.5498ms)
+✔ a known authoritative empty family remains known after later failure (0.6182ms)
+✔ null, missing and future receipts stay unknown rather than using attempt time (0.7618ms)
+✔ successful outcomes with wrong data shape are rejected (0.3933ms)
+✔ restart merge fills only unknown families and preserves current known or authoritative empty data (0.6331ms)
+✔ persisted baseline rejects malformed payloads while accepting complete legacy shape (0.5536ms)
+✔ error categories never disclose raw provider exception text (0.5615ms)
+✔ missing option measurements stay null rather than zero (2.5144ms)
+✔ explicit zero and negative price change retain their meanings (0.3166ms)
+✔ documented size and supplied clock are preserved without inventing a date or source unit (0.3078ms)
+✔ invalid or absent contract size is unknown, never a default of 1000 (0.7067ms)
+✔ actual mixed option mapping retains a known baseline stale and stays unavailable without one (1.9258ms)
+✔ actual successful empty option mapping remains authoritative empty at retention boundary (1.5402ms)
+✔ partial option responses expose rejected rows and cannot advance lastOk (0.5294ms)
+✔ malformed option IDs and types are counted without coercing objects into strings (0.5552ms)
+✔ non-object option rows have their own rejection reason (0.3844ms)
+✔ healthy and empty option arrays reset attempt counts without claiming market coverage (0.6517ms)
+✔ failed option attempts clear current counts and keep the last success clock (0.6729ms)
+✔ negative option quantities are unknown while signed change and expired days remain valid (0.3019ms)
+✔ actual zero option quantities remain measured zero (0.3349ms)
+✔ option measurement validation does not manufacture zero from malformed input (0.6396ms)
+✔ option price rounding remains the existing boundary until precision is attested (0.4198ms)
+✔ relay keeps only /healthz public when RELAY_TOKEN is unset (221.2513ms)
+✔ relay protects /debug when RELAY_TOKEN is configured (239.8019ms)
+✔ actual startup serves the original baseline and arms provider jobs only after the full cold window (248.2482ms)
+symbol-detail — بودجهٔ چرخش:
+  ✓ کلِ بودجهٔ روز مصرف می‌شود، نه کمتر
+  ✓ بودجه در کلِ روز پخش می‌شود، نه در ساعاتِ اول
+  ✓ هیچ چرخه‌ای از سقفِ انفجار بالاتر نمی‌رود
+  ✓ بودجهٔ تمام‌شده صفر می‌دهد، نه عددِ منفی
+  ✓ در پایانِ روز بودجهٔ باقی‌مانده حبس نمی‌شود
+  ✓ سقفِ انفجار حتی با بودجهٔ زیاد رعایت می‌شود
+  ✓ بودجهٔ کوچک‌تر از یک در چرخه نه گم می‌شود، نه به آخرِ روز می‌افتد
+  ✓ msUntilTehranMidnight در بازهٔ معتبر است
+  ✓ cold boot with all source failures preserves 120 stored entries and makes no POST
+  ✓ zero rotation budget never empties or refresh-labels a stored snapshot
+  ✓ partial successful refresh preserves other entries and their individual clocks
+  ✓ restoration between baseline read and publication is merged; cache remains bounded
+  ✓ a later restoration survives a process that previously published only one entry
+  ✓ a newer independent stored entry beats the older local entry on the next publication
+  ✓ unreadable or malformed baseline blocks provider work and every overwrite
+  ✓ failed final baseline read preserves fresh local data but cannot overwrite DB
+  ✓ missing and future entry clocks never become fresh or borrow snapshot receipt time
+  ✓ concurrent rotations share one read-refresh-publish cycle
+
+18 passed, 0 failed
+✔ relay\symbol-detail.test.mjs (259.8798ms)
+symbols-util unit tests (C1):
+  ✓ فملی2 زیرنماد است (رقم لاتین)
+  ✓ آوند4 زیرنماد است (نماد متوقف — ریشهٔ اخطار BrsApi)
+  ✓ کگل3 زیرنماد است
+  ✓ رقم فارسی: خودرو۲ زیرنماد است
+  ✓ رقم عربی: فولاد٤ زیرنماد است
+  ✓ فاصلهٔ انتهایی نادیده گرفته می‌شود: «فملی2 » زیرنماد است
+  ✓ «آ س پ» فیلتر نمی‌شود (فاصله در وسط نماد)
+  ✓ «فملی» فیلتر نمی‌شود
+  ✓ «شپنا» و «طلا» نماد اصلی‌اند
+  ✓ فملیح حق تقدم شناخته می‌شود
+  ✓ خودروح حق تقدم است ولی زیرنماد رقم‌دار نیست
+  ✓ رشتهٔ خالی/null/undefined: نه زیرنماد، نه حق تقدم، نه نماد اصلی
+  ✓ SUB_TICKER_RE همان قاعدهٔ ثبت‌شدهٔ پروژه است
+  ✓ صف NAV هیچ نماد رقم‌دار یا حق تقدمی ندارد
+nav blacklist: «تست‌الف» بعد از 2 دور ناموفق دائمی شد (اخطار BrsApi)
+  ✓ ۲ دور NAV ناموفق → بلک‌لیست دائمی؛ دور موفق شمارنده را صفر می‌کند
+
+15 passed, 0 failed
+✔ relay\symbols-util.test.mjs (85.7857ms)
+ℹ tests 356
+ℹ suites 0
+ℹ pass 356
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 36389.1926

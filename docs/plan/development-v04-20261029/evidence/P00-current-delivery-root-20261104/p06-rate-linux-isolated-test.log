@@ -1,0 +1,2485 @@
+{"platform":"linux","node":"v22.23.3"}
+TAP version 13
+# breadth unit tests:
+#   ✓ صف خرید: بهترین تقاضا روی سقف دامنه و عرضهٔ صفر
+#   ✓ صف خرید نیست وقتی عرضه موجود است
+#   ✓ صف خرید نیست وقتی تقاضا زیر سقف است
+#   ✓ فیلد غایب → قضاوت نمی‌شود (false، هیچ حدسی)
+#   ✓ صف فروش: بهترین عرضه روی کف دامنه و تقاضای صفر
+#   ✓ صف فروش نیست وقتی تقاضا موجود است
+#   ✓ نبض: مثبت/منفی/خنثی/کل فقط از معامله‌شده‌ها
+#   ✓ صف‌ها: یک صف خرید و یک صف فروش
+#   ✓ ارزش صف خرید = حجم سطر اول × قیمت × ۱۰ (ریال)
+#   ✓ ارزش صف فروش = حجم سطر اول عرضه × قیمت × ۱۰ (ریال)
+#   ✓ خالص پول حقیقی = Σ(buyI−sellI)×پایانی×۱۰ (ریال)
+#   ✓ سرانهٔ خرید حقیقی = ارزش خرید حقیقی ÷ شمار خریداران
+#   ✓ ارزش معاملات جمع value معامله‌شده‌ها (ریال)
+#   ✓ ورودی خالی → صفرها و nullهای صادق
+# 14 passed, 0 failed
+# Subtest: relay/breadth.test.mjs
+ok 1 - relay/breadth.test.mjs
+  ---
+  duration_ms: 400.152191
+  type: 'test'
+  ...
+# Subtest: budget-stop notification covers admission and a throwing observer cannot send or change rejection
+ok 2 - budget-stop notification covers admission and a throwing observer cannot send or change rejection
+  ---
+  duration_ms: 6.24911
+  type: 'test'
+  ...
+# Subtest: budget-stop notification covers reserve and a throwing observer cannot send or change rejection
+ok 3 - budget-stop notification covers reserve and a throwing observer cannot send or change rejection
+  ---
+  duration_ms: 2.62918
+  type: 'test'
+  ...
+# Subtest: ordinary HTTP rejection never reports a budget stop
+ok 4 - ordinary HTTP rejection never reports a budget stop
+  ---
+  duration_ms: 183.969351
+  type: 'test'
+  ...
+# brsapi-client:
+#   ✓ ۴xxِ غیرِ ۴۲۹ هرگز retry نمی‌شود — قاعدهٔ Q1
+#   ✓ backoff نمایی است و سقف دارد
+#   ✓ full jitter: کفِ بازه صفر است، نه پایه
+#   ✓ کلیدِ dedup به ترتیبِ پارامترها وابسته نیست
+#   ✓ سطل: ۱۰ req/s یعنی فاصلهٔ ۱۰۰ms، نه ۱۰تا در یک لحظه
+#   ✓ سطل: مرزِ پنجره تراکم نمی‌سازد
+#   ✓ سطل: پس از ۴۲۹ نرخِ سراسری کند می‌شود
+#   ✓ کلیدِ API در params رد می‌شود
+#   ✓ کلید به URL اضافه می‌شود ولی در کلیدِ dedup نیست
+#   ✓ dedupِ درپرواز: دو فراخوانِ هم‌زمان یک درخواست می‌شوند
+#   ✓ کشِ کوتاه‌مدت درخواستِ دوم را حذف می‌کند
+#   ✓ کش پس از انقضای TTL دوباره درخواست می‌زند
+#   ✓ هم‌زمانی هرگز از سقف بالاتر نمی‌رود
+#   ✓ ۴۲۹ تا سقفِ تلاش retry می‌شود و بعد شکست می‌خورد
+#   ✓ ۵xx retry می‌شود و اگر بعداً موفق شد، موفق برمی‌گردد
+#   ✓ ۴۰۳ فوراً شکست می‌خورد — یک تلاش، نه چهار
+#   ✓ Retry-After بر محاسبهٔ backoff مقدم است
+#   ✓ کارِ تعاملی قبل از پس‌زمینه خدمت می‌گیرد
+#   ✓ تلاشِ تعاملی کمتر است — ۲ نه ۴
+#   ✓ متریک «نفرستادیم» را از «فرستادیم و خطا نداد» جدا می‌کند
+#   ✓ متریکِ صف عمق و انتظار را ثبت می‌کند
+#   ✓ نرخ در عمل رعایت می‌شود: ۲۰ درخواست ≥ ۱٫۹ ثانیه طول می‌کشد
+#   ✓ پرچم پیش‌فرض خاموش است — مسیرِ قدیمی دست‌نخورده می‌ماند
+#   ✓ مهلتِ صف جدا از مهلتِ درخواست است
+#   ✓ سقفِ هر طبقه: bulk در soft، critical در hard، standard وسط
+#   ✓ سقفِ سخت بر همه مقدم است، حتی اگر soft بزرگ‌تر تنظیم شده باشد
+#   ✓ bulk در softBudget می‌ایستد ولی critical ادامه می‌دهد
+#   ✓ standard پیش از critical می‌ایستد — تنزلِ تدریجی
+#   ✓ در سقفِ سخت هیچ طبقه‌ای عبور نمی‌کند — حتی critical
+#   ✓ شمارنده با تغییرِ روزِ تهران صفر می‌شود
+#   ✓ متریکِ بودجه used/remaining/rejected را جدا گزارش می‌کند
+#   ✓ درخواستِ ردشده به‌خاطرِ بودجه اصلاً روی سیم نمی‌رود
+#   ✓ bulk قربانی می‌شود تا critical زنده بماند
+#   ✓ retryها هم از بودجه کم می‌کنند
+#   ✓ بودجه می‌تواند وسطِ زنجیرهٔ retry تمام شود و صریح خطا بدهد
+#   ✓ هیچ ترکیبی از producerها نمی‌تواند از سقفِ سخت رد شود
+#   ✓ در کمبودِ بودجه، سهمِ critical از bulk بیشتر است
+#   ✓ budgetClass نامعتبر رد می‌شود، نه اینکه بی‌صدا standard شود
+#   ✓ پیش‌فرضِ budgetClass همان standard است
+#   ✓ dedup بودجه مصرف نمی‌کند
+#   ✓ بودجهٔ ماندگار: اجاره تکه‌تکه گرفته می‌شود، نه یک‌جا
+#   ✓ restart شمارنده را صفر نمی‌کند — فرایندِ تازه از همان جا ادامه می‌دهد
+#   ✓ هیچ ترکیبی از فرایندها از سقفِ سراسری رد نمی‌شود
+#   ✓ اجارهٔ خرج‌نشده روی خاموشیِ مرتب پس داده می‌شود
+#   ✓ انبارِ خراب بی‌صدا بودجه را باز نمی‌کند — رد می‌شود
+#   ✓ در خرابیِ انبار فقط critical و فقط تا سقفِ اضطراریِ شمرده‌شده عبور می‌کند
+#   ✓ «اجاره ته کشید» با «بودجه تمام شد» یکی شمرده نمی‌شود
+#   ✓ سقفِ انبار حاکم است — فرایند نمی‌تواند سقفِ سخاوتمندانه‌ترِ خودش را نگه دارد
+#   ✓ retry هم از بودجهٔ ماندگار کم می‌کند
+#   ✓ عوض‌شدنِ روز اجارهٔ تازه می‌گیرد و شمارنده را از نو می‌شمارد
+#   ✓ makeSupabaseLeaseStore بدونِ env چیزی برنمی‌گرداند، نه اینکه بی‌کلید تماس بگیرد
+#   ✓ makeSupabaseLeaseStore پاسخِ بی‌شکل را قبول نمی‌کند
+#   ✓ makeSupabaseLeaseStore خطای HTTP را خطا می‌کند، نه صفر
+#   ✓ local deferral brs_transport_aborted is neither retried nor counted as a provider network error
+#   ✓ local deferral brs_transport_queue_full is neither retried nor counted as a provider network error
+#   ✓ local deferral brs_transport_wait_failed is neither retried nor counted as a provider network error
+#   ✓ local deferral brs_transport_clock_invalid is neither retried nor counted as a provider network error
+# 57 passed, 0 failed
+# Subtest: relay/brsapi-client.test.mjs
+ok 3 - relay/brsapi-client.test.mjs
+  ---
+  duration_ms: 4435.021245
+  type: 'test'
+  ...
+# brsapi-coverage:
+#   ✓ parser strategy is not a provider call; new transport or import removes its narrow exception
+#   ✓ شمارش‌ها با هم قاطی نمی‌شوند — call site و endpoint و کلید سه چیزند
+#   ✓ هر نقطهٔ تماسِ اعلام‌شده واقعاً در همان فایل هست
+#   ✓ هر نقطه هم مسیرِ کلاینت دارد هم شمارشِ مسیرِ قدیمی
+#   ✓ هیچ endpointِ BrsApiای بیرون از سقف نمانده
+#   ✓ کلیدِ کامودیتی در شمارندهٔ کلیدِ اصلی ریخته نمی‌شود
+# 6 passed, 0 failed
+# Subtest: relay/brsapi-coverage.test.mjs
+ok 4 - relay/brsapi-coverage.test.mjs
+  ---
+  duration_ms: 546.507953
+  type: 'test'
+  ...
+# brsapi-legacy-meter:
+#   ✓ مصرفِ مسیرِ قدیمی در همان بودجه شمرده می‌شود، نه جای دیگر
+#   ✓ پیش‌فرض فقط می‌شمارد — رفتارِ امروزِ Production را عوض نمی‌کند
+#   ✓ با سوییچِ اجرا، همان مورد رد می‌شود
+#   ✓ نبودِ شمارنده پنهان نمی‌شود — خودش یک عدد است
+#   ✓ قبل از رزرو، اجاره شارژ می‌شود
+#   ✓ سوییچِ اجرا از پرچمِ کلاینت جداست
+#   ✓ طبقهٔ بودجه به بودجه منتقل می‌شود، نه اینکه همه standard شوند
+#   ✓ enforcement روشن + شمارنده غایب = توقف، نه ارسالِ بی‌حساب
+#   ✓ «شمارنده نیست» با «سهمیه تمام شد» یکی نیست
+#   ✓ هشدارِ عملیاتی فقط وقتی بلند می‌شود که قول داده باشیم و نتوانیم نگهش داریم
+#   ✓ نشمردن به تفکیکِ producer دیده می‌شود، نه یک عددِ کلی
+# 11 passed, 0 failed
+# Subtest: relay/brsapi-legacy-meter.test.mjs
+ok 5 - relay/brsapi-legacy-meter.test.mjs
+  ---
+  duration_ms: 183.208074
+  type: 'test'
+  ...
+# brsapi-stop-behaviour:
+#   ✓ چرخهٔ سالم کش را پر می‌کند
+#   ✓ بدونِ شمارنده در enforcement: هیچ درخواستی روی سیم نمی‌رود
+#   ✓ کشِ سالم با خالی بازنویسی نمی‌شود — دادهٔ کهنه می‌ماند
+#   ✓ وقتی هیچ کشِ قبلی نیست، خالی سرو می‌شود — و این عمدی است
+#   ✓ هشدارِ عملیاتی بلند می‌شود، بی‌صدا نمی‌گذرد
+#   ✓ بدونِ enforcement همان وضعیت عبور می‌کند — رفتارِ امروزِ Production
+#   ✓ BudgetUnavailableError از خطای سهمیه قابلِ تفکیک است
+# 7 passed, 0 failed
+# Subtest: relay/brsapi-stop-behaviour.test.mjs
+ok 6 - relay/brsapi-stop-behaviour.test.mjs
+  ---
+  duration_ms: 167.257552
+  type: 'test'
+  ...
+# Subtest: cold start waits a full window; simultaneous calls remain spaced
+ok 9 - cold start waits a full window; simultaneous calls remain spaced
+  ---
+  duration_ms: 74.491228
+  type: 'test'
+  ...
+# Subtest: cold window starts at construction; readiness does not spend a request
+ok 10 - cold window starts at construction; readiness does not spend a request
+  ---
+  duration_ms: 5.795299
+  type: 'test'
+  ...
+# Subtest: rolling windows include failures, retries and different provider keys/hosts
+ok 11 - rolling windows include failures, retries and different provider keys/hosts
+  ---
+  duration_ms: 197.447362
+  type: 'test'
+  ...
+# Subtest: oversleep cannot bunch subsequent starts
+ok 12 - oversleep cannot bunch subsequent starts
+  ---
+  duration_ms: 2.012303
+  type: 'test'
+  ...
+# Subtest: early wakeups recheck the clock without an unsafe test override
+ok 13 - early wakeups recheck the clock without an unsafe test override
+  ---
+  duration_ms: 0.788996
+  type: 'test'
+  ...
+# Subtest: already-aborted and cold-start-aborted calls consume no attempts
+ok 14 - already-aborted and cold-start-aborted calls consume no attempts
+  ---
+  duration_ms: 4.434425
+  type: 'test'
+  ...
+# Subtest: backward or nonfinite clocks poison this instance without sending
+ok 15 - backward or nonfinite clocks poison this instance without sending
+  ---
+  duration_ms: 3.196149
+  type: 'test'
+  ...
+# Subtest: a new process-local instance must wait a fresh full window
+ok 16 - a new process-local instance must wait a fresh full window
+  ---
+  duration_ms: 1.520828
+  type: 'test'
+  ...
+# Subtest: queue remains bounded and queued cancellations cannot send
+ok 17 - queue remains bounded and queued cancellations cannot send
+  ---
+  duration_ms: 48.628367
+  type: 'test'
+  ...
+# Subtest: non-provider reads bypass a waiting provider; custom provider hosts join
+ok 18 - non-provider reads bypass a waiting provider; custom provider hosts join
+  ---
+  duration_ms: 2.097566
+  type: 'test'
+  ...
+# Subtest: sleep failures are sanitized and do not trigger a send or retry
+ok 19 - sleep failures are sanitized and do not trigger a send or retry
+  ---
+  duration_ms: 1.053258
+  type: 'test'
+  ...
+# Subtest: all production producers use the shared transport with client disabled too
+ok 20 - all production producers use the shared transport with client disabled too
+  ---
+  duration_ms: 7.142041
+  type: 'test'
+  ...
+# candle-backfill unit tests:
+#   ✓ جلالی ۱۴۰۴/۰۴/۲۷ → میلادی 2025-07-18
+#   ✓ جلالی ۱۴۰۳/۱۲/۳۰ (کبیسه) → میلادی معتبر
+#   ✓ متن جلالی با ارقام فارسی → ایزو
+#   ✓ متن خراب → null
+#   ✓ کندل معتبر نگاشت می‌شود — ریال دست‌نخورده
+#   ✓ کندل با close صفر یا منفی حذف می‌شود
+#   ✓ کندل با تاریخ نامعتبر حذف می‌شود
+#   ✓ درج با on_conflict=symbol,trade_date انجام می‌شود
+#   ✓ هدر Prefer شامل resolution=ignore-duplicates و return=minimal است
+#   ✓ existingDates حذف شده (باگ Max Rows دیگر ممکن نیست)
+#   ✓ کد رله فقط INSERT دارد — هیچ UPDATE/DELETE به symbol_history
+#   ✓ مهاجرت v4: پاک کردن failed برای رد دوباره از مسیر ignore-duplicates
+# 12 passed, 0 failed
+# Subtest: relay/candle-backfill.test.mjs
+ok 8 - relay/candle-backfill.test.mjs
+  ---
+  duration_ms: 226.607916
+  type: 'test'
+  ...
+# Subtest: unsafe numeric lexeme and quoted amount survive exactly, other fields keep native types
+ok 22 - unsafe numeric lexeme and quoted amount survive exactly, other fields keep native types
+  ---
+  duration_ms: 39.966959
+  type: 'test'
+  ...
+# Subtest: null, negative, fractional, nonnumeric and unit-bearing values never become invented amounts
+ok 23 - null, negative, fractional, nonnumeric and unit-bearing values never become invented amounts
+  ---
+  duration_ms: 2.233591
+  type: 'test'
+  ...
+# Subtest: scientific and decimal integer forms canonicalize without floating arithmetic
+ok 24 - scientific and decimal integer forms canonicalize without floating arithmetic
+  ---
+  duration_ms: 6.684776
+  type: 'test'
+  ...
+# Subtest: nested objects, arrays and escaped property names are handled; string contents are untouched
+ok 25 - nested objects, arrays and escaped property names are handled; string contents are untouched
+  ---
+  duration_ms: 0.748402
+  type: 'test'
+  ...
+# Subtest: duplicate key policy matches native last-key-wins including null
+ok 26 - duplicate key policy matches native last-key-wins including null
+  ---
+  duration_ms: 0.628646
+  type: 'test'
+  ...
+# Subtest: invalid JSON and oversized input reject without echoing payload
+ok 27 - invalid JSON and oversized input reject without echoing payload
+  ---
+  duration_ms: 92.653043
+  type: 'test'
+  ...
+# Subtest: token and exponent limits abstain without unbounded expansion
+ok 28 - token and exponent limits abstain without unbounded expansion
+  ---
+  duration_ms: 0.686517
+  type: 'test'
+  ...
+# Subtest: two existing endpoints preserve all legacy fields and reconstruct only exact-cap metadata
+ok 29 - two existing endpoints preserve all legacy fields and reconstruct only exact-cap metadata
+  ---
+  duration_ms: 217.351316
+  type: 'test'
+  ...
+# Subtest: actual budget client shares one natural request for concurrent and cached consumers
+ok 30 - actual budget client shares one natural request for concurrent and cached consumers
+  ---
+  duration_ms: 172.947523
+  type: 'test'
+  ...
+# Subtest: actual AllSymbols mapper propagates exact cap through serialized snapshot on budget and legacy paths
+ok 31 - actual AllSymbols mapper propagates exact cap through serialized snapshot on budget and legacy paths
+  ---
+  duration_ms: 147.062159
+  type: 'test'
+  ...
+# Subtest: actual Symbol cache preserves numeric mv and exact cap without a second request
+ok 32 - actual Symbol cache preserves numeric mv and exact cap without a second request
+  ---
+  duration_ms: 52.164621
+  type: 'test'
+  ...
+# Subtest: jdateKey: جلالی اسلش‌دار → عدد قابل مقایسه
+ok 33 - jdateKey: جلالی اسلش‌دار → عدد قابل مقایسه
+  ---
+  duration_ms: 5.835333
+  type: 'test'
+  ...
+# Subtest: jdateKey: ارقام فارسی و خط‌تیره
+ok 34 - jdateKey: ارقام فارسی و خط‌تیره
+  ---
+  duration_ms: 0.80365
+  type: 'test'
+  ...
+# Subtest: jdateKey: نامعتبر → null
+ok 35 - jdateKey: نامعتبر → null
+  ---
+  duration_ms: 0.441456
+  type: 'test'
+  ...
+# Subtest: مرزهای آرشیو: مقایسهٔ عددی درست کار می‌کند
+ok 36 - مرزهای آرشیو: مقایسهٔ عددی درست کار می‌کند
+  ---
+  duration_ms: 3.331345
+  type: 'test'
+  ...
+# Subtest: سقف بودجهٔ روزانه صریح و مثبت است
+ok 37 - سقف بودجهٔ روزانه صریح و مثبت است
+  ---
+  duration_ms: 0.518362
+  type: 'test'
+  ...
+# Subtest: counts beyond a server cap and continues after short pages
+ok 38 - counts beyond a server cap and continues after short pages
+  ---
+  duration_ms: 284.875567
+  type: 'test'
+  ...
+# Subtest: later page failure never returns partial coverage
+ok 39 - later page failure never returns partial coverage
+  ---
+  duration_ms: 8.73517
+  type: 'test'
+  ...
+# Subtest: rejects repeated, unordered, unsafe or unrelated identities
+ok 40 - rejects repeated, unordered, unsafe or unrelated identities
+  ---
+  duration_ms: 11.372675
+  type: 'test'
+  ...
+# Subtest: preserves bigint string cursors and escapes symbol filters
+ok 41 - preserves bigint string cursors and escapes symbol filters
+  ---
+  duration_ms: 2.759797
+  type: 'test'
+  ...
+# Subtest: bounded read fails closed if a complete result is not reached
+ok 42 - bounded read fails closed if a complete result is not reached
+  ---
+  duration_ms: 169.490597
+  type: 'test'
+  ...
+# Subtest: empty universe makes no requests
+ok 43 - empty universe makes no requests
+  ---
+  duration_ms: 1.960686
+  type: 'test'
+  ...
+# codal-engine feed error: brs_transport_queue_full
+# codal-engine feed error: brs_transport_aborted
+# codal_feed push: codal_feed HTTP 503: {"error":"mock failure"}
+# codal-engine feed error: codal_feed HTTP 503: {"error":"mock failure"}
+# codal_feed push: codal_feed insert invalid schema
+# codal-engine feed error: codal_feed insert invalid schema
+# codal-engine feed error: announcement invalid date/link or feed order
+# codal-engine feed error: announcement invalid date/link or feed order
+# codal-engine state save: state save HTTP 503
+# codal-engine report failure: persistence/exception
+# codal-engine backfill error: market snapshot HTTP 503
+# codal-engine feed error: announcement invalid schema
+# Subtest: local announcement deferral keeps watermark and failure ledger and does not retry
+ok 44 - local announcement deferral keeps watermark and failure ledger and does not retry
+  ---
+  duration_ms: 282.51231
+  type: 'test'
+  ...
+# Subtest: local report deferral is not a parse failure or a blocked report
+ok 45 - local report deferral is not a parse failure or a blocked report
+  ---
+  duration_ms: 86.617796
+  type: 'test'
+  ...
+# Subtest: 503 feed write keeps the watermark and retries the same announcement
+ok 46 - 503 feed write keeps the watermark and retries the same announcement
+  ---
+  duration_ms: 21.039734
+  type: 'test'
+  ...
+# Subtest: 140 fresh rows cannot acknowledge a gap after the six-page cap
+ok 47 - 140 fresh rows cannot acknowledge a gap after the six-page cap
+  ---
+  duration_ms: 83.913528
+  type: 'test'
+  ...
+# Subtest: publication date is independent of financial period and no time column is invented
+ok 48 - publication date is independent of financial period and no time column is invented
+  ---
+  duration_ms: 13.68141
+  type: 'test'
+  ...
+# Subtest: absent publication date stays null instead of using date_title
+ok 49 - absent publication date stays null instead of using date_title
+  ---
+  duration_ms: 14.377908
+  type: 'test'
+  ...
+# Subtest: ignore-duplicates counts returned rows rather than submitted rows
+ok 50 - ignore-duplicates counts returned rows rather than submitted rows
+  ---
+  duration_ms: 66.259362
+  type: 'test'
+  ...
+# Subtest: invalid feed insert response fails without advancing watermark
+ok 51 - invalid feed insert response fails without advancing watermark
+  ---
+  duration_ms: 17.830045
+  type: 'test'
+  ...
+# Subtest: invalid announcement schema rejects while a legitimate empty page is accepted
+ok 52 - invalid announcement schema rejects while a legitimate empty page is accepted
+  ---
+  duration_ms: 11.010922
+  type: 'test'
+  ...
+# Subtest: same-time known link cannot hide a new link later in the group
+ok 53 - same-time known link cannot hide a new link later in the group
+  ---
+  duration_ms: 72.884511
+  type: 'test'
+  ...
+# Subtest: unorderable or unsorted announcements fail without acknowledging them
+ok 54 - unorderable or unsorted announcements fail without acknowledging them
+  ---
+  duration_ms: 28.457568
+  type: 'test'
+  ...
+# Subtest: state save failure rolls back the in-memory acknowledgement for retry
+ok 55 - state save failure rolls back the in-memory acknowledgement for retry
+  ---
+  duration_ms: 75.066121
+  type: 'test'
+  ...
+# Subtest: parsed-report insert returns its actual insert count and keeps raw publication provenance
+ok 56 - parsed-report insert returns its actual insert count and keeps raw publication provenance
+  ---
+  duration_ms: 11.308398
+  type: 'test'
+  ...
+# Subtest: report download cap keeps retryable work behind the watermark
+ok 57 - report download cap keeps retryable work behind the watermark
+  ---
+  duration_ms: 284.482423
+  type: 'test'
+  ...
+# Subtest: parse or report-write failures remain unhealthy and unacknowledged
+ok 58 - parse or report-write failures remain unhealthy and unacknowledged
+  ---
+  duration_ms: 103.367644
+  type: 'test'
+  ...
+# Subtest: invalid persisted state stops before provider or writes
+ok 59 - invalid persisted state stops before provider or writes
+  ---
+  duration_ms: 6.220263
+  type: 'test'
+  ...
+# Subtest: market snapshot failure is not reported as a healthy empty queue
+ok 60 - market snapshot failure is not reported as a healthy empty queue
+  ---
+  duration_ms: 9.811946
+  type: 'test'
+  ...
+# Subtest: invalid announcement schema leaves the cycle unhealthy without retrying schema errors
+ok 61 - invalid announcement schema leaves the cycle unhealthy without retrying schema errors
+  ---
+  duration_ms: 11.342603
+  type: 'test'
+  ...
+# Subtest: stored report overrides an old blocked ledger without downloading again
+ok 62 - stored report overrides an old blocked ledger without downloading again
+  ---
+  duration_ms: 79.088898
+  type: 'test'
+  ...
+# Subtest: metadata-only report cannot release a blocked ledger or advance watermark
+ok 63 - metadata-only report cannot release a blocked ledger or advance watermark
+  ---
+  duration_ms: 10.005087
+  type: 'test'
+  ...
+# codal-archive: symbols=[نمونه] pages=3 dl=1 inserted=0 failed=0 budget=4/200 coverage n30=1 n10=1
+# codal-engine report failure: persistence/exception
+# codal-engine report failure: persistence/exception
+# codal-engine report failure: persistence/exception
+# Subtest: archive duplicate response counts zero actual inserts
+ok 64 - archive duplicate response counts zero actual inserts
+  ---
+  duration_ms: 1886.761588
+  type: 'test'
+  ...
+# Subtest: null collision is never acknowledged for fails 0/1/2
+    # Subtest: engine, fails=0
+    ok 1 - engine, fails=0
+      ---
+      duration_ms: 93.027913
+      type: 'test'
+      ...
+    # Subtest: engine, fails=1
+    ok 2 - engine, fails=1
+      ---
+      duration_ms: 22.577646
+      type: 'test'
+      ...
+    # Subtest: engine, fails=2
+    ok 3 - engine, fails=2
+      ---
+      duration_ms: 79.500914
+      type: 'test'
+      ...
+# codal-archive: symbols=[نمونه] pages=3 dl=1 inserted=0 failed=1 budget=4/200 coverage n30=0 n10=0
+    # Subtest: archive, fails=0
+    ok 4 - archive, fails=0
+      ---
+      duration_ms: 1824.663839
+      type: 'test'
+      ...
+# codal-archive: symbols=[نمونه] pages=3 dl=1 inserted=0 failed=1 budget=4/200 coverage n30=0 n10=0
+    # Subtest: archive, fails=1
+    ok 5 - archive, fails=1
+      ---
+      duration_ms: 1825.882814
+      type: 'test'
+      ...
+# codal-archive: symbols=[نمونه] pages=3 dl=1 inserted=0 failed=1 budget=4/200 coverage n30=0 n10=0
+    # Subtest: archive, fails=2
+    ok 6 - archive, fails=2
+      ---
+      duration_ms: 1841.049463
+      type: 'test'
+      ...
+    1..6
+ok 65 - null collision is never acknowledged for fails 0/1/2
+  ---
+  duration_ms: 5689.48213
+  type: 'test'
+  ...
+# Subtest: valid collision acknowledges persistence with inserted zero for fails 0/1/2
+    # Subtest: engine, fails=0
+    ok 1 - engine, fails=0
+      ---
+      duration_ms: 25.960604
+      type: 'test'
+      ...
+    # Subtest: engine, fails=1
+    ok 2 - engine, fails=1
+      ---
+      duration_ms: 79.280232
+      type: 'test'
+      ...
+    # Subtest: engine, fails=2
+    ok 3 - engine, fails=2
+      ---
+      duration_ms: 21.605712
+      type: 'test'
+      ...
+# codal-archive: symbols=[نمونه] pages=3 dl=1 inserted=0 failed=0 budget=4/200 coverage n30=1 n10=1
+    # Subtest: archive, fails=0
+    ok 4 - archive, fails=0
+      ---
+      duration_ms: 1877.63249
+      type: 'test'
+      ...
+# codal-archive: symbols=[نمونه] pages=3 dl=1 inserted=0 failed=0 budget=4/200 coverage n30=1 n10=1
+    # Subtest: archive, fails=1
+    ok 5 - archive, fails=1
+      ---
+      duration_ms: 1824.117842
+      type: 'test'
+      ...
+# codal-archive: symbols=[نمونه] pages=3 dl=1 inserted=0 failed=0 budget=4/200 coverage n30=1 n10=1
+# codal-engine backfill error: covered reports HTTP 503
+    # Subtest: archive, fails=2
+    ok 6 - archive, fails=2
+      ---
+      duration_ms: 1836.307237
+      type: 'test'
+      ...
+    1..6
+ok 66 - valid collision acknowledges persistence with inserted zero for fails 0/1/2
+  ---
+  duration_ms: 5668.189113
+  type: 'test'
+  ...
+# Subtest: N10 admission rejection keeps inserted zero, watermark and ledger
+    # Subtest: unknown unit
+    ok 1 - unknown unit
+      ---
+      duration_ms: 50.382506
+      type: 'test'
+      ...
+    # Subtest: unknown scope
+    ok 2 - unknown scope
+      ---
+      duration_ms: 89.337718
+      type: 'test'
+      ...
+    # Subtest: consolidated
+    ok 3 - consolidated
+      ---
+      duration_ms: 15.915519
+      type: 'test'
+      ...
+    # Subtest: blank operating
+    ok 4 - blank operating
+      ---
+      duration_ms: 85.460082
+      type: 'test'
+      ...
+    # Subtest: missing capital
+    ok 5 - missing capital
+      ---
+      duration_ms: 14.962341
+      type: 'test'
+      ...
+    # Subtest: bank current EPS zero pv2 blocker
+    ok 6 - bank current EPS zero pv2 blocker
+      ---
+      duration_ms: 83.100862
+      type: 'test'
+      ...
+    1..6
+ok 67 - N10 admission rejection keeps inserted zero, watermark and ledger
+  ---
+  duration_ms: 341.206547
+  type: 'test'
+  ...
+# Subtest: prospective N10 rejection preserves full paginated coverage without scheduling redundant backfill
+ok 68 - prospective N10 rejection preserves full paginated coverage without scheduling redundant backfill
+  ---
+  duration_ms: 96.746828
+  type: 'test'
+  ...
+# Subtest: a failed later coverage page stops backfill requests rather than using partial counts
+ok 69 - a failed later coverage page stops backfill requests rather than using partial counts
+  ---
+  duration_ms: 16.03834
+  type: 'test'
+  ...
+# Subtest: content-free diagnostics distinguish report failure stages in feed and backfill without changing attempts
+    # Subtest: feed: download/exception
+    ok 1 - feed: download/exception
+      ---
+      duration_ms: 9022.270554
+      type: 'test'
+      ...
+    # Subtest: feed: admission/rejected
+    ok 2 - feed: admission/rejected
+      ---
+      duration_ms: 15.445623
+      type: 'test'
+      ...
+    # Subtest: feed: persistence/exception
+    ok 3 - feed: persistence/exception
+      ---
+      duration_ms: 45.530011
+      type: 'test'
+      ...
+# codal-engine backfill نمونه: inserted=0 parseFailed=1
+# codal-engine backfill نمونه: inserted=0 parseFailed=1
+    # Subtest: backfill: download/exception
+    ok 4 - backfill: download/exception
+      ---
+      duration_ms: 10521.114656
+      type: 'test'
+      ...
+# codal-engine backfill نمونه: inserted=0 parseFailed=1
+    # Subtest: backfill: admission/rejected
+    ok 5 - backfill: admission/rejected
+      ---
+      duration_ms: 1520.443682
+      type: 'test'
+      ...
+# codal-engine backfill نمونه: inserted=0 parseFailed=1
+    # Subtest: backfill: persistence/exception
+    ok 6 - backfill: persistence/exception
+      ---
+      duration_ms: 1556.277872
+      type: 'test'
+      ...
+    1..6
+ok 70 - content-free diagnostics distinguish report failure stages in feed and backfill without changing attempts
+  ---
+  duration_ms: 22684.870145
+  type: 'test'
+  ...
+# Subtest: diagnostics survive persisted restart; legacy state upgrades and successful cycles reset only lastCycle
+ok 71 - diagnostics survive persisted restart; legacy state upgrades and successful cycles reset only lastCycle
+  ---
+  duration_ms: 50.174357
+  type: 'test'
+  ...
+# Subtest: untrusted diagnostic fields are discarded and counters saturate without blocking collection
+ok 72 - untrusted diagnostic fields are discarded and counters saturate without blocking collection
+  ---
+  duration_ms: 70.755077
+  type: 'test'
+  ...
+# Subtest: reason diagnostics preserve retry/block, requests, ledger, state writes and watermark in feed and backfill
+    # Subtest: feed: ن-۱۰/scope_unknown
+    ok 1 - feed: ن-۱۰/scope_unknown
+      ---
+      duration_ms: 192.886649
+      type: 'test'
+      ...
+    # Subtest: feed: ن-۱۰/unit_unverified
+    ok 2 - feed: ن-۱۰/unit_unverified
+      ---
+      duration_ms: 105.494441
+      type: 'test'
+      ...
+    # Subtest: feed: ن-۳۰/short_rows
+    ok 3 - feed: ن-۳۰/short_rows
+      ---
+      duration_ms: 88.865722
+      type: 'test'
+      ...
+# codal-engine backfill نمونه: inserted=0 parseFailed=1
+# codal-engine backfill نمونه: inserted=0 parseFailed=1
+# codal-engine backfill نمونه: inserted=0 parseFailed=0
+# codal-engine backfill نمونه: inserted=0 parseFailed=1
+    # Subtest: backfill: ن-۱۰/scope_unknown
+    ok 4 - backfill: ن-۱۰/scope_unknown
+      ---
+      duration_ms: 111.573609
+      type: 'test'
+      ...
+# codal-engine backfill نمونه: inserted=0 parseFailed=1
+# codal-engine backfill نمونه: inserted=0 parseFailed=1
+# codal-engine backfill نمونه: inserted=0 parseFailed=0
+# codal-engine backfill نمونه: inserted=0 parseFailed=1
+    # Subtest: backfill: ن-۱۰/unit_unverified
+    ok 5 - backfill: ن-۱۰/unit_unverified
+      ---
+      duration_ms: 106.772812
+      type: 'test'
+      ...
+# codal-engine backfill نمونه: inserted=0 parseFailed=1
+# codal-engine backfill نمونه: inserted=0 parseFailed=1
+# codal-engine backfill نمونه: inserted=0 parseFailed=0
+    # Subtest: backfill: ن-۳۰/short_rows
+    ok 6 - backfill: ن-۳۰/short_rows
+      ---
+      duration_ms: 94.351602
+      type: 'test'
+      ...
+    1..6
+ok 73 - reason diagnostics preserve retry/block, requests, ledger, state writes and watermark in feed and backfill
+  ---
+  duration_ms: 703.518063
+  type: 'test'
+  ...
+# Subtest: reason diagnostics whitelist persisted enums and safe bounded counters; legacy and unknown versions reset
+ok 74 - reason diagnostics whitelist persisted enums and safe bounded counters; legacy and unknown versions reset
+  ---
+  duration_ms: 103.852781
+  type: 'test'
+  ...
+# Subtest: observed equity title with در retains engine write identity and request limits
+    # Subtest: qualified local capital proof
+    ok 1 - qualified local capital proof
+      ---
+      duration_ms: 74.782569
+      type: 'test'
+      ...
+    # Subtest: unknown capital scope stays rejected
+    ok 2 - unknown capital scope stays rejected
+      ---
+      duration_ms: 90.635824
+      type: 'test'
+      ...
+    1..2
+ok 75 - observed equity title with در retains engine write identity and request limits
+  ---
+  duration_ms: 168.033868
+  type: 'test'
+  ...
+# codal-engine unit tests:
+#   ✓ sentKey: تاریخ+ساعت فارسی به کلید عددی مرتب‌شونده
+#   ✓ sentKey: بدون ساعت — صفر پُر می‌شود
+#   ✓ sentKey: ترتیب درست بین دو اطلاعیه
+#   ✓ sentKey: ورودی خراب → 0
+#   ✓ classify: ن-۳۰ ماهانه
+#   ✓ classify: ن-۱۰ صورت مالی
+#   ✓ classify: پورتفوی رد می‌شود
+#   ✓ classify: مجمع/آگهی رد می‌شود
+#   ✓ feedCategory: ن-۳۰ → ماهانه
+#   ✓ feedCategory: ن-۱۰ → صورت مالی
+#   ✓ feedCategory: شفاف‌سازی از عنوان
+#   ✓ feedCategory: مجمع
+#   ✓ feedCategory: ناشناخته → سایر
+# 13 passed, 0 failed
+# Subtest: relay/codal-engine.test.mjs
+ok 14 - relay/codal-engine.test.mjs
+  ---
+  duration_ms: 598.206681
+  type: 'test'
+  ...
+# Subtest: extractor retains exact local title, adjacent description and container span
+ok 77 - extractor retains exact local title, adjacent description and container span
+  ---
+  duration_ms: 207.74604
+  type: 'test'
+  ...
+# Subtest: real Vanovin generic title cannot certify standalone scope
+ok 78 - real Vanovin generic title cannot certify standalone scope
+  ---
+  duration_ms: 212.905623
+  type: 'test'
+  ...
+# Subtest: context-qualified Vanovin preserves its former finite observed output
+ok 79 - context-qualified Vanovin preserves its former finite observed output
+  ---
+  duration_ms: 248.05903
+  type: 'test'
+  ...
+# Subtest: industrial valid admission does not reinterpret the legacy output
+ok 80 - industrial valid admission does not reinterpret the legacy output
+  ---
+  duration_ms: 16.319882
+  type: 'test'
+  ...
+# Subtest: unit elsewhere in the workbook cannot rescue the income statement
+ok 81 - unit elsewhere in the workbook cannot rescue the income statement
+  ---
+  duration_ms: 9.22824
+  type: 'test'
+  ...
+# Subtest: conflicting local units reject but unrelated units do not contaminate admission
+ok 82 - conflicting local units reject but unrelated units do not contaminate admission
+  ---
+  duration_ms: 17.044356
+  type: 'test'
+  ...
+# Subtest: amount unit declarations in the selected table headers must agree
+    # Subtest: ارقام به هزار ریال
+    ok 1 - ارقام به هزار ریال
+      ---
+      duration_ms: 4.226579
+      type: 'test'
+      ...
+    # Subtest: ارقام به ریال
+    ok 2 - ارقام به ریال
+      ---
+      duration_ms: 5.51337
+      type: 'test'
+      ...
+    # Subtest: ارقام به میلیون تومان
+    ok 3 - ارقام به میلیون تومان
+      ---
+      duration_ms: 5.624429
+      type: 'test'
+      ...
+    # Subtest: ارقام به میلیون ریال و هزار ریال
+    ok 4 - ارقام به میلیون ریال و هزار ریال
+      ---
+      duration_ms: 4.518169
+      type: 'test'
+      ...
+    # Subtest: ارقام به هزار ریال؛ سود هر سهم (ریال)
+    ok 5 - ارقام به هزار ریال؛ سود هر سهم (ریال)
+      ---
+      duration_ms: 8.612166
+      type: 'test'
+      ...
+    # Subtest: prior amount column
+    ok 6 - prior amount column
+      ---
+      duration_ms: 3.382936
+      type: 'test'
+      ...
+    1..6
+ok 83 - amount unit declarations in the selected table headers must agree
+  ---
+  duration_ms: 35.388625
+  type: 'test'
+  ...
+# Subtest: matching amount headers and explicit EPS units keep their separate dimensions
+    # Subtest: ارقام به میلیون ریال
+    ok 1 - ارقام به میلیون ریال
+      ---
+      duration_ms: 8.386723
+      type: 'test'
+      ...
+    # Subtest: سود هر سهم (ریال)
+    ok 2 - سود هر سهم (ریال)
+      ---
+      duration_ms: 9.225063
+      type: 'test'
+      ...
+    # Subtest: ریال/سهم
+    ok 3 - ریال/سهم
+      ---
+      duration_ms: 7.061487
+      type: 'test'
+      ...
+    # Subtest: ارقام به میلیون ریال؛ سود هر سهم (ریال)
+    ok 4 - ارقام به میلیون ریال؛ سود هر سهم (ریال)
+      ---
+      duration_ms: 7.1549
+      type: 'test'
+      ...
+    1..4
+ok 84 - matching amount headers and explicit EPS units keep their separate dimensions
+  ---
+  duration_ms: 39.01868
+  type: 'test'
+  ...
+# Subtest: equity table header units cannot contradict their own local amount description
+ok 85 - equity table header units cannot contradict their own local amount description
+  ---
+  duration_ms: 5.748255
+  type: 'test'
+  ...
+# Subtest: selected income and equity header scope cannot contradict standalone context
+    # Subtest: income: تلفیقی
+    ok 1 - income: تلفیقی
+      ---
+      duration_ms: 1.911468
+      type: 'test'
+      ...
+    # Subtest: income: صورت سود و زیان تلفیقی
+    ok 2 - income: صورت سود و زیان تلفیقی
+      ---
+      duration_ms: 2.210705
+      type: 'test'
+      ...
+    # Subtest: equity: تلفیقی
+    ok 3 - equity: تلفیقی
+      ---
+      duration_ms: 5.489085
+      type: 'test'
+      ...
+    # Subtest: equity: صورت تغییرات حقوق مالکانه تلفیقی
+    ok 4 - equity: صورت تغییرات حقوق مالکانه تلفیقی
+      ---
+      duration_ms: 5.018371
+      type: 'test'
+      ...
+    1..4
+ok 86 - selected income and equity header scope cannot contradict standalone context
+  ---
+  duration_ms: 15.908144
+  type: 'test'
+  ...
+# Subtest: repeated capital columns reject even when both observed balances agree
+    # Subtest: second capital column: 500
+    ok 1 - second capital column: 500
+      ---
+      duration_ms: 5.574024
+      type: 'test'
+      ...
+    # Subtest: second capital column: 600
+    ok 2 - second capital column: 600
+      ---
+      duration_ms: 5.966967
+      type: 'test'
+      ...
+    1..2
+ok 87 - repeated capital columns reject even when both observed balances agree
+  ---
+  duration_ms: 12.487351
+  type: 'test'
+  ...
+# Subtest: independent from inflation is not an explicit standalone statement scope
+    # Subtest: income
+    ok 1 - income
+      ---
+      duration_ms: 1.791652
+      type: 'test'
+      ...
+    # Subtest: equity
+    ok 2 - equity
+      ---
+      duration_ms: 17.864625
+      type: 'test'
+      ...
+    1..2
+ok 88 - independent from inflation is not an explicit standalone statement scope
+  ---
+  duration_ms: 20.440551
+  type: 'test'
+  ...
+# Subtest: unknown, consolidated, conflicting and subsidiary scope reject
+ok 89 - unknown, consolidated, conflicting and subsidiary scope reject
+  ---
+  duration_ms: 7.574373
+  type: 'test'
+  ...
+# Subtest: consolidated before standalone cannot select the consolidated numbers
+ok 90 - consolidated before standalone cannot select the consolidated numbers
+  ---
+  duration_ms: 16.283189
+  type: 'test'
+  ...
+# Subtest: two eligible standalone income tables are ambiguous
+ok 91 - two eligible standalone income tables are ambiguous
+  ---
+  duration_ms: 4.42716
+  type: 'test'
+  ...
+# Subtest: every mandatory current amount must be finite and observed
+ok 92 - every mandatory current amount must be finite and observed
+  ---
+  duration_ms: 107.625129
+  type: 'test'
+  ...
+# Subtest: explicit current zeros and industrial EPS zero stay zero
+ok 93 - explicit current zeros and industrial EPS zero stay zero
+  ---
+  duration_ms: 6.274594
+  type: 'test'
+  ...
+# Subtest: current/prior dates and month counts must be clear and match
+ok 94 - current/prior dates and month counts must be clear and match
+  ---
+  duration_ms: 18.2789
+  type: 'test'
+  ...
+# Subtest: prior incomplete rejects, truly absent prior is omitted
+ok 95 - prior incomplete rejects, truly absent prior is omitted
+  ---
+  duration_ms: 24.239032
+  type: 'test'
+  ...
+# Subtest: prior arithmetic is validated without deriving replacement values
+ok 96 - prior arithmetic is validated without deriving replacement values
+  ---
+  duration_ms: 16.011278
+  type: 'test'
+  ...
+# Subtest: capital needs positive evidence in the same scope, unit and period
+ok 97 - capital needs positive evidence in the same scope, unit and period
+  ---
+  duration_ms: 41.601016
+  type: 'test'
+  ...
+# Subtest: bank valid values, capital and prior EPS zero keep legacy interpretation
+ok 98 - bank valid values, capital and prior EPS zero keep legacy interpretation
+  ---
+  duration_ms: 5.774539
+  type: 'test'
+  ...
+# Subtest: bank current EPS zero requiring legacy semantic correction is rejected under pv2
+ok 99 - bank current EPS zero requiring legacy semantic correction is rejected under pv2
+  ---
+  duration_ms: 5.22567
+  type: 'test'
+  ...
+# Subtest: EPS must have an observed rial/share denominator and finite value
+ok 100 - EPS must have an observed rial/share denominator and finite value
+  ---
+  duration_ms: 16.328899
+  type: 'test'
+  ...
+# Subtest: unscoped ancestor or neighboring title is never borrowed
+ok 101 - unscoped ancestor or neighboring title is never borrowed
+  ---
+  duration_ms: 2.061577
+  type: 'test'
+  ...
+# Subtest: N30 and the legacy table-only API remain identical
+ok 102 - N30 and the legacy table-only API remain identical
+  ---
+  duration_ms: 1.913174
+  type: 'test'
+  ...
+# Subtest: merged, missing or shifted column geometry is rejected
+ok 103 - merged, missing or shifted column geometry is rejected
+  ---
+  duration_ms: 1.82478
+  type: 'test'
+  ...
+# Subtest: title and description inside the table are not adjacent container context
+ok 104 - title and description inside the table are not adjacent container context
+  ---
+  duration_ms: 0.930345
+  type: 'test'
+  ...
+# Subtest: script words cannot create scope evidence or numeric observations
+ok 105 - script words cannot create scope evidence or numeric observations
+  ---
+  duration_ms: 2.258118
+  type: 'test'
+  ...
+# Subtest: duplicate capital balances and a later unrelated balance reject
+ok 106 - duplicate capital balances and a later unrelated balance reject
+  ---
+  duration_ms: 11.740127
+  type: 'test'
+  ...
+# Subtest: insurance retains observed legacy mapping with local witnesses
+ok 107 - insurance retains observed legacy mapping with local witnesses
+  ---
+  duration_ms: 5.437638
+  type: 'test'
+  ...
+# Subtest: a partially reported prior EPS cannot be silently omitted
+ok 108 - a partially reported prior EPS cannot be silently omitted
+  ---
+  duration_ms: 7.367037
+  type: 'test'
+  ...
+# Subtest: unrelated independence words and negated declarations are not witnesses
+ok 109 - unrelated independence words and negated declarations are not witnesses
+  ---
+  duration_ms: 3.986235
+  type: 'test'
+  ...
+# Subtest: fixed rejection reasons retain the real Vanovin scope and period limitations
+ok 110 - fixed rejection reasons retain the real Vanovin scope and period limitations
+  ---
+  duration_ms: 357.879509
+  type: 'test'
+  ...
+# Subtest: fixed rejection reasons describe the first existing N10 guard without report content
+    # Subtest: context_invalid
+    ok 1 - context_invalid
+      ---
+      duration_ms: 1.958744
+      type: 'test'
+      ...
+    # Subtest: geometry_ambiguous
+    ok 2 - geometry_ambiguous
+      ---
+      duration_ms: 28.886966
+      type: 'test'
+      ...
+    # Subtest: scope_unknown
+    ok 3 - scope_unknown
+      ---
+      duration_ms: 4.53039
+      type: 'test'
+      ...
+    # Subtest: scope_unsupported
+    ok 4 - scope_unsupported
+      ---
+      duration_ms: 3.985833
+      type: 'test'
+      ...
+    # Subtest: statement_ambiguous
+    ok 5 - statement_ambiguous
+      ---
+      duration_ms: 10.081518
+      type: 'test'
+      ...
+    # Subtest: unit_unverified
+    ok 6 - unit_unverified
+      ---
+      duration_ms: 4.87183
+      type: 'test'
+      ...
+    # Subtest: values_unobserved
+    ok 7 - values_unobserved
+      ---
+      duration_ms: 2.978049
+      type: 'test'
+      ...
+    # Subtest: values_unobserved
+    ok 8 - values_unobserved
+      ---
+      duration_ms: 4.201609
+      type: 'test'
+      ...
+    # Subtest: period_unverified
+    ok 9 - period_unverified
+      ---
+      duration_ms: 6.625196
+      type: 'test'
+      ...
+    # Subtest: arithmetic_mismatch
+    ok 10 - arithmetic_mismatch
+      ---
+      duration_ms: 3.974353
+      type: 'test'
+      ...
+    # Subtest: capital_unverified
+    ok 11 - capital_unverified
+      ---
+      duration_ms: 58.967053
+      type: 'test'
+      ...
+    # Subtest: normalized_identity_mismatch
+    ok 12 - normalized_identity_mismatch
+      ---
+      duration_ms: 6.912456
+      type: 'test'
+      ...
+    # Subtest: eps_unverified
+    ok 13 - eps_unverified
+      ---
+      duration_ms: 6.821302
+      type: 'test'
+      ...
+    # Subtest: eps_unverified
+    ok 14 - eps_unverified
+      ---
+      duration_ms: 5.861084
+      type: 'test'
+      ...
+    # Subtest: internal_exception
+    ok 15 - internal_exception
+      ---
+      duration_ms: 4.15061
+      type: 'test'
+      ...
+    1..15
+ok 111 - fixed rejection reasons describe the first existing N10 guard without report content
+  ---
+  duration_ms: 162.029368
+  type: 'test'
+  ...
+# Subtest: fixed rejection reasons aggregate N30 row guards once per rejected report only
+    # Subtest: unsupported_layout
+    ok 1 - unsupported_layout
+      ---
+      duration_ms: 0.53004
+      type: 'test'
+      ...
+    # Subtest: short_rows
+    ok 2 - short_rows
+      ---
+      duration_ms: 0.514955
+      type: 'test'
+      ...
+    # Subtest: missing_sales
+    ok 3 - missing_sales
+      ---
+      duration_ms: 0.314497
+      type: 'test'
+      ...
+    # Subtest: zero_sales_only
+    ok 4 - zero_sales_only
+      ---
+      duration_ms: 0.892239
+      type: 'test'
+      ...
+    # Subtest: arithmetic_mismatch
+    ok 5 - arithmetic_mismatch
+      ---
+      duration_ms: 0.377588
+      type: 'test'
+      ...
+    # Subtest: mixed_rows
+    ok 6 - mixed_rows
+      ---
+      duration_ms: 0.313693
+      type: 'test'
+      ...
+    # Subtest: no_product_rows
+    ok 7 - no_product_rows
+      ---
+      duration_ms: 0.275785
+      type: 'test'
+      ...
+    1..7
+ok 112 - fixed rejection reasons aggregate N30 row guards once per rejected report only
+  ---
+  duration_ms: 9.909056
+  type: 'test'
+  ...
+# Subtest: a failing diagnostic observer cannot change admission outputs
+ok 113 - a failing diagnostic observer cannot change admission outputs
+  ---
+  duration_ms: 81.286042
+  type: 'test'
+  ...
+# Subtest: observed equity title with در preserves qualified proof and rejects incompatible proof
+    # Subtest: only the witnessed grammatical word changes; observed normalized data stays identical
+    ok 1 - only the witnessed grammatical word changes; observed normalized data stays identical
+      ---
+      duration_ms: 14.082653
+      type: 'test'
+      ...
+    # Subtest: scope unknown
+    ok 2 - scope unknown
+      ---
+      duration_ms: 5.273246
+      type: 'test'
+      ...
+    # Subtest: consolidated scope
+    ok 3 - consolidated scope
+      ---
+      duration_ms: 5.093809
+      type: 'test'
+      ...
+    # Subtest: independent from inflation is not standalone
+    ok 4 - independent from inflation is not standalone
+      ---
+      duration_ms: 5.237134
+      type: 'test'
+      ...
+    # Subtest: explicitly negated standalone scope
+    ok 5 - explicitly negated standalone scope
+      ---
+      duration_ms: 5.003077
+      type: 'test'
+      ...
+    # Subtest: different period
+    ok 6 - different period
+      ---
+      duration_ms: 5.341696
+      type: 'test'
+      ...
+    # Subtest: different amount unit
+    ok 7 - different amount unit
+      ---
+      duration_ms: 5.219289
+      type: 'test'
+      ...
+    # Subtest: non-positive capital
+    ok 8 - non-positive capital
+      ---
+      duration_ms: 5.32784
+      type: 'test'
+      ...
+    1..8
+ok 114 - observed equity title with در preserves qualified proof and rejects incompatible proof
+  ---
+  duration_ms: 220.714187
+  type: 'test'
+  ...
+# Subtest: N30 producer hashes actual response bytes and carries their receipt into the existing insert payload
+ok 115 - N30 producer hashes actual response bytes and carries their receipt into the existing insert payload
+  ---
+  duration_ms: 142.632336
+  type: 'test'
+  ...
+# Subtest: a UTF8 BOM is retained in the byte hash while decoded table values match the original text behavior
+ok 116 - a UTF8 BOM is retained in the byte hash while decoded table values match the original text behavior
+  ---
+  duration_ms: 112.833025
+  type: 'test'
+  ...
+# Subtest: a redirected, absent or different response reference cannot create a new quantity witness
+ok 117 - a redirected, absent or different response reference cannot create a new quantity witness
+  ---
+  duration_ms: 198.41856
+  type: 'test'
+  ...
+# Subtest: announcement claims cannot replace the response bytes or the source document's monthly period
+ok 118 - announcement claims cannot replace the response bytes or the source document's monthly period
+  ---
+  duration_ms: 52.043956
+  type: 'test'
+  ...
+# Subtest: quantity proof requires the existing official download route while legacy parsing still preserves money
+ok 119 - quantity proof requires the existing official download route while legacy parsing still preserves money
+  ---
+  duration_ms: 200.183044
+  type: 'test'
+  ...
+# Subtest: a failed body read follows the existing retry path and cannot create a partial capture
+ok 120 - a failed body read follows the existing retry path and cannot create a partial capture
+  ---
+  duration_ms: 3046.226414
+  type: 'test'
+  ...
+# Subtest: copied, directly parsed or modified data cannot mint a capture receipt
+ok 121 - copied, directly parsed or modified data cannot mint a capture receipt
+  ---
+  duration_ms: 378.041842
+  type: 'test'
+  ...
+# Subtest: an intact parsed object cannot donate its receipt to another announcement, period, symbol or kind
+ok 122 - an intact parsed object cannot donate its receipt to another announcement, period, symbol or kind
+  ---
+  duration_ms: 319.218845
+  type: 'test'
+  ...
+# Subtest: N10 keeps the original text decoder, admission path and payload without monthly capture metadata
+ok 123 - N10 keeps the original text decoder, admission path and payload without monthly capture metadata
+  ---
+  duration_ms: 155.741653
+  type: 'test'
+  ...
+#   ok  n10 parsed
+#   ok  n10 revenue
+#   ok  n10 cogs abs
+#   ok  n10 gross
+#   ok  n10 operating
+#   ok  n10 net
+#   ok  n10 eps
+#   ok  n10 prior revenue
+#   ok  n10 prior net
+#   ok  n10 capital
+#   ok  n10 rejects inconsistent table
+#   ok  n10 null without income table
+#   ok  n30 parsed
+#   ok  n30 one product with month sales
+#   ok  n30 product name
+#   ok  n30 month qty
+#   ok  n30 month rate
+#   ok  n30 month amount
+#   ok  n30 month production
+#   ok  n30 period total
+#   ok  n30 fy cumulative
+#   ok  n30 fiscal year
+#   ok  n30 unit recorded
+#   ok  n30 period months
+#   ok  n30 null without product table
+#   ok  bank fixture exists
+#   ok  bank n10 parsed via fallback
+#   ok  bank statement_type
+#   ok  bank revenue (درآمد عملیاتی)
+#   ok  bank cogs (هزینه سود سپرده‌ها)
+#   ok  bank gross
+#   ok  bank operating
+#   ok  bank net
+#   ok  bank eps (خالص هر سهم)
+#   ok  bank capital
+#   ok  bank prior revenue
+#   ok  bank prior net
+#   ok  bank arithmetic
+#   ok  bank direct === fallback
+#   ok  insurance parsed
+#   ok  insurance statement_type
+#   ok  insurance revenue
+#   ok  insurance cogs
+#   ok  insurance net
+#   ok  insurance eps
+#   ok  bank normalizer rejects industrial table
+#   ok  bank rejects inconsistent gross
+#   ok  سربرگ «میلیون ریال» خوانده می‌شود
+#   ok  سربرگ «ریال» با «میلیون ریال» اشتباه نمی‌شود
+#   ok  سربرگِ بی‌واحد null می‌دهد
+#   ok  سازگاریِ حسابی مقیاسِ میلیون را پیدا می‌کند
+#   ok  سازگاریِ حسابی مقیاسِ ریال را پیدا می‌کند
+#   ok  ردیف‌های ناسازگار هیچ مقیاسی نمی‌دهند
+#   ok  بدونِ شاهد (نبودِ نرخ) استنتاج نمی‌شود
+#   ok  سربرگ و حساب هم‌سو ⇒ واحد معتبر
+#   ok  دو شاهد جدا ثبت می‌شوند
+#   ok  سربرگِ تنها basis جدا می‌گیرد
+#   ok  حسابِ تنها basis جدا می‌گیرد
+#   ok  تعارضِ سربرگ و حساب ⇒ واحد اعلام نمی‌شود
+#   ok  در تعارض هم هر دو شاهد نگه داشته می‌شوند
+#   ok  قالبِ ناشناخته ⇒ unresolved
+#   ok  واحدِ ن-۳۰ از خودِ گزارش استخراج شد
+#   ok  پایهٔ اثباتِ واحد ثبت شد
+#   ok  دورهٔ مقایسه یک ماه است
+#   ok  واحد مقدار از ستون همان ردیف استخراج می‌شود
+#   ok  واحدِ مبلغ با واحدِ مقدار قاطی نشده
+#   ok  جدولِ بدونِ محصول null می‌دهد (تعمیم ساخته نمی‌شود)
+# ALL TESTS PASSED
+#   ok  actual N30 keeps the exact archived HTML hash
+#   ok  actual N30 preserves reported monthly and cumulative money
+#   ok  actual N30 raw quantity and rate cells are unchanged
+#   ok  actual N30 preserves section provenance
+#   ok  actual N30 binds source identity period and row
+#   ok  default normalizer does not invent a byte-bound source context
+#   ok  claimed hash without bytes cannot create quantity witnesses
+#   ok  claimed hash without bytes cannot rewrite raw money or values
+#   ok  wrong hash cannot create quantity witnesses
+#   ok  wrong hash cannot rewrite raw money or values
+#   ok  wrong bytes cannot create quantity witnesses
+#   ok  wrong bytes cannot rewrite raw money or values
+#   ok  missing source reference cannot create quantity witnesses
+#   ok  missing source reference cannot rewrite raw money or values
+#   ok  blank source reference cannot create quantity witnesses
+#   ok  blank source reference cannot rewrite raw money or values
+#   ok  oversized source reference cannot create quantity witnesses
+#   ok  oversized source reference cannot rewrite raw money or values
+#   ok  mismatched symbol cannot create quantity witnesses
+#   ok  mismatched symbol cannot rewrite raw money or values
+#   ok  mismatched period cannot create quantity witnesses
+#   ok  mismatched period cannot rewrite raw money or values
+#   ok  missing version cannot create quantity witnesses
+#   ok  missing version cannot rewrite raw money or values
+#   ok  two missing symbol fields cannot certify a source
+#   ok  matching claimed hash cannot authenticate different tables
+#   ok  byte-bound tables without the unit header cannot create a source witness
+#   ok  byte-bound wrong production column cannot create a source witness
+#   ok  byte-bound wrong sales column cannot create a source witness
+#   ok  a short physical product row remains an explicit unadmitted coverage observation
+#   ok  a claimed period cannot replace the actual monthly header
+#   ok  unknown section cannot inherit a domestic market
+#   ok  offline actual parser never requests a provider
+# QUANTITY_FIXTURE_TESTS_PASSED
+# Subtest: N30 producer hashes actual response bytes and carries their receipt into the existing insert payload
+ok 124 - N30 producer hashes actual response bytes and carries their receipt into the existing insert payload
+  ---
+  duration_ms: 227.546032
+  type: 'test'
+  ...
+# Subtest: a UTF8 BOM is retained in the byte hash while decoded table values match the original text behavior
+ok 125 - a UTF8 BOM is retained in the byte hash while decoded table values match the original text behavior
+  ---
+  duration_ms: 81.150569
+  type: 'test'
+  ...
+# Subtest: a redirected, absent or different response reference cannot create a new quantity witness
+ok 126 - a redirected, absent or different response reference cannot create a new quantity witness
+  ---
+  duration_ms: 220.161347
+  type: 'test'
+  ...
+# Subtest: announcement claims cannot replace the response bytes or the source document's monthly period
+ok 127 - announcement claims cannot replace the response bytes or the source document's monthly period
+  ---
+  duration_ms: 64.303637
+  type: 'test'
+  ...
+# Subtest: quantity proof requires the existing official download route while legacy parsing still preserves money
+ok 128 - quantity proof requires the existing official download route while legacy parsing still preserves money
+  ---
+  duration_ms: 231.523241
+  type: 'test'
+  ...
+# Subtest: a failed body read follows the existing retry path and cannot create a partial capture
+ok 129 - a failed body read follows the existing retry path and cannot create a partial capture
+  ---
+  duration_ms: 3064.997099
+  type: 'test'
+  ...
+# Subtest: copied, directly parsed or modified data cannot mint a capture receipt
+ok 130 - copied, directly parsed or modified data cannot mint a capture receipt
+  ---
+  duration_ms: 316.2928
+  type: 'test'
+  ...
+# Subtest: an intact parsed object cannot donate its receipt to another announcement, period, symbol or kind
+ok 131 - an intact parsed object cannot donate its receipt to another announcement, period, symbol or kind
+  ---
+  duration_ms: 303.583433
+  type: 'test'
+  ...
+# Subtest: N10 keeps the original text decoder, admission path and payload without monthly capture metadata
+ok 132 - N10 keeps the original text decoder, admission path and payload without monthly capture metadata
+  ---
+  duration_ms: 92.042036
+  type: 'test'
+  ...
+# (node:149) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: commodity missing or nonnumeric provider fields remain null
+ok 133 - commodity missing or nonnumeric provider fields remain null
+  ---
+  duration_ms: 2.469939
+  type: 'test'
+  ...
+# Subtest: commodity legitimate zero, signed changes and decimal strings retain source units
+ok 134 - commodity legitimate zero, signed changes and decimal strings retain source units
+  ---
+  duration_ms: 0.473229
+  type: 'test'
+  ...
+# Subtest: documented grouped contract retains categories, nullable fields and all source clocks/units
+ok 135 - documented grouped contract retains categories, nullable fields and all source clocks/units
+  ---
+  duration_ms: 1.769492
+  type: 'test'
+  ...
+# Subtest: malformed, missing-group, duplicate and empty batches are rejected atomically
+ok 136 - malformed, missing-group, duplicate and empty batches are rejected atomically
+  ---
+  duration_ms: 1.236679
+  type: 'test'
+  ...
+# Subtest: existing account key does not implicitly enable the feed
+ok 137 - existing account key does not implicitly enable the feed
+  ---
+  duration_ms: 33.403099
+  type: 'test'
+  ...
+# Subtest: explicit activation reuses the account key; explicit key and disable remain supported
+ok 138 - explicit activation reuses the account key; explicit key and disable remain supported
+  ---
+  duration_ms: 10.035498
+  type: 'test'
+  ...
+# Subtest: legacy fetch uses documented endpoint and shared transport with one metered attempt
+ok 139 - legacy fetch uses documented endpoint and shared transport with one metered attempt
+  ---
+  duration_ms: 42.508846
+  type: 'test'
+  ...
+# Subtest: singleflight shares an in-progress request and quota reservation
+ok 140 - singleflight shares an in-progress request and quota reservation
+  ---
+  duration_ms: 3.359079
+  type: 'test'
+  ...
+# Subtest: invalid/source-failed cycles preserve good rows and original receipt without leaking keys
+ok 141 - invalid/source-failed cycles preserve good rows and original receipt without leaking keys
+  ---
+  duration_ms: 7.172268
+  type: 'test'
+  ...
+# Subtest: local daily cap stops calls and cannot be configured above 300
+ok 142 - local daily cap stops calls and cannot be configured above 300
+  ---
+  duration_ms: 611.755046
+  type: 'test'
+  ...
+# Subtest: local allowance resets only for the next Tehran calendar day
+ok 143 - local allowance resets only for the next Tehran calendar day
+  ---
+  duration_ms: 8.411659
+  type: 'test'
+  ...
+# Subtest: daily FX uses independently valid source date/time and explicit raw toman
+ok 144 - daily FX uses independently valid source date/time and explicit raw toman
+  ---
+  duration_ms: 7.017343
+  type: 'test'
+  ...
+# Subtest: unknown/stale/future clocks and unproved units never reach the request port
+ok 145 - unknown/stale/future clocks and unproved units never reach the request port
+  ---
+  duration_ms: 5.863726
+  type: 'test'
+  ...
+# Subtest: FX failed writes and unreadable conflict readbacks never claim completion
+ok 146 - FX failed writes and unreadable conflict readbacks never claim completion
+  ---
+  duration_ms: 41.61647
+  type: 'test'
+  ...
+# Subtest: successful FX insert preserves source-derived date and price without another conversion
+ok 147 - successful FX insert preserves source-derived date and price without another conversion
+  ---
+  duration_ms: 2.991898
+  type: 'test'
+  ...
+# Subtest: 409 completes only after exact readback of date, rate and source; every mismatch stays retryable
+ok 148 - 409 completes only after exact readback of date, rate and source; every mismatch stays retryable
+  ---
+  duration_ms: 9.952904
+  type: 'test'
+  ...
+# Subtest: server wires the guarded writer and carries raw currency unit instead of attesting the forced label
+ok 149 - server wires the guarded writer and carries raw currency unit instead of attesting the forced label
+  ---
+  duration_ms: 2.435336
+  type: 'test'
+  ...
+# Subtest: writtenAfterClose: ۰۰:۰۶ همان روز پیش از بسته‌شدن است؛ ۱۴:۳۰ و روزِ بعد پس از آن
+ok 150 - writtenAfterClose: ۰۰:۰۶ همان روز پیش از بسته‌شدن است؛ ۱۴:۳۰ و روزِ بعد پس از آن
+  ---
+  duration_ms: 47.656134
+  type: 'test'
+  ...
+# Subtest: گذار: برچسبِ اشغال‌شده با ردیفِ پیش از بسته‌شدن — پایانیِ جلسه دور ریخته نمی‌شود
+ok 151 - گذار: برچسبِ اشغال‌شده با ردیفِ پیش از بسته‌شدن — پایانیِ جلسه دور ریخته نمی‌شود
+  ---
+  duration_ms: 364.164703
+  type: 'test'
+  ...
+# Subtest: restart در همان روز: هیچ ردیفِ تکراری، stash همان
+ok 152 - restart در همان روز: هیچ ردیفِ تکراری، stash همان
+  ---
+  duration_ms: 491.920669
+  type: 'test'
+  ...
+# Subtest: نیمه‌شبِ بعد: هیچ نوشتنی؛ جلسهٔ بعد ساعتِ ۱۴:۳۰ با برچسبِ درست
+ok 153 - نیمه‌شبِ بعد: هیچ نوشتنی؛ جلسهٔ بعد ساعتِ ۱۴:۳۰ با برچسبِ درست
+  ---
+  duration_ms: 52.57835
+  type: 'test'
+  ...
+# Subtest: تعطیلی: شاخص همان جلسهٔ قبل را می‌گوید — برچسبِ تازه ساخته نمی‌شود
+ok 154 - تعطیلی: شاخص همان جلسهٔ قبل را می‌گوید — برچسبِ تازه ساخته نمی‌شود
+  ---
+  duration_ms: 369.006357
+  type: 'test'
+  ...
+# Subtest: فیدِ کهنه: شاخص جلو رفته ولی نمادها همان جلسهٔ قبل‌اند — نوشته نمی‌شود
+ok 155 - فیدِ کهنه: شاخص جلو رفته ولی نمادها همان جلسهٔ قبل‌اند — نوشته نمی‌شود
+  ---
+  duration_ms: 23.440802
+  type: 'test'
+  ...
+# Subtest: retry: شکستِ دستهٔ دوم جلسه را قفل نمی‌کند؛ تلاشِ بعد فقط غایب‌ها را درج می‌کند
+ok 156 - retry: شکستِ دستهٔ دوم جلسه را قفل نمی‌کند؛ تلاشِ بعد فقط غایب‌ها را درج می‌کند
+  ---
+  duration_ms: 78.9118
+  type: 'test'
+  ...
+# Subtest: ردیفِ منبعِ دیگر (کندل) دسته را نمی‌شکند و بازنویسی نمی‌شود
+ok 157 - ردیفِ منبعِ دیگر (کندل) دسته را نمی‌شکند و بازنویسی نمی‌شود
+  ---
+  duration_ms: 13.078618
+  type: 'test'
+  ...
+# Subtest: کمتر از کفِ ردیف: نوشته می‌شود ولی جلسه کامل علامت نمی‌خورد
+ok 158 - کمتر از کفِ ردیف: نوشته می‌شود ولی جلسه کامل علامت نمی‌خورد
+  ---
+  duration_ms: 2.712303
+  type: 'test'
+  ...
+# Subtest: کلیدِ یکتای جعلی واقعاً اعمال می‌شود: درجِ بی ignore-duplicates روی تکراری 409 می‌دهد
+ok 159 - کلیدِ یکتای جعلی واقعاً اعمال می‌شود: درجِ بی ignore-duplicates روی تکراری 409 می‌دهد
+  ---
+  duration_ms: 0.954819
+  type: 'test'
+  ...
+# Subtest: server.mjs: نوشتن از writeEodHistory، و چرخهٔ ناقص (بودجه) چیزی نمی‌نویسد
+ok 160 - server.mjs: نوشتن از writeEodHistory، و چرخهٔ ناقص (بودجه) چیزی نمی‌نویسد
+  ---
+  duration_ms: 0.65561
+  type: 'test'
+  ...
+# Subtest: ساعتِ تهران هرگز «24» نیست — ۴۸ ساعت با گامِ ۱۰ دقیقه
+ok 161 - ساعتِ تهران هرگز «24» نیست — ۴۸ ساعت با گامِ ۱۰ دقیقه
+  ---
+  duration_ms: 114.511341
+  type: 'test'
+  ...
+# Subtest: لحظهٔ نوشتنِ Production: ۰۰:۰۶ شنبه ساعتِ ۰ است، نه ۲۴
+ok 162 - لحظهٔ نوشتنِ Production: ۰۰:۰۶ شنبه ساعتِ ۰ است، نه ۲۴
+  ---
+  duration_ms: 2.05149
+  type: 'test'
+  ...
+# Subtest: دروازهٔ «پس از بسته‌شدن» با NaN بسته می‌ماند
+ok 163 - دروازهٔ «پس از بسته‌شدن» با NaN بسته می‌ماند
+  ---
+  duration_ms: 0.406811
+  type: 'test'
+  ...
+# Subtest: پخشِ بودجه: ۰۰:۰۵ تهران تقریباً ۲۴ ساعت تا نیمه‌شب مانده، نه عددِ منفی
+ok 164 - پخشِ بودجه: ۰۰:۰۵ تهران تقریباً ۲۴ ساعت تا نیمه‌شب مانده، نه عددِ منفی
+  ---
+  duration_ms: 1.908897
+  type: 'test'
+  ...
+# Subtest: تاریخِ جلسهٔ منبع: جلالی با رقمِ لاتین یا فارسی → میلادی
+ok 165 - تاریخِ جلسهٔ منبع: جلالی با رقمِ لاتین یا فارسی → میلادی
+  ---
+  duration_ms: 1.308159
+  type: 'test'
+  ...
+# Subtest: تاریخِ منبعِ ناموجود یا نامعتبر → null، هرگز حدس
+ok 166 - تاریخِ منبعِ ناموجود یا نامعتبر → null، هرگز حدس
+  ---
+  duration_ms: 0.410814
+  type: 'test'
+  ...
+# Subtest: بازتولیدِ Production: ۰۰:۰۶ شنبه با دادهٔ چهارشنبه هیچ ردیفی نمی‌سازد
+ok 167 - بازتولیدِ Production: ۰۰:۰۶ شنبه با دادهٔ چهارشنبه هیچ ردیفی نمی‌سازد
+  ---
+  duration_ms: 1.069574
+  type: 'test'
+  ...
+# Subtest: چهارشنبه ۱۴:۳۰: برچسب همان چهارشنبه است
+ok 168 - چهارشنبه ۱۴:۳۰: برچسب همان چهارشنبه است
+  ---
+  duration_ms: 1.014715
+  type: 'test'
+  ...
+# Subtest: برچسب از منبع می‌آید نه از تقویم: یکشنبه‌ای که منبع هنوز شنبه را می‌گوید
+ok 169 - برچسب از منبع می‌آید نه از تقویم: یکشنبه‌ای که منبع هنوز شنبه را می‌گوید
+  ---
+  duration_ms: 1.612996
+  type: 'test'
+  ...
+# Subtest: بدونِ تاریخِ منبع هیچ ردیفی ساخته نمی‌شود (D2)
+ok 170 - بدونِ تاریخِ منبع هیچ ردیفی ساخته نمی‌شود (D2)
+  ---
+  duration_ms: 1.734516
+  type: 'test'
+  ...
+# Subtest: پنجشنبه و جمعه چیزی نوشته نمی‌شود
+ok 171 - پنجشنبه و جمعه چیزی نوشته نمی‌شود
+  ---
+  duration_ms: 0.842555
+  type: 'test'
+  ...
+# Subtest: نگاشتِ ردیف دست نخورده: زیرنماد، حق‌تقدم و بی‌معامله بیرون؛ تومان→ریال؛ NAV در raw
+ok 172 - نگاشتِ ردیف دست نخورده: زیرنماد، حق‌تقدم و بی‌معامله بیرون؛ تومان→ریال؛ NAV در raw
+  ---
+  duration_ms: 0.970894
+  type: 'test'
+  ...
+# Subtest: server.mjs: نوشتنِ پایانِ روز از planEodHistory و writeEodHistory می‌گذرد
+ok 173 - server.mjs: نوشتنِ پایانِ روز از planEodHistory و writeEodHistory می‌گذرد
+  ---
+  duration_ms: 0.627627
+  type: 'test'
+  ...
+# Subtest: هیچ خوانشِ ساعتی در رله `hour12: false` ندارد
+ok 174 - هیچ خوانشِ ساعتی در رله `hour12: false` ندارد
+  ---
+  duration_ms: 14.732374
+  type: 'test'
+  ...
+# Subtest: equities preserve real zero and signed changes, EPS and PE
+ok 175 - equities preserve real zero and signed changes, EPS and PE
+  ---
+  duration_ms: 18.275595
+  type: 'test'
+  ...
+# Subtest: missing, empty, malformed and nonfinite equity measurements stay null
+ok 176 - missing, empty, malformed and nonfinite equity measurements stay null
+  ---
+  duration_ms: 35.531774
+  type: 'test'
+  ...
+# Subtest: negative volumes, values and market capitalization are unknown
+ok 177 - negative volumes, values and market capitalization are unknown
+  ---
+  duration_ms: 2.866872
+  type: 'test'
+  ...
+# Subtest: missing or invalid closing price does not borrow the last price
+ok 178 - missing or invalid closing price does not borrow the last price
+  ---
+  duration_ms: 35.979982
+  type: 'test'
+  ...
+# Subtest: invalid last prices cannot create an equity row
+ok 179 - invalid last prices cannot create an equity row
+  ---
+  duration_ms: 27.12893
+  type: 'test'
+  ...
+# Subtest: best-effort measurements omit missing values but preserve actual zero quantities
+ok 180 - best-effort measurements omit missing values but preserve actual zero quantities
+  ---
+  duration_ms: 23.243354
+  type: 'test'
+  ...
+# Subtest: industry identifiers require positive safe integers
+ok 181 - industry identifiers require positive safe integers
+  ---
+  duration_ms: 32.546378
+  type: 'test'
+  ...
+# Subtest: fund classification, source clocks, quarantine and sort still use the same response
+ok 182 - fund classification, source clocks, quarantine and sort still use the same response
+  ---
+  duration_ms: 8.834203
+  type: 'test'
+  ...
+# Subtest: the written sections are configurable and default to the consumed pair
+ok 183 - the written sections are configurable and default to the consumed pair
+  ---
+  duration_ms: 2.188864
+  type: 'test'
+  ...
+# Subtest: the unread sections are no longer hard-coded into the write path
+ok 184 - the unread sections are no longer hard-coded into the write path
+  ---
+  duration_ms: 0.486154
+  type: 'test'
+  ...
+# Subtest: a section that the source did not return is recorded, not silently dropped
+ok 185 - a section that the source did not return is recorded, not silently dropped
+  ---
+  duration_ms: 0.448063
+  type: 'test'
+  ...
+# Subtest: retention stays configurable and its status stays observable
+ok 186 - retention stays configurable and its status stays observable
+  ---
+  duration_ms: 0.423923
+  type: 'test'
+  ...
+# Subtest: the source-side sub-ticker filter is still applied before symbol_history
+ok 187 - the source-side sub-ticker filter is still applied before symbol_history
+  ---
+  duration_ms: 1.482582
+  type: 'test'
+  ...
+# Subtest: nothing in the relay deletes from symbol_history
+ok 188 - nothing in the relay deletes from symbol_history
+  ---
+  duration_ms: 0.514346
+  type: 'test'
+  ...
+# (node:193) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: mapCertRow: قیمت‌ها ریال→تومان و tval هزارریال→تومان (×۱۰۰)
+ok 189 - mapCertRow: قیمت‌ها ریال→تومان و tval هزارریال→تومان (×۱۰۰)
+  ---
+  duration_ms: 2.761749
+  type: 'test'
+  ...
+# Subtest: mapCertRow: فیلد غایب/نامعتبر → null، نه صفر ساختگی
+ok 190 - mapCertRow: فیلد غایب/نامعتبر → null، نه صفر ساختگی
+  ---
+  duration_ms: 0.419924
+  type: 'test'
+  ...
+# Subtest: mapCertRow: pc غایب → close از pl پر می‌شود
+ok 191 - mapCertRow: pc غایب → close از pl پر می‌شود
+  ---
+  duration_ms: 0.258169
+  type: 'test'
+  ...
+# Subtest: IME numeric absence stays null; genuine zero is retained
+ok 192 - IME numeric absence stays null; genuine zero is retained
+  ---
+  duration_ms: 0.975376
+  type: 'test'
+  ...
+# Subtest: certificate history keeps each quote's source day across midnight and holidays
+ok 193 - certificate history keeps each quote's source day across midnight and holidays
+  ---
+  duration_ms: 4.470704
+  type: 'test'
+  ...
+# Subtest: certificate history rejects missing, invalid and future source dates
+ok 194 - certificate history rejects missing, invalid and future source dates
+  ---
+  duration_ms: 0.618609
+  type: 'test'
+  ...
+# Subtest: certificate history rejects normalized non-leap dates but keeps a real leap day
+ok 195 - certificate history rejects normalized non-leap dates but keeps a real leap day
+  ---
+  duration_ms: 1.179988
+  type: 'test'
+  ...
+# Subtest: physical storage failure stays incomplete without extra same-day provider requests
+ok 196 - physical storage failure stays incomplete without extra same-day provider requests
+  ---
+  duration_ms: 72.625847
+  type: 'test'
+  ...
+# Subtest: certificate writer persists source day after retaining a quote overnight
+ok 197 - certificate writer persists source day after retaining a quote overnight
+  ---
+  duration_ms: 8.10774
+  type: 'test'
+  ...
+# Subtest: mapPhysicalRow: اعداد خام ریال حفظ می‌شود و تاریخ جلالی نرمال (خط‌تیره)
+ok 198 - mapPhysicalRow: اعداد خام ریال حفظ می‌شود و تاریخ جلالی نرمال (خط‌تیره)
+  ---
+  duration_ms: 0.941168
+  type: 'test'
+  ...
+# Subtest: mapPhysicalRow: تاریخ از قبل خط‌تیره‌دار دست نمی‌خورد
+ok 199 - mapPhysicalRow: تاریخ از قبل خط‌تیره‌دار دست نمی‌خورد
+  ---
+  duration_ms: 0.378214
+  type: 'test'
+  ...
+# Subtest: mapCommodityRow: دلار خام می‌ماند (هیچ تبدیل ریالی)
+ok 200 - mapCommodityRow: دلار خام می‌ماند (هیچ تبدیل ریالی)
+  ---
+  duration_ms: 0.451045
+  type: 'test'
+  ...
+# Subtest: physical DB retries are bounded, retain pending rows, and never refetch today's provider
+ok 201 - physical DB retries are bounded, retain pending rows, and never refetch today's provider
+  ---
+  duration_ms: 15.41908
+  type: 'test'
+  ...
+# Subtest: physical partial success is retained while only the failed DB target retries
+ok 202 - physical partial success is retained while only the failed DB target retries
+  ---
+  duration_ms: 11.061749
+  type: 'test'
+  ...
+# Subtest: physical lost response replays identical complete keys without a provider retry
+ok 203 - physical lost response replays identical complete keys without a provider retry
+  ---
+  duration_ms: 8.099071
+  type: 'test'
+  ...
+# Subtest: physical source failures never retry same day, including the permissive legacy path
+ok 204 - physical source failures never retry same day, including the permissive legacy path
+  ---
+  duration_ms: 44.117626
+  type: 'test'
+  ...
+# Subtest: physical day rollover expires exhausted storage and reports abandoned pending observations
+ok 205 - physical day rollover expires exhausted storage and reports abandoned pending observations
+  ---
+  duration_ms: 16.719183
+  type: 'test'
+  ...
+# Subtest: completed empty physical targets expire so a later backfill re-reads the source
+ok 206 - completed empty physical targets expire so a later backfill re-reads the source
+  ---
+  duration_ms: 11.553484
+  type: 'test'
+  ...
+# Subtest: physical unknown cannot certify an empty successful day
+ok 207 - physical unknown cannot certify an empty successful day
+  ---
+  duration_ms: 9.23326
+  type: 'test'
+  ...
+# Subtest: physical unverified no_data cannot certify an empty successful day
+ok 208 - physical unverified no_data cannot certify an empty successful day
+  ---
+  duration_ms: 9.178667
+  type: 'test'
+  ...
+# Subtest: physical contradictory no_data cannot certify an empty successful day
+ok 209 - physical contradictory no_data cannot certify an empty successful day
+  ---
+  duration_ms: 9.855301
+  type: 'test'
+  ...
+# Subtest: physical rejected cannot certify an empty successful day
+ok 210 - physical rejected cannot certify an empty successful day
+  ---
+  duration_ms: 9.893798
+  type: 'test'
+  ...
+# Subtest: physical error cannot certify an empty successful day
+ok 211 - physical error cannot certify an empty successful day
+  ---
+  duration_ms: 7.133338
+  type: 'test'
+  ...
+# Subtest: physical unknown status cannot certify an empty successful day
+ok 212 - physical unknown status cannot certify an empty successful day
+  ---
+  duration_ms: 30.447661
+  type: 'test'
+  ...
+# Subtest: physical null producer blocks the entire target and exposes rejection count
+ok 213 - physical null producer blocks the entire target and exposes rejection count
+  ---
+  duration_ms: 10.28599
+  type: 'test'
+  ...
+# Subtest: physical blank price blocks the entire target and exposes rejection count
+ok 214 - physical blank price blocks the entire target and exposes rejection count
+  ---
+  duration_ms: 9.326692
+  type: 'test'
+  ...
+# Subtest: physical boolean volume blocks the entire target and exposes rejection count
+ok 215 - physical boolean volume blocks the entire target and exposes rejection count
+  ---
+  duration_ms: 9.13701
+  type: 'test'
+  ...
+# Subtest: physical array price blocks the entire target and exposes rejection count
+ok 216 - physical array price blocks the entire target and exposes rejection count
+  ---
+  duration_ms: 10.320391
+  type: 'test'
+  ...
+# Subtest: physical invalid date blocks the entire target and exposes rejection count
+ok 217 - physical invalid date blocks the entire target and exposes rejection count
+  ---
+  duration_ms: 56.149105
+  type: 'test'
+  ...
+# Subtest: physical wrong date blocks the entire target and exposes rejection count
+ok 218 - physical wrong date blocks the entire target and exposes rejection count
+  ---
+  duration_ms: 15.389247
+  type: 'test'
+  ...
+# Subtest: physical valid zero values survive admission; simultaneous callers share one cycle
+ok 219 - physical valid zero values survive admission; simultaneous callers share one cycle
+  ---
+  duration_ms: 10.176311
+  type: 'test'
+  ...
+# Subtest: a rejected target does not discard its successful neighbour or claim cycle completeness
+ok 220 - a rejected target does not discard its successful neighbour or claim cycle completeness
+  ---
+  duration_ms: 11.549687
+  type: 'test'
+  ...
+# Subtest: a valid empty array completes a target without fabricating a database row
+ok 221 - a valid empty array completes a target without fabricating a database row
+  ---
+  duration_ms: 10.178451
+  type: 'test'
+  ...
+# Subtest: physical request spanning midnight does not start a second old-cycle provider job
+ok 222 - physical request spanning midnight does not start a second old-cycle provider job
+  ---
+  duration_ms: 13.747544
+  type: 'test'
+  ...
+# PASSIVE_GET_EVIDENCE:{"client":"0","scenario":"cold","before":{"upstream":0,"writes":0,"dbReads":0},"after":{"upstream":0,"writes":0,"dbReads":0},"providerCallsFromGet":0,"dbReadsFromGet":0,"dbWritesFromGet":0,"statuses":[503,503,503]}
+# Subtest: actual server GET /market.json is passive with cold cache (client=0)
+ok 223 - actual server GET /market.json is passive with cold cache (client=0)
+  ---
+  duration_ms: 2303.360458
+  type: 'test'
+  ...
+# PASSIVE_GET_EVIDENCE:{"client":"0","scenario":"warm","before":{"upstream":5,"writes":3,"dbReads":2},"after":{"upstream":5,"writes":3,"dbReads":2},"providerCallsFromGet":0,"dbReadsFromGet":0,"dbWritesFromGet":0,"statuses":[200,200,200]}
+# Subtest: actual server GET /market.json is passive with warm cache (client=0)
+ok 224 - actual server GET /market.json is passive with warm cache (client=0)
+  ---
+  duration_ms: 2285.947669
+  type: 'test'
+  ...
+# PASSIVE_GET_EVIDENCE:{"client":"0","scenario":"stale","before":{"upstream":5,"writes":3,"dbReads":2},"after":{"upstream":5,"writes":3,"dbReads":2},"providerCallsFromGet":0,"dbReadsFromGet":0,"dbWritesFromGet":0,"statuses":[200,200,200]}
+# Subtest: actual server GET /market.json is passive with stale cache (client=0)
+ok 225 - actual server GET /market.json is passive with stale cache (client=0)
+  ---
+  duration_ms: 2352.974233
+  type: 'test'
+  ...
+# PASSIVE_GET_EVIDENCE:{"client":"1","scenario":"cold","before":{"upstream":0,"writes":0,"dbReads":0},"after":{"upstream":0,"writes":0,"dbReads":0},"providerCallsFromGet":0,"dbReadsFromGet":0,"dbWritesFromGet":0,"statuses":[503,503,503]}
+# Subtest: actual server GET /market.json is passive with cold cache (client=1)
+ok 226 - actual server GET /market.json is passive with cold cache (client=1)
+  ---
+  duration_ms: 2370.278969
+  type: 'test'
+  ...
+# PASSIVE_GET_EVIDENCE:{"client":"1","scenario":"warm","before":{"upstream":5,"writes":3,"dbReads":2},"after":{"upstream":5,"writes":3,"dbReads":2},"providerCallsFromGet":0,"dbReadsFromGet":0,"dbWritesFromGet":0,"statuses":[200,200,200]}
+# Subtest: actual server GET /market.json is passive with warm cache (client=1)
+ok 227 - actual server GET /market.json is passive with warm cache (client=1)
+  ---
+  duration_ms: 2567.672717
+  type: 'test'
+  ...
+# PASSIVE_GET_EVIDENCE:{"client":"1","scenario":"stale","before":{"upstream":5,"writes":3,"dbReads":2},"after":{"upstream":5,"writes":3,"dbReads":2},"providerCallsFromGet":0,"dbReadsFromGet":0,"dbWritesFromGet":0,"statuses":[200,200,200]}
+# Subtest: actual server GET /market.json is passive with stale cache (client=1)
+ok 228 - actual server GET /market.json is passive with stale cache (client=1)
+  ---
+  duration_ms: 2546.260043
+  type: 'test'
+  ...
+# Subtest: actual relay: healthy → partial timeout → recovery preserves failed rows and advances options independently
+ok 229 - actual relay: healthy → partial timeout → recovery preserves failed rows and advances options independently
+  ---
+  duration_ms: 496.061345
+  type: 'test'
+  ...
+# Subtest: actual relay: all sources fail in a warm cycle; served metadata reports error and no snapshot/history write
+ok 230 - actual relay: all sources fail in a warm cycle; served metadata reports error and no snapshot/history write
+  ---
+  duration_ms: 576.939381
+  type: 'test'
+  ...
+# Subtest: actual relay: cold all-source failure yields 503 and leaves persisted snapshots untouched
+ok 231 - actual relay: cold all-source failure yields 503 and leaves persisted snapshots untouched
+  ---
+  duration_ms: 494.445144
+  type: 'test'
+  ...
+# Subtest: actual relay: explicit successful empty arrays clear old data rather than pretending failure
+ok 232 - actual relay: explicit successful empty arrays clear old data rather than pretending failure
+  ---
+  duration_ms: 435.734375
+  type: 'test'
+  ...
+# Subtest: actual relay: cold partial cycle keeps the successful options independently and marks other families unavailable
+ok 233 - actual relay: cold partial cycle keeps the successful options independently and marks other families unavailable
+  ---
+  duration_ms: 549.638842
+  type: 'test'
+  ...
+# Subtest: actual relay: restart hydrates stored rows before a partial source failure, preserving their prior receipt/source clock
+ok 234 - actual relay: restart hydrates stored rows before a partial source failure, preserving their prior receipt/source clock
+  ---
+  duration_ms: 497.838122
+  type: 'test'
+  ...
+# Subtest: actual relay: one missing currency field retains only currency while gold and stocks advance
+ok 235 - actual relay: one missing currency field retains only currency while gold and stocks advance
+  ---
+  duration_ms: 540.297145
+  type: 'test'
+  ...
+# Subtest: actual relay: unknown-baseline blocks partial latest replacement
+ok 236 - actual relay: unknown-baseline blocks partial latest replacement
+  ---
+  duration_ms: 916.337837
+  type: 'test'
+  ...
+# Subtest: actual relay: malformed-baseline blocks partial latest replacement
+ok 237 - actual relay: malformed-baseline blocks partial latest replacement
+  ---
+  duration_ms: 1386.549187
+  type: 'test'
+  ...
+# Subtest: actual relay: next natural cycle retries baseline and fills unknown families without replacing current healthy options
+ok 238 - actual relay: next natural cycle retries baseline and fills unknown families without replacing current healthy options
+  ---
+  duration_ms: 1097.630283
+  type: 'test'
+  ...
+# Subtest: actual relay: malformed nonempty option and core responses cannot clear warm data
+ok 239 - actual relay: malformed nonempty option and core responses cannot clear warm data
+  ---
+  duration_ms: 1197.779023
+  type: 'test'
+  ...
+# Subtest: actual relay: retained rows do not become EOD stock/FX/index/breadth records after close
+ok 240 - actual relay: retained rows do not become EOD stock/FX/index/breadth records after close
+  ---
+  duration_ms: 1125.694155
+  type: 'test'
+  ...
+# Subtest: actual relay: recovered sources do reach the existing EOD writers after close
+ok 241 - actual relay: recovered sources do reach the existing EOD writers after close
+  ---
+  duration_ms: 1206.223194
+  type: 'test'
+  ...
+# Subtest: actual relay: fresh transport cannot relabel yesterday USD as today or attest an absent source unit
+ok 242 - actual relay: fresh transport cannot relabel yesterday USD as today or attest an absent source unit
+  ---
+  duration_ms: 1735.340903
+  type: 'test'
+  ...
+# Subtest: actual relay: boolean source USD price cannot become a synthetic daily observation
+ok 243 - actual relay: boolean source USD price cannot become a synthetic daily observation
+  ---
+  duration_ms: 534.285839
+  type: 'test'
+  ...
+# Subtest: actual relay: valid stocks cannot disguise an unusable nonempty fund family
+ok 244 - actual relay: valid stocks cannot disguise an unusable nonempty fund family
+  ---
+  duration_ms: 577.398917
+  type: 'test'
+  ...
+# Subtest: actual relay CLIENT_ENABLED=1: mid-cycle budget rejection blocks partial latest/history/EOD writes despite successful families
+ok 245 - actual relay CLIENT_ENABLED=1: mid-cycle budget rejection blocks partial latest/history/EOD writes despite successful families
+  ---
+  duration_ms: 2349.895872
+  type: 'test'
+  ...
+# Subtest: actual relay CLIENT_ENABLED=1: ordinary source timeout remains a partial update without a budget stop
+ok 246 - actual relay CLIENT_ENABLED=1: ordinary source timeout remains a partial update without a budget stop
+  ---
+  duration_ms: 3706.119035
+  type: 'test'
+  ...
+# Subtest: commodity survives restart failure with its own receipt and never borrows a core clock
+ok 247 - commodity survives restart failure with its own receipt and never borrows a core clock
+  ---
+  duration_ms: 7.028271
+  type: 'test'
+  ...
+# Subtest: commodity success uses this cycle; failed refresh retains original receipt; legacy receipt is specific
+ok 248 - commodity success uses this cycle; failed refresh retains original receipt; legacy receipt is specific
+  ---
+  duration_ms: 5.076485
+  type: 'test'
+  ...
+# Subtest: retains rows/source clocks immutably, and gives fresh history only to successful families
+ok 249 - retains rows/source clocks immutably, and gives fresh history only to successful families
+  ---
+  duration_ms: 2.544228
+  type: 'test'
+  ...
+# Subtest: unknown legacy empty arrays do not become known successful emptiness
+ok 250 - unknown legacy empty arrays do not become known successful emptiness
+  ---
+  duration_ms: 1.28265
+  type: 'test'
+  ...
+# Subtest: a known authoritative empty family remains known after later failure
+ok 251 - a known authoritative empty family remains known after later failure
+  ---
+  duration_ms: 1.283597
+  type: 'test'
+  ...
+# Subtest: null, missing and future receipts stay unknown rather than using attempt time
+ok 252 - null, missing and future receipts stay unknown rather than using attempt time
+  ---
+  duration_ms: 1.441348
+  type: 'test'
+  ...
+# Subtest: successful outcomes with wrong data shape are rejected
+ok 253 - successful outcomes with wrong data shape are rejected
+  ---
+  duration_ms: 1.039643
+  type: 'test'
+  ...
+# Subtest: restart merge fills only unknown families and preserves current known or authoritative empty data
+ok 254 - restart merge fills only unknown families and preserves current known or authoritative empty data
+  ---
+  duration_ms: 1.245907
+  type: 'test'
+  ...
+# Subtest: persisted baseline rejects malformed payloads while accepting complete legacy shape
+ok 255 - persisted baseline rejects malformed payloads while accepting complete legacy shape
+  ---
+  duration_ms: 1.505741
+  type: 'test'
+  ...
+# Subtest: error categories never disclose raw provider exception text
+ok 256 - error categories never disclose raw provider exception text
+  ---
+  duration_ms: 1.4542
+  type: 'test'
+  ...
+# Subtest: missing option measurements stay null rather than zero
+ok 257 - missing option measurements stay null rather than zero
+  ---
+  duration_ms: 56.855258
+  type: 'test'
+  ...
+# Subtest: explicit zero and negative price change retain their meanings
+ok 258 - explicit zero and negative price change retain their meanings
+  ---
+  duration_ms: 0.803386
+  type: 'test'
+  ...
+# Subtest: documented size and supplied clock are preserved without inventing a date or source unit
+ok 259 - documented size and supplied clock are preserved without inventing a date or source unit
+  ---
+  duration_ms: 0.740179
+  type: 'test'
+  ...
+# Subtest: invalid or absent contract size is unknown, never a default of 1000
+ok 260 - invalid or absent contract size is unknown, never a default of 1000
+  ---
+  duration_ms: 2.509748
+  type: 'test'
+  ...
+# Subtest: actual mixed option mapping retains a known baseline stale and stays unavailable without one
+ok 261 - actual mixed option mapping retains a known baseline stale and stays unavailable without one
+  ---
+  duration_ms: 6.521348
+  type: 'test'
+  ...
+# Subtest: actual successful empty option mapping remains authoritative empty at retention boundary
+ok 262 - actual successful empty option mapping remains authoritative empty at retention boundary
+  ---
+  duration_ms: 0.807064
+  type: 'test'
+  ...
+# Subtest: partial option responses expose rejected rows and cannot advance lastOk
+ok 263 - partial option responses expose rejected rows and cannot advance lastOk
+  ---
+  duration_ms: 1.447693
+  type: 'test'
+  ...
+# Subtest: malformed option IDs and types are counted without coercing objects into strings
+ok 264 - malformed option IDs and types are counted without coercing objects into strings
+  ---
+  duration_ms: 1.080693
+  type: 'test'
+  ...
+# Subtest: non-object option rows have their own rejection reason
+ok 265 - non-object option rows have their own rejection reason
+  ---
+  duration_ms: 4.374108
+  type: 'test'
+  ...
+# Subtest: healthy and empty option arrays reset attempt counts without claiming market coverage
+ok 266 - healthy and empty option arrays reset attempt counts without claiming market coverage
+  ---
+  duration_ms: 1.700805
+  type: 'test'
+  ...
+# Subtest: failed option attempts clear current counts and keep the last success clock
+ok 267 - failed option attempts clear current counts and keep the last success clock
+  ---
+  duration_ms: 1.756694
+  type: 'test'
+  ...
+# Subtest: negative option quantities are unknown while signed change and expired days remain valid
+ok 268 - negative option quantities are unknown while signed change and expired days remain valid
+  ---
+  duration_ms: 0.661834
+  type: 'test'
+  ...
+# Subtest: actual zero option quantities remain measured zero
+ok 269 - actual zero option quantities remain measured zero
+  ---
+  duration_ms: 0.720118
+  type: 'test'
+  ...
+# Subtest: option measurement validation does not manufacture zero from malformed input
+ok 270 - option measurement validation does not manufacture zero from malformed input
+  ---
+  duration_ms: 1.674551
+  type: 'test'
+  ...
+# Subtest: option price rounding remains the existing boundary until precision is attested
+ok 271 - option price rounding remains the existing boundary until precision is attested
+  ---
+  duration_ms: 1.074743
+  type: 'test'
+  ...
+# Subtest: relay keeps only /healthz public when RELAY_TOKEN is unset
+ok 272 - relay keeps only /healthz public when RELAY_TOKEN is unset
+  ---
+  duration_ms: 1004.669184
+  type: 'test'
+  ...
+# Subtest: relay protects /debug when RELAY_TOKEN is configured
+ok 273 - relay protects /debug when RELAY_TOKEN is configured
+  ---
+  duration_ms: 1085.960393
+  type: 'test'
+  ...
+# Subtest: actual startup serves the original baseline and arms provider jobs only after the full cold window
+ok 274 - actual startup serves the original baseline and arms provider jobs only after the full cold window
+  ---
+  duration_ms: 1099.595176
+  type: 'test'
+  ...
+# symbol-detail — بودجهٔ چرخش:
+#   ✓ کلِ بودجهٔ روز مصرف می‌شود، نه کمتر
+#   ✓ بودجه در کلِ روز پخش می‌شود، نه در ساعاتِ اول
+#   ✓ هیچ چرخه‌ای از سقفِ انفجار بالاتر نمی‌رود
+#   ✓ بودجهٔ تمام‌شده صفر می‌دهد، نه عددِ منفی
+#   ✓ در پایانِ روز بودجهٔ باقی‌مانده حبس نمی‌شود
+#   ✓ سقفِ انفجار حتی با بودجهٔ زیاد رعایت می‌شود
+#   ✓ بودجهٔ کوچک‌تر از یک در چرخه نه گم می‌شود، نه به آخرِ روز می‌افتد
+#   ✓ msUntilTehranMidnight در بازهٔ معتبر است
+#   ✓ cold boot with all source failures preserves 120 stored entries and makes no POST
+#   ✓ zero rotation budget never empties or refresh-labels a stored snapshot
+#   ✓ partial successful refresh preserves other entries and their individual clocks
+#   ✓ restoration between baseline read and publication is merged; cache remains bounded
+#   ✓ a later restoration survives a process that previously published only one entry
+#   ✓ a newer independent stored entry beats the older local entry on the next publication
+#   ✓ unreadable or malformed baseline blocks provider work and every overwrite
+#   ✓ failed final baseline read preserves fresh local data but cannot overwrite DB
+#   ✓ missing and future entry clocks never become fresh or borrow snapshot receipt time
+#   ✓ concurrent rotations share one read-refresh-publish cycle
+# 18 passed, 0 failed
+# Subtest: relay/symbol-detail.test.mjs
+ok 31 - relay/symbol-detail.test.mjs
+  ---
+  duration_ms: 1213.902644
+  type: 'test'
+  ...
+# symbols-util unit tests (C1):
+#   ✓ فملی2 زیرنماد است (رقم لاتین)
+#   ✓ آوند4 زیرنماد است (نماد متوقف — ریشهٔ اخطار BrsApi)
+#   ✓ کگل3 زیرنماد است
+#   ✓ رقم فارسی: خودرو۲ زیرنماد است
+#   ✓ رقم عربی: فولاد٤ زیرنماد است
+#   ✓ فاصلهٔ انتهایی نادیده گرفته می‌شود: «فملی2 » زیرنماد است
+#   ✓ «آ س پ» فیلتر نمی‌شود (فاصله در وسط نماد)
+#   ✓ «فملی» فیلتر نمی‌شود
+#   ✓ «شپنا» و «طلا» نماد اصلی‌اند
+#   ✓ فملیح حق تقدم شناخته می‌شود
+#   ✓ خودروح حق تقدم است ولی زیرنماد رقم‌دار نیست
+#   ✓ رشتهٔ خالی/null/undefined: نه زیرنماد، نه حق تقدم، نه نماد اصلی
+#   ✓ SUB_TICKER_RE همان قاعدهٔ ثبت‌شدهٔ پروژه است
+#   ✓ صف NAV هیچ نماد رقم‌دار یا حق تقدمی ندارد
+# nav blacklist: «تست‌الف» بعد از 2 دور ناموفق دائمی شد (اخطار BrsApi)
+#   ✓ ۲ دور NAV ناموفق → بلک‌لیست دائمی؛ دور موفق شمارنده را صفر می‌کند
+# 15 passed, 0 failed
+# Subtest: relay/symbols-util.test.mjs
+ok 32 - relay/symbols-util.test.mjs
+  ---
+  duration_ms: 303.515823
+  type: 'test'
+  ...
+1..276
+# tests 356
+# suites 0
+# pass 356
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 58818.823715
+
+ROOT_LINUX_RECEIPT:{"atUtc": "2026-11-04T17:50:05.054910+00:00", "providerRequests": 0, "primaryDataMounted": false, "source": "73c4b3ab769fe915f15c32206e5c8de7c6159a48", "containerName": "portfolio-brs-policy-test-30377c10514a4aff92e39cdeacd87fba", "cachedImage": "sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c", "primaryBefore": "healthy", "status": "LINUX_ISOLATED_TEST_COMPLETED", "exitCode": 0, "primaryAfter": "healthy", "ownedContainerAbsent": true}

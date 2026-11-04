@@ -1,0 +1,56 @@
+{
+  "atUtc": "2026-11-04T18:08:11.501773+00:00",
+  "source": "73c4b3ab769fe915f15c32206e5c8de7c6159a48",
+  "mergedMain": "ad90bc2c9d1a1d7f13853cd481c6b471ea735b1d",
+  "sourcePr": 414,
+  "linuxCi": {
+    "runId": 41879903533,
+    "attempt": 1,
+    "event": "workflow_dispatch",
+    "conclusion": "success",
+    "jobs": {
+      "Dependencies": 126749375785,
+      "Secret scan · SQL validation": 126749375541,
+      "Database RLS · Integrity (Postgres)": 126749375607,
+      "Typecheck · Lint · Tests · Build": 126749375401,
+      "CI Gate": 126751784617
+    },
+    "nativeAllocation": "skipped",
+    "fullCoreAndDbLogsIndependentlyRead": true
+  },
+  "prCi": {
+    "runId": 41877753986,
+    "conclusion": "success",
+    "earlierCancelRequestHttp": 409,
+    "cancelledByRoot": false
+  },
+  "firstPublish": {
+    "runId": 41883223653,
+    "jobId": 126760792661,
+    "attempt": 1,
+    "preflight": "success",
+    "preflightCliExit": 0,
+    "publish": "failure",
+    "providerApiResponse": 400,
+    "error": "platformConfig.version must be one of [latest, 22, 24]",
+    "healthAfterPublish": "skipped",
+    "acceptance": "skipped",
+    "bookkeeping": "skipped",
+    "newReleaseEstablished": false,
+    "readbackAfterRejectionRun": 41883724403
+  },
+  "correction": {
+    "pr": 415,
+    "source": "9abe32f717345dbac113406d101972ee5be7466c",
+    "onlyPath": "relay/liara.json",
+    "explicitNodeVersion": "22",
+    "linuxCiRun": 41883752418,
+    "linuxCiAcceptance": "pending",
+    "independentReview": "pending"
+  },
+  "sqlApplied": false,
+  "quotaReset": false,
+  "planChanged": false,
+  "extraProviderTestRequests": 0,
+  "twoNaturalCyclesAccepted": false
+}

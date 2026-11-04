@@ -1,0 +1,56 @@
+{
+  "atUtc": "2026-11-04T17:32:00.970252+00:00",
+  "readOnly": true,
+  "providerRequests": 0,
+  "deployments": [
+    {
+      "id": 7140686262,
+      "sha": "29de2b84c224101a57caa67dca961d75b2c8f4fe",
+      "createdAt": "2026-10-17T14:00:02Z",
+      "latestState": "success",
+      "image": "apps/6a5351feb95bf1e50c1ee34f:12qvoyo45aeb",
+      "payloadKeys": []
+    },
+    {
+      "id": 7057968732,
+      "sha": "065c293afa9a30ca2bd213c1936abaa92918cb57",
+      "createdAt": "2026-10-14T05:52:31Z",
+      "latestState": "inactive",
+      "image": "apps/6a5351feb95bf1e50c1ee34f:copewixp2ed3",
+      "payloadKeys": []
+    },
+    {
+      "id": 7050033074,
+      "sha": "72e2b3e32d8a80fa9544105f0e439012d9c48738",
+      "createdAt": "2026-10-13T21:03:47Z",
+      "latestState": "inactive",
+      "image": "apps/6a5351feb95bf1e50c1ee34f:68clp07cze34",
+      "payloadKeys": []
+    },
+    {
+      "id": 7049422082,
+      "sha": "c50f2fc3be583db0b014a1438598a8596e522539",
+      "createdAt": "2026-10-13T20:33:21Z",
+      "latestState": "inactive",
+      "image": "apps/6a5351feb95bf1e50c1ee34f:dm7nwma1koaa",
+      "payloadKeys": []
+    },
+    {
+      "id": 6744501302,
+      "sha": "e741c208d075c6e976d5cd1b4532d4c7b36159f6",
+      "createdAt": "2026-09-29T20:15:41Z",
+      "latestState": "inactive",
+      "image": "apps/6a5351feb95bf1e50c1ee34f:tivpcjnirm03",
+      "payloadKeys": []
+    },
+    {
+      "id": 6456794880,
+      "sha": "1d7e8f11084dec6fd43c81fe46a49baed6fe15bf",
+      "createdAt": "2026-09-15T10:29:45Z",
+      "latestState": "inactive",
+      "image": "apps/6a5351feb95bf1e50c1ee34f:7mwbs98ytrzw",
+      "payloadKeys": []
+    }
+  ],
+  "limitation": "GitHub publication ledger is not live Liara runtime or rollback acceptance."
+}

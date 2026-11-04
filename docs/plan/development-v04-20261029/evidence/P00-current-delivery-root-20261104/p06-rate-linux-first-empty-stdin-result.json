@@ -1,0 +1,15 @@
+{
+  "atUtc": "2026-11-04T17:49:41.290147+00:00",
+  "providerRequests": 0,
+  "primaryDataMounted": false,
+  "source": "73c4b3ab769fe915f15c32206e5c8de7c6159a48",
+  "containerName": "portfolio-brs-policy-test-6c08ef5171484e57ae74b31e2571801b",
+  "cachedImage": "sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c",
+  "primaryBefore": "healthy",
+  "status": "LINUX_ISOLATED_TEST_COMPLETED",
+  "exitCode": 2,
+  "primaryAfter": "healthy",
+  "ownedContainerAbsent": true,
+  "observedAtUtc": "2026-11-04T17:49:42.998886+00:00",
+  "automaticRetry": false
+}

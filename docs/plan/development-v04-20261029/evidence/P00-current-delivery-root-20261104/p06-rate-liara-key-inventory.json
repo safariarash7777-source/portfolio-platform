@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "mode": "liara-control-plane-read-only",
+  "startedAt": "2026-11-04T17:02:08.730Z",
+  "providerCalls": 0,
+  "remoteWrites": false,
+  "environmentValuePolicy": "RAM_ONLY",
+  "rawEnvironmentPublished": false,
+  "keyHashPublished": false,
+  "primaryProject": "arsadata",
+  "projectLimit": 5,
+  "projects": [
+    {
+      "projectId": "arsadata",
+      "configuredScale": 1,
+      "metadataState": "read",
+      "httpStatus": 200,
+      "mainKeyPresent": true,
+      "commodityKeyPresent": false,
+      "commodityOptIn": true,
+      "mainMatchesPrimary": true,
+      "commodityMatchesPrimary": true
+    }
+  ],
+  "completeForListedAccount": true,
+  "singleEgressEstablished": false,
+  "limitations": [
+    "Configured scale is not running process or pod inventory.",
+    "Only this Liara account is inspected; external, local and other-account key consumers remain separate checks.",
+    "Key equality is compared in RAM only; no key or stable key fingerprint is emitted.",
+    "This receipt does not prove global spacing, rolling quota, provider plan or IP ownership."
+  ],
+  "listedCount": 1,
+  "state": "observed",
+  "controlPlaneRequests": 2,
+  "completedAt": "2026-11-04T17:02:10.805Z"
+}

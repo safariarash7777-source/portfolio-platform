@@ -1,0 +1,18 @@
+{
+  "atUtc": "2026-11-04T17:50:02.462137+00:00",
+  "allocation": "30377c10514a4aff92e39cdeacd87fba",
+  "source": "73c4b3ab769fe915f15c32206e5c8de7c6159a48",
+  "archiveSha256": "7b5e674cd6e6957aa0177a154a9f7f264d28f8415704db8fb32400cfb787e03c",
+  "cachedImage": "sha256:43ac6c60b8f89723f746e8a92ce91abd5017e627ce1ddfe4238355d3a30b772c",
+  "containerName": "portfolio-brs-policy-test-30377c10514a4aff92e39cdeacd87fba",
+  "limits": {
+    "cpu": 1,
+    "memoryMiB": 512,
+    "pids": 128,
+    "tmpfsMiB": 128,
+    "network": "none",
+    "pull": "never"
+  },
+  "primaryDataMounted": false,
+  "automaticRetry": false
+}

@@ -84,3 +84,5 @@ p06-responsibility-* -text -whitespace
 
 p06-physical-* -text -whitespace
 p06-current-capacity-* -text -whitespace
+
+p06-rate-* -text -whitespace
