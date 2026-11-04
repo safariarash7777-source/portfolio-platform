@@ -51,6 +51,16 @@ test('unknown primary key does not assert that another project uses a different 
   const r = await collectEgressInventory({ token: 'private', fetchImpl: m.fetchImpl });
   assert.equal(r.projects[1].mainMatchesPrimary, null); assert.equal(r.completeForListedAccount, false);
 });
+test('invalid commodity activation stays unknown rather than asserting disabled or a different scope', async () => {
+  for (const value of [true, 1, null, {}, '', 'yes', ' 1 ']) {
+    const m = mock([{ project_id: 'arsadata', scale: 1 }], { arsadata: { project_id: 'arsadata', envs: [
+      { key: 'BRSAPI_KEY', value: 'privateA' }, { key: 'BRSAPI_COMMODITY_ENABLED', value },
+    ] } });
+    const r = await collectEgressInventory({ token: 'private', fetchImpl: m.fetchImpl });
+    assert.equal(r.completeForListedAccount, false); assert.equal(r.projects[0].metadataState, 'unconfirmed');
+    assert.equal(r.projects[0].commodityOptIn, null); assert.equal(r.projects[0].commodityMatchesPrimary, null);
+  }
+});
 test('only five projects, primary first; omitted projects remain an explicit gap', async () => {
   const projects = Array.from({ length: 8 }, (_, i) => ({ project_id: 'app-' + i, scale: 1 })).concat({ project_id: 'arsadata', scale: 1 });
   const m = mock(projects, Object.fromEntries(projects.map(p => [p.project_id, { ...p, envs: [] }])));

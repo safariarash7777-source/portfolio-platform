@@ -22,8 +22,10 @@ function selectedKeys(project) {
     if (matches.length > 1) throw Error('duplicate_environment_name');
     return matches[0]?.value;
   };
+  const enabled = select('BRSAPI_COMMODITY_ENABLED');
+  if (enabled !== undefined && enabled !== '0' && enabled !== '1') throw Error('invalid_commodity_activation');
   return { main: key(select('BRSAPI_KEY')), commodity: key(select('BRSAPI_COMMODITY_KEY')),
-    commodityOptIn: select('BRSAPI_COMMODITY_ENABLED') === '1' };
+    commodityOptIn: enabled === '1' };
 }
 
 async function boundedBody(response) {
