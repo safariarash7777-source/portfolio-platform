@@ -22,6 +22,7 @@ import {
 } from "recharts";
 import MeasuredResponsiveContainer from "./MeasuredResponsiveContainer";
 import MonthlyPointSourceLabel from "./MonthlyPointSourceLabel";
+import MonthlySourceChartFrame from "./MonthlySourceChartFrame";
 import { monthlyPointSources, type MonthlyPointSource, type MonthlySourceRecord } from "./monthly-point-provenance";
 import { toPersianDigits } from "@/lib/format";
 import type { CodalN30Data } from "@/lib/fundamental/types";
@@ -127,7 +128,7 @@ function MonthlyBars({ m, sources }: { m: MonthlySales; sources?: ReadonlyMap<st
     ...(sources ? { currentMonthKey: cm.monthKey, priorMonthKey: m.priorMonths?.[i].monthKey ?? null } : {}),
   }));
   return (
-    <div style={{ height: 280 }} dir="ltr">
+    <MonthlySourceChartFrame enabled={!!sources}>{trigger => (
       <MeasuredResponsiveContainer>
         <ComposedChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
@@ -139,6 +140,7 @@ function MonthlyBars({ m, sources }: { m: MonthlySales; sources?: ReadonlyMap<st
             orientation="right"
           />
           <Tooltip
+            trigger={trigger}
             contentStyle={tooltipStyle}
             wrapperStyle={sources ? { pointerEvents: "auto", maxWidth: "min(280px, 75vw)", overflowWrap: "anywhere" } : undefined}
             labelFormatter={sources ? (label, payload) => <MonthlyPointSourceLabel label={label} payload={payload} sources={sources} /> : undefined}
@@ -159,7 +161,7 @@ function MonthlyBars({ m, sources }: { m: MonthlySales; sources?: ReadonlyMap<st
           ) : null}
         </ComposedChart>
       </MeasuredResponsiveContainer>
-    </div>
+    )}</MonthlySourceChartFrame>
   );
 }
 
@@ -173,7 +175,7 @@ function CumulativeChart({ m, sources }: { m: MonthlySales; sources?: ReadonlyMa
     ...(sources ? { currentMonthKey: cm.monthKey, priorMonthKey: m.priorMonths?.[i].monthKey ?? null } : {}),
   }));
   return (
-    <div style={{ height: 280 }} dir="ltr">
+    <MonthlySourceChartFrame enabled={!!sources}>{trigger => (
       <MeasuredResponsiveContainer>
         <LineChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
@@ -185,6 +187,7 @@ function CumulativeChart({ m, sources }: { m: MonthlySales; sources?: ReadonlyMa
             orientation="right"
           />
           <Tooltip
+            trigger={trigger}
             contentStyle={tooltipStyle}
             wrapperStyle={sources ? { pointerEvents: "auto", maxWidth: "min(280px, 75vw)", overflowWrap: "anywhere" } : undefined}
             labelFormatter={sources ? (label, payload) => <MonthlyPointSourceLabel label={label} payload={payload} sources={sources} /> : undefined}
@@ -211,7 +214,7 @@ function CumulativeChart({ m, sources }: { m: MonthlySales; sources?: ReadonlyMa
           />
         </LineChart>
       </MeasuredResponsiveContainer>
-    </div>
+    )}</MonthlySourceChartFrame>
   );
 }
 

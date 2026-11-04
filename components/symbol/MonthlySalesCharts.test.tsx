@@ -122,6 +122,7 @@ test("Preview monthly and cumulative tooltips bind current/prior point identitie
     assert.ok(html.includes("point-2") && html.includes("point-3"));assert.ok(!html.includes("point-1"));
     assert.ok(html.includes("۱۴۰۴/۰۳/۳۱ ۱۴:۱۵:۱۶"));assert.ok(html.includes("۱۴۰۳/۰۳/۳۱ ۱۴:۱۵:۱۶"));
     assert.ok(html.includes("2026-11-04T13:22:33.123456+03:30"));assert.ok(html.includes("2026-11-04T09:52:33.123Z"));
+    assert.ok(html.includes('dir="ltr" style="display:block;white-space:normal;overflow-wrap:anywhere;word-break:break-all;text-align:left"'));
     assert.ok(html.includes("واحد مبلغ گزارش: میلیون ریال"));
     assert.ok(!html.includes("https://codal.ir/Reports/fixture"), "bundle reference is never a point source");
   }
@@ -152,9 +153,83 @@ test("non-Preview monthly charts ignore supplied point records and retain origin
   const shown = renderChart(reports, true, undefined, records);
   for (const tooltip of shown.traces.filter(t => t.component === "Tooltip").slice(0, 2)) {
     assert.equal(tooltip.props.labelFormatter, undefined);assert.equal(tooltip.props.wrapperStyle, undefined);
+    assert.equal(tooltip.props.trigger, undefined);
   }
   const point = chartData(shown.traces.find(t => t.component === "ComposedChart")!)[0];
   assert.equal(Object.hasOwn(point, "currentMonthKey"), false);assert.equal(Object.hasOwn(point, "priorMonthKey"), false);
+});
+
+test("Preview source charts pin pointer selection with click trigger, while ordinary tooltips remain unchanged", () => {
+  const shown = renderChart([report("1404-01-31")], true, ["1404", "all"]);
+  const tips = shown.traces.filter(t => t.component === "Tooltip");
+  assert.equal(tips[0].props.trigger, "click");assert.equal(tips[1].props.trigger, "click");
+  assert.ok(tips.slice(2).every(t => t.props.trigger === undefined));
+  assert.ok(shown.html.includes("با Tab به پیوند منبع بروید"));
+  assert.ok(!renderChart([report("1404-01-31")]).html.includes("با Tab به پیوند منبع بروید"));
+});
+
+function interactionFrame() {
+  class Target { constructor(public source = false) {} closest() { return this.source ? this : null; } }
+  let mode = "click";
+  const source = readFileSync(new URL("./MonthlySourceChartFrame.tsx", import.meta.url), "utf8");
+  const compiled = { exports: {} as { default: (props: { enabled: boolean; children: (trigger: unknown) => unknown }) => React.ReactElement } };
+  const javascript = ts.transpileModule(source, { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
+  vm.runInNewContext(javascript, { module: compiled, exports: compiled.exports, Element: Target, require: (id: string) => id === "react"
+    ? { ...React, useState: () => [mode, (value: string) => { mode = value; }] } : require(id) });
+  const render = (enabled = true) => {
+    const element = compiled.exports.default({ enabled, children: value => value });
+    const props = element.props as { children: React.ReactElement[] };
+    return (enabled ? props.children[1] : element).props as Record<string, unknown>;
+  };
+  const event = (target = new Target()) => ({ target, relatedTarget: null as Target | null, currentTarget: { contains: () => true }, key: "", stopped: false,
+    stopPropagation() { this.stopped = true; }, preventDefault() { assert.fail("native navigation and scrolling must not be cancelled"); } });
+  const send = (props: Record<string, unknown>, name: string, e: ReturnType<typeof event>) => (props[name] as (event: unknown) => void)(e);
+  return { Target, render, event, send };
+}
+
+test("source frame preserves keyboard-to-link focus and isolates native pointer movement without cancelling defaults", () => {
+  const { Target, render, event, send } = interactionFrame();
+  let props = render();assert.equal(props.children, "click");
+  for (const name of ["onMouseOverCapture", "onMouseMoveCapture", "onTouchMoveCapture"]) {
+    const e = event();send(props, name, e);assert.equal(e.stopped, true);
+  }
+  const arrow = event();arrow.key = "ArrowRight";send(props, "onKeyDownCapture", arrow);
+  props = render();assert.equal(props.children, "hover");assert.equal(arrow.stopped, false);
+  const link = new Target(true), blur = event();blur.relatedTarget = link;
+  send(props, "onBlurCapture", blur);assert.equal(blur.stopped, true);
+  const external = event();external.relatedTarget = link;external.currentTarget.contains = () => false;
+  send(props, "onBlurCapture", external);assert.equal(external.stopped, false);
+  const leave = event();send(props, "onBlurCapture", leave);assert.equal(leave.stopped, false);
+  send(props, "onPointerDownCapture", event(link));assert.equal(render().children, "hover");
+  send(props, "onPointerDownCapture", event());assert.equal(render().children, "click");
+  const plain = render(false);assert.equal(plain.children, undefined);
+  assert.ok(!Object.keys(plain).some(key => key.startsWith("on")));
+});
+
+test("actual Recharts reducer and selector keep clicked point on movement and support the isolated keyboard lane", () => {
+  const slice = require("recharts/lib/state/tooltipSlice");
+  const { combineTooltipInteractionState: select } = require("recharts/lib/state/selectors/combiners/combineTooltipInteractionState");
+  let state = slice.tooltipReducer(undefined, { type: "init" });
+  const pick = (index: string) => ({ activeIndex: index, activeCoordinate: { x: 20, y: 30 } });
+  state = slice.tooltipReducer(state, slice.setMouseClickAxisIndex(pick("2")));
+  state = slice.tooltipReducer(state, slice.setMouseOverAxisIndex(pick("8")));
+  assert.equal(select(state, "axis", "click").index, "2", "pointer motion cannot replace click selection");
+  state = slice.tooltipReducer(state, slice.mouseLeaveChart());
+  assert.equal(select(state, "axis", "click").index, "2");
+  state = slice.tooltipReducer(state, slice.setKeyboardInteraction({ ...pick("3"), active: true }));
+  assert.equal(select(state, "axis", "click").index, "2", "click lane would otherwise mask arrow navigation");
+  assert.equal(select(state, "axis", "hover").index, "3", "isolated hover lane exposes keyboard selection");
+});
+
+test("source label stops chart click/focus/Enter handlers without suppressing anchor navigation or Escape", () => {
+  const mod = loadTooltipDependency("MonthlyPointSourceLabel") as { default: (props: { label: string; payload: unknown[]; sources: Map<string, unknown> }) => React.ReactElement };
+  const label = mod.default({ label: "ماه", payload: [], sources: new Map() });
+  const props = label.props as Record<string, (event: unknown) => void>;
+  for (const [handler, key, expected] of [["onClick", "", true], ["onFocus", "", true], ["onKeyDown", "Enter", true], ["onKeyDown", "Escape", false]] as const) {
+    let stopped = false;
+    props[handler]({ key, stopPropagation() { stopped = true; }, preventDefault() { assert.fail("must preserve native anchor default"); } });
+    assert.equal(stopped, expected);
+  }
 });
 
 test("monthly charts render declared units, actual values, calendar gaps and unit-bearing tooltips", () => {

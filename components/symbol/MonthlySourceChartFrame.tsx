@@ -1,0 +1,36 @@
+import React, { useState } from "react";
+
+const isSource = (target: EventTarget | null) => target instanceof Element
+  && target.closest("[data-monthly-point-source]") !== null;
+
+/** Recharts 3 keeps click and keyboard selection separately. A click selection
+ * wins over keyboard selection, so keyboard navigation must use the hover lane.
+ * Do not populate the hover lane with pointer events: those would win over the
+ * keyboard selection too. Pointer selection is deliberate click/tap only.
+ */
+export default function MonthlySourceChartFrame({ enabled, children }: {
+  enabled: boolean;
+  children: (trigger: "click" | "hover" | undefined) => React.ReactNode;
+}) {
+  const [trigger, setTrigger] = useState<"click" | "hover">("click");
+  if (!enabled) return <div style={{ height: 280 }} dir="ltr">{children(undefined)}</div>;
+  return <>
+    <p className="mb-2 text-xs leading-5" dir="rtl">
+      برای دیدن منبع، روی نقطه کلیک یا لمس کنید. با صفحه‌کلید، نمودار را انتخاب کنید و از کلیدهای چپ و راست استفاده کنید؛ با Tab به پیوند منبع بروید. Escape جزئیات را می‌بندد.
+    </p>
+    <div style={{ height: 280 }} dir="ltr"
+      onPointerDownCapture={event => { if (!isSource(event.target)) setTrigger("click"); }}
+      onMouseOverCapture={event => event.stopPropagation()}
+      onMouseMoveCapture={event => event.stopPropagation()}
+      onTouchMoveCapture={event => event.stopPropagation()}
+      onKeyDownCapture={event => {
+        if (isSource(event.target)) return;
+        if (["ArrowLeft", "ArrowRight", "Enter"].includes(event.key)) setTrigger("hover");
+      }}
+      onBlurCapture={event => {
+        // Focusing the link is still part of this chart's keyboard interaction.
+        if (isSource(event.relatedTarget) && event.currentTarget.contains(event.relatedTarget as Node)) event.stopPropagation();
+      }}
+    >{children(trigger)}</div>
+  </>;
+}

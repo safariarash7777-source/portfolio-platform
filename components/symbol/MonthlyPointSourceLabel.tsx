@@ -25,7 +25,11 @@ export default function MonthlyPointSourceLabel({ label, payload, sources }: {
     return [{ series: typeof item.name === "string" ? item.name : item.dataKey === "current" ? "سال جاری" : "سال قبل", source }];
   });
   const text = (value: string | null | undefined) => value ? toPersianDigits(value) : "نامعلوم";
-  return <span>
+  return <span data-monthly-point-source=""
+    onClick={event => event.stopPropagation()}
+    onFocus={event => event.stopPropagation()}
+    onKeyDown={event => { if (event.key !== "Escape") event.stopPropagation(); }}
+  >
     <span>{typeof label === "string" || typeof label === "number" ? toPersianDigits(label) : ""}</span>
     {entries.map(({ series, source }) => <span key={series} className="mt-2 block border-t border-border pt-2 text-xs leading-5" dir="rtl">
       <span className="block font-semibold">منشأ {series}</span>
@@ -33,8 +37,8 @@ export default function MonthlyPointSourceLabel({ label, payload, sources }: {
       <span className="block">واحد مبلغ گزارش: {text(source?.amountUnit)}</span>
       {source?.record ? <>
         <span className="block">انتشار در کدال (زمان محلی): {text(source.record.publishedAt)}</span>
-        <span className="block">دریافت رکورد (متن اصلی): <bdi>{source.record.capturedAtRaw ?? "نامعلوم"}</bdi></span>
-        <span className="block">دریافت رکورد (UTC): <bdi>{source.record.capturedAt ?? "نامعلوم"}</bdi></span>
+        <span className="block">دریافت رکورد (متن اصلی): <bdi dir="ltr" style={{ display: "block", whiteSpace: "normal", overflowWrap: "anywhere", wordBreak: "break-all", textAlign: "left" }}>{source.record.capturedAtRaw ?? "نامعلوم"}</bdi></span>
+        <span className="block">دریافت رکورد (UTC): <bdi dir="ltr" style={{ display: "block", whiteSpace: "normal", overflowWrap: "anywhere", wordBreak: "break-all", textAlign: "left" }}>{source.record.capturedAt ?? "نامعلوم"}</bdi></span>
         <span className="block">پایان دورهٔ ذخیره‌شده: {text(source.record.storedPeriodEnd)}</span>
         {source.record.amendment ? <span className="block">اصلاحیهٔ گزارش</span> : null}
         <CodalSourceLink url={source.record.sourceUrl} className="block underline" fallback={<span className="block">پیوند دقیق این رکورد نامعلوم است.</span>}>اطلاعیهٔ همین رکورد</CodalSourceLink>
