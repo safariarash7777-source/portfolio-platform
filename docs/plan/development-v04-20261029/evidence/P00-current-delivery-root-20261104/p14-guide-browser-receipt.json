@@ -1,0 +1,291 @@
+{
+  "startedAt": "2026-11-04T11:13:40.564Z",
+  "source": "9a44f528059e033d8faf154ec8abfcb6c52682be",
+  "deployment": "dpl_AcdJ7HyJ4oVSmwBz273dq6CgaCFJ",
+  "console": [
+    {
+      "type": "error",
+      "message": "Loading the script 'https://vercel.live/_next-live/feedback/feedback.js' violates the following Content Security Policy directive: \"script-src 'self' 'unsafe-inline' 'unsafe-eval'\". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    },
+    {
+      "type": "error",
+      "message": "Failed to load resource: the server responded with a status of 502 ()"
+    }
+  ],
+  "pageErrors": [],
+  "requests": [
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/35d9eb37be8f3c35-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/4ff1260a1bda0420-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/7009a0e6afae0c20-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/media/902e9716815fb483-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/css/ee04187d2ae996e6.css"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/css/98893245a284ed5d.css"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/image"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/webpack-0cd5a77e5b2d4660.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/1255-60d8dc7c8c9309a1.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/main-app-b7ac91ae224968d9.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/d0709137-02608d4546722e55.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2619-04bc32f026a0d946.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2473-cd6d92efe10b616a.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/9612-22d0ecbe80f54ecc.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2412-50bb95a06d778a49.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/5325-aff43f442ed94447.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/6740-7ddb8a9f1d500af3.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/6698-a1b4aaf792e2d6bf.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/2287-d0a13c11a3ad0980.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/4787-cdefad716dc78e6f.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/1545-e7fb6452e04098ad.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/app/symbol/%5Bsymbol%5D/page-4c16781edf8848dd.js"
+    },
+    {
+      "method": "GET",
+      "host": "vercel.live",
+      "path": "/_next-live/feedback/feedback.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/learn/glossary"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/1627-f9cd4eeb07c8b04d.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/_next/static/chunks/app/learn/glossary/page-85a34010b35f3288.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/api/symbol-detail"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app",
+      "path": "/learn/glossary"
+    }
+  ],
+  "checks": [
+    {
+      "group": "فروش ماهانه و کارت بنیادی",
+      "opened": true,
+      "chartExplanations": 6,
+      "headings": [
+        "روند و ترکیب فروش در کارت بنیادی",
+        "فروش ماهانه",
+        "فروش تجمیعی",
+        "روند نرخ فروش",
+        "ترکیب محصولاتِ آخرین ماه",
+        "تولید و فروش محصول اصلی"
+      ]
+    },
+    {
+      "group": "صورت مالی مرجع و نمودارهای تکمیلی",
+      "opened": true,
+      "chartExplanations": 6,
+      "headings": [
+        "حاشیه‌های سودِ گزارش",
+        "سود خالصِ گزارش",
+        "سهم محصولات از فروشِ کل بازه",
+        "نرخ و مقدار محصول پرفروشِ کل بازه",
+        "مقدار تولید در برابر مقدار فروشِ کل بازه",
+        "روند سالانهٔ فروش و حاشیهٔ ناخالص"
+      ]
+    },
+    {
+      "group": "فصل‌سازی و نسبت قیمت به سود",
+      "opened": true,
+      "chartExplanations": 3,
+      "headings": [
+        "درآمد و سود خالص فصلی",
+        "روند حاشیه‌های سود فصلی",
+        "روند P/E دوازده‌ماهه"
+      ]
+    },
+    {
+      "group": "نمودارهای بازار در نمای کلی",
+      "opened": true,
+      "chartExplanations": 2,
+      "headings": [
+        "قیمت پایانی",
+        "خالص ورود پول حقیقی"
+      ]
+    }
+  ],
+  "documentStatus": 200,
+  "initialClosed": true,
+  "mobile": {
+    "width": 375,
+    "scrollWidth": 375
+  },
+  "keyboardToggle": true,
+  "dossier": {
+    "url": "https://portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=8#fundamental",
+    "groups": 4,
+    "headings": 17,
+    "width": 375,
+    "scrollWidth": 375
+  },
+  "final": {
+    "url": "https://portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=8#fundamental",
+    "guideGroups": 4,
+    "guideExplanations": 17,
+    "width": 1440,
+    "scrollWidth": 1440,
+    "badge": "preview · 9a44f52"
+  },
+  "observedProductMutations": [],
+  "networkBodiesHeadersOrQueryStored": false,
+  "navigationCount": 1,
+  "finishedAt": "2026-11-04T11:15:41.148Z",
+  "browserVersion": "156.0.8078.80",
+  "acceptance": "LIMITED_PREVIEW_GUIDE_ONLY_NOT_HUMAN_OR_PRODUCTION",
+  "ownedBrowserClosed": true
+}

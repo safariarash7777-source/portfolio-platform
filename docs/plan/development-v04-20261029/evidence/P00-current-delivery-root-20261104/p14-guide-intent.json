@@ -1,0 +1,22 @@
+{
+  "schema": "p14-guide-preview-binding-intent.v1",
+  "source": "9a44f528059e033d8faf154ec8abfcb6c52682be",
+  "tree": "9a284101d9a0e6af5574bae63bb9e4a7db7b309d",
+  "project": "prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp",
+  "slug": "safariarash7777-4463s-projects",
+  "existingDeployment": "dpl_3Kdc8YaikGewnM4BnjRWHiTZZu3L",
+  "fromBranch": "codex/media-archive-filters-20261103",
+  "snapshotBranch": "codex/p14-company-views-20261104",
+  "envIds": ["9NEamcg9U7e4wcSX", "rbwHDphHrW3rf8Hk"],
+  "onlyEnvFieldChanged": "gitBranch",
+  "decryptValues": false,
+  "valueReadOrChanged": false,
+  "productionChange": false,
+  "automaticRetry": false,
+  "sourceReview": "49 packet files and every before Git blob verified; 14 snapshots unchanged; only two UI files changed",
+  "rootTextCorrection": "share of domestic/export sales, not ambiguous market share",
+  "lint": "PASS via existing node.exe and installed ESLint; initial npx unavailable and did not execute",
+  "acceptance": "PENDING_NEW_PREVIEW_NOT_TRANSFERRED_FROM_7fd",
+  "originalPreviewRetained": "dpl_Hqnmqm3e6VyfY8s7X8YXUKGbttAq",
+  "primaryInstall": "NOT_APPLIED"
+}

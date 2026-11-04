@@ -1,0 +1,278 @@
+{
+  "status": "LOCAL_REVIEW_READY_NOT_DEPLOYED",
+  "base": "7fd355b8f7c39328b5f545831e1ced41bb9e1936",
+  "changed": [
+    "components/symbol/CompanyReportSources.tsx",
+    "components/symbol/SymbolDossier.module.css"
+  ],
+  "unchangedSnapshotFiles": 14,
+  "patchCheck": "PASS against exact before bytes",
+  "patchStats": "62\t0\tcomponents/symbol/CompanyReportSources.tsx\n10\t0\tcomponents/symbol/SymbolDossier.module.css",
+  "sourceLineage": "No additional independent C/capital binding in captured bytes; guard unchanged",
+  "verification": {
+    "source": "7fd355b8f7c39328b5f545831e1ced41bb9e1936",
+    "ssrFixtures": [
+      "read-error",
+      "empty",
+      "unknown-unit-time"
+    ],
+    "originalSourceHeaderUnchanged": true,
+    "disclosureGroups": 4,
+    "chartExplanations": 17,
+    "typecheckDiagnostics": 0,
+    "limitations": [
+      "CSS module and unchanged CodalSourceLink are SSR presentation shims",
+      "Not a browser or deployment test",
+      "Typecheck uses installed checkout dependencies with candidate source overlay; coordinator owns exact integrated build/CI"
+    ]
+  },
+  "checkoutHead": "5fe459f5cf61a5cb7c01a70c23ba86270191c2ec",
+  "checkoutStatus": "",
+  "files": [
+    {
+      "path": "after/app/symbol/[symbol]/page.tsx",
+      "sha256": "f055c18ed260d04e276864e412044c5f0a42b53cf6b8b8bb5a341a80e71d0ce1",
+      "bytes": 33216
+    },
+    {
+      "path": "after/components/symbol/CodalSourceLink.tsx",
+      "sha256": "3ddec6c3bf3e91140c4a9f9bd205114e04fe656198896b1b2268cda96dd2bc95",
+      "bytes": 538
+    },
+    {
+      "path": "after/components/symbol/CompanyReportSources.tsx",
+      "sha256": "6019a8324153b3d0d560b6de0b3aab658fcd9c07d6cfe3a46420d523cc697ddb",
+      "bytes": 15072
+    },
+    {
+      "path": "after/components/symbol/FundamentalCharts.tsx",
+      "sha256": "82e0bc8abe98a15474f25fc6d569f64a3cce32a0131143ea8ab48ade3391afea",
+      "bytes": 35463
+    },
+    {
+      "path": "after/components/symbol/MonthlySalesCharts.tsx",
+      "sha256": "88496a8a69cc6519c6e58ba6d00e06e906e4bdda0c2d1fbe9612498be353b8fb",
+      "bytes": 26921
+    },
+    {
+      "path": "after/components/symbol/QuarterlyCharts.tsx",
+      "sha256": "585c9af6c8325704242d79643796349ad753f61cbbd3b984e92a572990bf658b",
+      "bytes": 11576
+    },
+    {
+      "path": "after/components/symbol/SymbolDossier.module.css",
+      "sha256": "b057d987b2437314d049cb43ddddff414c3a16f44d52d60a61eaa8e6bf1224b0",
+      "bytes": 8535
+    },
+    {
+      "path": "after/components/symbol/SymbolFundamentalCard.tsx",
+      "sha256": "0d00248fe7233b16c3b3d3ff50de6fa93527b26effbb10dd9a69510767d83800",
+      "bytes": 11842
+    },
+    {
+      "path": "after/components/terminal/HistoryChart.tsx",
+      "sha256": "b77d5d23912e20259f2014d234eee3d95929569d5fd925579c08c353a48246b3",
+      "bytes": 4045
+    },
+    {
+      "path": "after/lib/core/fundamentalCard.ts",
+      "sha256": "eb45cf007773bcbcfccf3d951230dc46f533ee1fc8c6dc99a7c24264807fbbca",
+      "bytes": 11844
+    },
+    {
+      "path": "after/lib/core/monthly-quantity.ts",
+      "sha256": "244b6925cd80a65984d956e3ca671b364a7a353e182ccf8dd7aee76877d78b2d",
+      "bytes": 9415
+    },
+    {
+      "path": "after/lib/core/monthlyReport.ts",
+      "sha256": "7359f0ccb5881fe9deb0770c0f4e0bb726c916d38779db6f7d599abe40dc21f3",
+      "bytes": 33312
+    },
+    {
+      "path": "after/lib/core/quarterly.ts",
+      "sha256": "8388f22c693cc0dd1399ac23cdca591a40f989320beb837183468c634a6e4742",
+      "bytes": 12380
+    },
+    {
+      "path": "after/lib/format.ts",
+      "sha256": "434790b4d1e4ddf7a5b39a2c7a0321ec81844849ca92287b2cdbf8fe40c79ac5",
+      "bytes": 12112
+    },
+    {
+      "path": "after/lib/fundamental/calc.ts",
+      "sha256": "8a48c5764e7a9ee6cd1e174ae64d2a791946857a3e5ab9e15cde67369b88c505",
+      "bytes": 14567
+    },
+    {
+      "path": "after/lib/fundamental/types.ts",
+      "sha256": "bea403ac912a56e966c78a7bff296e7de7a211e3edcd4f833b9362ed8b60ccee",
+      "bytes": 7011
+    },
+    {
+      "path": "archive-lineage.json",
+      "sha256": "b85319c02f7a5a3b61ce6756a67c32ce1910803b11f0f6d10be70c353789fb1c",
+      "bytes": 20811
+    },
+    {
+      "path": "archive-lineage.mjs",
+      "sha256": "0f852f613435e2c998106c04d770963d68ca6d2cd4a3a06bba38ebe3fadcaf50",
+      "bytes": 2797
+    },
+    {
+      "path": "baseline.json",
+      "sha256": "5f2a48c436ff6a23ff831095b98e98830ee63f11867a1cfed19a3a8dc8206a33",
+      "bytes": 2748
+    },
+    {
+      "path": "before/app/symbol/[symbol]/page.tsx",
+      "sha256": "f055c18ed260d04e276864e412044c5f0a42b53cf6b8b8bb5a341a80e71d0ce1",
+      "bytes": 33216
+    },
+    {
+      "path": "before/components/symbol/CodalSourceLink.tsx",
+      "sha256": "3ddec6c3bf3e91140c4a9f9bd205114e04fe656198896b1b2268cda96dd2bc95",
+      "bytes": 538
+    },
+    {
+      "path": "before/components/symbol/CompanyReportSources.tsx",
+      "sha256": "0ce4aa80a4e6bdcb0b61a83bbca8a4453165e94d96dd7779010c680411333b48",
+      "bytes": 3507
+    },
+    {
+      "path": "before/components/symbol/FundamentalCharts.tsx",
+      "sha256": "82e0bc8abe98a15474f25fc6d569f64a3cce32a0131143ea8ab48ade3391afea",
+      "bytes": 35463
+    },
+    {
+      "path": "before/components/symbol/MonthlySalesCharts.tsx",
+      "sha256": "88496a8a69cc6519c6e58ba6d00e06e906e4bdda0c2d1fbe9612498be353b8fb",
+      "bytes": 26921
+    },
+    {
+      "path": "before/components/symbol/QuarterlyCharts.tsx",
+      "sha256": "585c9af6c8325704242d79643796349ad753f61cbbd3b984e92a572990bf658b",
+      "bytes": 11576
+    },
+    {
+      "path": "before/components/symbol/SymbolDossier.module.css",
+      "sha256": "a4b76f391d018b8b8741d67d30fad3fec790fad6cce3829d50528eb5b370783b",
+      "bytes": 7675
+    },
+    {
+      "path": "before/components/symbol/SymbolFundamentalCard.tsx",
+      "sha256": "0d00248fe7233b16c3b3d3ff50de6fa93527b26effbb10dd9a69510767d83800",
+      "bytes": 11842
+    },
+    {
+      "path": "before/components/terminal/HistoryChart.tsx",
+      "sha256": "b77d5d23912e20259f2014d234eee3d95929569d5fd925579c08c353a48246b3",
+      "bytes": 4045
+    },
+    {
+      "path": "before/lib/core/fundamentalCard.ts",
+      "sha256": "eb45cf007773bcbcfccf3d951230dc46f533ee1fc8c6dc99a7c24264807fbbca",
+      "bytes": 11844
+    },
+    {
+      "path": "before/lib/core/monthly-quantity.ts",
+      "sha256": "244b6925cd80a65984d956e3ca671b364a7a353e182ccf8dd7aee76877d78b2d",
+      "bytes": 9415
+    },
+    {
+      "path": "before/lib/core/monthlyReport.ts",
+      "sha256": "7359f0ccb5881fe9deb0770c0f4e0bb726c916d38779db6f7d599abe40dc21f3",
+      "bytes": 33312
+    },
+    {
+      "path": "before/lib/core/quarterly.ts",
+      "sha256": "8388f22c693cc0dd1399ac23cdca591a40f989320beb837183468c634a6e4742",
+      "bytes": 12380
+    },
+    {
+      "path": "before/lib/format.ts",
+      "sha256": "434790b4d1e4ddf7a5b39a2c7a0321ec81844849ca92287b2cdbf8fe40c79ac5",
+      "bytes": 12112
+    },
+    {
+      "path": "before/lib/fundamental/calc.ts",
+      "sha256": "8a48c5764e7a9ee6cd1e174ae64d2a791946857a3e5ab9e15cde67369b88c505",
+      "bytes": 14567
+    },
+    {
+      "path": "before/lib/fundamental/types.ts",
+      "sha256": "bea403ac912a56e966c78a7bff296e7de7a211e3edcd4f833b9362ed8b60ccee",
+      "bytes": 7011
+    },
+    {
+      "path": "candidate.patch",
+      "sha256": "a569cb0f7a08071a046b33f27d338bbc518f05d8c2e8ec57f9c9d662600328b8",
+      "bytes": 14720
+    },
+    {
+      "path": "lint-final.log",
+      "sha256": "482bb4fabaab14e8e852857d7a8dcbda4d3c3f17c9d0e80f9e5d8937b4703bb9",
+      "bytes": 94
+    },
+    {
+      "path": "lint.cjs",
+      "sha256": "d4db19d5473135247b2699aeb47fc7d33110cd17fbf6740564689d646561ca11",
+      "bytes": 871
+    },
+    {
+      "path": "lint.log",
+      "sha256": "c0ad35f4bf76ac7ad1cdb35981305b2060b0b81aea7a6b110531e00cc7d686b2",
+      "bytes": 256
+    },
+    {
+      "path": "prepare.mjs",
+      "sha256": "09a48daf9a43f46d344b2fce88fc1a07b60643e1e63350644bec2b1389206781",
+      "bytes": 1628
+    },
+    {
+      "path": "RESULT.fa.md",
+      "sha256": "c88d1adb4da78e63fb7541f7adaa7a944a136675384399f7427025e307519108",
+      "bytes": 11581
+    },
+    {
+      "path": "seal.mjs",
+      "sha256": "3eece46ac31c5815bcfe6ab6dafd37441d3b0161af61bae05857801fa4513521",
+      "bytes": 2863
+    },
+    {
+      "path": "ssr-empty.html",
+      "sha256": "41b2e53666b196c91cec9477566d1c62930b81a1a61c57df39c3c19f1efa64e3",
+      "bytes": 13092
+    },
+    {
+      "path": "ssr-read-error.html",
+      "sha256": "714f6b6985390a4ec4080d2739f91e784fe1a8869e904f80c54ca13476d0b25c",
+      "bytes": 13071
+    },
+    {
+      "path": "ssr-unknown-unit-time.html",
+      "sha256": "223044d331483fd0d120a1eb893f96aef54b43bf8b870d999c86db32ce0abcde",
+      "bytes": 13583
+    },
+    {
+      "path": "verification-final.log",
+      "sha256": "b08dc1f813e3e3525119a3b701f7970b37557385777260c04f6b1e29109c7bab",
+      "bytes": 382
+    },
+    {
+      "path": "verification.json",
+      "sha256": "11ea7ae4ab1cdd3e5a8216bff33b9284027fd63cd3a22c99f4eff6b9240cb330",
+      "bytes": 526
+    },
+    {
+      "path": "verification.log",
+      "sha256": "b08dc1f813e3e3525119a3b701f7970b37557385777260c04f6b1e29109c7bab",
+      "bytes": 382
+    },
+    {
+      "path": "verify.cjs",
+      "sha256": "773c2de717d530001b056ac6fdb75bff63656c1396be4b53b737cc5eab86e40e",
+      "bytes": 4559
+    }
+  ]
+}

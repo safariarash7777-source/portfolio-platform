@@ -1,3 +1,21 @@
+## تحویل قابل استفادهٔ شرکت — راهنمای۱۷نمایش، نسخه9a44
+
+**منبع، زمان و واحدِ هر خانوادهٔ نمودار اکنون روی صفحه توضیح دارد.** [نمای پرسش‌محور](https://portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=decision&monthlyYear=1403&quarters=8#company-sources) و [پروندهٔ مستند](https://portfolio-platform-aq5mxujhi-safariarash7777-4463s-projects.vercel.app/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF?view=dossier&monthlyYear=1403&quarters=8#company-sources)، [PR408/source9a44](https://github.com/safariarash7777-source/portfolio-platform/pull/408)، Preview dpl_AcdJ7HyJ4oVSmwBz273dq6CgaCFJ/READY.
+
+چهار بخش بازوبسته‌شوندهٔ «منبع و معنای هر نمودار» برای۱۷نمایشِ موجود توضیح دارند: دورهٔ ماهانه/تجمعی/فصل/TTM، واحد مبلغ یا مخرج نرخ، و شرط گپ. راهنما وضعیت فعلی نماد را دوباره محاسبه نمی‌کند و فقدان داده را با علتِ حدس‌زده پر نمی‌کند؛ وضعیت واقعی کنار همان نمودار است. منبع واقعی بالای صفحه و نمودارها/فیلترها/محاسبات بدون تغییر حفظ شدند. تعبیر مبهم سهم بازار در متن تازه به سهم فروش داخلی/صادراتی تصحیح شد. [نقشه۱۷نمایش به کد و قرارداد](p14-guide-source-RESULT.fa.md).
+
+[مرورگر مستقل](p14-guide-browser-receipt.json): document200، نشانDOM9a44، هر۴بخش واقعاً باز/بسته،۱۷عنوان خوانده، Space/Enter کار کرد، دوview و سال۱۴۰۳/۸فصل حفظ شدند. عرض۱۴۴۰ و۳۷۵ بدون سرریز بود؛۸قاب نمودار با اندازه مثبت جدا در خروجیroot مشاهده شدند، نه تکرار کامل پذیرش فیلتر/tooltip قبلی7fd. [دسکتاپ](p14-guide-guide-desktop-closed.png)، [موبایل باز](p14-guide-guide-mobile.png)، [پرونده در موبایل](p14-guide-guide-dossier-mobile.png). مرورگر owned بسته شد. یکdocument navigation و۳۷درخواست باmethod/host/path ثبت شدند؛ APImutationمشاهده‌شده صفر، بدون body/header/query.
+
+**محدودیت واقعی این اجرا:** pageerrorصفر بود، اما consoleخالی نبود: یکCSPblock برای VercelPreviewfeedback و۴خطایresource502 بدون نگاشت مستقلresponseبهendpoint ثبت شد. قیمت/تاریخچه درUIناموجود و بنیادیN10/N30حاضر بودند؛ علت502 بهخانوادهخاص نسبت داده نشده است. پذیرش کنسولخالی7fd بهاینsourceمنتقل نشده؛ راهنما حلِ sourcepipeline یا دریافتِ تازه محسوب نمی‌شود. نرخ/واحد مقدار،بازار،نسبت‌های فاقدقیمت و لینکمنشأِ تک‌تک نقطه‌ها هنوز بازند.
+
+[CI41818897629 وtree واقعی612برابر9a44](p14-guide-root-source-ci-review.json) هر۵jobموفق،nativeSKIPPED؛ [لاگ کاملCore/DBroot](p14-guide-root-full-ci-log-review.json) خوانده شد. فقط۲فایلUI و۷۲خط افزوده نسبت7fd،۴۹artifactوbeforeblobها مستقل بررسی شدند؛۱۴snapshot ثابت ماند. [snapshotخواندنی وrestore](p14-guide-create-and-restore.json) فقطgitBranch همان۲envحساسPreview را براییکbuild جابه‌جا و بازگرداند؛valueخوانده/عوض نشد و۴۵metadataدیگر ثابت ماندند. Productionتغییر نکرد.
+
+**عضو:** نتیجهٔ واقعی418169 پایین محفوظ وFAILاست؛ علتrunهمچنانUNKNOWN. درsourceیک نقص مستقل قطعی یافت شد: validatorآماده‌سازیasync است ولی Promiseآن بدونawait مصرف وpreparationIdازآن خوانده می‌شود. [تابعواقعیe0](https://github.com/safariarash7777-source/portfolio-platform/blob/e0b930927563d7f9f6d79e848917c4ba0d77ed6f/lib/consultation/ticketAttemptStorageContracts.ts#L49). همانpeerموجود candidateمحدود باvalidatorواقعی می‌سازد؛ اینیافته بهمعنی اثبات علتrunیااصلاح منتشرشده نیست.
+
+**تعهد بسته/باز و سه تحویل بعدی:** برش راهنمای منبع/تعریف۱۷نمایش و تعامل آن درPreview آماده بررسی است؛ انتخاب بصری آرش و کلP14/P07بازند. **root/C:** اصلاحasync وprojectionثابت،CI و تخصیص تازه پسازگیت؛ **C/root:** اتصالcallerوتمرینواقعیSTART-AکپیLinuxباbackup/history؛ **A/root:** منبع/زمانِ تک‌نقطه‌ها و واحدهایِ دارای شاهد. درآرشیوموجود مسیرrenderC/سرمایهشاهدتازه نداد؛ guardPR406ثابت است. نصب اصلیNOT_APPLIED،حقخدمتNOT_CONNECTED و مسیرکاملNOT_ACCEPTED؛Hermesهزینه/نصب/مدل ندارد.
+
+### رسید پیشین؛ وضعیت در زمان خود
+
 ## نتیجهٔ اجرای عملی Linux — 41816967134، پایان۱۰:۵۹UTC
 
 **اصلاح کنترل‌گر کار کرد؛ مسیر کامل عضو هنوز مردود است.** [تلاش تازه41816967134](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41816967134) با sourceدقیقd6، attempt1 و allocation5a278 از نصب lock کنترل‌گر،۶۹گارد آفلاین، prepare و lock برنامه عبور کرد و native واقعاً اجرا شد. [رسید خام امن](p03-native-418169-receipt.json)، [ZIP اصلی](p03-native-418169-safe-artifact.zip) و [بازخوانی مستقل root](p03-native-418169-independent-readback.json) باrun/source/allocation/executionUUID وdigest تطبیق شدند.

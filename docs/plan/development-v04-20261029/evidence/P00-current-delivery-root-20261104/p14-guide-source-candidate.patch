@@ -1,0 +1,100 @@
+diff --git a/components/symbol/CompanyReportSources.tsx b/components/symbol/CompanyReportSources.tsx
+index b2f06f9..a42ed38 100644
+--- a/components/symbol/CompanyReportSources.tsx
++++ b/components/symbol/CompanyReportSources.tsx
+@@ -3,6 +3,52 @@ import { toPersianDigits } from "@/lib/format";
+ import CodalSourceLink from "./CodalSourceLink";
+ import styles from "./SymbolDossier.module.css";
+ 
++// Reading guide for the existing charts, not a second readiness calculator.
++// It describes dependencies; live availability remains with each chart/model.
++const chartGuide = [
++  {
++    title: "فروش ماهانه و کارت بنیادی",
++    source: "گزارش‌های فعالیت ماهانهٔ کدال؛ هر ماه اطلاعیه و زمان انتشار خودش را دارد.",
++    charts: [
++      { title: "روند و ترکیب فروش در کارت بنیادی", time: "۱۲ ماه منتهی به آخرین گزارش موجود؛ ترکیب و جدول محصولات مربوط به آخرین ماه است.", unit: "مبلغ: میلیارد تومان؛ سهم بازار: درصد؛ مقدار: واحد ثبت‌شدهٔ همان کالا.", gap: "ماه غایب خالی است. تفکیک داخلی/صادراتیِ تأییدنشده، پوشش ناقص یا مبلغ اصلاحی/منفی، سهم بازار را نامعلوم نگه می‌دارد." },
++      { title: "فروش ماهانه", time: "سال انتخابی و سال قبل؛ میانگین فقط از ماه‌های دارای مبلغ ساخته می‌شود.", unit: "مبلغ گزارش: میلیون ریال؛ نمایش: میلیارد تومان یا همت.", gap: "ماه بدون گزارش یا مبلغ معتبر ستون ندارد؛ نبود گزارش به معنای فروش صفر نیست." },
++      { title: "فروش تجمیعی", time: "عدد تجمعیِ همان گزارش از آغاز سال مالی شرکت؛ انتخاب سال تقویمی، آغاز سال مالی را عوض نمی‌کند.", unit: "مبلغ گزارش: میلیون ریال؛ نمایش: میلیارد تومان یا همت.", gap: "اگر خود گزارش مبلغ تجمعی نداشته باشد، نقطه خالی می‌ماند؛ مبلغ یک ماه جای آن نمی‌نشیند." },
++      { title: "روند نرخ فروش", time: "ماه‌های سال انتخابی؛ محصول و بازار انتخاب‌شده در همین نمودار اعمال می‌شود.", unit: "ریال به ازای واحد مشخص کالا؛ واحدهای متفاوت در نمودارهای جدا.", gap: "مقدار یا نرخ غایب و واحد نرخِ تأییدنشده نقطه نمی‌سازند. معلوم‌بودن واحد مبلغ، واحد نرخ را ثابت نمی‌کند." },
++      { title: "ترکیب محصولاتِ آخرین ماه", time: "آخرین ماه دارای گزارش در بازهٔ انتخابی؛ با سهم محصولات کل بازه متفاوت است.", unit: "سهم از مبلغ فروش: درصد؛ مبلغ در توضیح هر بخش: میلیارد تومان یا همت.", gap: "بدون ردیف محصول و مبلغ قابل استفاده، ترکیب نمایش داده نمی‌شود؛ تفکیک نامعلوم بازار، صادرات صفر محسوب نمی‌شود." },
++      { title: "تولید و فروش محصول اصلی", time: "ماه‌های سال انتخابی؛ برای کالای اصلی و در صورت وجود شاهد، به تفکیک بازار.", unit: "واحد معتبرِ همان کالا کنار نمودار؛ واحدهای متفاوت جدا هستند.", gap: "ماه فاقد مقدار کامل یا شاهد واحد خالی است؛ صفرِ واقعاً گزارش‌شده حفظ می‌شود. خدمات جای مقدار کالا قرار نمی‌گیرد." },
++    ],
++  },
++  {
++    title: "صورت مالی مرجع و نمودارهای تکمیلی",
++    source: "نمودارهای سود به صورت مالی مرجع متکی‌اند؛ نمودارهای محصول به مجموعهٔ گزارش‌های ماهانه. این دو منبع در شناسنامهٔ بالا جدا هستند.",
++    charts: [
++      { title: "حاشیه‌های سودِ گزارش", time: "دورهٔ تجمعی صورت مالی مرجع در برابر دورهٔ مشابه سال قبل؛ سه‌ماهه یا شش‌ماهه لزوماً سالانه نیست.", unit: "درصد سود ناخالص، عملیاتی و خالص نسبت به درآمد همان دوره.", gap: "بدون دورهٔ مقایسه‌ای، واحد مبلغ و دامنهٔ معتبر شرکت اصلی، مقایسه قابل نمایش نیست؛ مخرج نامعتبر نیز نقطه نمی‌سازد." },
++      { title: "سود خالصِ گزارش", time: "همان دورهٔ تجمعی صورت مالی مرجع و دورهٔ مشابه قبل؛ تاریخ انتشار بالاتر جدا آمده است.", unit: "مبلغ گزارش: میلیون ریال؛ نمایش: میلیارد تومان یا همت. تبدیل دلاری با نرخ درج‌شده کنار همان نمودار است.", gap: "نبود دورهٔ مقایسه‌ای یا اعتبار واحد/دامنه، نمودار مقایسه را خالی می‌کند. تبدیل دلاری بدون نرخ معتبر فعال نیست." },
++      { title: "سهم محصولات از فروشِ کل بازه", time: "مجموع ماه‌های موجود در بستهٔ گزارش‌های ماهانه؛ فیلتر سالِ بخش فروش ماهانه این نمودار را تغییر نمی‌دهد.", unit: "سهم مبلغ محصولات: درصد؛ مبلغ در توضیح نمودار: میلیارد تومان یا همت.", gap: "بدون مبلغ معتبر، ترکیب ساخته نمی‌شود. برای سهم صادرات، تأیید تفکیک بازار و پوشش مبلغ نیز لازم است." },
++      { title: "نرخ و مقدار محصول پرفروشِ کل بازه", time: "بازهٔ گزارش‌های ماهانهٔ خوانده‌شده؛ محصول پرفروش همین بازه.", unit: "نرخ و مقدار به واحد کالا وابسته‌اند؛ میلیون ریال فقط واحد مبلغ گزارش است.", gap: "رسم این نمودار به وجود نرخ قابل نمایش وابسته است؛ مقدارِ ناقص می‌تواند کنار نرخ به‌صورت گپ بماند. بدون نرخ، کارتِ نبود داده نمایش داده می‌شود." },
++      { title: "مقدار تولید در برابر مقدار فروشِ کل بازه", time: "ماه‌های موجود در بستهٔ گزارش‌های ماهانه؛ مستقل از فیلتر سالِ بخش بالاتر.", unit: "جمع فقط برای مقادیر کامل و هم‌واحد معنی دارد؛ واحد نامعلوم قابل جمع‌زدن نیست.", gap: "نبود مقدار کامل یا واحد قابل مقایسه، ماه را خالی می‌گذارد؛ صفر گزارش‌شده با دادهٔ غایب متفاوت است." },
++      { title: "روند سالانهٔ فروش و حاشیهٔ ناخالص", time: "سال‌های موجود در جدول روندِ صورت مالی مرجع؛ وجود این نمودار به معنای پنج سال دادهٔ کامل نیست.", unit: "فروش: میلیارد تومان یا همت؛ حاشیه: درصد. تبدیل همهٔ سال‌ها با یک نرخ روز، دلار تاریخی هر سال نیست.", gap: "بدون ردیف سالانهٔ معتبر نمودار روند نمایش داده نمی‌شود. تاریخ انتشارِ گزارش مرجع، تاریخ تک‌تک سال‌های روند نیست." },
++    ],
++  },
++  {
++    title: "فصل‌سازی و نسبت قیمت به سود",
++    source: "صورت‌های مالی دوره‌ای شرکت؛ برای نسبت قیمت به سود، تاریخچهٔ قیمت پایانی نیز لازم است.",
++    charts: [
++      { title: "درآمد و سود خالص فصلی", time: "فصل مستقل از تفاضل گزارش‌های تجمعیِ همان زنجیره؛ بازهٔ انتخابی تعداد فصل‌های نمایان را تعیین می‌کند.", unit: "ورودی: میلیون ریال؛ نمایش: میلیارد تومان.", gap: "حلقهٔ غایب در زنجیره یا تعدیل نامعتبر گزارش قبلی، فصل را خالی می‌کند؛ گزارش شش‌ماهه به دو فصل مساوی تقسیم نمی‌شود." },
++      { title: "روند حاشیه‌های سود فصلی", time: "همان فصل‌های مشتق‌شده و بازهٔ انتخابی درآمد فصلی.", unit: "درصد هر نوع سود نسبت به درآمد همان فصل.", gap: "فصل ناقص یا فاقد درآمد مثبت، نقطهٔ حاشیه ندارد؛ گپ‌ها به هم متصل نمی‌شوند." },
++      { title: "روند P/E دوازده‌ماهه", time: "چهار فصل متوالی و قیمت پایانی در پایان فصل یا آخرین معاملهٔ حداکثر ۱۴ روز پیش از آن؛ هر نقطه زمان خودش را دارد.", unit: "نسبتِ بدون واحد؛ قیمت و سود هر سهم هر دو ریالی. سود محاسباتی بر سرمایهٔ پایان دوره و فرض سهم اسمی ۱۰۰۰ریالی متکی است؛ EPS رسمی یا میانگین موزون سهام نیست.", gap: "پنجرهٔ ناقص، سرمایه نامعتبر، EPS غیرمثبت یا قیمت ناموجود نقطه نمی‌سازند؛ رسم نمودار دست‌کم دو نقطه می‌خواهد. P/E جاری با قیمت روز جداست." },
++    ],
++  },
++  {
++    title: "نمودارهای بازار در نمای کلی",
++    source: "تاریخچهٔ معاملات ذخیره‌شده؛ این نمودارها از صورت مالی کدال ساخته نمی‌شوند.",
++    charts: [
++      { title: "قیمت پایانی", time: "روز معاملاتیِ هر رکورد؛ تاریخ معامله با زمان دریافت یا انتشار گزارش مالی یکی نیست.", unit: "ریال.", gap: "بدون تاریخچهٔ قابل خواندن یا قیمت ثبت‌شده، نقطه‌ای ساخته نمی‌شود؛ آخرین قیمت جای همهٔ روزها نمی‌نشیند." },
++      { title: "خالص ورود پول حقیقی", time: "همان روز معاملاتیِ اطلاعات حقیقی؛ مستقل از تاریخ دورهٔ مالی شرکت.", unit: "میلیارد ریال در روز.", gap: "اگر ورودی لازم برای محاسبه موجود نباشد، مقدار نامعلوم خالی می‌ماند؛ نبود اطلاعات، ورود پول صفر نیست." },
++    ],
++  },
++];
++
+ /** A view of the already-read bundle; never fetches or fills report metadata. */
+ export default function CompanyReportSources({ fundamentals, readFailed }: {
+   fundamentals: SymbolFundamentals | null; readFailed: boolean;
+@@ -32,5 +78,21 @@ export default function CompanyReportSources({ fundamentals, readFailed }: {
+       </dl>
+       <CodalSourceLink url={report.source.source_url} className={styles.sourceLink} fallback={<p>پیوند معتبر اطلاعیه در دسترس نیست.</p>}>{report.bundle ? 'اطلاعیهٔ مرجع مجموعه؛ منشأ تمام دوره‌ها نیست' : 'مشاهدهٔ اطلاعیهٔ کدال'}</CodalSourceLink>
+     </article>)}</div>
++    <div className={styles.chartGuide}>
++      <h3>منبع و معنای هر نمودار</h3>
++      <p>این راهنما مبنای خواندن نمودارهاست. علتِ وضعیت فعلی را کنار همان نمودار ببینید؛ ممکن است بعضی نمودارها با دادهٔ موجود نمایش داده نشوند.</p>
++      {chartGuide.map(group => <details key={group.title} className={styles.chartGuideGroup}>
++        <summary>{group.title}</summary>
++        <p>{group.source}</p>
++        <ul className={styles.chartGuideList}>{group.charts.map(chart => <li key={chart.title}>
++          <h4>{chart.title}</h4>
++          <dl>
++            <dt>زمان مبنا</dt><dd>{chart.time}</dd>
++            <dt>واحد و تعریف</dt><dd>{chart.unit}</dd>
++            <dt>شرط نمایش و گپ</dt><dd>{chart.gap}</dd>
++          </dl>
++        </li>)}</ul>
++      </details>)}
++    </div>
+   </section>;
+ }
+diff --git a/components/symbol/SymbolDossier.module.css b/components/symbol/SymbolDossier.module.css
+index 24cf2f1..f397457 100644
+--- a/components/symbol/SymbolDossier.module.css
++++ b/components/symbol/SymbolDossier.module.css
+@@ -68,6 +68,16 @@
+ .previewSourceGrid dl { display: grid; grid-template-columns: minmax(90px, 1fr) 2fr; gap: 8px 12px; margin: 16px 0; font-size: 12px; line-height: 1.9; }
+ .previewSourceGrid dt { color: var(--text-3); }
+ .previewSourceGrid dd { min-width: 0; }
++.chartGuide { margin-top: 20px; min-width: 0; }
++.chartGuideGroup { margin-top: 12px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 14px; overflow-wrap: anywhere; }
++.chartGuideGroup summary { min-height: 44px; padding-block: 10px; color: var(--navy-ink); font-weight: 700; cursor: pointer; }
++.chartGuideGroup summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
++.chartGuideList { display: grid; gap: 16px; padding: 0; margin-top: 16px; list-style: none; }
++.chartGuideList li { min-width: 0; border-top: 1px solid var(--line); padding-top: 14px; }
++.chartGuideList h4 { font-size: 13px; font-weight: 700; color: var(--heading); }
++.chartGuideList dl { margin-top: 10px; font-size: 12px; line-height: 1.9; }
++.chartGuideList dt { margin-top: 8px; color: var(--text-3); }
++.chartGuideList dd { margin: 0; min-width: 0; }
+ .tabs[data-company-view] :global(.company-chart-controls) { display: flex; flex-wrap: wrap; gap: 12px; margin-block: 16px; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface-2); }
+ .tabs[data-company-view] :global(.company-chart-controls) label { display: flex; flex-direction: column; gap: 8px; flex: 1 1 180px; font-size: 13px; }
+ .tabs[data-company-view] :global(.company-chart-controls) select { min-height: 44px; max-width: 100%; min-width: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--text); padding: 8px; font-size: 16px; }

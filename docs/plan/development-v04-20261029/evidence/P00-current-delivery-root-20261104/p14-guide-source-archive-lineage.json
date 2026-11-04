@@ -1,0 +1,470 @@
+{
+  "sourceHashes": {
+    "html": "1a4904c496c09cf091c12ea14f40cc58c0777726d02761dd450487c0e857b1a2",
+    "scripts": "68843ee896177c6b4eaac85bc2e38175849c1c1dcef9a82abcf373010ee9fd17",
+    "main": "6b7e5d5ab2ef827bf8748bd3b3915aa91695df823c3bbba3adba761f982bc341"
+  },
+  "verifiedRenderFragments": [
+    {
+      "source": "scripts",
+      "utf8Span": {
+        "start": 171328,
+        "end": 171430,
+        "endExclusive": true
+      },
+      "text": "var indexDto={datasource:datasource,formulaParser:formulaParser,mockData:!1};window.indexDto=indexDto;",
+      "sha256": "d19db3172026e84154a3535091a249e60ef5abbb6e8d530eab39875529ff11be"
+    },
+    {
+      "label": "global input and factory",
+      "utf8Span": {
+        "start": 135988,
+        "end": 136033,
+        "endExclusive": true
+      },
+      "sha256": "1fb724a48da6112e9375ebe235044f15b75cd2f62c3996f59f28da695422192d",
+      "text": "const Ko=window.indexDto,Qo=(e,t)=>new qi(t);",
+      "source": "main"
+    },
+    {
+      "label": "provider registration",
+      "utf8Span": {
+        "start": 258879,
+        "end": 258903,
+        "endExclusive": true
+      },
+      "sha256": "f0bbf4ca5d0367939b74a80515d3a6da052af59d960c5153b4de722750a86e22",
+      "text": "pr(256,\"indexDto\",Ko,[])",
+      "source": "main"
+    },
+    {
+      "label": "fetch service uses and clones supplied datasource",
+      "utf8Span": {
+        "start": 112533,
+        "end": 112956,
+        "endExclusive": true
+      },
+      "sha256": "ee401dc4a9c685e60496d95d6b4744ea336b4200f16c141e599160f8a96eb5dc",
+      "text": "let Zi=(()=>{class e{constructor(e){this.mockDataFileName=\"\",this.indexData=e,this.datasource=e.datasource,this.dataIsLoaded=new S,this.dataIsLoaded.next(!0),this.datasource=JSON.parse(JSON.stringify(e.datasource))}getData(){return Gi(this,void 0,void 0,(function*(){return Promise.resolve(this.datasource)}))}}return e.ngInjectableDef=ue({factory:function(){return new e(Ie(\"indexDto\"))},token:e,providedIn:\"root\"}),e})(),",
+      "source": "main"
+    },
+    {
+      "label": "statement conversion",
+      "utf8Span": {
+        "start": 251627,
+        "end": 252087,
+        "endExclusive": true
+      },
+      "sha256": "42c5726fa2ffae9a94093876c678032ce858f6e8515aac9d04b60c5444dfc8f9",
+      "text": "renderStatement(e){let t=JSON.parse(JSON.stringify(e));t&&(t=this.utilityService.toCamel(t));var n=[];t.sheets&&t.sheets.forEach((e,t)=>{n.push(this.convertSheetData(e))}),this.dataSourceService.datasource=t,this.dataSourceService.datasource.sheets=[],n.forEach(e=>{this.dataSourceService.datasource.sheets.push(e)}),this.dataSourceService.datasource.sheets.sort((e,t)=>e.sequence-t.sequence),this.utilityService.fixColSpans(this.dataSourceService.datasource)}",
+      "source": "main"
+    },
+    {
+      "label": "sheet conversion",
+      "utf8Span": {
+        "start": 251282,
+        "end": 251627,
+        "endExclusive": true
+      },
+      "sha256": "1843bf95c790c7e8e8341bec4f425a592e878119eb4898d9f395fa33c1039a25",
+      "text": "convertSheetData(e){var t={tables:[],code:e.code,aliasName:e.aliasName,isDynamic:e.isDynamic,sequence:e.sequence,title_En:e.title_En,title_Fa:e.title_Fa,versionNo:e.versionNo};return e.tables?(e.tables.sort((e,t)=>e.sequence-t.sequence),e.tables.forEach(n=>{n.cells&&n.cells.length>0&&t.tables.push(this.convertTableData(n.cells,n,e))}),t):null}",
+      "source": "main"
+    },
+    {
+      "label": "table conversion",
+      "utf8Span": {
+        "start": 250623,
+        "end": 251282,
+        "endExclusive": true
+      },
+      "sha256": "b0a10074023d1bab28b0b76b2f6c10c1b3a25386fa9fd084a472ced367df09aa",
+      "text": "convertTableData(e,t,n){var r=new Gc,l=new Array,s=new Array;return r.metaTableId=t.metaTableId,r.description=t.description,r.title=t.title_Fa,e.map((e,t,i)=>{e.cellGroupName&&\"NewRow\"!==e.rowTypeName&&(0===e.cellGroupName.indexOf(\"Header\")?l.push(this.createCellDto(e,r,n)):0!==e.cellGroupName.indexOf(\"Body\")&&0!==e.cellGroupName.indexOf(\"Footer\")||s.push(this.createCellDto(e,r,n)))}),l.length>0&&(r.header.cells=this.utilityService.groupBy(\"row\",l),r.header.cells.forEach(e=>{e.sort((e,t)=>e.col-t.col)})),r.body.cells=this.utilityService.groupBy(\"row\",s),r.body.cells.forEach((e,t)=>{e=e.sort((e,t)=>e.col-t.col)}),this.utilityService.fillTableGaps(r),r}",
+      "source": "main"
+    },
+    {
+      "label": "cell construction",
+      "utf8Span": {
+        "start": 250389,
+        "end": 250623,
+        "endExclusive": true
+      },
+      "sha256": "d81afa3d87e80cc54b4d6f9334f51ab473ab65b8d4a443e6885907b1a352ca1c",
+      "text": "createCellDto(e,t,n){return new Bc(e.id,e.section,e.value,e.formula,e.dataType,e.address,e.colSpan,e.rowSpan,e.category,t,e,e.isVisible,this.dataSourceService,this.addressService,this.utilityService,this.formulaService,n.code,e.type)}",
+      "source": "main"
+    },
+    {
+      "label": "raw cell property passthrough",
+      "utf8Span": {
+        "start": 246485,
+        "end": 246533,
+        "endExclusive": true
+      },
+      "sha256": "c079957b5bfa2081683c5d3872b9dbf9824ef3f96be6f74b144a3412e67417a8",
+      "text": "for(let v in c)void 0===this[v]&&(this[v]=c[v]);",
+      "source": "main"
+    },
+    {
+      "label": "statement template sheets",
+      "utf8Span": {
+        "start": 253529,
+        "end": 253558,
+        "endExclusive": true
+      },
+      "sha256": "3d730a1be5a78db35ff50e532b5d73e968d6eb8a582e974a5ddeff08d0e0b450",
+      "text": "t.component.datasource.sheets",
+      "source": "main"
+    },
+    {
+      "label": "sheet template tables",
+      "utf8Span": {
+        "start": 245556,
+        "end": 245580,
+        "endExclusive": true
+      },
+      "sha256": "ccd72f53d8a28a0507da0f2683cf692772709917708f32eb2e50d09ef553e959",
+      "text": "t.component.sheet.tables",
+      "source": "main"
+    },
+    {
+      "label": "generic camel-case copy",
+      "utf8Span": {
+        "start": 235227,
+        "end": 235526,
+        "endExclusive": true
+      },
+      "sha256": "7e720e1a959ef04eb5e0793062b2e24ee08c6f5cd60e56ca9e26268ae692da2f",
+      "text": "toCamel(e){let t,n,r,l;if(e instanceof Array)return e.map(e=>(\"object\"==typeof e&&(e=this.toCamel(e)),e));for(n in t={},e)e.hasOwnProperty(n)&&(r=(n.charAt(0).toLowerCase()+n.slice(1)||n).toString(),l=e[n],(l instanceof Array||null!==l&&l.constructor===Object)&&(l=this.toCamel(l)),t[r]=l);return t}",
+      "source": "main"
+    }
+  ],
+  "searches": [
+    {
+      "source": "main",
+      "terms": [
+        {
+          "term": "changeSheet",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "isConsolidated",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "periodEndToDate",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "yearEndToDate",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "columnCode",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "metaTableId",
+          "count": 7,
+          "samples": [
+            {
+              "utf8Span": {
+                "start": 243205,
+                "end": 243496
+              },
+              "raw": "t,7,0,n.table.header.cells),e(t,10,0,n.table.body.cells)}),(function(e,t){e(t,4,0,t.component.table.metaTableId)}))}class Pc{constructor(){this.isTableVisible=!0}isTableVisibility(e){if(e.Header&&e.Header.cells&&e.Header.cells.length>0)for(let t of e.header.cells){for(let e of t){if(e.isVis"
+            },
+            {
+              "utf8Span": {
+                "start": 248431,
+                "end": 248722
+              },
+              "raw": "n this._body}set body(e){this._body=e}get title(){return this._title}set title(e){this._title=e}get metaTableId(){return this._metaTableId}set metaTableId(e){this._metaTableId=e}get description(){return this._description}set description(e){this._description=e}}let Zc=(()=>{class e{construct"
+            },
+            {
+              "utf8Span": {
+                "start": 248458,
+                "end": 248749
+              },
+              "raw": "is._body=e}get title(){return this._title}set title(e){this._title=e}get metaTableId(){return this._metaTableId}set metaTableId(e){this._metaTableId=e}get description(){return this._description}set description(e){this._description=e}}let Zc=(()=>{class e{constructor(e){this.regexService=e,t"
+            }
+          ]
+        },
+        {
+          "term": "IncomeStatement",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "BalanceSheet",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "Equity",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "FinancialStatement-Listed-Product-V9",
+          "count": 0,
+          "samples": []
+        }
+      ]
+    },
+    {
+      "source": "scripts",
+      "terms": [
+        {
+          "term": "changeSheet",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "isConsolidated",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "periodEndToDate",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "yearEndToDate",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "columnCode",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "metaTableId",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "IncomeStatement",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "BalanceSheet",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "Equity",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "FinancialStatement-Listed-Product-V9",
+          "count": 0,
+          "samples": []
+        }
+      ]
+    },
+    {
+      "source": "html",
+      "terms": [
+        {
+          "term": "changeSheet",
+          "count": 1,
+          "samples": [
+            {
+              "utf8Span": {
+                "start": 5477,
+                "end": 5797
+              },
+              "raw": "ی</h1>\r\n        <div class=\"ddlReportWrapper\">\r\n            <select name=\"ctl00$ddlTable\" onchange=\"changeSheet(this.value);\" id=\"ddlTable\" class=\"label\" style=\"width: 300px; color: red;\">\r\n\t<option selected=\"selected\" value=\"1\">صورت سود و زیان\r\n\t<option value=\"1058\">صورت سود و زیان جامع\r\n\t"
+            }
+          ]
+        },
+        {
+          "term": "isConsolidated",
+          "count": 1,
+          "samples": [
+            {
+              "utf8Span": {
+                "start": 22942,
+                "end": 23236
+              },
+              "raw": "\"type\":6,\"period\":6,\"periodEndToDate\":\"1405/06/31\",\"yearEndToDate\":\"1405/12/29\",\"periodExtraDay\":0,\"isConsolidated\":false,\"tracingNo\":1612323,\"kind\":0,\"isAudited\":false,\"auditState\":-1,\"registerDateTime\":\"1405/07/26 09:06:51\",\"sentDateTime\":\"1405/07/30 14:37:13\",\"publishDateTime\":\"1405/07/30 1"
+            }
+          ]
+        },
+        {
+          "term": "periodEndToDate",
+          "count": 186,
+          "samples": [
+            {
+              "utf8Span": {
+                "start": 9708,
+                "end": 10010
+              },
+              "raw": "ate\" class=\"label\" style=\"display:none;\">در تاریخ </span>  \r\n                    <span id=\"ctl00_lblPeriodEndToDate\" class=\"label\" style=\"color:#C04000;display:inline;\"><bdo dir=\"ltr\">1405/06/31</bdo></span>\r\n                    <span id=\"ctl00_lblIsAudited\" class=\"label\" style=\"display:inline;"
+            },
+            {
+              "utf8Span": {
+                "start": 22863,
+                "end": 23158
+              },
+              "raw": "9\",\"title_En\":\"FinancialStatement-Listed-Product-V9\",\"subject\":null,\"dsc\":null,\"type\":6,\"period\":6,\"periodEndToDate\":\"1405/06/31\",\"yearEndToDate\":\"1405/12/29\",\"periodExtraDay\":0,\"isConsolidated\":false,\"tracingNo\":1612323,\"kind\":0,\"isAudited\":false,\"auditState\":-1,\"registerDateTime\":\"1405/07/26 "
+            },
+            {
+              "utf8Span": {
+                "start": 23925,
+                "end": 24223
+              },
+              "raw": "egory\":0,\"isVisible\":true,\"value\":\"شرح\",\"valueTypeName\":\"Fix\",\"dataTypeName\":null,\"decimalPlace\":0,\"periodEndToDate\":\"\",\"yearEndToDate\":\"\",\"conditionalIsUnique\":false,\"removableCustomRow\":null,\"isAudited\":false},{\"metaTableId\":3220,\"metaTableCode\":904,\"address\":\"A3\",\"formula\":\"\",\"validations\":\""
+            }
+          ]
+        },
+        {
+          "term": "yearEndToDate",
+          "count": 186,
+          "samples": [
+            {
+              "utf8Span": {
+                "start": 10074,
+                "end": 10381
+              },
+              "raw": "        </div>\r\n        </div>  \r\n         <div class=\"text_holder\">\r\n            <div id=\"ctl00_divYearEndToDateCaption\" class=\"lable\">سال مالی منتهی به:</div>\r\n            <div class=\"varios\">\r\n                <span id=\"ctl00_lblYearEndToDate\" class=\"label\" style=\"color:#C04000;\"><bdo dir=\""
+            },
+            {
+              "utf8Span": {
+                "start": 10205,
+                "end": 10512
+              },
+              "raw": "ble\">سال مالی منتهی به:</div>\r\n            <div class=\"varios\">\r\n                <span id=\"ctl00_lblYearEndToDate\" class=\"label\" style=\"color:#C04000;\"><bdo dir=\"ltr\">1405/12/29</bdo></span>\r\n            </div>\r\n        </div>      \r\n        <div class=\"text_holder\">\r\n            <div id=\"ctl"
+            },
+            {
+              "utf8Span": {
+                "start": 22894,
+                "end": 23187
+              },
+              "raw": "nt-Listed-Product-V9\",\"subject\":null,\"dsc\":null,\"type\":6,\"period\":6,\"periodEndToDate\":\"1405/06/31\",\"yearEndToDate\":\"1405/12/29\",\"periodExtraDay\":0,\"isConsolidated\":false,\"tracingNo\":1612323,\"kind\":0,\"isAudited\":false,\"auditState\":-1,\"registerDateTime\":\"1405/07/26 09:06:51\",\"sentDateTime\":\"140"
+            }
+          ]
+        },
+        {
+          "term": "columnCode",
+          "count": 183,
+          "samples": [
+            {
+              "utf8Span": {
+                "start": 23749,
+                "end": 24042
+              },
+              "raw": "inancialConcept\":null,\"cellGroupName\":\"Header\",\"rowSpan\":2,\"rowCode\":1,\"rowSequence\":1,\"colSpan\":1,\"columnCode\":1,\"columnSequence\":1,\"cssClass\":\"\",\"rowTypeName\":\"FixedRow\",\"category\":0,\"isVisible\":true,\"value\":\"شرح\",\"valueTypeName\":\"Fix\",\"dataTypeName\":null,\"decimalPlace\":0,\"periodEndToDat"
+            },
+            {
+              "utf8Span": {
+                "start": 24226,
+                "end": 24532
+              },
+              "raw": "financialConcept\":null,\"cellGroupName\":\"Body\",\"rowSpan\":1,\"rowCode\":49,\"rowSequence\":3,\"colSpan\":1,\"columnCode\":1,\"columnSequence\":1,\"cssClass\":\"dynamic_desc\",\"rowTypeName\":\"FixedRow\",\"category\":0,\"isVisible\":true,\"value\":\"عمليات در حال تداوم:\",\"valueTypeName\":\"Fix\",\"dataTypeName\":null,\"de"
+            },
+            {
+              "utf8Span": {
+                "start": 24744,
+                "end": 25049
+              },
+              "raw": "\"financialConcept\":null,\"cellGroupName\":\"Body\",\"rowSpan\":1,\"rowCode\":3,\"rowSequence\":4,\"colSpan\":1,\"columnCode\":1,\"columnSequence\":1,\"cssClass\":\"\",\"rowTypeName\":\"FixedRow\",\"category\":0,\"isVisible\":true,\"value\":\"درآمدهاي عملياتي\",\"valueTypeName\":\"Fix\",\"dataTypeName\":null,\"decimalPlace\":0,\"p"
+            }
+          ]
+        },
+        {
+          "term": "metaTableId",
+          "count": 185,
+          "samples": [
+            {
+              "utf8Span": {
+                "start": 23298,
+                "end": 23637
+              },
+              "raw": "title_Fa\":\"صورت سود و زیان\",\"title_En\":\"Income Statement\",\"sequence\":2,\"isDynamic\":true,\"tables\":[{\"metaTableId\":3220,\"title_En\":\"Income Statement\",\"title_Fa\":\"صورت سود و زيان\",\"sequence\":1,\"sheetCode\":1,\"code\":904,\"description\":\"کليه مبالغ به ميليون ريال است\",\"aliasName\":\"IncomeStatement\","
+            },
+            {
+              "utf8Span": {
+                "start": 23540,
+                "end": 23855
+              },
+              "raw": "scription\":\"کليه مبالغ به ميليون ريال است\",\"aliasName\":\"IncomeStatement\",\"versionNo\":\"7\",\"cells\":[{\"metaTableId\":3220,\"metaTableCode\":904,\"address\":\"A1\",\"formula\":\"\",\"validations\":\"\",\"financialConcept\":null,\"cellGroupName\":\"Header\",\"rowSpan\":2,\"rowCode\":1,\"rowSequence\":1,\"colSpan\":1,\"column"
+            },
+            {
+              "utf8Span": {
+                "start": 24042,
+                "end": 24333
+              },
+              "raw": "e\":\"\",\"yearEndToDate\":\"\",\"conditionalIsUnique\":false,\"removableCustomRow\":null,\"isAudited\":false},{\"metaTableId\":3220,\"metaTableCode\":904,\"address\":\"A3\",\"formula\":\"\",\"validations\":\"\",\"financialConcept\":null,\"cellGroupName\":\"Body\",\"rowSpan\":1,\"rowCode\":49,\"rowSequence\":3,\"colSpan\":1,\"columnC"
+            }
+          ]
+        },
+        {
+          "term": "IncomeStatement",
+          "count": 3,
+          "samples": [
+            {
+              "utf8Span": {
+                "start": 23495,
+                "end": 23815
+              },
+              "raw": "ن\",\"sequence\":1,\"sheetCode\":1,\"code\":904,\"description\":\"کليه مبالغ به ميليون ريال است\",\"aliasName\":\"IncomeStatement\",\"versionNo\":\"7\",\"cells\":[{\"metaTableId\":3220,\"metaTableCode\":904,\"address\":\"A1\",\"formula\":\"\",\"validations\":\"\",\"financialConcept\":null,\"cellGroupName\":\"Header\",\"rowSpan\":2,\"rowCod"
+            },
+            {
+              "utf8Span": {
+                "start": 115157,
+                "end": 115452
+              },
+              "raw": "itle_En\":null,\"title_Fa\":null,\"sequence\":2,\"sheetCode\":1,\"code\":941,\"description\":null,\"aliasName\":\"IncomeStatementdesc\",\"versionNo\":\"7\",\"cells\":[{\"metaTableId\":3221,\"metaTableCode\":941,\"address\":\"A31\",\"formula\":\"\",\"validations\":\"\",\"financialConcept\":null,\"cellGroupName\":\"Body\",\"rowSpan\":1,\"row"
+            },
+            {
+              "utf8Span": {
+                "start": 118387,
+                "end": 118682
+              },
+              "raw": "ToDate\":\"\",\"conditionalIsUnique\":false,\"removableCustomRow\":null,\"isAudited\":false}]}],\"aliasName\":\"IncomeStatement\",\"versionNo\":\"0\",\"sheetComponents\":{\"97073\":[{\"id\":33,\"typeName\":\"Other\",\"formControlTypeName\":\"Label\",\"dataTypeName\":\"String\",\"serviceUrl\":null,\"parameters\":null,\"resourceAddress"
+            }
+          ]
+        },
+        {
+          "term": "BalanceSheet",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "Equity",
+          "count": 0,
+          "samples": []
+        },
+        {
+          "term": "FinancialStatement-Listed-Product-V9",
+          "count": 1,
+          "samples": [
+            {
+              "utf8Span": {
+                "start": 22746,
+                "end": 23094
+              },
+              "raw": "\n    }\r\n\r\n    var datasource = {\"title_Fa\":\"اطلاعات و صورت‌های مالی تولیدی - بورسی- V9\",\"title_En\":\"FinancialStatement-Listed-Product-V9\",\"subject\":null,\"dsc\":null,\"type\":6,\"period\":6,\"periodEndToDate\":\"1405/06/31\",\"yearEndToDate\":\"1405/12/29\",\"periodExtraDay\":0,\"isConsolidated\":false,\"tracingNo\":1612323,\"kind\":0,\""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "status": "NO_NEW_INDEPENDENT_C_OR_CAPITAL_BINDING",
+  "findings": [
+    "The captured bundle copies supplied datasource and selected sheet/table/cells; no financial-duration derivation is established by these expressions.",
+    "The selected datasource has IncomeStatement tables904/941 only; generic renderer metadata fields are not additional capital/note table captures.",
+    "Literal-search absence is bounded evidence, not proof about uncaptured assets or all indirect code.",
+    "No publisher code executed, no new retrieval, no parser or guard changes."
+  ]
+}

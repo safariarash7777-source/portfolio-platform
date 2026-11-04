@@ -41,3 +41,5 @@ p03-fresh-* -text -whitespace
 p07-admission-followup-* -text -whitespace
 
 p03-native-418169-* -text -whitespace
+
+p14-guide-* -text -whitespace

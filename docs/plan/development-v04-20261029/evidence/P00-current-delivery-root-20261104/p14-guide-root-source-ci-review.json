@@ -1,0 +1,74 @@
+{
+  "schema": "root-p14-guide-source-ci-review.v1",
+  "atUtc": "2026-11-04T11:17:22.953375+00:00",
+  "source": "9a44f528059e033d8faf154ec8abfcb6c52682be",
+  "tree": "9a284101d9a0e6af5574bae63bb9e4a7db7b309d",
+  "baseRemote": "7fd355b8f7c39328b5f545831e1ced41bb9e1936",
+  "preservedLocalMerge": "3d72c922e216d940b80b4306536a81e216a3b33b",
+  "paths": [
+    "components/symbol/CompanyReportSources.tsx",
+    "components/symbol/SymbolDossier.module.css"
+  ],
+  "packetVerifiedFiles": 49,
+  "beforeFilesComparedWithExactGitBlobs": true,
+  "unchangedSnapshots": 14,
+  "rootTextCorrection": "share of domestic/export sales instead of ambiguous market share",
+  "previewViewOnly": true,
+  "dataCodeSqlPackageAuthChanges": false,
+  "ciRun": 41818897629,
+  "requiredJobs": "5_SUCCESS",
+  "optionalNative": "SKIPPED",
+  "actualCiCheckout": "61224c4b00c64c9352650120355acf77d6e5429c",
+  "actualCiParents": [
+    "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+    "9a44f528059e033d8faf154ec8abfcb6c52682be"
+  ],
+  "actualCiTree": "9a284101d9a0e6af5574bae63bb9e4a7db7b309d",
+  "fullTreeEqual": true,
+  "browserProfile": "independent headless Chrome156, no browser download",
+  "browserObservedChartFrames": 8,
+  "browserObservedPlotDimensions": [
+    [
+      504,
+      280
+    ],
+    [
+      504,
+      280
+    ],
+    [
+      485,
+      250
+    ],
+    [
+      485,
+      250
+    ],
+    [
+      504,
+      256
+    ],
+    [
+      504,
+      256
+    ],
+    [
+      504,
+      260
+    ],
+    [
+      1070,
+      288
+    ]
+  ],
+  "browserPlotObservationScope": "positive dimensions only; previous 7fd detailed chart acceptance is separate",
+  "newGuideAcceptance": "LIMITED_PREVIEW",
+  "remaining": [
+    "human visual choice",
+    "valid rate and quantity units",
+    "market quote and history reader failures",
+    "point-specific source/time links",
+    "full P07/P14 acceptance"
+  ],
+  "productionChanged": false
+}

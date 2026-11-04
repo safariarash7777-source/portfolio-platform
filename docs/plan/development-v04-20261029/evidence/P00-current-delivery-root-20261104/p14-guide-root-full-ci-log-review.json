@@ -1,0 +1,20 @@
+{
+  "run": 41818897629,
+  "source": "9a44f528059e033d8faf154ec8abfcb6c52682be",
+  "requiredJobs": "5_SUCCESS",
+  "optionalNative": "SKIPPED",
+  "logs": [
+    {
+      "job": 126536701720,
+      "characters": 3280946,
+      "actualCheckout": "61224c4b00c64c9352650120355acf77d6e5429c",
+      "errors": []
+    },
+    {
+      "job": 126536702280,
+      "characters": 1285130,
+      "actualCheckout": "61224c4b00c64c9352650120355acf77d6e5429c",
+      "errors": []
+    }
+  ]
+}
