@@ -34,8 +34,9 @@ export default function TicketRequestPanel({ source, items, data, capability, dr
   return <div className="min-w-0 space-y-5">
     <section className="card space-y-3 p-4" aria-label="حدود حق خدمت">
       <h2 className="font-bold">درخواست مستقل و حق خدمت</h2>
-      <p className="text-sm leading-7">درخواست، رضایتِ دسترسی به پرونده نیست. دسترسی تحلیلی یا نقش مدیریت هم حق مصرف همین خدمت را ایجاد نمی‌کند؛ حق واقعی این خدمت هنوز متصل نیست.</p>
-      {capability.state === "owned_fixture" ? <p role="status" className="break-words text-sm leading-7">فقط مجوز صریح محیط تستِ مجزا برای همین هویت فعال است؛ ثبت‌ها آموزشی‌اند و حق تجاری ایجاد نمی‌کنند. شناسهٔ اجرا: <bdi>{capability.runId}</bdi></p> : <p role="status" className="text-sm leading-7">{capability.state === "unavailable" ? "بررسی مجوز ثبت در دسترس نیست؛ این وضعیت نبود یا وجود حق را تأیید نمی‌کند." : "تأمین‌کنندهٔ معتبر حق خدمت متصل نیست."} ثبت غیرفعال است. متن واردشده در همین نشست حفظ می‌شود.</p>}
+      <p className="text-sm leading-7">مشاهدهٔ پرونده یا داشتن نقش مدیریت، به‌تنهایی امکان ثبت درخواست را فعال نمی‌کند.</p>
+      {capability.state === "owned_fixture" ? <p role="status" className="break-words text-sm leading-7">فقط مجوز صریح محیط تستِ مجزا برای همین هویت فعال است؛ ثبت‌ها آموزشی‌اند و حق تجاری ایجاد نمی‌کنند. شناسهٔ اجرا: <bdi>{capability.runId}</bdi></p> : <p role="status" className="text-sm leading-7">{capability.state === "unavailable" ? "امکان ثبت درخواست بررسی نشد. دوباره بررسی کنید." : "ثبت درخواست جدید فعلاً در دسترس نیست."}</p>}
+      {capability.state !== "owned_fixture" && (draft.subject || draft.text || draft.recommendation) && <p role="status" className="text-sm leading-7">متن آماده‌شدهٔ شما محفوظ است؛ با تغییر وضعیت ثبت پاک نمی‌شود.</p>}
       {member && <div className="min-w-0 space-y-3 border-t border-line pt-3" aria-label="اطلاعات دسترسی قدیمی خود عضو">
         <dl className="grid min-w-0 gap-3 text-sm leading-7 sm:grid-cols-2">
           <div className="min-w-0"><dt className="font-semibold">دسترسی تحلیلی قدیمیِ نوع مشاوره</dt><dd role="status" className="break-words">{legacyLoading ? "در حال خواندن اطلاعات خودتان…" : legacy?.legacyAccessState === "active" ? "در اطلاعات خوانده‌شده، در زمان ارزیابی فعال است." : legacy?.legacyAccessState === "inactive" ? "در اطلاعات خوانده‌شده، دسترسی فعال از این نوع گزارش نشده است." : "— · وضعیت نامعلوم است؛ خواندن کامل تأیید نشده است."}</dd></div>
@@ -60,7 +61,7 @@ export default function TicketRequestPanel({ source, items, data, capability, dr
     <section className="card space-y-3 p-4" aria-label="فهرست درخواست‌های همین رابطه">
       <h2 className="font-bold">درخواست‌های همین رابطه</h2>
       {items === null ? <p>فهرست تأیید نشده است؛ نامعلوم به معنی خالی نیست.</p> : items.length === 0 ? <p>در فهرست بازخوانی‌شدهٔ همین رابطه درخواستی وجود ندارد.</p> : <ul className="space-y-2">{items.map(item => <li key={item.requestId}><button type="button" disabled={selectionLocked || item.requestId === data?.requestId} className="btn btn-outline max-w-full !whitespace-normal break-words text-start" onClick={() => onSelect(item.requestId)}>{item.subject} · نسخهٔ {toPersianDigits(item.version)} · {item.state === "closed" ? "بسته" : "باز"}</button></li>)}</ul>}
-      {member && <button type="button" disabled={selectionLocked} className="btn btn-outline" onClick={onNew}>آماده‌کردن درخواست تازه</button>}
+      {member && capability.state === "owned_fixture" && <button type="button" disabled={selectionLocked} className="btn btn-outline" onClick={onNew}>آماده‌کردن درخواست تازه</button>}
     </section>
     {data && <section className="card space-y-3 p-4" aria-label="تاریخچهٔ نسخه‌دار درخواست">
       <h2 className="font-bold">تاریخچهٔ درخواست</h2><p className="break-all text-xs" dir="ltr">{data.requestId}</p>
@@ -70,7 +71,7 @@ export default function TicketRequestPanel({ source, items, data, capability, dr
         return <li className="space-y-2 rounded-lg border border-line p-3" key={event.id}><h3 className="font-semibold">{labels[event.command.kind]} · نسخهٔ {toPersianDigits(event.version)}</h3><p className="text-xs">{formatJalali(event.createdAt)}</p>{event.command.kind === "open" && <p className="break-words font-semibold">{event.command.subject}</p>}{eventText(event.command) !== null && <p className="whitespace-pre-wrap break-words text-sm leading-7">{eventText(event.command)}</p>}{reference && <p className="break-words text-sm">جمع‌بندی مرتبط: نسخهٔ {toPersianDigits(reference.version)} · {resolved?.state === "resolved" ? "پیوند دقیق در مرجع مجاز تطبیق داده شد" : "مرجع این نسخه در خواندن فعلی کامل نیست؛ نسخهٔ تازه جایگزین آن نشده است"}<br/><bdi className="break-all text-xs">{reference.sessionId}</bdi></p>}</li>;
       })}</ol>}
     </section>}
-    {kinds.length > 0 && !closed && !relation.revoked && <form className="card min-w-0 space-y-4 p-4" aria-label="ثبت درخواست یا پیگیری" onSubmit={event => { event.preventDefault(); if (!locked && writeAllowed) onSubmit(); }}>
+    {capability.state === "owned_fixture" && kinds.length > 0 && !closed && !relation.revoked && <form className="card min-w-0 space-y-4 p-4" aria-label="ثبت درخواست یا پیگیری" onSubmit={event => { event.preventDefault(); if (!locked && writeAllowed) onSubmit(); }}>
       <h2 className="font-bold">{data ? "ثبت روی همین درخواست" : "درخواست تازهٔ عضو"}</h2>
       <fieldset className="space-y-3" disabled={locked}>
         {kinds.length > 1 && <label className="block space-y-1 text-sm">کنش<select className="input min-h-11 w-full" value={draft.kind} onChange={event => onDraft({ ...draft, kind: event.target.value as TicketCommand["kind"] })}>{kinds.map(kind => <option value={kind} key={kind}>{labels[kind]}</option>)}</select></label>}

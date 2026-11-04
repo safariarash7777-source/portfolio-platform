@@ -17,7 +17,7 @@ export default async function TicketMemberPage({ searchParams }: { searchParams:
   if (!unavailable && !actorId) redirect("/login?next=/dashboard/consultation/requests");
   const invalid = selected.relation !== undefined && !cashFlowUuid(selected.relation) || selected.request !== undefined && (!cashFlowUuid(selected.request) || !selected.relation);
   return <><Navbar/><main id="main-content" dir="rtl" className="mx-auto w-full max-w-5xl space-y-5 px-4 py-8">
-    <header className="space-y-2"><h1 className="font-display text-2xl font-bold">درخواست مستقل و پیگیری مشاوره</h1><p className="text-sm leading-7">درخواست را با رضایت و حق خدمت یکی نگیرید. حق واقعی خدمت هنوز متصل نیست؛ ثبت فقط در محیط تستِ صریح و مجاز قابل تمرین است.</p></header>
+    <header className="space-y-2"><h1 className="font-display text-2xl font-bold">درخواست مستقل و پیگیری مشاوره</h1><p className="text-sm leading-7">سوابق درخواست‌ها و پیگیری‌های مشاورهٔ خود را در رابطه‌های مجاز ببینید.</p></header>
     <nav aria-label="مسیرهای عضو" className="flex flex-wrap gap-3"><Link className="btn btn-outline" href="/dashboard">خانهٔ عضو</Link><Link className="btn btn-outline" href="/dashboard/consultation">رضایت و جمع‌بندی‌های مشاوره</Link></nav>
     {unavailable || !actorId ? <ReadError label="نشست درخواست مشاوره" code="TICKET_AUTH"/> : invalid ? <ReadError label="شناسهٔ رابطه یا درخواست" code="TICKET_SELECTION"/> : <TicketRequestWorkspace key={`${actorId}:${selected.relation ?? ""}:${selected.request ?? ""}`} expectedActorId={actorId} initialRelationshipId={selected.relation} initialRequestId={selected.request}/>}
   </main><Footer/></>;

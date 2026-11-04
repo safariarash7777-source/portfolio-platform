@@ -111,9 +111,9 @@ function mount(parentReads: unknown[], reads: unknown[], writes: unknown[], acto
 
 test("actual panel keeps an unknown right fail-closed and never labels missing history empty", () => {
   const html = renderToStaticMarkup(<TicketRequestPanel source={parent()} items={null} data={null} capability={{ state: "unavailable", runId: null }} draft={blankTicketDraft()} locked={false} selectionLocked={false} needsRefresh={false} onDraft={() => {}} onSelect={() => {}} onNew={() => {}} onSubmit={() => {}} onDiscard={() => {}}/>);
-  assert.match(html, /بررسی مجوز ثبت در دسترس نیست/); assert.match(html, /فهرست تأیید نشده/);
+  assert.match(html, /امکان ثبت درخواست بررسی نشد/); assert.match(html, /فهرست تأیید نشده/);
   assert.doesNotMatch(html, /در فهرست بازخوانی‌شدهٔ همین رابطه درخواستی وجود ندارد/);
-  assert.match(html, /type="submit"[^>]*disabled/);
+  assert.doesNotMatch(html, /<form|type="submit"|ثبت آزمایشی|آماده‌کردن درخواست تازه/);
 });
 test("no ticket read or private content before the expected identity is established", async () => {
   const view = mount([ready(parent())], [ready(inbox())], []);
@@ -345,9 +345,61 @@ test("actual panel escapes long unverified sources and preserves responsive RTL 
     const html = renderToStaticMarkup(<div dir="rtl" style={{ width }}><TicketRequestPanel {...props} legacyDiagnostic={{ ownerId: M, value }}/></div>);
     assert.match(html, new RegExp(`width:${width}px`)); assert.match(html, /dir="rtl"/); assert.match(html, /sm:grid-cols-2/); assert.match(html, /whitespace-pre-wrap break-all/);
     assert.match(html, /&lt;script/); assert.doesNotMatch(html, /<script|data-unit="x"/); assert.match(html, /تأییدنشده برای این خدمت/);
-    assert.match(html, /زمان ارزیابی این دستگاه/); assert.match(html, /dateTime="2026-10-31T00:00:00Z"/); assert.match(html, /هنوز متصل نیست/); assert.match(html, /type="submit"[^>]*disabled/);
+    assert.match(html, /زمان ارزیابی این دستگاه/); assert.match(html, /dateTime="2026-10-31T00:00:00Z"/); assert.match(html, /هنوز متصل نیست/); assert.doesNotMatch(html, /<form|type="submit"|ثبت آزمایشی/);
   }
   const foreign = renderToStaticMarkup(<TicketRequestPanel {...props} legacyDiagnostic={{ ownerId: O, value }}/>); assert.doesNotMatch(foreign, /&lt;script/); assert.match(foreign, /—/);
   const advisor = renderToStaticMarkup(<TicketRequestPanel {...props} source={parent(true)} legacyDiagnostic={{ ownerId: M, value }}/>); assert.doesNotMatch(advisor, /اطلاعات دسترسی قدیمی خود عضو|&lt;script/);
-  const oldProps = renderToStaticMarkup(<TicketRequestPanel {...props}/>); assert.match(oldProps, /—/); assert.match(oldProps, /type="submit"[^>]*disabled/);
+  const oldProps = renderToStaticMarkup(<TicketRequestPanel {...props}/>); assert.match(oldProps, /—/); assert.doesNotMatch(oldProps, /<form|type="submit"|ثبت آزمایشی/);
+});
+
+const actualPanelMarkup = (view: ReturnType<typeof mount>) => renderToStaticMarkup(React.createElement(TicketRequestPanel, view.panel().props as React.ComponentProps<typeof TicketRequestPanel>));
+for (const state of ["not_connected", "unavailable"] as const) {
+  const capability = { state, runId: null };
+  const disconnectedInbox = (): TicketStorageEnvelope => ({ ...inbox(), capability });
+  const disconnectedLookup = (input: TicketRequest) => { const value = looked(input); value.data.capability = capability; return value; };
+  test(`actual ${state} panel hides experimental actions and retains the draft with zero writes`, async () => {
+    const view = mount([ready(parent())], [ready(disconnectedInbox()), (_s: unknown, _p: unknown, options: { input: TicketRequest }) => disconnectedLookup(options.input)], []);
+    await view.auth(); view.edit("PRESERVED_NONTEST_DRAFT");
+    const html = actualPanelMarkup(view);
+    assert.doesNotMatch(html, /<form|type="submit"|ثبت آزمایشی|محیط تست|آماده‌کردن درخواست تازه/);
+    assert.match(html, /متن آماده‌شدهٔ شما محفوظ است/);
+    assert.match(html, state === "not_connected" ? /ثبت درخواست جدید فعلاً در دسترس نیست/ : /امکان ثبت درخواست بررسی نشد/);
+    await view.submit(); // Even a retained callback cannot obtain a real write from this capability.
+    assert.equal(view.prepWriteCalls.length, 0); assert.equal(view.writeCalls.length, 0);
+    assert.equal((view.panel().props.draft as { text: string }).text, "PRESERVED_NONTEST_DRAFT");
+    assert.ok(view.urls.every(url => !url.includes("PRESERVED_NONTEST_DRAFT"))); view.unmount();
+  });
+  test(`pending receipt and original intent survive ${state} display while recovery remains GET only`, async () => {
+    const unknownRead = { status: "error", httpStatus: 503, error: { code: "READ_UNAVAILABLE", state: "error", error: "unit readback unavailable" } };
+    const view = mount([ready(parent()), ready(parent()), ready(parent()), ready(parent())], [
+      ready(inbox()),
+      (_s: unknown, _p: unknown, options: { input: TicketRequest }) => looked(options.input),
+      (_s: unknown, _p: unknown, options: { input: TicketRequest }) => looked(options.input),
+      ready(disconnectedInbox()), unknownRead,
+      ready(disconnectedInbox()), unknownRead,
+      ready(disconnectedInbox()), (_s: unknown, _p: unknown, options: { input: TicketRequest }) => looked(options.input, true),
+    ], [(attempt: { intent: { body: string } }) => ({ status: "saved", receipt: receipt(JSON.parse(attempt.intent.body)) })]);
+    await view.auth(); view.edit("PRESERVED_PENDING_DRAFT"); await view.submit();
+    const original = [...view.preparedStore.values()][0], originalBody = original.body;
+    assert.equal(view.prepWriteCalls.length, 1); assert.equal(view.writeCalls.length, 1);
+    assert.equal(view.panel().props.locked, true); assert.equal((view.panel().props.draft as { text: string }).text, "PRESERVED_PENDING_DRAFT");
+    assert.doesNotMatch(actualPanelMarkup(view), /<form|type="submit"|ثبت آزمایشی|آماده‌کردن درخواست تازه/);
+    await view.reload(); assert.equal(view.panel().props.locked, true);
+    assert.equal(original.body, originalBody); assert.equal((view.panel().props.draft as { text: string }).text, "PRESERVED_PENDING_DRAFT");
+    await view.reload(); assert.match(view.text(), /در بازخوانی مستقل تطبیق/);
+    assert.equal(view.prepWriteCalls.length, 1); assert.equal(view.writeCalls.length, 1); assert.equal(original.body, originalBody);
+    assert.ok(view.urls.every(url => !url.includes("PRESERVED_PENDING_DRAFT") && !url.includes(original.clientToken))); view.unmount();
+  });
+}
+test("only the existing server-owned fixture capability exposes its explicitly experimental form", () => {
+  let submits = 0, newRequests = 0;
+  const props = { source: parent(), items: null, data: null, capability: { state: "owned_fixture" as const, runId: "unit-boundary-only" }, draft: { ...blankTicketDraft(), subject: "Synthetic", text: "Synthetic" }, locked: false, selectionLocked: false, needsRefresh: false, onDraft() {}, onSelect() {}, onNew() { newRequests++; }, onSubmit() { submits++; }, onDiscard() {} };
+  const tree = React.createElement(TicketRequestPanel, props), html = renderToStaticMarkup(tree);
+  assert.match(html, /محیط تستِ مجزا|ثبت آزمایشی با بررسی سرور/); assert.match(html, /unit-boundary-only/);
+  const form = nodes(tree).find(node => node.type === "form"); assert.ok(form);
+  (form.props.onSubmit as (event: { preventDefault(): void }) => void)({ preventDefault() {} });
+  const action = nodes(tree).find(node => node.type === "button" && text(node).includes("آماده‌کردن درخواست تازه")); assert.ok(action);
+  (action.props.onClick as () => void)(); assert.equal(submits, 1); assert.equal(newRequests, 1);
+  const locked = nodes(React.createElement(TicketRequestPanel, { ...props, locked: true })).find(node => node.type === "form"); assert.ok(locked);
+  (locked.props.onSubmit as (event: { preventDefault(): void }) => void)({ preventDefault() {} }); assert.equal(submits, 1);
 });
