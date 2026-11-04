@@ -164,6 +164,33 @@ jobs:
       - name: Native recovery ACL guard (offline)
         run: python3 docs/ops/recovery-01/p01-scripts/test_bounded_acl.py
 
+      - name: V3 attempt source/mock regressions (no native operations)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($PSVersionTable.PSVersion.Major -lt 7) { throw 'PowerShell 7 required; no skip' }
+          $root = Join-Path $env:GITHUB_WORKSPACE 'scripts/ops/cashflow-checkpoint'
+          $pwsh = (Get-Process -Id $PID).Path
+          $tests = Join-Path $root 'attempt-control/tests'
+          . (Join-Path $tests 'receipt-guard.ps1')
+          & $pwsh -NoProfile -NonInteractive -File (Join-Path $tests 'test_receipt_guard.ps1')
+          if ($LASTEXITCODE -ne 0) { throw 'V3 receipt guard regressions failed' }
+          & $pwsh -NoProfile -NonInteractive -File (Join-Path $tests 'test_harness_preflight.ps1') -CanonicalRoot $root
+          if ($LASTEXITCODE -ne 0) { throw 'V3 canonical-root regressions failed' }
+          $cases = @(
+            @{ file = 'test_attempt_contract.ps1'; count = 22; status = 'PASS_SYNTHETIC_EXISTING_ATTEMPT_CONTRACT' },
+            @{ file = 'test_v3_attempt_branch.ps1'; count = 76; status = 'PASS_SYNTHETIC_V3_ATTEMPT_BRANCH' },
+            @{ file = 'test_attempt_lifecycle.ps1'; count = 14; status = 'PASS_SYNTHETIC_MOCK_ATTEMPT_LIFECYCLE' }
+          )
+          foreach ($case in $cases) {
+            $test = Join-Path $root ('attempt-control/tests/' + $case.file)
+            $output = & $pwsh -NoProfile -NonInteractive -File $test -CanonicalRoot $root
+            if ($LASTEXITCODE -ne 0) { throw "V3 harness failed: $($case.file)" }
+            $rawReceipt = $output -join "`n"
+            Assert-OfflineHarnessReceipt $rawReceipt $case.status $case.count
+            Write-Output $rawReceipt
+          }
+
   # ── ۴) رفتارِ واقعیِ RLS، گرنت و یکپارچگیِ دیتابیس ─────────────────────────
   # چرا جدا از `quality`: این تنها jobی است که یک Postgres لازم دارد.
   #

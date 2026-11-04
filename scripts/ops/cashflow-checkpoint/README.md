@@ -279,3 +279,54 @@ those results do not establish a working native controller or product delivery.
 Current operational status and acceptance remain in
 [COMMAND-CENTER](../../../docs/COMMAND-CENTER.md); the original checkpoint failure
 is retained in [the existing evidence](../../../docs/plan/development-v04-20261029/evidence/P15-fresh-backup-not-accepted-root-20261104.json).
+
+### Versioned V3 source/mock regression harnesses
+
+The maintained tests are in `attempt-control/tests/`. Each requires an explicit
+`-CanonicalRoot` pointing to this `cashflow-checkpoint` directory and a fresh
+PowerShell 7 process; no user-specific output directory is used. Example, from
+this directory (repeat for `test_v3_attempt_branch.ps1` and
+`test_attempt_lifecycle.ps1`):
+
+```powershell
+pwsh -NoProfile -File ./attempt-control/tests/test_attempt_contract.ps1 -CanonicalRoot .
+```
+
+The three suites require 22, 76 and 14 checks respectively. They print one JSON
+receipt to stdout and do not write receipts, keys, authority or archives. The
+baseline source is byte-pinned under `tests/baseline/`; production and R2 sources
+are not modified. Tests extract named function definitions, replace I/O/provider
+boundaries and reject unexpected commands. Unsafe static operations become a
+throwing sentinel. A deliberate file-read canary must be blocked before I/O;
+any unexpected boundary attempt fails the whole suite even if a negative test
+catches its exception. Receipts require `externalCalls=0`,
+`unexpectedBoundaryAttempts=0` and `sentinelProbeDenied=1`.
+
+These are source/mock regressions, including the actual attempt dispatch's lost
+Capture/Verify response and no-second-call cases. They do not execute native
+initialization, SSH, crypto, key/authority access or archive Capture/Verify.
+Windows offline execution passed. Linux execution is pending actual CI; absence
+of PowerShell or a skipped step is a failure of coverage, never a pass. A separate
+CI registration patch must run all three suites and validate their receipts;
+ordinary green CI without that step does not establish V3 harness coverage.
+
+The root-resume correction validates raw JSON with `JsonDocument` before any
+PowerShell projection: the root must be an object (not a singleton array), keys
+must be unique even after escaping/case folding, status must be the exact string,
+and counters must be safe nonnegative JSON integers with the expected values.
+Boundary flags must be JSON `false`, never a coerced string or number.
+
+All three suites set terminating error handling before root validation. An
+explicit filesystem directory with all 63 reviewed source hashes is required,
+including for the historical baseline-only suite. The canonical pin index is
+itself hash-pinned and has one exact `-text` attribute; engine/R2 bytes are not
+changed. Blank/missing/file/wrong-source roots cannot yield a PASS receipt.
+
+`test_receipt_guard.ps1` covers 117 pure positive/negative receipt cases.
+`test_harness_preflight.ps1` checks 15 invalid-root cases across three fresh
+processes per input, with the caller explicitly using `Continue`; it requires a
+nonzero exit and empty stdout. These are additional test guards, not extra
+native acceptance checks. The original three suite counts remain 22/76/14.
+Their instrumentation is not a universal sandbox for arbitrary code or all I/O.
+Linux coverage still requires the actual registered CI step; none is inferred
+from Windows results or source review.

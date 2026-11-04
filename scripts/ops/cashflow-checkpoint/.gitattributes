@@ -1,6 +1,7 @@
 # Preserve the exact reviewed/tested operator source bytes across checkout.
 *.ps1 -text
 *.cs -text
+attempt-control/tests/canonical-source-pins.json -text
 
 # Exact raw-byte pins for the reviewed V3 provider and existing attempt flow.
 attempt-control/frozen-files.json -text
