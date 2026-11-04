@@ -15,7 +15,7 @@ BEGIN
   IF jsonb_typeof(p_value) = 'object' THEN
     SELECT coalesce(jsonb_object_agg(key, codal_private.reinterpret_legacy(value)), '{}'::jsonb)
     INTO result FROM jsonb_each(p_value)
-    WHERE key NOT IN ('quantity_source','quantity_unit','quantity_status','quantity_reason','market_basis','qty_unit','market');
+    WHERE key NOT IN ('quantity_source','quantity_witness','quantity_unit','quantity_status','quantity_reason','market_basis','qty_unit','market','unit_header','unit_inferred','period_months');
     RETURN result;
   ELSIF jsonb_typeof(p_value) = 'array' THEN
     SELECT coalesce(jsonb_agg(codal_private.reinterpret_legacy(value) ORDER BY ordinal), '[]'::jsonb)
@@ -105,6 +105,8 @@ BEGIN
     AND coalesce((r.raw->>'parser_version')::integer,1) >= version) THEN RAISE EXCEPTION 'version not advancing'; END IF;
   IF operation = 'archive' THEN
     IF codal_private.reinterpret_legacy(old.data) IS DISTINCT FROM codal_private.reinterpret_legacy(p_candidate->'data')
+      OR old.raw->'period_months' IS DISTINCT FROM '1'::jsonb
+      OR p_candidate #> '{data,period_months}' IS DISTINCT FROM '1'::jsonb
       OR capture IS NULL OR jsonb_typeof(capture) <> 'object'
       OR capture->>'symbol' IS DISTINCT FROM old.symbol
       OR capture->>'report_kind' IS DISTINCT FROM old.report_kind

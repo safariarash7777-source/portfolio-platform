@@ -25,13 +25,14 @@ export function validateArchive(a, kind, archive, version, period) {
 
 // Compare every legacy field: only the new provenance/quantity admission fields
 // may be enriched. Amounts, order, raw rates and legacy quantities cannot drift.
-export function preservesLegacy(value, candidate, path = "") {
-  const enrichment = new Set(["quantity_source", "quantity_unit", "quantity_status", "quantity_reason", "market_basis", "qty_unit", "market"]);
-  if (value === null || typeof value !== "object") return canonical(value) === canonical(candidate);
-  if (Array.isArray(value)) return Array.isArray(candidate) && value.length === candidate.length
-    && value.every((v, i) => preservesLegacy(v, candidate[i], `${path}/${i}`));
-  return candidate && typeof candidate === "object" && Object.entries(value).every(([k, v]) =>
-    enrichment.has(k) || preservesLegacy(v, candidate[k], `${path}/${k}`));
+export function legacyProjection(value) {
+  const enrichment = new Set(["quantity_source", "quantity_witness", "quantity_unit", "quantity_status", "quantity_reason", "market_basis", "qty_unit", "market", "unit_header", "unit_inferred", "period_months"]);
+  if (value === null || typeof value !== "object") return value;
+  if (Array.isArray(value)) return value.map(legacyProjection);
+  return Object.fromEntries(Object.entries(value).filter(([k]) => !enrichment.has(k)).map(([k,v]) => [k, legacyProjection(v)]));
+}
+export function preservesLegacy(value, candidate) {
+  return canonical(legacyProjection(value)) === canonical(legacyProjection(candidate));
 }
 
 export function adoptionPayload(row, context, request) {
@@ -42,6 +43,7 @@ export function adoptionPayload(row, context, request) {
       || !/^[a-f0-9]{64}$/.test(baseline.sha256) || !/^[a-f0-9-]{36}$/.test(request.requestId ?? "")
       || old.symbol !== row.symbol || old.report_kind !== row.report_kind || old.period_end !== row.period_end
       || old.raw?.period_end_jalali !== context.manifest.period_end_jalali || baseUrl(old) !== context.manifest.announcement_link
+      || old.raw?.period_months !== 1 || row.data?.period_months !== 1
       || old.raw?.announcement_link !== baseUrl(old) || old.raw?.link_excel !== context.manifest.link_excel
       || old.source_url !== `${baseUrl(old)}#pv${baseline.version}` || baseline.version >= context.version
       || baseline.rows.some(r => baseUrl(r) === baseUrl(old) && (r.raw?.parser_version ?? 1) >= context.version)
