@@ -1,0 +1,17 @@
+{
+  "status": "ACTUAL_PREVIEW_METADATA_READY_WITH_HISTORICAL_BOUND_BROWSER_ACCEPTANCE",
+  "deployment": "dpl_Fv1ZdqWmK4oSznhPwTZQdKFxeSgR",
+  "url": "https://portfolio-platform-iafm01ka9-safariarash7777-4463s-projects.vercel.app",
+  "source": "19ccd969158db6610e7fd4a5ba9fd92a2b00d9f9",
+  "state": "READY",
+  "target": null,
+  "observedDateUtc": "2026-11-04",
+  "freshReadbackByRoot": true,
+  "duplicateDeploymentCreated": false,
+  "browserReceiptAtUtc": "2026-11-03T21:34:23.814Z",
+  "browserReceiptLocal": "outputs/p08-cf6-root-20261104/final-19-preview.json",
+  "limits": [
+    "Current metadata is not a repeat of all browser tests.",
+    "Full P07/P08/P14, two reports, verified units/rates and authenticated AccountBridge return remain open."
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "rpcCalls": 0,
+  "sqlWrites": false,
+  "scope": "pinned VPS database only; no PaaS backend or quota conclusion",
+  "restConfiguration": [
+    {
+      "containerId": "703c0d4a0273aa257df593633629936bad6703e74b2e4b9da87d82e7580cab41",
+      "name": "portfolio-stage-rest-1",
+      "configuredSchemas": "public",
+      "observedVia": "PGRST_DB_SCHEMAS allowlist only",
+      "effectiveRuntimeAndBackendNotVerified": true
+    }
+  ],
+  "functions": [],
+  "status": "READ_ONLY_METADATA_COMPLETE",
+  "sourceId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+  "sourceImage": "sha256:6942962433a569e87f228b4d4ab7e11db5deca64e43babb3a038443ad6c4f1bb",
+  "sourceHealthyBeforeAfter": true,
+  "observedAtUtc": "2026-11-03T23:00:10.126162+00:00",
+  "payloadSha256": "06b8f9cf5255348a5f9ecc2eca20a54bef1b670f5f2560f02c3965505088cb6b",
+  "remoteWrites": false,
+  "automaticRetry": false
+}

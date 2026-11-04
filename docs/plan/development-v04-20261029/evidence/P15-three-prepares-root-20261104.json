@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "observedAtUtc": "2026-11-03T21:53:49.150259+00:00",
+  "status": "THREE_PREPARES_AND_RAW_PRESENT_LISTS_VERIFIED",
+  "checkpoints": [
+    {
+      "checkpoint": "20261017T122931Z",
+      "rawBytes": 2378645484,
+      "rawSha256": "60f67fa41ccb2737023466dbceb052d8639276cdd151c9c01c390455f006188a",
+      "gzipBytes": 562619113,
+      "gzipSha256": "24575b4b65379b7e8f7e167f87553c8d4ae630029a60fad90ef2a60207298953",
+      "catalogSha256": "83fc44d888e6f5bc866c95dfc5b1973deee37ee474e09a4d02fd3810355fc3d1",
+      "prepareReceiptSha256": "305a22dac1ac58a078458994b641015dc6c9d46f91e3e4f663e28a2221dd185e",
+      "listReceiptSha256": "18285384a09b782284af565096314fe5940de85cb138685a441adddf286ce439"
+    },
+    {
+      "checkpoint": "20261023T123955Z",
+      "rawBytes": 2393040715,
+      "rawSha256": "4070fad9bd3dc365ecb6309874a9363cd158c3928ae03e83c1150393fd81e961",
+      "gzipBytes": 564003483,
+      "gzipSha256": "781dd97006ca84ffe12848b027ee38132f0948664ddcd05f43f88e043a99c4a1",
+      "catalogSha256": "2497c34d0e6d311859eed06b8207824226f172f60b476dd92e9141e1582d2721",
+      "prepareReceiptSha256": "e9737829d45c7f356f867f0613b590e1db769f5801992d43942b09e89d6af2d1",
+      "listReceiptSha256": "28ba1ac9052b268c21e359d4dd096704da878a826b60ff6b7dc78a3fc2e1eb56"
+    },
+    {
+      "checkpoint": "20261023T154032Z",
+      "rawBytes": 2393290348,
+      "rawSha256": "3a7d29a92e91b86ff1718a5c9c0f0242ea455c0b8a25769dfbe86c142f0204ab",
+      "gzipBytes": 564029648,
+      "gzipSha256": "2d30e30e44cb62670fd0b2b3b0f1a50ebc40b26359c3f2e05698b672edc6c1ce",
+      "catalogSha256": "72f7f988cc9b1250b071ece874d326318db80cc3ab80fb5c94a2cd10663f6da2",
+      "prepareReceiptSha256": "3f3cc93ced816e9a4f8924b1141c42b04732a11f53b7d6b9f3d788c07bf10701",
+      "listReceiptSha256": "78100cc5d911c2e93878d211c2624588ad74103bd7e216661e31bca300669338"
+    }
+  ],
+  "freeBytesAtLastReadOnlyCheck": 11850960896,
+  "memoryAvailableBytesAtLastReadOnlyCheck": 5972307968,
+  "sourceHealthy": true,
+  "sourceRestartCount": 0,
+  "allRawRetainedAtThisCheck": true,
+  "promotionsExecutedAtThisCheck": false,
+  "nativeRawMissingMaterializeExecuted": false,
+  "databaseRestoreExecuted": false,
+  "freshCurrentDatabaseBackupOrRestore": false,
+  "proof": [
+    "three full gzip byte/hash decodes",
+    "three complete tmpfs raw materializations with real pinned pg_restore --list",
+    "three real List calls on original raw-present archives",
+    "final owned resource cleanup and no active native child"
+  ],
+  "oldReadOnlyCallResult": "READ_ONLY_RESULT_UNCONFIRMED",
+  "oldReadOnlyCallDoesNotAuthorizeMaterialize": true,
+  "rootNextAuthorizedScope": "Only Promote checkpoint 20261017T122931Z after exact pins, shared lock, active-consumer and capacity preflight; postcondition readback required; not yet claimed executed here.",
+  "manualRecoveryContract": "Exact reviewed helper496e; separate root write authorization before Materialize; fixed checkpoint command and prepared hash; independent raw/gzip hash readback before LegacyV1. Raw-missing native Materialize is not claimed tested.",
+  "minimumFreeBytesBeforeFirstMaterialize": 13149618156,
+  "limits": [
+    "gzip --list and full decode are not a database restore",
+    "potential free-space savings are not actual freed capacity",
+    "fresh backup, restore, storage binary, migration and Hermes installation remain separate gates"
+  ]
+}

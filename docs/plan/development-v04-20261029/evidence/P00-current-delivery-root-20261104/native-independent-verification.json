@@ -1,0 +1,72 @@
+{
+  "schema": "assembled-native-independent-readback.v1",
+  "run": 41740353457,
+  "attempt": 1,
+  "nativeJob": 126282228632,
+  "conclusion": "FAILURE_NOT_ACCEPTED",
+  "artifactId": 13282015103,
+  "zipSha256": "dc26f65cde3f177dc3642a10e5b85d2092c483634cbebc00e074d672e5f220eb",
+  "receiptSha256": "ac0230e45635b5bd51a0538d93c3d92b6b565a1403da2144b4cc4781dbd4373e",
+  "exactBinding": {
+    "allocationId": "153a81de-e907-467a-bd81-0ee31cd9b9ec",
+    "attempt": 1,
+    "executionAllocationId": "0e267a4f-c99e-5375-a852-23c988379b39",
+    "repository": "safariarash7777-source/portfolio-platform",
+    "runId": "41740353457",
+    "workflowCommit": "fdeac08dcd8efda2f54fc1c8928c398df2354111"
+  },
+  "exactFrozenSource": {
+    "capsuleSha256": "f5020a6afebcc685b2e713a7f895646f2a5718ee04b72c846edccec41adb86fc",
+    "commit": "4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a",
+    "driverContractSha256": "4c661f7d3cf8aa75f1185e7496c35a4ca766501af9be25d227fbab2e75160a9c",
+    "tree": "c96d462d72505f2471c54c8e7e5293fe2b39b3d1"
+  },
+  "nativeAttempted": true,
+  "ownedCleanupReadback": "CONFIRMED",
+  "writeOutcomeUnknown": false,
+  "failureDiagnostics": {
+    "actualExitCode": 1,
+    "chromePreflight": null,
+    "duplicatePassRecords": false,
+    "fallbackUsed": false,
+    "lastObservedPassedCheck": "immutable-source-default-closed",
+    "logReadback": "OBSERVED",
+    "malformedLogRecords": false,
+    "nativeFailureCode": "playwright_timeout",
+    "observedConsentPostIntents": 1,
+    "observedFinancialPostIntents": 2,
+    "observedOtherProductPostIntents": 0,
+    "observedPassedChecks": [
+      "isolation-attested",
+      "four-fresh-auth-users-and-sdk-getuser",
+      "assembled-financial-receipts-and-null-readback",
+      "assembled-consent-and-authorized-version-basis",
+      "immutable-source-default-closed"
+    ],
+    "observedProductPostIntents": 3,
+    "observedSqlAppliedCount": 18,
+    "timedOutOrInterrupted": false
+  },
+  "sameJobPublicLog": {
+    "controllerCheckout": "fdeac08dcd8efda2f54fc1c8928c398df2354111",
+    "appCheckout": "4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a",
+    "offlinePythonTests": 32,
+    "offlineConclusion": "SUCCESS",
+    "prepareConclusion": "SUCCESS",
+    "npmCiConclusion": "SUCCESS",
+    "nativeStartedUtc": "2026-11-03T23:41:13Z",
+    "nativeCompletedUtc": "2026-11-03T23:42:41Z",
+    "setupImage": "ubuntu-24.04",
+    "setupImageVersion": "20261025.353.1",
+    "setupProvisioner": "20261021.618"
+  },
+  "scopeLimits": [
+    "Five observed checks passed; remaining nine native checks and nine browser checks not accepted.",
+    "POST counts in failure projection are attested intent counts, not independent committed-effect counts.",
+    "playwright_timeout classifies any TimeoutError in the imported browserFailureCode, including possible fetch TimeoutError; no exact operation/selector can be concluded.",
+    "First await after last passed check is a direct REST read, before browser open.",
+    "No new patch, capsule, dispatch, pin replacement or replay performed.",
+    "Target install and human acceptance remain unobserved."
+  ],
+  "originalReceiptPreserved": true
+}

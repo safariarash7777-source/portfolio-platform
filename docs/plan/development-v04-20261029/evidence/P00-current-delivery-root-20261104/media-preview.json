@@ -1,0 +1,56 @@
+{
+  "status": "PASS_BOUNDED_REAL_MEDIA_PREVIEW",
+  "atUtc": "2026-11-03T23:17:37.901Z",
+  "source": "f0a98c7f8d04100b4f63f5a3a854858ce330912b",
+  "deployment": "dpl_BKtyRZGjxDqS4DPDYzyFoWifdtkr",
+  "url": "https://portfolio-platform-ln4vuboil-safariarash7777-4463s-projects.vercel.app/insights",
+  "phases": [
+    {
+      "phase": "all-real-content",
+      "receivedRows": 60,
+      "renderedCards": 60,
+      "idSetSha256": "91984e46fd436b0a79c02fc6b466856e49e3928f0c8824f8d141cc60a75f9d08",
+      "layout": "fallback",
+      "width": 390,
+      "scroll": 390
+    },
+    {
+      "phase": "seven-days-real-row-membership",
+      "cards": 20,
+      "expectedCards": 20,
+      "idSetSha256": "8c803b266959f21a08922fc63275ff15ea7f55987d39823d6c8d7ebaa6e36151",
+      "actualMembershipMatched": true
+    },
+    {
+      "phase": "thirty-days-reload",
+      "cards": 60,
+      "period": "30d",
+      "idSetSha256": "91984e46fd436b0a79c02fc6b466856e49e3928f0c8824f8d141cc60a75f9d08",
+      "sameInitialSixty": true
+    },
+    {
+      "phase": "unknown-recorded-date",
+      "cards": 0,
+      "notArchiveReadFailure": true
+    },
+    {
+      "phase": "clear-restores-same-real-sixty",
+      "cards": 60,
+      "idSetSha256": "91984e46fd436b0a79c02fc6b466856e49e3928f0c8824f8d141cc60a75f9d08"
+    },
+    {
+      "phase": "desktop",
+      "width": 1280,
+      "scroll": 1280,
+      "cards": 60
+    }
+  ],
+  "errors": [],
+  "writes": [],
+  "limits": [
+    "Recorded date is not independently attested source publication date.",
+    "Only the latest received sixty rows are covered; no global archive, topic or private-service acceptance.",
+    "Preview-only read binding; Production keeps the legacy reader.",
+    "No private account or financial request was exercised."
+  ]
+}

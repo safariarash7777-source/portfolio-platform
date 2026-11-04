@@ -1,0 +1,40 @@
+name: Assembled runner observation only
+
+on:
+  workflow_dispatch:
+    inputs:
+      reviewed_source_sha:
+        description: Exact coordinator-reviewed source commit
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  runner-observation:
+    name: Observe existing Chrome without native execution
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      RUNNER_OBSERVATION_REVIEWED_SHA: ${{ inputs.reviewed_source_sha }}
+    steps:
+      - name: Exact reviewed observer source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: control
+          persist-credentials: false
+      - name: Read existing runner and Chrome only
+        working-directory: control
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/runner-observation"
+          python3 scripts/testing/assembled-native-ci/run.py observe-runner > "$GITHUB_WORKSPACE/runner-observation/observation.json"
+      - name: Upload sanitized observation only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runner-observation-${{ github.run_id }}-${{ github.run_attempt }}
+          path: runner-observation/observation.json
+          if-no-files-found: error
+          retention-days: 7
