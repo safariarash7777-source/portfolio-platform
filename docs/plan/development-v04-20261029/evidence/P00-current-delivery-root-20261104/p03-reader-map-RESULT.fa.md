@@ -1,0 +1,43 @@
+# نقشهٔ کد موجود START-A/P03
+
+این سند تحویل شواهد به هماهنگ‌کننده است؛ دفتر وضعیت موازی، برنامه تازه یا پیاده‌سازی نیست. هیچ کد محصول، SQL، محیط، درخواست داده یا استقرار تغییر نکرد.
+
+| فایل | مرجع / SHA256 | آمادگی | گیت باقی‌مانده |
+|---|---|---|---|
+| app/(protected)/dashboard/consultation/page.tsx | 0d63a8b / d653070fb7a9793572c1a41e9e637cc43682b251181c6cd98cc1077fd67ca140 | صفحه عضو موجود؛ Auth getUser و workspace؛ raw e0 برابر | اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست |
+| app/(protected)/admin/consultation/page.tsx | 0d63a8b / f1f3f06572608ecfb54f9fc1f9026938b0c1c3a29c95bb998394c05b00c1c66d | صفحه مشاور موجود؛ همان workspace؛ raw e0 برابر | اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست |
+| app/api/consultation/route.ts | 0d63a8b / e23561518f7d0417dd1499a83ee8d766e370caf6e4d6c7806bb19e3e5351e820 | GET/POST واقعی موجود؛ raw e0 برابر | اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست |
+| lib/consultation/contracts.ts | 0d63a8b / aecf9ac39b0ad2e7775d45442c0c4fcd549b7a53949f88834f8c0f1b4f14bb75 | خواندن دو وضعیت جدید و capability اختیاری؛ نبود قابلیت false؛ raw e0 برابر | اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست |
+| lib/consultation/server.ts | 0d63a8b / 96fc567c7c41d1e11d9a93742d684200ea06716960c7def2444f242808dcf7b2 | احراز و کنترل قابلیت در POST موجود؛ raw e0 متفاوت | اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست |
+| components/consultation/ConsultationWorkspace.tsx | 0d63a8b / 01e0987227f11599e8ece8e718e176ae43076a5ce36616ac2a1760049fc93974 | مصرف کننده مشترک عضو/مشاور موجود؛ raw e0 متفاوت | اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست |
+| components/consultation/ConsultationPanel.tsx | 0d63a8b / 4f823ae679271ad1b941f37e67925109c852c980079fbcb527206de5fed0b901 | قابلیت به SessionCard متصل است؛ raw e0 متفاوت | اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست |
+| components/consultation/SessionCard.tsx | 0d63a8b / 66f6b27bf9bcc0b40ceb47eaf7120e46d8265a75fbe6c4f00d731d443b914047 | برچسب و سابقه دو وضعیت موجود؛ raw e0 متفاوت | اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست |
+| components/consultation/ActionFeedback.tsx | 0d63a8b / 0cbb6a52242fefab81b4e641c07459f79d857b7345f26c92a74c6272bdbbc2bd | فرم وضعیت و متن موجود؛ raw e0 برابر | اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست |
+| components/consultation/readback.ts | 0d63a8b / e6db7f3ba46fb7ae12329ca86259eccbab9dca53363c658063edbe72599a85e8 | تطبیق مستقل شناسه/نسخه/اقدام/متن موجود؛ raw e0 برابر | اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست |
+| scripts/testing/consultation-tickets/feedback-reader-native.mjs | 1bf8f86 / 18893829ff88c8e7853e925d7158dd8fd556dc12fb05a1cc661dba1f2316812d | PR375: سناریوی واقعی partial/not_done، توقف نویسنده، ورود تازه و DOM؛ استفاده مجدد با lifecycle فعلی | فقط اتصال بررسی‌شده در job موجود؛ بدون راه‌انداز/route/SQL تازه |
+| scripts/testing/consultation-tickets/native-auth-runtime.mjs | 1bf8f86 / f5cb82ebd60e37a4e35ec6fd30b29d4e84c5985c5811b22cc78e1bf51c7b494b | Auth/runtime موجود؛ pin و مالکیت منابع باید با job فعلی تطبیق داده شود | فقط اتصال بررسی‌شده در job موجود؛ بدون راه‌انداز/route/SQL تازه |
+| scripts/testing/consultation-feedback/install-feedback.py | 45c5a8b / 88da3b8b1699e0bfb0655d0fbba49bac0220aa8069abea0a654faa074788f353 | M1 نصب/بازیابی SQL-only؛ validate_reader موجود، attestation واقعی متصل نیست | فقط اتصال بررسی‌شده در job موجود؛ بدون راه‌انداز/route/SQL تازه |
+| scripts/testing/assembled-native-ci/run.py | 45c5a8b / 6ebb43686eebca6e3fd846f32f69c85c1350918ba2c6e9da5281c31a5ec4891c | کنترل‌کننده مشترک موجود؛ پروفایل‌های M1 و P03 جدا هستند | فقط اتصال بررسی‌شده در job موجود؛ بدون راه‌انداز/route/SQL تازه |
+| .github/workflows/ci.yml | 45c5a8b / d19b882cb5fc0e186a0654e9c3532c6ca3d31bda788af7b62d0cbb083dff840c | همان job assembled-native-bounded؛ M1 به عمد Node/Auth/browser را اجرا نمی‌کند | فقط اتصال بررسی‌شده در job موجود؛ بدون راه‌انداز/route/SQL تازه |
+
+## تطبیق سه شاهد متفاوت
+
+- PR375، source `1bf8f86b7bcaaedcb8320e178b1589a33b88e306`، reader `699ea1677c21c216be52869318cf0ac1c4525744`، run `41167735667`: سناریوی واقعی دو actor برای partial/not_done، توقف مستقل نویسنده برنامه و DB، ورود تازه با GoTrue/SDK، GET و DOM اصل تاریخچه، حفظ ID/زمان/متن، legacy doing/done، منع کاربر بی‌ارتباط و لغو دسترسی، بدون ثبت خودکار و با cleanup در گزارش ثبت شده است. این قابلیت از قبل ساخته و در محیط isolated آزموده شده؛ باید استفاده مجدد شود. شاهد Git: docs/plan/development-v04-20261029/evidence/P03-375-1bf8-root-native-20261031.json در controller45. محدودیت صریح: reader سازگار699 حفظ شده؛ rollback به برنامه ناسازگار قدیمی آزموده نشده؛ نصب مقصد/حق خدمت/پذیرش آرش اثبات نشده.
+- P03 composition، app `e0b930927563d7f9f6d79e848917c4ba0d77ed6f` و workflow `cbf9cd3ba146d035ab7ccd14484cfe5a0ad59ddf`، run `41828609171`: 13 native و11 browser پاس؛ چهار Auth واقعی، دو مسیر عضو/مشاور، logout/password/reload، کنترل داده و cleanup. composition-member-phase نسخهٔ منتشرشده، سؤال/پاسخ و doing/done را می‌سنجد و از requireOriginalFeedbackRows استفاده می‌کند. به‌خودی‌خود اجرای سناریوی extended feedback یا نصب M1 نیست. receipt صراحتاً fullAssembledAcceptance=NOT_ESTABLISHED و targetInstall=NOT_APPLIED دارد.
+- M1، app0d63 و controller45، run `41844781241`: PASS_M1_SQL_COPY_ONLY، دو restore، inverse پیش از تاریخچه، سه ردیف doing/partial/not_done و رد rollback پس از تاریخچه با PT409، cleanup تأیید. m1_apply_and_history خوانندهٔ مستقر را تصدیق نمی‌کند: reader_sha برابر a تکراری40، SQL claims و fixture است؛ fullConsumer=NOT_WIRED و authBrowserAcceptance=false. این یک آزمون واقعی SQL روی Linux است، اما آزمون واقعی مصرف‌کنندهٔ احرازشده نیست.
+
+## اختلاف مهم مبناها؛ بدون تغییر محصول
+
+از10 فایل محصول بررسی‌شده،6فایل بین0d63 وe0 بایت‌به‌بایت برابرند. چهار اختلاف بررسی شد: Panel فیلتر عضو را به Workspace منتقل می‌کند؛ Workspace حفظ فیلتر و بازگشت از پروندهٔ غیرمجاز و پاک‌شدن هویت را اضافه می‌کند؛ SessionCard نمایش پاسخ خطادار را می‌بندد و sessionActions می‌فرستد؛ server درe0 کنترل مستقل consultationWritesReleased را قبل از آماده‌سازی و پیش از نوشتن اضافه می‌کند و قابلیت GET را با آن AND می‌کند. پس توقف نویسندهٔ برنامهٔ PR375/e0 را نباید به app0d63 نسبت داد یا صرفاً با کپی رسید به M1 منتقل کرد. hash مستقل هر دو مبنا درinventory.json است. این بررسی تغییری در هیچ مبنا ایجاد نمی‌کند.
+
+## کمترین فاصله برای همان job موجود
+
+1. صفحه، API، قرارداد، فرم، نمایش تاریخچه و helper احراز آماده‌اند؛ route/helper محصول تازه لازم نیست. تست PR375 و composition موجود را نگه دارید. profileM1 فعلی به عمد نصب Node/Auth/browser را skip می‌کند؛ در همین controller/job باید اتصال بررسی‌شده به مصرف‌کنندهٔ موجود تعریف شود، نه اجرای runner مستقل یا ادعای جمع خودکار دو PASS.
+2. پیش از فعال‌شدن writer، reader واقعی با SHA/شناسه استقرار/نشانی/زمان/رسید و binding همان محیط و payload باید شش معیار validate_reader را ثابت کند: oldSqlRead، missingCapabilityOff، newSqlRead، newHistoryReadable، uiWriterOff و postWriterOff. رشته‌های مصنوعی M1 این شاهد نیستند. انتخاب برنامهٔ reader باید صریح باشد؛0d63 وe0 کنترل توقف یکسان ندارند.
+3. همان تاریخچهٔ تازه با Auth واقعی و خواندن مستقل API/DOM عضو و مشاور، بعد از logout/login/reload و توقف writer باید عیناً حفظ شود. پس از تاریخچه، rollback عملیاتی به معنی توقف نویسنده و حفظ reader سازگار است؛ SQLinverse که PT409 می‌دهد نباید دور زده شود. سابقهٔ PR375 این سناریو را دارد اما binding تازهٔ M1 نیست.
+4. بازتخصیص بودجه/شناسه‌ها و ثبت اثر هر مرحله با حفظ عدم تکرار و cleanup، در همان job و قرارداد موجود لازم است؛ این بسته هیچ پیاده‌سازی یا افزایش بودجه‌ای پیشنهاد/اعمال نمی‌کند. برای شروع فقط نقشهٔ منابع و فاصلهٔ اتصال تحویل داده شد. controller فعلی fullConsumer=NOT_WIRED را الزامی می‌داند؛ receipt موفق جدید بدون مرور شرط‌ها و pinها معتبر نخواهد بود.
+5. entitlement خدمت جدا و NOT_CONNECTED باقی است؛ stop writer یا موفقیت آزمایش به معنای اعطای حق خدمت نیست. P09 unknown save همچنان خارج از پذیرش P03 ثبت شده و باید جدا ادامه یابد.
+
+## حدود این تحویل
+
+فقط بازخوانی raw Git، archive موجود و receipt عمومی موجود انجام شد؛ آزمون native/مرورگر/SQL جدید یا درخواست provider، تغییر app/source، push، deploy، env، install اجرا نشد. frozen5fe دست‌نخورده ماند. این15ردیف فهرست وابستگی کامل نیست؛ فهرست مستقیم منابع موجود برای پرسش هماهنگ‌کننده است. hashها و پنج عضو capsule درinventory.json ثبت‌اند؛ capsule با SHA موجود c3bbd84d… تطبیق دارد. شاهد تازهٔ عملیاتی باید توسط هماهنگ‌کننده در مرکز فرمان اصلی ثبت شود.

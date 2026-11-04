@@ -1,0 +1,15 @@
+{
+  "schema": "root-existing-consumer-source-map-review.v1",
+  "atUtc": "2026-11-04T14:54:32.137248+00:00",
+  "inventorySha256": "e35b0a0674886399cc1bde18ccf1809e34fc82677c56ecc960d1457bf59d0deb",
+  "rawGitFilesVerified": 15,
+  "actualCapsuleMembersVerified": 5,
+  "capsuleSha256": "c3bbd84d308774e2775f7fa267b652e90036e52be9794450275bd52aae5b1e90",
+  "selectedNextReader": "e0b930927563d7f9f6d79e848917c4ba0d77ed6f",
+  "sqlBaseline": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+  "fullConsumerAccepted": false,
+  "actualNativeOrSqlOrProviderExecuted": false,
+  "reason": "Existing PR375 feedback-reader scenario and e0 application are reused; six matching product files do not erase four differences including e0 independent writer release gate. Old reader699 success is historical, not acceptance on M1.",
+  "readerAttestationBoundary": "Current validate_reader requires actual https/dpl binding; isolated localhost cannot become production evidence with fake dpl or weaker validation. New isolated helper delta must remain productionGateEligible=false.",
+  "owner": "A helper-only source delta outside shared controller; C P09R2 independently; root sole integration/execution owner"
+}

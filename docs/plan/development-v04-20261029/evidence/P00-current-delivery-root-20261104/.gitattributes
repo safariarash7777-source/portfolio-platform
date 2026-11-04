@@ -75,3 +75,7 @@ p14-monthly-review-* -text -whitespace
 p09-image-* -text -whitespace
 
 p09-gateway-* -text -whitespace
+
+p08-prod-5ec-* -text -whitespace
+p06-public-hop-* -text -whitespace
+p03-reader-map-* -text -whitespace

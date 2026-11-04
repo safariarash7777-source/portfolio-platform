@@ -1,0 +1,27 @@
+{
+  "schema": "root-current-production-funds-bounded-review.v1",
+  "atUtc": "2026-11-04T14:54:32.138346+00:00",
+  "source": "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+  "deployment": "dpl_7xN2JMsjR64hAsb7g3S61wMtygth",
+  "browserReceiptSha256": "23d5604b7aba11bb0254458fa8417fabb51b9604dea936119ed05984bfa729e9",
+  "actualProductionMetadataVerified": true,
+  "observedSnapshotCount": 345,
+  "observedLeveragedQueryCount": 9,
+  "selectedAfterActualReload": [
+    "\u0627\u0647\u0631\u0645",
+    "\u0645\u0648\u062c",
+    "\u0646\u0627\u0631\u0646\u062c \u0627\u0647\u0631\u0645",
+    "\u062a\u0648\u0627\u0646",
+    "\u062c\u0647\u0634"
+  ],
+  "qPreserved": true,
+  "browserApiMutationsObserved": 0,
+  "pageErrorsObserved": 0,
+  "touch375CssPageWidth": 375,
+  "wide1440": "CSS viewport on same touch-emulated context; not real-device or desktop hardware acceptance",
+  "roleRowCountMeaning": "Role-row count0 in raw receipt measures absent HTML table semantics, not zero funds; visible snapshot/category/query text and selectors are the data-count witnesses.",
+  "freshness": "Price date/valid source-or-capture clock and unit class unknown; NAV has independent times; valid bubble comparison withheld. Some period returns observed after reload; independent calculations, adjustments/dividends/costs not verified.",
+  "all345IndividuallyTested": false,
+  "P08Complete": false,
+  "deploymentOrProductOrAccountChange": false
+}

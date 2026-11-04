@@ -1,0 +1,61 @@
+{
+  "schema": "root-production-preview-current-symbol-hop.v1",
+  "atUtc": "2026-11-04T14:48:53.866650+00:00",
+  "getRequests": 2,
+  "mutationOrSqlOrProviderRequests": 0,
+  "rows": [
+    {
+      "role": "production",
+      "origin": "https://portfolio-platform-fawn.vercel.app",
+      "route": "/api/symbol-detail",
+      "symbol": "فولاد",
+      "atUtc": "2026-11-04T14:48:50.865608+00:00",
+      "readOnly": true,
+      "authOrSecretSupplied": false,
+      "providerCalledByProbe": false,
+      "routeSourceConfirmedStoredReadOnly": true,
+      "rawBodyPublished": false,
+      "httpStatus": 200,
+      "bodySha256": "615e03c53ee3498cb40efb2d7f8cb3468f861c738ef6550b303cec0c80f49f45",
+      "bytes": 30730,
+      "cacheControl": "no-store",
+      "responseKeys": [
+        "at",
+        "data"
+      ],
+      "dataPresent": true,
+      "storedSymbolClockRaw": 1793793419088,
+      "dataCanonicalSha256": "b9e92271a7b1752f484d7f85e1078ca214a5ae05f5cb212f10be6b8fd58e9358",
+      "fixedError": null,
+      "storedSymbolClockUtc": "2026-11-04T11:56:59.088000+00:00",
+      "storedClockAgeSeconds": 10314.777638,
+      "status": "BOUNDED_PUBLIC_ROUTE_OBSERVED"
+    },
+    {
+      "role": "preview",
+      "origin": "https://portfolio-platform-c9kjaa62q-safariarash7777-4463s-projects.vercel.app",
+      "route": "/api/symbol-detail",
+      "symbol": "فولاد",
+      "atUtc": "2026-11-04T14:48:50.866606+00:00",
+      "readOnly": true,
+      "authOrSecretSupplied": false,
+      "providerCalledByProbe": false,
+      "routeSourceConfirmedStoredReadOnly": true,
+      "rawBodyPublished": false,
+      "httpStatus": 502,
+      "bodySha256": "dd5534a8fc560484fe632528cfa8150e5fb804b5b8319d474931cbb2de8ca492",
+      "bytes": 24,
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "responseKeys": [
+        "error"
+      ],
+      "dataPresent": false,
+      "storedSymbolClockRaw": null,
+      "fixedError": "supabase 402",
+      "status": "BOUNDED_PUBLIC_ROUTE_OBSERVED"
+    }
+  ],
+  "scope": "same owned application stored-read route in production and exact Preview; symbol clock is storage/collection metadata, not independent price time or complete financial cycle",
+  "actualDatabaseConnectionIdentity": "NOT_PROVEN",
+  "configurationChanged": false
+}

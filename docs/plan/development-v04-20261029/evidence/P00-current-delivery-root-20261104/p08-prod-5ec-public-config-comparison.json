@@ -1,0 +1,17 @@
+{
+  "schema": "root-public-connect-src-comparison.v1",
+  "atUtc": "2026-11-04T14:47:21.352Z",
+  "from": "cached successful browser response headers, no new HTTP or credential read",
+  "production": {
+    "source": "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+    "deployment": "dpl_7xN2JMsjR64hAsb7g3S61wMtygth",
+    "connectSrc": "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://62.60.191.24"
+  },
+  "preview": {
+    "source": "2aa0cc46e0adb5c73e24bb752706e3168c94fc94",
+    "deployment": "dpl_Bu4kE93mjnno5SJtffNkuobRWr5V",
+    "connectSrc": "connect-src 'self' https://*.supabase.co wss://*.supabase.co"
+  },
+  "serverDestinationProven": false,
+  "scope": "difference of public network allowlists; next.config mapping warrants review but is not actual server upstream identification"
+}

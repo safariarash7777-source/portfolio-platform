@@ -1,0 +1,1489 @@
+{
+  "schema": "root-current-funds-production-readonly-browser.v1",
+  "source": "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+  "deployment": "dpl_7xN2JMsjR64hAsb7g3S61wMtygth",
+  "startedAt": "2026-11-04T14:39:34.246Z",
+  "browser": "156.0.8078.80",
+  "viewport": {
+    "width": 375,
+    "height": 812
+  },
+  "touchEmulated": true,
+  "realHardwareAcceptance": false,
+  "requests": [
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/funds"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/media/35d9eb37be8f3c35-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/media/4ff1260a1bda0420-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/media/7009a0e6afae0c20-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/media/902e9716815fb483-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/css/ee04187d2ae996e6.css"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/image"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/webpack-0cd5a77e5b2d4660.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/1255-60d8dc7c8c9309a1.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/main-app-b7ac91ae224968d9.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/2619-04bc32f026a0d946.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/2473-cd6d92efe10b616a.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/6698-a1b4aaf792e2d6bf.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/2287-d0a13c11a3ad0980.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/4453-97872f183ad03f83.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/1545-e7fb6452e04098ad.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/market/funds/page-d850be975dbb2e68.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/stocks"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/map"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/login"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/register"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/analyses"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/notes"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/insights"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/44530001-5660b368cb8dfb76.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/2413-7907ad56a3b1fddb.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/(auth)/login/page-e20135803e30b06f.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/learn/glossary"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/options"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/tools/portfolio-scenario"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/codal"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/(auth)/register/page-35e7b47f1231cd10.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/data"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/webinars"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/about"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/1627-f9cd4eeb07c8b04d.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/learn/glossary/page-85a34010b35f3288.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/help"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/tools/portfolio-scenario/page-5d24e5a535140287.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/webinars/page-a6cdb20dec985531.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/about/page-88698f3ca0d88bd1.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/help/page-aa6a801b01ee9274.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%86%D8%A7%D8%B1%D9%86%D8%AC%20%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%86%D8%A7%D8%B1%D9%86%D8%AC%20%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AA%D9%88%D8%A7%D9%86"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AA%D9%88%D8%A7%D9%86"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AC%D9%87%D8%B4"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AC%D9%87%D8%B4"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%A8%DB%8C%D8%AF%D8%A7%D8%B1"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%A8%DB%8C%D8%AF%D8%A7%D8%B1"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%B4%D8%AA%D8%A7%D8%A8"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%B4%D8%AA%D8%A7%D8%A8"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AF%D9%88%D8%A7%DB%8C%DA%A9%D8%B3"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%85%D9%88%D8%AC"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%85%D9%88%D8%AC"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%86%D8%A7%D8%B1%D9%86%D8%AC%20%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%86%D8%A7%D8%B1%D9%86%D8%AC%20%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AA%D9%88%D8%A7%D9%86"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AA%D9%88%D8%A7%D9%86"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AC%D9%87%D8%B4"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AC%D9%87%D8%B4"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%A8%DB%8C%D8%AF%D8%A7%D8%B1"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%A8%DB%8C%D8%AF%D8%A7%D8%B1"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%B4%D8%AA%D8%A7%D8%A8"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%B4%D8%AA%D8%A7%D8%A8"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%85%D9%88%D8%AC"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%85%D9%88%D8%AC"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%85%D9%88%D8%AC"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%86%D8%A7%D8%B1%D9%86%D8%AC%20%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%86%D8%A7%D8%B1%D9%86%D8%AC%20%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AA%D9%88%D8%A7%D9%86"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%85%D9%88%D8%AC"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/legal/privacy"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/legal/terms"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/legal/disclaimer"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/legal/layout-a6410e9108b8d652.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/funds"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/media/35d9eb37be8f3c35-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/media/4ff1260a1bda0420-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/media/7009a0e6afae0c20-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/media/902e9716815fb483-s.p.woff2"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/css/ee04187d2ae996e6.css"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/image"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/webpack-0cd5a77e5b2d4660.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/1255-60d8dc7c8c9309a1.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/main-app-b7ac91ae224968d9.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/2619-04bc32f026a0d946.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/2473-cd6d92efe10b616a.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/6698-a1b4aaf792e2d6bf.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/2287-d0a13c11a3ad0980.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/4453-97872f183ad03f83.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/1545-e7fb6452e04098ad.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/market/funds/page-d850be975dbb2e68.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/map"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/stocks"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/options"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/codal"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/data"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/analyses"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/notes"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/insights"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/learn/glossary"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/tools/portfolio-scenario"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/webinars"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/about"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/tools/portfolio-scenario/page-5d24e5a535140287.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/help"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/1627-f9cd4eeb07c8b04d.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/learn/glossary/page-85a34010b35f3288.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/legal/privacy"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/webinars/page-a6cdb20dec985531.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/legal/terms"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/about/page-88698f3ca0d88bd1.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/legal/disclaimer"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/legal/layout-a6410e9108b8d652.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/help/page-aa6a801b01ee9274.js"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/funds"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/stocks"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/funds"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/map"
+    },
+    {
+      "method": "GET",
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%A7%D9%87%D8%B1%D9%85"
+    }
+  ],
+  "responses": [
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/funds"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/media/7009a0e6afae0c20-s.p.woff2"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/media/35d9eb37be8f3c35-s.p.woff2"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/css/ee04187d2ae996e6.css"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/media/902e9716815fb483-s.p.woff2"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/media/4ff1260a1bda0420-s.p.woff2"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/image"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/4453-97872f183ad03f83.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/main-app-b7ac91ae224968d9.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/market/funds/page-d850be975dbb2e68.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/1545-e7fb6452e04098ad.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/2287-d0a13c11a3ad0980.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/2473-cd6d92efe10b616a.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/2619-04bc32f026a0d946.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/webpack-0cd5a77e5b2d4660.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/6698-a1b4aaf792e2d6bf.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/1255-60d8dc7c8c9309a1.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/stocks"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/map"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/login"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/analyses"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/insights"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/notes"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/register"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/(auth)/login/page-e20135803e30b06f.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/options"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/44530001-5660b368cb8dfb76.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/codal"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/2413-7907ad56a3b1fddb.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/learn/glossary"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/(auth)/register/page-35e7b47f1231cd10.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/tools/portfolio-scenario"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/data"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/learn/glossary/page-85a34010b35f3288.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/1627-f9cd4eeb07c8b04d.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/webinars"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/tools/portfolio-scenario/page-5d24e5a535140287.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/about"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/help"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/about/page-88698f3ca0d88bd1.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/webinars/page-a6cdb20dec985531.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/help/page-aa6a801b01ee9274.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AC%D9%87%D8%B4"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AA%D9%88%D8%A7%D9%86"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%86%D8%A7%D8%B1%D9%86%D8%AC%20%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%86%D8%A7%D8%B1%D9%86%D8%AC%20%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AA%D9%88%D8%A7%D9%86"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AC%D9%87%D8%B4"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%A8%DB%8C%D8%AF%D8%A7%D8%B1"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%B4%D8%AA%D8%A7%D8%A8"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%A8%DB%8C%D8%AF%D8%A7%D8%B1"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AF%D9%88%D8%A7%DB%8C%DA%A9%D8%B3"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%85%D9%88%D8%AC"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%85%D9%88%D8%AC"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%B4%D8%AA%D8%A7%D8%A8"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%86%D8%A7%D8%B1%D9%86%D8%AC%20%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AA%D9%88%D8%A7%D9%86"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%86%D8%A7%D8%B1%D9%86%D8%AC%20%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AA%D9%88%D8%A7%D9%86"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%A8%DB%8C%D8%AF%D8%A7%D8%B1"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AC%D9%87%D8%B4"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%B4%D8%AA%D8%A7%D8%A8"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%A8%DB%8C%D8%AF%D8%A7%D8%B1"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AC%D9%87%D8%B4"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%85%D9%88%D8%AC"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%B4%D8%AA%D8%A7%D8%A8"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%86%D8%A7%D8%B1%D9%86%D8%AC%20%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%85%D9%88%D8%AC"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%86%D8%A7%D8%B1%D9%86%D8%AC%20%D8%A7%D9%87%D8%B1%D9%85"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D8%AA%D9%88%D8%A7%D9%86"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%85%D9%88%D8%AC"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/symbol/%D9%85%D9%88%D8%AC"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/legal/privacy"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/legal/terms"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/legal/disclaimer"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/legal/layout-a6410e9108b8d652.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/funds"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/media/35d9eb37be8f3c35-s.p.woff2"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/media/4ff1260a1bda0420-s.p.woff2"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/media/7009a0e6afae0c20-s.p.woff2"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/media/902e9716815fb483-s.p.woff2"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/css/ee04187d2ae996e6.css"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/webpack-0cd5a77e5b2d4660.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/4bd1b696-100b9d70ed4e49c1.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/1255-60d8dc7c8c9309a1.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/main-app-b7ac91ae224968d9.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/2619-04bc32f026a0d946.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/2473-cd6d92efe10b616a.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/6698-a1b4aaf792e2d6bf.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/2287-d0a13c11a3ad0980.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/4453-97872f183ad03f83.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/1545-e7fb6452e04098ad.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/market/funds/page-d850be975dbb2e68.js"
+    },
+    {
+      "status": 304,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/image"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/brand/mark.png"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/map"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/stocks"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/options"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/codal"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/data"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/notes"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/insights"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/tools/portfolio-scenario"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/learn/glossary"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/webinars"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/about"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/tools/portfolio-scenario/page-5d24e5a535140287.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/1627-f9cd4eeb07c8b04d.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/learn/glossary/page-85a34010b35f3288.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/webinars/page-a6cdb20dec985531.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/about/page-88698f3ca0d88bd1.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/legal/privacy"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/help"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/legal/layout-a6410e9108b8d652.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/_next/static/chunks/app/help/page-aa6a801b01ee9274.js"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/legal/disclaimer"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/legal/terms"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/analyses"
+    },
+    {
+      "status": 200,
+      "host": "portfolio-platform-fawn.vercel.app",
+      "path": "/market/funds"
+    }
+  ],
+  "pageErrors": [],
+  "stages": [
+    {
+      "name": "current-production-initial",
+      "http": 200,
+      "intro": "میز بازاردیده‌بان صندوق‌ها۱۳ آبان ۱۴۰۵ · ساعت ۱۸:۰۶ تهرانبستهزمان معتبر منبع یا دریافت نامشخص استNAV، حباب و بازدهٔ صندوق‌های سرمایه‌گذاری از آخرین اسنپ‌شات.جست‌وجوی نماد یا صندوقنمای کلانسهامصندوق‌هاطلا و ارزبخشنقشه و صنایعاختیار معامله۳۴۵ صندوق در آخرین اسنپ‌شات · برای دیدنِ NAV، حباب و تاریخچه روی نمادِ صندوق بزنید.مقایسه صندوق‌های منتخبدو تا پنج صندوق با نوع منبع و واحد پول یکسان انتخاب کنید. مقدار مشاهده‌شده و امکان مقایسه هر معیار جدا نمایش داده می‌شود.صندوق ۱صندوق ۲صندوق ۳صندوق ۴صندوق ۵هنوز صندوقی انتخاب نشده است.نتیجهٔ فیلتر۳۴۵کلِ صندوق‌های اسنپ‌شاتارزش بازار نمادها۳۶۴۱٫۶ همتاز ۳۴۵ صندوق از ۳۴۵میانگین بازده روز▲ ٪۱٫۶از ۳۴۵ صندوقِ دارای بازدهنسبت مثبت٪۹۰از ۳۴۵ صندوقِ دارای بازدهمیانگین حباب—از ۰ صندوقِ دارای NAV معتبرمثبت ٪۹۰منفی ٪۱۰تفکیک صندوق‌هاسهمِ هر دسته از ۳۴۵ صندوق · روی هر دسته بزنید تا تابلو همان دسته را نشان دهددرآمد ثابت۹۶ صندوق · ٪۲۸ارزشِ بازار ۱۴۱۱٫۲ همت▲ ٪۰٫۱ افزایش ۰.۱ درصدیسهامی۹۲ صندوق · ٪۲۷ارزشِ بازار ۴۲۰٫۴ همت▲ ٪۳٫۶ افزایش ۳.۶ درصدیبخشی۶۴ صندوق · ٪۱۸ارزشِ بازار ۲۷۰٫۷ همت▲ ٪۱٫۴ افزایش ۱.۴ درصدیطلا۳۶ صندوق · ٪۱۰ارزشِ بازار ۱۲۲۳٫۷ همت▲ ٪۱٫۳ افزایش ۱.۳ درصدینقره۱۶ صندوق · ٪۵ارزشِ بازار ۵۱٫۰ همت▲ ٪۱٫۵ افزایش ۱.۵ درصدیمختلط۹ صندوق · ٪۳ارزشِ بازار ۲۹٫۸ همت▲ ٪۰٫۹ افزایش ۰.۹ درصدیاهرمی۹ صندوق · ٪۳ارزشِ بازار ۱۶۰٫۰ همت▲ ٪۴٫۰ افزایش ۴.۰ درصدیاملاک۸ صندوق · ٪۲ارزشِ بازار ۱۹٫۰ همت▼ ٪۰٫۱ کاهش ۰.۱ درصدیفراصندوق۳ صندوق · ٪۱ارزشِ بازار ۱۱٫۹ همت▲ ٪۱٫۵ افزایش ۱.۵ درصدیکالایی۲ صندوق · کمتر از ٪۱ارزشِ بازار ۷٫۴ همت▼ ٪۰٫۹ کاهش ۰.۹ درصدیسایر۱۰ صندوق · ٪۳ارزشِ بازار ۳۶٫۵ همت▲ ٪۰٫۶ افزایش ۰.۶ درصدی«سایر» دسته نیست، باقی‌ماندهٔ دسته‌بندی است: صندوق‌های جسورانه، خصوصی و پروژ",
+      "geometry": {
+        "viewport": 375,
+        "pageWidth": 375
+      },
+      "rowCount": 0
+    },
+    {
+      "name": "honest-no-match-filter",
+      "query": "قائم",
+      "url": "https://portfolio-platform-fawn.vercel.app/market/funds?q=%D9%82%D8%A7%D8%A6%D9%85",
+      "emptyMessage": 2
+    },
+    {
+      "name": "five-actual-funds-and-url-filter",
+      "query": "اهرم",
+      "selected": [
+        "اهرم",
+        "موج",
+        "نارنج اهرم",
+        "توان",
+        "جهش"
+      ],
+      "url": "https://portfolio-platform-fawn.vercel.app/market/funds?q=%D8%A7%D9%87%D8%B1%D9%85&compare=%5B%22%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D9%85%D9%88%D8%AC%22%2C%22%D9%86%D8%A7%D8%B1%D9%86%D8%AC+%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D8%AA%D9%88%D8%A7%D9%86%22%2C%22%D8%AC%D9%87%D8%B4%22%5D",
+      "comparisonText": "مقایسه صندوق‌های منتخبدو تا پنج صندوق با نوع منبع و واحد پول یکسان انتخاب کنید. مقدار مشاهده‌شده و امکان مقایسه هر معیار جدا نمایش داده می‌شود.صندوق ۱صندوق ۲صندوق ۳صندوق ۴صندوق ۵پاک کردن انتخاب‌هااهرمنوع اعلام‌شده منبعصندوق های سرمایه گذاری اهرمیطبقه واحد قیمتنامشخص؛ شاهد طبقه واحد موجود نیستقیمت پایانی مشاهده‌شده۷٬۴۰۵ تومانزمان منبع قیمتتاریخ نامشخص · ۱۲:۳۰:۰۰NAV ابطال مشاهده‌شده۹٬۱۵۱ تومانزمان منبع NAV۱۴۰۵-۰۸-۱۳ · ۱۷:۲۶:۰۲طبقه واحد NAVنامشخصکیفیت تطبیق زمانی NAVزمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخصحباب قابل مقایسه—بازده قیمت یک هفته مشاهده‌شده—شاهد دوره موجود نیستبازده قیمت یک ماه مشاهده‌شده—شاهد دوره موجود نیستبازده قیمت سه ماه مشاهده‌شده—شاهد دوره موجود نیستموجنوع اعلام‌شده منبعصندوق های سرمایه گذاری اهرمیطبقه واحد قیمتنامشخص؛ شاهد طبقه واحد موجود نیستقیمت پایانی مشاهده‌شده۹٬۸۹۴ تومانزمان منبع قیمتتاریخ نامشخص · ۱۲:۲۹:۵۹NAV ابطال مشاهده‌شده۱۲٬۲۶۱ تومانزمان منبع NAV۱۴۰۵-۰۸-۱۳ · ۱۷:۲۶:۱۲طبقه واحد NAVنامشخصکیفیت تطبیق زمانی NAVزمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخصحباب قابل مقایسه—بازده قیمت یک هفته مشاهده‌شده—شاهد دوره موجود نیستبازده قیمت یک ماه مشاهده‌شده—شاهد دوره موجود نیستبازده قیمت سه ماه مشاهده‌شده—شاهد دوره موجود نیستنارنج اهرمنوع اعلام‌شده منبعصندوق های سرمایه گذاری اهرمیطبقه واحد قیمتنامشخص؛ شاهد طبقه واحد موجود نیستقیمت پایانی مشاهده‌شده۷٬۱۰۴ تومانزمان منبع قیمتتاریخ نامشخص · ۱۲:۲۹:۵۴NAV ابطال مشاهده‌شده۸٬۶۹۵ تومانزمان منبع NAV۱۴۰۵-۰۸-۱۳ · ۱۷:۲۶:۰۴طبقه واحد NAVنامشخصکیفیت تطبیق زمانی NAVزمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخصحباب قابل مقایسه—بازده قیمت یک هفته مشاهده‌شده—شاهد دوره موجود نیستبازده قیمت یک ماه مشاهده‌شده—شاهد دوره موجود نیستبازده قیمت سه ماه مشاهده‌شده—شاهد دوره موجود نیستتواننوع اعلام‌شده منبعصندوق های سرمایه گذاری اهرمیطبقه واحد قیمتنامشخص؛ شاهد طبقه واحد موجود نیستقیمت پایانی مشاهده‌شده۷٬۱۷۶ تومانزمان منبع قیمتتاریخ نامشخص · ۱۴:۱۷:۵۵NAV ابطال مشاهده‌شده۸٬۹۹۸ تومانزمان منبع NAV۱۴۰۵-۰۸-۱۳ · ۱۵:۵۸:۰۷طبقه واحد NAVنامشخصکیفیت تطبیق زمانی NAVزمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخصحباب قابل مقایسه—بازده قیمت یک هفته مشاهده‌شده—شاهد دوره موجود نیستبازده قیمت یک ماه مشاهده‌شده—شاهد دوره موجود نیستبازده قیمت سه ماه مشاهده‌شده—شاهد دوره موجود نیستجهشنوع اعلام‌شده منبعصندوق های سرمایه گذاری اهرمیطبقه واحد قیمتنامشخص؛ شاهد طبقه واحد موجود نیستقیمت پایانی مشاهده‌شده۴٬۵۵۱ تومانزمان منبع قیمتتاریخ نامشخص · ۱۲:۲۸:۵۰NAV ابطال مشاهده‌شده۵٬۷۲۸ تومانزمان منبع NAV۱۴۰۵-۰۸-۱۳ · ۱۷:۲۶:۰۱طبقه واحد NAVنامشخصکیفیت تطبیق زمانی NAVزمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخصحباب قابل مقایسه—بازده قیمت یک هفته مشاهده‌شده—شاهد دوره موجود نیستبازده قیمت یک ماه مشاهده‌شده—شاهد دوره موجود نیستبازده قیمت سه ماه مشاهده‌شده—شاهد دوره موجود نیستحباب قابل مقایسه: طبقه واحد با منبع مستند مشخص نشده است · اهرم، موج، نارنج اهرم، توان، جهشتطبیق طبقه واحد NAV با طبقه قیمت مستند نیست · اهرم، موج، نارنج اهرم، توان، جهشحباب معتبر با زمان قیمت و NAV قابل تطبیق در دسترس نیست · اهرم، موج، نارنج اهرم، توان، جهشتاریخ یا ساعت مستقل قیمت و NAV ناقص است · اهرم، موج، نارنج اهرم، توان، جهشبازده قیمت یک هفته: طبقه واحد با منبع مستند مشخص نشده است · اهرم، موج، نارنج اهرم، توان، جهشبازده با تاریخ واقعی ابتدا و انتها و روش مشخص موجود نیست · اهرم، موج، نارنج اهرم، توان، جهشبازده قیمت یک ماه: طبقه واحد با منبع مستند مشخص نشده است · اهرم، موج، نارنج اهرم، توان، جهشبازده با تاریخ واقعی ابتدا و انتها و روش مشخص موجود نیست · اهرم، موج، نارنج اهرم، توان، جهشبازده قیمت سه ماه: طبقه واحد با منبع مستند مشخص نشده است · اهرم، موج، نارنج اهرم، توان، جهشبازده با تاریخ واقعی ابتدا و انتها و روش مشخص موجود نیست · اهرم، موج، نارنج اهرم، توان، جهشمنبع قیمت و NAV: داده بازار BrsApi، آخرین داده ثبت‌شده؛ زمان دریافت جای زمان منبع نیست. بازده قیمت از تاریخچه ثبت‌شده محاسبه شده، تعدیل‌نشده و بدون سود تقسیمی و هزینه‌ها است؛ بازده کل نیست. فرض سرمایه‌گذاری مجدد در داده مشخص نیست. طبقه واحد عادی صدور و ابطال و واحد ممتاز قابل معامله صندوق اهرمی از روی نام یا نوع صندوق تعیین نمی‌شود. ترکیب دارایی و حساسیت اهرمی از این داده محاسبه نمی‌شود. هزینه‌ها و زمان انتشار مستقل در داده موجود نیست.",
+      "geometry": {
+        "viewport": 375,
+        "pageWidth": 375
+      },
+      "optionTextOmitted": true
+    },
+    {
+      "name": "actual-production-query-comparison-reload",
+      "http": 200,
+      "url": "https://portfolio-platform-fawn.vercel.app/market/funds?q=%D8%A7%D9%87%D8%B1%D9%85&compare=%5B%22%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D9%85%D9%88%D8%AC%22%2C%22%D9%86%D8%A7%D8%B1%D9%86%D8%AC+%D8%A7%D9%87%D8%B1%D9%85%22%2C%22%D8%AA%D9%88%D8%A7%D9%86%22%2C%22%D8%AC%D9%87%D8%B4%22%5D",
+      "q": "اهرم",
+      "selected": [
+        "اهرم",
+        "موج",
+        "نارنج اهرم",
+        "توان",
+        "جهش"
+      ],
+      "geometry": {
+        "viewport": 375,
+        "pageWidth": 375
+      },
+      "summary": "میز بازاردیده‌بان صندوق‌ها۱۳ آبان ۱۴۰۵ · ساعت ۱۸:۱۱ تهرانبستهزمان معتبر منبع یا دریافت نامشخص استNAV، حباب و بازدهٔ صندوق‌های سرمایه‌گذاری از آخرین اسنپ‌شات.جست‌وجوی نماد یا صندوقنمای کلانسهامصندوق‌هاطلا و ارزبخشنقشه و صنایعاختیار معامله۳۴۵ صندوق در آخرین اسنپ‌شات · برای دیدنِ NAV، حباب و تاریخچه روی نمادِ صندوق بزنید.مقایسه صندوق‌های منتخبدو تا پنج صندوق با نوع منبع و واحد پول یکسان انتخاب کنید. مقدار مشاهده‌شده و امکان مقایسه هر معیار جدا نمایش داده می‌شود.صندوق ۱صندوق ۲صندوق ۳صندوق ۴صندوق ۵پاک کردن انتخاب‌هااهرمنوع اعلام‌شده منبعصندوق های سرمایه گذاری اهرمیطبقه واحد قیمتنامشخص؛ شاهد طبقه واحد موجود نیستقیمت پایانی مشاهده‌شده۷٬۴۰۵ تومانزمان منبع قیمتتاریخ نامشخص · ۱۲:۳۰:۰۰NAV ابطال مشاهده‌شده۹٬۱۵۱ تومانزمان منبع NAV۱۴۰۵-۰۸-۱۳ · ۱۷:۲۶:۰۲طبقه واحد NAVنامشخصکیفیت تطبیق زمانی NAVزمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخصحباب قابل مقایسه—بازده قیمت یک هفته مشاهده‌شده▲ ٪۳٫۳۱۴۰۵/۰۸/۰۶ تا ۱۴۰۵/۰۸/۱۳ · پایانیبازده قیمت یک ماه مشاهده‌شده▲ ٪۲٫۱۱۴۰۵/۰۷/۱۲ تا ۱۴۰۵/۰۸/۱۳ · پایانیبازده قیمت سه ماه مشاهده‌شده▲ ٪۷۱٫۱۱۴۰۵/۰۵/۱۴ تا ۱۴۰۵/۰۸/۱۳ · پایانیموجنوع اعلام‌شده منبعصندوق های سرمایه گذاری اهرمیطبقه واحد قیمتنامشخص؛ شاهد طبقه واحد موجود نیستقیمت پایانی مشاهده‌شده۹٬۸۹۴ تومانزمان منبع قیمتتاریخ ن",
+      "comparisonText": "مقایسه صندوق‌های منتخبدو تا پنج صندوق با نوع منبع و واحد پول یکسان انتخاب کنید. مقدار مشاهده‌شده و امکان مقایسه هر معیار جدا نمایش داده می‌شود.صندوق ۱صندوق ۲صندوق ۳صندوق ۴صندوق ۵پاک کردن انتخاب‌هااهرمنوع اعلام‌شده منبعصندوق های سرمایه گذاری اهرمیطبقه واحد قیمتنامشخص؛ شاهد طبقه واحد موجود نیستقیمت پایانی مشاهده‌شده۷٬۴۰۵ تومانزمان منبع قیمتتاریخ نامشخص · ۱۲:۳۰:۰۰NAV ابطال مشاهده‌شده۹٬۱۵۱ تومانزمان منبع NAV۱۴۰۵-۰۸-۱۳ · ۱۷:۲۶:۰۲طبقه واحد NAVنامشخصکیفیت تطبیق زمانی NAVزمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخصحباب قابل مقایسه—بازده قیمت یک هفته مشاهده‌شده▲ ٪۳٫۳۱۴۰۵/۰۸/۰۶ تا ۱۴۰۵/۰۸/۱۳ · پایانیبازده قیمت یک ماه مشاهده‌شده▲ ٪۲٫۱۱۴۰۵/۰۷/۱۲ تا ۱۴۰۵/۰۸/۱۳ · پایانیبازده قیمت سه ماه مشاهده‌شده▲ ٪۷۱٫۱۱۴۰۵/۰۵/۱۴ تا ۱۴۰۵/۰۸/۱۳ · پایانیموجنوع اعلام‌شده منبعصندوق های سرمایه گذاری اهرمیطبقه واحد قیمتنامشخص؛ شاهد طبقه واحد موجود نیستقیمت پایانی مشاهده‌شده۹٬۸۹۴ تومانزمان منبع قیمتتاریخ نامشخص · ۱۲:۲۹:۵۹NAV ابطال مشاهده‌شده۱۲٬۲۶۱ تومانزمان منبع NAV۱۴۰۵-۰۸-۱۳ · ۱۷:۲۶:۱۲طبقه واحد NAVنامشخصکیفیت تطبیق زمانی NAVزمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخصحباب قابل مقایسه—بازده قیمت یک هفته مشاهده‌شده▼ ٪۱٫۰۱۴۰۵/۰۸/۰۶ تا ۱۴۰۵/۰۸/۱۳ · پایانیبازده قیمت یک ماه مشاهده‌شده▲ ٪۲٫۲۱۴۰۵/۰۷/۱۲ تا ۱۴۰۵/۰۸/۱۳ · پایانیبازده قیمت سه ماه مشاهده‌شده▲ ٪۹۲٫۷۱۴۰۵/۰۵/۱۴ تا ۱۴۰۵/۰۸/۱۳ · پایانینارنج اهرمنوع اعلام‌شده منبعصندوق های سرمایه گذاری اهرمیطبقه واحد قیمتنامشخص؛ شاهد طبقه واحد موجود نیستقیمت پایانی مشاهده‌شده۷٬۱۰۴ تومانزمان منبع قیمتتاریخ نامشخص · ۱۲:۲۹:۵۴NAV ابطال مشاهده‌شده۸٬۶۹۵ تومانزمان منبع NAV۱۴۰۵-۰۸-۱۳ · ۱۷:۲۶:۰۴طبقه واحد NAVنامشخصکیفیت تطبیق زمانی NAVزمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخصحباب قابل مقایسه—بازده قیمت یک هفته مشاهده‌شده▲ ٪۲٫۰۱۴۰۵/۰۸/۰۶ تا ۱۴۰۵/۰۸/۱۳ · پایانیبازده قیمت یک ماه مشاهده‌شده▲ ٪۵٫۱۱۴۰۵/۰۷/۱۲ تا ۱۴۰۵/۰۸/۱۳ · پایانیبازده قیمت سه ماه مشاهده‌شده▲ ٪۴۷٫۱۱۴۰۵/۰۵/۱۴ تا ۱۴۰۵/۰۸/۱۳ · پایانیتواننوع اعلام‌شده منبعصندوق های سرمایه گذاری اهرمیطبقه واحد قیمتنامشخص؛ شاهد طبقه واحد موجود نیستقیمت پایانی مشاهده‌شده۷٬۱۷۶ تومانزمان منبع قیمتتاریخ نامشخص · ۱۴:۱۷:۵۵NAV ابطال مشاهده‌شده۸٬۹۹۸ تومانزمان منبع NAV۱۴۰۵-۰۸-۱۳ · ۱۵:۵۸:۰۷طبقه واحد NAVنامشخصکیفیت تطبیق زمانی NAVزمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخصحباب قابل مقایسه—بازده قیمت یک هفته مشاهده‌شده▲ ٪۲٫۰۱۴۰۵/۰۸/۰۶ تا ۱۴۰۵/۰۸/۱۳ · پایانیبازده قیمت یک ماه مشاهده‌شده▲ ٪۳٫۳۱۴۰۵/۰۷/۱۲ تا ۱۴۰۵/۰۸/۱۳ · پایانیبازده قیمت سه ماه مشاهده‌شده▲ ٪۵۹٫۹۱۴۰۵/۰۵/۱۴ تا ۱۴۰۵/۰۸/۱۳ · پایانیجهشنوع اعلام‌شده منبعصندوق های سرمایه گذاری اهرمیطبقه واحد قیمتنامشخص؛ شاهد طبقه واحد موجود نیستقیمت پایانی مشاهده‌شده۴٬۵۵۱ تومانزمان منبع قیمتتاریخ نامشخص · ۱۲:۲۸:۵۰NAV ابطال مشاهده‌شده۵٬۷۲۸ تومانزمان منبع NAV۱۴۰۵-۰۸-۱۳ · ۱۷:۲۶:۰۱طبقه واحد NAVنامشخصکیفیت تطبیق زمانی NAVزمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخصحباب قابل مقایسه—بازده قیمت یک هفته مشاهده‌شده▼ ٪۱٫۳۱۴۰۵/۰۸/۰۶ تا ۱۴۰۵/۰۸/۱۳ · پایانیبازده قیمت یک ماه مشاهده‌شده▲ ٪۳٫۲۱۴۰۵/۰۷/۱۲ تا ۱۴۰۵/۰۸/۱۳ · پایانیبازده قیمت سه ماه مشاهده‌شده▲ ٪۶۸٫۷۱۴۰۵/۰۵/۱۴ تا ۱۴۰۵/۰۸/۱۳ · پایانیحباب قابل مقایسه: طبقه واحد با منبع مستند مشخص نشده است · اهرم، موج، نارنج اهرم، توان، جهشتطبیق طبقه واحد NAV با طبقه قیمت مستند نیست · اهرم، موج، نارنج اهرم، توان، جهشحباب معتبر با زمان قیمت و NAV قابل تطبیق در دسترس نیست · اهرم، موج، نارنج اهرم، توان، جهشتاریخ یا ساعت مستقل قیمت و NAV ناقص است · اهرم، موج، نارنج اهرم، توان، جهشبازده قیمت یک هفته: طبقه واحد با منبع مستند مشخص نشده است · اهرم، موج، نارنج اهرم، توان، جهشبازده قیمت یک ماه: طبقه واحد با منبع مستند مشخص نشده است · اهرم، موج، نارنج اهرم، توان، جهشبازده قیمت سه ماه: طبقه واحد با منبع مستند مشخص نشده است · اهرم، موج، نارنج اهرم، توان، جهشمنبع قیمت و NAV: داده بازار BrsApi، آخرین داده ثبت‌شده؛ زمان دریافت جای زمان منبع نیست. بازده قیمت از تاریخچه ثبت‌شده محاسبه شده، تعدیل‌نشده و بدون سود تقسیمی و هزینه‌ها است؛ بازده کل نیست. فرض سرمایه‌گذاری مجدد در داده مشخص نیست. طبقه واحد عادی صدور و ابطال و واحد ممتاز قابل معامله صندوق اهرمی از روی نام یا نوع صندوق تعیین نمی‌شود. ترکیب دارایی و حساسیت اهرمی از این داده محاسبه نمی‌شود. هزینه‌ها و زمان انتشار مستقل در داده موجود نیست."
+    },
+    {
+      "name": "wide-css-viewport-same-touch-context",
+      "geometry": {
+        "viewport": 1440,
+        "pageWidth": 1440
+      },
+      "scope": "CSS viewport only; not real desktop/hardware acceptance"
+    }
+  ],
+  "accountLinks": [
+    {
+      "text": "ورود",
+      "href": "/login?next=%2Fmarket%2Ffunds%3Fcompare%3D%255B%2522%25D8%25A7%25D9%2587%25D8%25B1%25D9%2585%2522%252C%2522%25D9%2585%25D9%2588%25D8%25AC%2522%252C%2522%25D9%2586%25D8%25A7%25D8%25B1%25D9%2586%25D8%25AC%2B%25D8%25A7%25D9%2587%25D8%25B1%25D9%2585%2522%252C%2522%25D8%25AA%25D9%2588%25D8%25A7%25D9%2586%2522%252C%2522%25D8%25AC%25D9%2587%25D8%25B4%2522%255D%26q%3D%25D8%25A7%25D9%2587%25D8%25B1%25D9%2585"
+    }
+  ],
+  "symbolLinkCount": 41,
+  "apiMutations": [],
+  "status": "PASS_BOUNDED_CURRENT_PRODUCTION_FUNDS_UI",
+  "productionChanged": false,
+  "authenticationOrHoldingsChanged": false,
+  "humanVisualAcceptance": false,
+  "limits": {
+    "sourceFreshness": "UNKNOWN_PRICE_DATE_AND_CAPTURE_CLOCK",
+    "navObservedTime": "separate field per fund; not synchronized with price",
+    "unitClass": "UNKNOWN",
+    "bubbleComparability": "WITHHELD",
+    "returns": "some values observed after reload with period endpoints; unadjusted, fees/dividends excluded; independent financial calculation not verified",
+    "entireP08": "OPEN",
+    "allFundsCoverage": "not all345 individually checked",
+    "hardware": "emulation only"
+  },
+  "finishedAt": "2026-11-04T14:44:32.015Z"
+}

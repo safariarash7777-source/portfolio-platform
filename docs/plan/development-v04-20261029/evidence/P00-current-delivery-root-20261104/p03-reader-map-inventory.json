@@ -1,0 +1,200 @@
+{
+  "schemaVersion": "start-a-p03-existing-reader-map.v1",
+  "scope": "READ_ONLY_SOURCE_RECONCILIATION_NO_IMPLEMENTATION",
+  "application": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+  "composedApplication": "e0b930927563d7f9f6d79e848917c4ba0d77ed6f",
+  "controller": "45c5a8b86b1ef1f38cf74463e9891db4aa3922fb",
+  "rows": [
+    {
+      "commit": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+      "file": "app/(protected)/dashboard/consultation/page.tsx",
+      "gitBlob": "54def5923cb9627e288c4c01a7f7fde8425fea55",
+      "sha256": "d653070fb7a9793572c1a41e9e637cc43682b251181c6cd98cc1077fd67ca140",
+      "bytes": 2324,
+      "readiness": "صفحه عضو موجود؛ Auth getUser و workspace",
+      "e0SameRaw": true,
+      "e0Sha256": "d653070fb7a9793572c1a41e9e637cc43682b251181c6cd98cc1077fd67ca140",
+      "remaining": "اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست"
+    },
+    {
+      "commit": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+      "file": "app/(protected)/admin/consultation/page.tsx",
+      "gitBlob": "b9c437891551bde86a3f408ea70f92dc974b41de",
+      "sha256": "f1f3f06572608ecfb54f9fc1f9026938b0c1c3a29c95bb998394c05b00c1c66d",
+      "bytes": 1899,
+      "readiness": "صفحه مشاور موجود؛ همان workspace",
+      "e0SameRaw": true,
+      "e0Sha256": "f1f3f06572608ecfb54f9fc1f9026938b0c1c3a29c95bb998394c05b00c1c66d",
+      "remaining": "اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست"
+    },
+    {
+      "commit": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+      "file": "app/api/consultation/route.ts",
+      "gitBlob": "db5e581818e08a19e2fb75e5055e759fdb5ff39d",
+      "sha256": "e23561518f7d0417dd1499a83ee8d766e370caf6e4d6c7806bb19e3e5351e820",
+      "bytes": 437,
+      "readiness": "GET/POST واقعی موجود",
+      "e0SameRaw": true,
+      "e0Sha256": "e23561518f7d0417dd1499a83ee8d766e370caf6e4d6c7806bb19e3e5351e820",
+      "remaining": "اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست"
+    },
+    {
+      "commit": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+      "file": "lib/consultation/contracts.ts",
+      "gitBlob": "72933931f016e4f0a7c52821bb6d8b42f7b2fd9b",
+      "sha256": "aecf9ac39b0ad2e7775d45442c0c4fcd549b7a53949f88834f8c0f1b4f14bb75",
+      "bytes": 20804,
+      "readiness": "خواندن دو وضعیت جدید و capability اختیاری؛ نبود قابلیت false",
+      "e0SameRaw": true,
+      "e0Sha256": "aecf9ac39b0ad2e7775d45442c0c4fcd549b7a53949f88834f8c0f1b4f14bb75",
+      "remaining": "اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست"
+    },
+    {
+      "commit": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+      "file": "lib/consultation/server.ts",
+      "gitBlob": "f515e1419c9de622cecc9b905a264d768cf43507",
+      "sha256": "96fc567c7c41d1e11d9a93742d684200ea06716960c7def2444f242808dcf7b2",
+      "bytes": 7656,
+      "readiness": "احراز و کنترل قابلیت در POST موجود",
+      "e0SameRaw": false,
+      "e0Sha256": "29fd796d94c409861b484a12dbdd89f4714fbdc51cd64245c08dd75cc7d639d2",
+      "remaining": "اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست"
+    },
+    {
+      "commit": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+      "file": "components/consultation/ConsultationWorkspace.tsx",
+      "gitBlob": "be69675c08b962c3670470dcef28c3741fe60712",
+      "sha256": "01e0987227f11599e8ece8e718e176ae43076a5ce36616ac2a1760049fc93974",
+      "bytes": 15872,
+      "readiness": "مصرف کننده مشترک عضو/مشاور موجود",
+      "e0SameRaw": false,
+      "e0Sha256": "231ff4cb94950cc858b4abec53e184b08de143ff6bb6da7c727447a2a298d059",
+      "remaining": "اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست"
+    },
+    {
+      "commit": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+      "file": "components/consultation/ConsultationPanel.tsx",
+      "gitBlob": "ec02ff95dfb7041d4d3c9bdb3ea04c1740532f4e",
+      "sha256": "4f823ae679271ad1b941f37e67925109c852c980079fbcb527206de5fed0b901",
+      "bytes": 12952,
+      "readiness": "قابلیت به SessionCard متصل است",
+      "e0SameRaw": false,
+      "e0Sha256": "255677d10145dd39d34164debfb3dbf70721b850b3eae3616b08803c62db228a",
+      "remaining": "اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست"
+    },
+    {
+      "commit": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+      "file": "components/consultation/SessionCard.tsx",
+      "gitBlob": "281051cdd7d64da6ab74fe8e8adf8c9d038bdc41",
+      "sha256": "66f6b27bf9bcc0b40ceb47eaf7120e46d8265a75fbe6c4f00d731d443b914047",
+      "bytes": 12537,
+      "readiness": "برچسب و سابقه دو وضعیت موجود",
+      "e0SameRaw": false,
+      "e0Sha256": "8750836179b0bd2e5d7288a9e39bb734a5a3c38c57dce73d637a194599d83607",
+      "remaining": "اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست"
+    },
+    {
+      "commit": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+      "file": "components/consultation/ActionFeedback.tsx",
+      "gitBlob": "b998e46ae49f6662dc5302707ed20f8058f95299",
+      "sha256": "0cbb6a52242fefab81b4e641c07459f79d857b7345f26c92a74c6272bdbbc2bd",
+      "bytes": 3730,
+      "readiness": "فرم وضعیت و متن موجود",
+      "e0SameRaw": true,
+      "e0Sha256": "0cbb6a52242fefab81b4e641c07459f79d857b7345f26c92a74c6272bdbbc2bd",
+      "remaining": "اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست"
+    },
+    {
+      "commit": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+      "file": "components/consultation/readback.ts",
+      "gitBlob": "8942abf45970ca10f92056d60cac2f7b4332e926",
+      "sha256": "e6db7f3ba46fb7ae12329ca86259eccbab9dca53363c658063edbe72599a85e8",
+      "bytes": 2195,
+      "readiness": "تطبیق مستقل شناسه/نسخه/اقدام/متن موجود",
+      "e0SameRaw": true,
+      "e0Sha256": "e6db7f3ba46fb7ae12329ca86259eccbab9dca53363c658063edbe72599a85e8",
+      "remaining": "اجرای تازه در محیط واحد با reader binding واقعی؛ داشتن کد به معنای انتشار یا پذیرش نیست"
+    },
+    {
+      "commit": "1bf8f86b7bcaaedcb8320e178b1589a33b88e306",
+      "file": "scripts/testing/consultation-tickets/feedback-reader-native.mjs",
+      "sha256": "18893829ff88c8e7853e925d7158dd8fd556dc12fb05a1cc661dba1f2316812d",
+      "gitBlob": "abd222db5c647290376c1958c73d1e0fd3a82ad0",
+      "bytes": 20167,
+      "readiness": "PR375: سناریوی واقعی partial/not_done، توقف نویسنده، ورود تازه و DOM؛ استفاده مجدد با lifecycle فعلی",
+      "remaining": "فقط اتصال بررسی‌شده در job موجود؛ بدون راه‌انداز/route/SQL تازه"
+    },
+    {
+      "commit": "1bf8f86b7bcaaedcb8320e178b1589a33b88e306",
+      "file": "scripts/testing/consultation-tickets/native-auth-runtime.mjs",
+      "sha256": "f5cb82ebd60e37a4e35ec6fd30b29d4e84c5985c5811b22cc78e1bf51c7b494b",
+      "gitBlob": "d0de805ddbee09f68090cdb8580b3813e2a6c13a",
+      "bytes": 34028,
+      "readiness": "Auth/runtime موجود؛ pin و مالکیت منابع باید با job فعلی تطبیق داده شود",
+      "remaining": "فقط اتصال بررسی‌شده در job موجود؛ بدون راه‌انداز/route/SQL تازه"
+    },
+    {
+      "commit": "45c5a8b86b1ef1f38cf74463e9891db4aa3922fb",
+      "file": "scripts/testing/consultation-feedback/install-feedback.py",
+      "sha256": "88da3b8b1699e0bfb0655d0fbba49bac0220aa8069abea0a654faa074788f353",
+      "gitBlob": "dc6989a882a2d7535c1b07b998c93a8957236f65",
+      "bytes": 82744,
+      "readiness": "M1 نصب/بازیابی SQL-only؛ validate_reader موجود، attestation واقعی متصل نیست",
+      "remaining": "فقط اتصال بررسی‌شده در job موجود؛ بدون راه‌انداز/route/SQL تازه"
+    },
+    {
+      "commit": "45c5a8b86b1ef1f38cf74463e9891db4aa3922fb",
+      "file": "scripts/testing/assembled-native-ci/run.py",
+      "sha256": "6ebb43686eebca6e3fd846f32f69c85c1350918ba2c6e9da5281c31a5ec4891c",
+      "gitBlob": "28ff75e129ace30b57f8c868175df4a1a48a366d",
+      "bytes": 95865,
+      "readiness": "کنترل‌کننده مشترک موجود؛ پروفایل‌های M1 و P03 جدا هستند",
+      "remaining": "فقط اتصال بررسی‌شده در job موجود؛ بدون راه‌انداز/route/SQL تازه"
+    },
+    {
+      "commit": "45c5a8b86b1ef1f38cf74463e9891db4aa3922fb",
+      "file": ".github/workflows/ci.yml",
+      "sha256": "d19b882cb5fc0e186a0654e9c3532c6ca3d31bda788af7b62d0cbb083dff840c",
+      "gitBlob": "109c1aacdfe9e2e45fdc46e9258d55dc0d06402c",
+      "bytes": 27537,
+      "readiness": "همان job assembled-native-bounded؛ M1 به عمد Node/Auth/browser را اجرا نمی‌کند",
+      "remaining": "فقط اتصال بررسی‌شده در job موجود؛ بدون راه‌انداز/route/SQL تازه"
+    }
+  ],
+  "capsule": {
+    "sha256": "c3bbd84d308774e2775f7fa267b652e90036e52be9794450275bd52aae5b1e90",
+    "members": [
+      {
+        "member": "overlay/scripts/testing/consultation-tickets/composition-member-phase.mjs",
+        "sha256": "1ab7b3262f9fd05c25dd7bc80b7e45858d7b1beb9911a96cc0ff11c2eb3f263d",
+        "bytes": 14373
+      },
+      {
+        "member": "overlay/scripts/testing/consultation-tickets/composition-browser-case.mjs",
+        "sha256": "070de1c277547ce4c20abb9266eaa9cb5f882de639fede0eb1280678c03c3678",
+        "bytes": 30513
+      },
+      {
+        "member": "overlay/scripts/testing/consultation-tickets/composition-contract.mjs",
+        "sha256": "76c4d052b12efbccdd1b65430148941797cadf4326fc3a1da3f1859df64afcb3",
+        "bytes": 10909
+      },
+      {
+        "member": "overlay/scripts/testing/consultation-tickets/assembled-auth-runtime.mjs",
+        "sha256": "469d60128fad6a71fe432fbd5f674bfa032c56b9ff6a8b0e2ef7523b3b5d1ff3",
+        "bytes": 48797
+      },
+      {
+        "member": "overlay/scripts/testing/consultation-tickets/assembled-auth-gateway.mjs",
+        "sha256": "656a4b32f06048eb96bbe9fd21b08babcd7d15b44642012bc478886db207a74e",
+        "bytes": 5337
+      }
+    ]
+  },
+  "newRuntimeTests": false,
+  "newProviderRequests": false,
+  "productChanges": false,
+  "sqlChanges": false,
+  "deploy": false,
+  "entitlement": "NOT_CONNECTED"
+}
