@@ -1,0 +1,114 @@
+{
+  "head": "e0b930927563d7f9f6d79e848917c4ba0d77ed6f",
+  "headTree": "c6c67f2a78cd2cf672cf4f489f81e7f14cb041da",
+  "actualCiCheckout": "61130a9d47473e3af8efa1233be250b208b1fc13",
+  "actualCiTree": "0d86fd2e616d8e0278644df456d240d8f1548060",
+  "wholeTreeEqual": false,
+  "runtimeSourceObjectsExact": [
+    {
+      "path": "app",
+      "headObject": "a5f6f475e1374d1d595e7e8fe018169de438f888",
+      "ciObject": "a5f6f475e1374d1d595e7e8fe018169de438f888",
+      "exact": true
+    },
+    {
+      "path": "components",
+      "headObject": "4d370d8facd31cc8d06b68e53277b3887a36da5f",
+      "ciObject": "4d370d8facd31cc8d06b68e53277b3887a36da5f",
+      "exact": true
+    },
+    {
+      "path": "lib",
+      "headObject": "e18c49e2066fa17b86d080a1f9bcc4ed146ddf8d",
+      "ciObject": "e18c49e2066fa17b86d080a1f9bcc4ed146ddf8d",
+      "exact": true
+    },
+    {
+      "path": "public",
+      "headObject": "c69d2a94f4f556d8baf6fdf4460fc54059814aca",
+      "ciObject": "c69d2a94f4f556d8baf6fdf4460fc54059814aca",
+      "exact": true
+    },
+    {
+      "path": "sql",
+      "headObject": "bed7834b9cdc3747f0c61242a59acc41c8c52661",
+      "ciObject": "bed7834b9cdc3747f0c61242a59acc41c8c52661",
+      "exact": true
+    },
+    {
+      "path": "supabase",
+      "headObject": "756c4f88111ce2034c4d9d2522036f20769837ba",
+      "ciObject": "756c4f88111ce2034c4d9d2522036f20769837ba",
+      "exact": true
+    },
+    {
+      "path": "middleware.ts",
+      "headObject": "c81b575cc7d947d2026036a46330db098273a263",
+      "ciObject": "c81b575cc7d947d2026036a46330db098273a263",
+      "exact": true
+    },
+    {
+      "path": "next.config.js",
+      "headObject": "2127e13382e5c3cb7e622bdbba11a8e74f2cc991",
+      "ciObject": "2127e13382e5c3cb7e622bdbba11a8e74f2cc991",
+      "exact": true
+    },
+    {
+      "path": "tsconfig.json",
+      "headObject": "42f1dd0686fbf80689e660029880031c214f51bf",
+      "ciObject": "42f1dd0686fbf80689e660029880031c214f51bf",
+      "exact": true
+    },
+    {
+      "path": "tailwind.config.js",
+      "headObject": "41a9d48c569573c548046a21c1f7550110ee042a",
+      "ciObject": "41a9d48c569573c548046a21c1f7550110ee042a",
+      "exact": true
+    },
+    {
+      "path": "postcss.config.js",
+      "headObject": "a1b36d24e45d09a3126d96cc009fb744b40a3181",
+      "ciObject": "a1b36d24e45d09a3126d96cc009fb744b40a3181",
+      "exact": true
+    },
+    {
+      "path": "package.json",
+      "headObject": "0bc93216f7a05b1ee57686669b5af60affe8fe06",
+      "ciObject": "0bc93216f7a05b1ee57686669b5af60affe8fe06",
+      "exact": true
+    },
+    {
+      "path": "package-lock.json",
+      "headObject": "dddfa8d6a4f705383ccbdc3e9a1afd03ff24e305",
+      "ciObject": "dddfa8d6a4f705383ccbdc3e9a1afd03ff24e305",
+      "exact": true
+    },
+    {
+      "path": "scripts/testing/consultation",
+      "headObject": "c3e3457099361337830cabc0c99e259423b4eec6",
+      "ciObject": "c3e3457099361337830cabc0c99e259423b4eec6",
+      "exact": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets",
+      "headObject": "24e5c01d2d61a6b2ad78c8ddeffe8c5a2b4cbd08",
+      "ciObject": "24e5c01d2d61a6b2ad78c8ddeffe8c5a2b4cbd08",
+      "exact": true
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "headObject": "9f453a760c17b9165a384c534638bc429c5a5445",
+      "ciObject": "9f453a760c17b9165a384c534638bc429c5a5445",
+      "exact": true
+    }
+  ],
+  "onlyDifferences": [
+    ".github/workflows/relay-health.yml",
+    "scripts/ops/liara-binding-discovery-runner.mjs",
+    "scripts/ops/liara-binding-discovery-runner.test.mjs",
+    "scripts/ops/liara-binding-discovery.mjs",
+    "scripts/ops/liara-binding-discovery.test.mjs",
+    "scripts/ops/liara-discovery-source.json"
+  ],
+  "interpretation": "CI test merge includes main401 independent ops source. All product source, SQL, dependencies, application config and this CI workflow are exact to Preview candidate."
+}

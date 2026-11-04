@@ -1,0 +1,12 @@
+{
+  "observedAtUtc": "2026-11-04 03:18:11 UTC",
+  "id": "dpl_2z1ZiH89WydqZ7HPfRzskqKPTrSp",
+  "url": "portfolio-platform-e7a3936kp-safariarash7777-4463s-projects.vercel.app",
+  "alias": "https://portfolio-platform-fawn.vercel.app",
+  "projectId": "prj_2tl6cSJNPWdDUvKdkogPzl1RuWVp",
+  "gitRef": "main",
+  "commit": "c8e35c89881257268884a4e99d6bf283c23abaec",
+  "target": "production",
+  "state": "READY",
+  "observation": "deployment metadata only; not authenticated flow or current funds health"
+}

@@ -1,0 +1,30 @@
+{
+  "pr": 404,
+  "url": "https://github.com/safariarash7777-source/portfolio-platform/pull/404",
+  "base": "c8e35c89881257268884a4e99d6bf283c23abaec",
+  "firstReviewedHead": "04c8df9d9806c930bf7abd04673ba185f807d524",
+  "head": "e749235c2bc042f970947f181fec07ec67985635",
+  "tree": "fcff0c46dd40a2a123787e2eb042a7bc9812550d",
+  "branch": "codex/funds-read-observation-20261104",
+  "draft": true,
+  "localChecks": {
+    "tests": 31,
+    "passed": 31,
+    "failed": 0,
+    "offlineGuard": {
+      "network": 0,
+      "childProcess": 0,
+      "sensitiveEnvironment": 0,
+      "privateFile": 0
+    },
+    "typecheck": "PASS",
+    "scopedEslint": "PASS",
+    "diffCheck": "PASS"
+  },
+  "ciRun": 41765317072,
+  "ciAtCreation": "queued",
+  "ciCompleteAtCreation": false,
+  "productionDeploymentPerformed": false,
+  "productionFailureResolved": false,
+  "pr394FrozenHead": "5b5974405a952fe782419a23ca03134c7247cd7e"
+}

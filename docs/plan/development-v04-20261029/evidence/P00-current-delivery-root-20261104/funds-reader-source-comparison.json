@@ -1,0 +1,31 @@
+{
+  "kind": "source-only-independent-comparison",
+  "testedSource": "19ccd969158db6610e7fd4a5ba9fd92a2b00d9f9",
+  "currentMain": "c8e35c89881257268884a4e99d6bf283c23abaec",
+  "allEightBlobsEqual": true,
+  "equalBlobs": {
+    "app/market/funds/page.tsx": "f128d27e528ea7aad9f46aba55f01c958bee1c4d",
+    "lib/market-funds-read.server.ts": "4836b85e80689d8f37bd7df7cb032fc249ff329f",
+    "lib/market-ir.ts": "60feee0e45ef68350a899c57d7490b81bc0eb3d0",
+    "lib/market-bounded.ts": "f1be04399887af27b1216e72b9d3eab671c5dbac",
+    "lib/market-quality.ts": "764b29de107e7f4ee20f3b6e35386b6b996741fd",
+    "components/market/FundsFullBoard.tsx": "0420923837908beda8f468e10b9677ddbd45eb5b",
+    "lib/core/bulkReturns.ts": "0291f5bb787abac992d2afd50136b10b0be1b5ab",
+    "lib/fundamental/read-config.server.ts": "c92c70a00719c699936e9c01025bc8c99d9fca0b"
+  },
+  "changedPathsFrom343b3c82a53a0963ebeaf80078e560c1ece62880": [
+    ".github/workflows/relay-health.yml",
+    "scripts/ops/liara-binding-discovery.mjs",
+    "scripts/ops/liara-binding-discovery.test.mjs",
+    "scripts/ops/liara-discovery-source.json"
+  ],
+  "inspectionCheckoutHeadUnchanged": "5b5974405a952fe782419a23ca03134c7247cd7e",
+  "inspectionCheckoutClean": true,
+  "objectAcquisition": "git fetch --no-write-fetch-head --no-tags, exact SHA only, own checkout",
+  "runtimeIdentityVerified": false,
+  "environmentRead": false,
+  "providerCalls": 0,
+  "dataRefetches": 0,
+  "testsExecuted": false,
+  "deploymentPerformed": false
+}

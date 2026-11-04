@@ -1,0 +1,176 @@
+{
+  "table": "public.ir_market_snapshots",
+  "selectedKey": "latest",
+  "databaseWrites": false,
+  "providerCalls": 0,
+  "checkpointFilesRead": false,
+  "parsedState": null,
+  "sourceClock": null,
+  "productionBackendIdentity": null,
+  "before": {
+    "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+    "healthy": true,
+    "restartCount": 0
+  },
+  "schemaMetadata": {
+    "columns": [
+      {
+        "name": "key",
+        "type": "text"
+      },
+      {
+        "name": "payload",
+        "type": "jsonb"
+      }
+    ],
+    "indexes": [
+      {
+        "name": "ir_market_snapshots_pkey",
+        "definition": "CREATE UNIQUE INDEX ir_market_snapshots_pkey ON public.ir_market_snapshots USING btree (key)",
+        "valid": true
+      }
+    ]
+  },
+  "missingColumns": [],
+  "indexPlanNames": [
+    "ir_market_snapshots_pkey"
+  ],
+  "indexPlanTypes": [
+    "Index Scan"
+  ],
+  "sameReadOnlyTransaction": true,
+  "snapshotMetadata": {
+    "rowExists": true,
+    "rowCount": 1,
+    "payloadType": "object",
+    "fundsType": "array",
+    "fundsLength": 345,
+    "stocksType": "array",
+    "stocksLength": 777,
+    "fetchedAtType": "number",
+    "fetchedAt": 1793760412042,
+    "fundsAggregatePerformed": true,
+    "fundItemTypes": {
+      "object": 345
+    },
+    "fundPriceTypes": {
+      "number": 345
+    },
+    "validPositiveNumericPriceCount": 345
+  },
+  "validPriceRule": "JSON number strictly greater than zero; no string coercion; not a valuation audit",
+  "providerMetadataStatus": "COMPLETE",
+  "resourcesBefore": {
+    "freeBytes": 14432485376,
+    "memoryBytes": {
+      "MemTotal": 8276856832,
+      "MemAvailable": 5851820032,
+      "SwapTotal": 2147479552,
+      "SwapFree": 1782050816
+    }
+  },
+  "cpuSample": {
+    "seconds": 1.002,
+    "userPercent": 17.2680412371134,
+    "nicePercent": 0.0,
+    "systemPercent": 19.587628865979383,
+    "idlePercent": 55.154639175257735,
+    "irqPercent": 0.0,
+    "softirqPercent": 0.5154639175257731,
+    "iowaitPercent": 7.474226804123711,
+    "stealPercent": 0.0,
+    "busyPercentAllCores": 37.371134020618555,
+    "sustainedCapacityProven": false
+  },
+  "serviceStats": [
+    {
+      "name": "finance-dashboard-20261028-v12-130524",
+      "cpuPercentOneCore": 64.27,
+      "memoryUsedBytes": 38472253.44,
+      "memoryLimitBytes": 402653184.0,
+      "memoryPercent": 9.56
+    },
+    {
+      "name": "fx-dashboard",
+      "cpuPercentOneCore": 0.95,
+      "memoryUsedBytes": 272210329.6,
+      "memoryLimitBytes": 8276401979.392,
+      "memoryPercent": 3.29
+    },
+    {
+      "name": "portfolio-stage-gateway-1",
+      "cpuPercentOneCore": 0.0,
+      "memoryUsedBytes": 13883146.24,
+      "memoryLimitBytes": 8276401979.392,
+      "memoryPercent": 0.17
+    },
+    {
+      "name": "portfolio-stage-auth-1",
+      "cpuPercentOneCore": 9.21,
+      "memoryUsedBytes": 14554234.88,
+      "memoryLimitBytes": 8276401979.392,
+      "memoryPercent": 0.18
+    },
+    {
+      "name": "portfolio-stage-rest-1",
+      "cpuPercentOneCore": 0.23,
+      "memoryUsedBytes": 86864035.84,
+      "memoryLimitBytes": 8276401979.392,
+      "memoryPercent": 1.05
+    },
+    {
+      "name": "portfolio-stage-storage-1",
+      "cpuPercentOneCore": 0.02,
+      "memoryUsedBytes": 123102822.4,
+      "memoryLimitBytes": 8276401979.392,
+      "memoryPercent": 1.49
+    },
+    {
+      "name": "portfolio-stage-db-1",
+      "cpuPercentOneCore": 7.31,
+      "memoryUsedBytes": 464309452.8,
+      "memoryLimitBytes": 8276401979.392,
+      "memoryPercent": 5.61
+    },
+    {
+      "name": "fx-dashboard-proxy",
+      "cpuPercentOneCore": 0.06,
+      "memoryUsedBytes": 28783411.2,
+      "memoryLimitBytes": 8276401979.392,
+      "memoryPercent": 0.35
+    }
+  ],
+  "resourceSamplingStatus": "COMPLETE",
+  "resourcesAfterSampling": {
+    "freeBytes": 14432489472,
+    "memoryBytes": {
+      "MemTotal": 8276856832,
+      "MemAvailable": 5902258176,
+      "SwapTotal": 2147479552,
+      "SwapFree": 1782050816
+    }
+  },
+  "status": "READ_ONLY_PROBE_COMPLETE",
+  "after": {
+    "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+    "healthy": true,
+    "restartCount": 0
+  },
+  "resourcesAfter": {
+    "freeBytes": 14432489472,
+    "memoryBytes": {
+      "MemTotal": 8276856832,
+      "MemAvailable": 5892771840,
+      "SwapTotal": 2147479552,
+      "SwapFree": 1782050816
+    }
+  },
+  "atUtc": "2026-11-04T02:47:04.498316+00:00",
+  "localIntent": {
+    "atUtc": "2026-11-04T02:46:56.639756+00:00",
+    "payloadSha256": "51c18697c2f9abcf7573b096e61881d2600f2d45f56bcae1fa7391f63feae90b",
+    "retryForbidden": true,
+    "localDeadlineSeconds": 45
+  },
+  "elapsedSeconds": 7.203
+}

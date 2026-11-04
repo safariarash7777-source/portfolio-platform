@@ -1,0 +1,23 @@
+{
+  "recordedAtUtc": "2026-11-04T03:15:55.974546+00:00",
+  "observedAtUtc": null,
+  "observationOwner": "existing executor A",
+  "directBrowserObservedByRoot": false,
+  "url": "https://portfolio-platform-fawn.vercel.app/market/funds",
+  "observedState": "read-error",
+  "observedText": [
+    "دادهٔ این بخش در دسترس نیست",
+    "خواندن دادهٔ صندوق‌ها ناموفق بود؛ خالی‌بودن منبع تأیید نشده است."
+  ],
+  "httpStatus": null,
+  "requestId": null,
+  "buildIdentityAtObservation": null,
+  "productionBackendIdentity": null,
+  "emptySourceConfirmed": false,
+  "resolved": false,
+  "historicalInteractionPassIsCurrentDataHealth": false,
+  "runtimeLogsForPast30Minutes": "NO_MATCHING_LOGS_OBSERVED; not proof of no failure",
+  "productionEnvironmentMetadata": "hidden; visible Preview entries cannot establish Production absence",
+  "databaseShapeLimit": "345 objects with positive numeric price; id, faName, unit and frontend parsing not attested",
+  "nextOwner": "A/root: exact-source CI and safe server-only read failure observer; no refetch, provider, env, auth or acceptance bypass"
+}

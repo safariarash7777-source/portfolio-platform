@@ -1,3 +1,17 @@
+## تحویل جاری ۴ نوامبر — اجرای واقعی و نقص تازه
+
+[COMMAND-CENTER](../../../../COMMAND-CENTER.md) مرجع وضعیت جاری است؛ سوابق پایین با تاریخ خود خوانده شوند.
+
+- [Linux واقعی41762708866](https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41762708866): [رسید۱۴/۹PASS](native-f07-success-receipt.json)، [تطبیق مستقل تخصیص/نسخه/artifact](native-f07-success-independent-readback.json)، هجده SQL و cleanupCONFIRMED. fullAssembledAcceptance هنوز NOT_ESTABLISHED؛ دو تعهد جمع‌بندی و بازیابی نوشتن نامعلوم در این ترکیب بازند. writeOutcomeUnknown absent→null، نه false. appفریزf07 با UIe0 یکی نیست.
+- [Preview جدید عضو](https://portfolio-platform-ebyye8mdp-safariarash7777-4463s-projects.vercel.app/dashboard) و [میز مدیر](https://portfolio-platform-ebyye8mdp-safariarash7777-4463s-projects.vercel.app/admin/consultation/requests): [e0/READY و GET ورود](member-preview-e0-http.json)، [تفاوت tree کل CI و برابری۱۶object محصول](member-preview-e0-ci-source-binding.json). احرازشده NOT_TESTED؛ حق خدمت NOT_CONNECTED و نصب NOT_APPLIED. بازیابی نامعلوم P09 رویe0 اثبات نشده؛ B ادغام همان journal موجود را مستقل پی می‌گیرد.
+- [صندوق Production اکنون خطای خواندن دارد](funds-production-reader-failure.json). آزمون قبلی تعامل شاهد سلامت امروز نیست. [هشت blob ثابت](funds-reader-source-comparison.json) و [۳۴۵ ردیف/قیمت عددی مثبت DB](funds-db-metadata-and-resources.json) علت یا اتصال Production را ثابت نمی‌کنند. [PR404/source-only](funds-read-observer-source-pr404.json) ابزار محدود تشخیص است، رفع نقص نیست؛ A/root پیگیری می‌کنند.
+- [لیارا41760860572](liara-discovery-observed-receipt.json) و [artifact مستقل](liara-discovery-observed-independent-readback.json): HTTP2xx/WS/START و یک فریم۴۳۱بایتی مشاهده شد؛ frame_validate رد کرد. Node/PID/هویت backend/علت دقیق هنوز نامعلوم و remoteHalt unknown است. هیچ retry انجام نشد.
+- ظرفیت VPS در۰۲:۴۷UTC:۱۳٫۴۴GiB آزاد،۵٫۴۹GiB MemAvailable،۳۷٫۳۷٪busy و۷٫۴۷٪iowait در۱٫۰۰۲ثانیه؛ پایداری ظرفیت اثبات نشده. source-review مستقل پروفایلV3 ZIP5584 بدونP1/P2 است؛ Capture/Verify واقعی و controllerattempt هنوز بازند. dumpNov3 پشتیبان جاری DB نیست؛ نصب/مدل/هزینه تازه انجام نشده است.
+
+سه تحویل بعدی: A/root تشخیص و اصلاح علت واقعی صندوق‌ها؛ B/root ترکیب P03 و journal واقعیP09؛ P15/root اتصال تلاش و پشتیبان جاری قابل‌بازیابی. کل برنامهٔ۰٫۴ و۸۵ تعهد محفوظ‌اند.
+
+### سوابق تحویل؛ هر رسید در زمان خودش
+
 ## اجرای واقعی ابزار لیارا — نتیجهٔ تأییدنشده
 
 [رسید41757658120](liara-discovery-actual-receipt.json) پس از تأیید source، protocol_rejected/remoteHalt unknown داد. [artifact مستقل](liara-discovery-independent-readback.json) و [منبع/CI/Production](ops401-source-ci-and-execution.json) ثبت‌اند. یک dispatch و بدون retry؛ محل دقیق رد و هویت runtime اثبات نشده است. این نتیجه CPU/RAM، backend یا بودجه را تأیید نمی‌کند. مشاهده‌پذیری شکست در همان ابزار ادامه دارد؛ هیچ نصب یا تغییر داده‌ای انجام نشده است.

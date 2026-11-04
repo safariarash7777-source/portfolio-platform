@@ -1,0 +1,63 @@
+{
+  "verifiedAtUtc": "2026-11-04T03:15:55.974546+00:00",
+  "run": {
+    "id": 41762708866,
+    "head_sha": "d253d14afb8c4bea4ca7670093141bc3b9f7a42c",
+    "event": "workflow_dispatch",
+    "status": "completed",
+    "conclusion": "success",
+    "run_attempt": 1,
+    "updated_at": "2026-11-04T02:52:22Z",
+    "html_url": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41762708866"
+  },
+  "binding": {
+    "allocationId": "93f51459-8006-49ab-a9c8-42acd201e9a1",
+    "attempt": 1,
+    "executionAllocationId": "c73c8b51-f4f8-53fd-8386-b64cc8904469",
+    "repository": "safariarash7777-source/portfolio-platform",
+    "runId": "41762708866",
+    "workflowCommit": "d253d14afb8c4bea4ca7670093141bc3b9f7a42c"
+  },
+  "source": {
+    "capsuleSha256": "04899c1754525365daad2fbe2b11bd9c7c1c3a417d751bd36151332aaca7d2f4",
+    "commit": "f07e0543c46cea88822dc0d400080b5bb94bef91",
+    "driverContractSha256": "0103a765d4862c27a22089414c6a59bcb555dac3f36913ddf48b373e751ecb2a",
+    "tree": "8e43eab0bd66705b5455713ea15dd5c1d9c5f81a"
+  },
+  "artifactId": 13291920144,
+  "artifactZipSha256": "1cda75a7bcf3408d575f57a7c93eeb08e53f55a5246882b37731dda9dbd92279",
+  "receiptRawSha256": "814f9cef7d486b799da12c77419ff8b82a7964992d0e1188fc8cb2541e098e56",
+  "checks": 14,
+  "browserChecks": 9,
+  "fixture": {
+    "consentPosts": 1,
+    "financialPosts": 2,
+    "replayedProductPosts": 0,
+    "sqlFilesVerified": 18
+  },
+  "cleanup": {
+    "fallbackUsed": false,
+    "independentReadback": true,
+    "ownedBrowserRemoved": true,
+    "ownedDockerResourcesRemoved": true
+  },
+  "nativeJobId": 126355550784,
+  "ordinaryJobIds": [
+    126353854803,
+    126353855070,
+    126353855177,
+    126353855216,
+    126355525558
+  ],
+  "allSixJobsApiSuccess": true,
+  "status": "PASS_BOUNDED_ASSEMBLED_NATIVE",
+  "writeOutcomeUnknownFieldPresent": false,
+  "writeOutcomeUnknown": null,
+  "targetInstall": "NOT_APPLIED",
+  "fullAssembledAcceptance": "NOT_ESTABLISHED",
+  "arashAcceptance": "UNOBSERVED",
+  "remaining": [
+    "published-versioned-summary-in-this-composition",
+    "unknown-write-ui-recovery-in-this-composition"
+  ]
+}

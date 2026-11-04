@@ -1,0 +1,77 @@
+{
+  "schema": "funds-read-observer-root-source-ci-review.v1",
+  "head": "e749235c2bc042f970947f181fec07ec67985635",
+  "headTree": "fcff0c46dd40a2a123787e2eb042a7bc9812550d",
+  "actualCiCheckout": "71867780ed56e7861a17d32f7083dace06958343",
+  "actualCiTree": "fcff0c46dd40a2a123787e2eb042a7bc9812550d",
+  "parents": [
+    "c8e35c89881257268884a4e99d6bf283c23abaec",
+    "e749235c2bc042f970947f181fec07ec67985635"
+  ],
+  "changedFiles": [
+    "lib/market-funds-read.server.ts",
+    "lib/market-stored.test.ts"
+  ],
+  "runId": 41765317072,
+  "jobs": [
+    {
+      "id": 126362201175,
+      "name": "Secret scan · SQL validation",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126362201212,
+      "name": "Database RLS · Integrity (Postgres)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126362201294,
+      "name": "Typecheck · Lint · Tests · Build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126362201339,
+      "name": "Dependencies",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126363920533,
+      "name": "CI Gate",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126363948288,
+      "name": "Assembled native · explicit allocation only",
+      "status": "completed",
+      "conclusion": "skipped"
+    }
+  ],
+  "logReview": {
+    "coreChars": 1278482,
+    "databaseChars": 3280618,
+    "coreJob": 126362201294,
+    "databaseJob": 126362201212,
+    "fullLogsRead": true,
+    "noNonzeroFailCounters": true,
+    "checkoutInBoth": "71867780ed56e7861a17d32f7083dace06958343"
+  },
+  "sourceReview": {
+    "root": true,
+    "scopeOnlyTwoFiles": true,
+    "noAdditionalFetchOrRetry": true,
+    "noProviderCacheAuthEnvironmentOrMarkupChanges": true,
+    "legacyDiagnosticIsSharedNotRequestLocal": true,
+    "explicitResultIsRequestLocal": true,
+    "allLoggedValuesFixedScalar": true,
+    "unsafeCountNull": true,
+    "sinkFailurePreservesResult": true
+  },
+  "independentSecurityReview": "PENDING",
+  "productionFailureResolved": false,
+  "productionDeploymentPerformed": false
+}
