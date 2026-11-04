@@ -1,6 +1,7 @@
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
 import { notifyAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 import { createHash } from "node:crypto";
+import { validateArchive, adoptionPayload, persistReinterpretation } from "./codal-reinterpretation.mjs";
 // ماژول کدال — دریافت خودکار گزارش‌های بنیادی از وب‌سرویس کدالِ BrsApi.
 // چرا این‌جا (رله): excel.codal.ir و codal.ir به IP خارجی پاسخ نمی‌دهند؛
 // فقط هاست داخل ایران (لیارا) می‌تواند اکسل گزارش‌ها را دانلود کند.
@@ -1076,6 +1077,9 @@ export async function fetchAnnouncementsPage({ l18, category, page = 1, date_sta
 // into the existing insert path. A copied or caller-authored hash is not a receipt.
 /** @type {WeakMap<object, {dataJson: string, receipt: import('../lib/core/monthly-quantity').MonthlyQuantityCaptureReceipt}>} */
 const monthlyQuantityCaptures = new WeakMap();
+// Deliberately separate from the live producer receipt; only the explicit archive
+// entry point can opt one object into the single-report CAS writer.
+const archivedInterpretations = new WeakMap();
 
 function sameQuantityResponseSource(sourceRef, responseUrl) {
   try {
@@ -1112,24 +1116,47 @@ export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejec
   return data;
 }
 
+/** Offline, opt-in reinterpretation. No provider GET and no global version bump.
+ * The manifest is a reviewed archive attestation, not proof of the old ingestion. */
+export function parseArchivedReport(a, kind, archive, targetVersion) {
+  const meta = metaFrom(a, kind);
+  const manifest = validateArchive(a, kind, archive, targetVersion, meta.period_end);
+  const source = { version: 1, sourceId: a.link_excel, htmlSha256: manifest.html_sha256,
+    htmlBytes: archive.bytes, symbol: meta.symbol, periodEnd: meta.period_end };
+  const data = normalizeN30(parseHtmlTables(Buffer.from(archive.bytes).toString("utf8")), { ...meta, quantity_source: source });
+  if (!data?.quantity_source) throw new Error("archive layout/period witness not admitted");
+  const receipt = { version: 1, symbol: a.l18, report_kind: kind, announcement_link: a.link,
+    source_url: `${a.link}#pv${targetVersion}`, link_excel: a.link_excel, response_url: a.link_excel,
+    period_end_jalali: meta.period_end, parser_version: targetVersion, html_sha256: manifest.html_sha256,
+    source: structuredClone(data.quantity_source) };
+  monthlyQuantityCaptures.set(data, { dataJson: JSON.stringify(data), receipt });
+  archivedInterpretations.set(data, { version: targetVersion, manifest });
+  return data;
+}
+
 /** Returns the actual 0/1 count; zero resolves only after confirming the exact
  * stored report with non-null data. Unconfirmed persistence rejects before any
  * caller can clear its failure ledger or mark the URL as known. */
-export async function insertParsedReport(a, kind, data) {
+export async function insertParsedReport(a, kind, data, reinterpretation) {
   const meta = metaFrom(a, kind);
+  const archived = data && typeof data === "object" ? archivedInterpretations.get(data) : null;
+  if (!!archived !== !!reinterpretation) throw new Error("explicit archive adoption context required");
+  const version = archived?.version ?? PARSER_VERSION;
+  const sourceUrl = archived ? `${a.link}#pv${version}` : versionedUrl(a.link);
   const captured = data && typeof data === "object" ? monthlyQuantityCaptures.get(data) : null;
   const quantityCapture = kind === "ن-۳۰" && captured && captured.dataJson === JSON.stringify(data)
     && captured.receipt.symbol === a.l18 && captured.receipt.announcement_link === a.link
     && captured.receipt.link_excel === a.link_excel && captured.receipt.period_end_jalali === meta.period_end
-    && captured.receipt.source_url === versionedUrl(a.link) && captured.receipt.parser_version === PARSER_VERSION
+    && captured.receipt.source_url === sourceUrl && captured.receipt.parser_version === version
     ? structuredClone(captured.receipt) : null;
+  if (archived && !quantityCapture) throw new Error("archive object/announcement changed after parsing");
   const row = {
     symbol: a.l18,
     company_name: meta.company_name,
     report_kind: kind,
     period_end: jalaliStrToGregorian(meta.period_end),
     title: a.title || null,
-    source_url: versionedUrl(a.link),
+    source_url: sourceUrl,
     published_at: null,
     data,
     raw: {
@@ -1141,12 +1168,15 @@ export async function insertParsedReport(a, kind, data) {
       period_end_jalali: meta.period_end,
       audited: meta.audited,
       period_months: meta.period_months,
-      parser_version: PARSER_VERSION,
+      parser_version: version,
       announcement_link: a.link,
       discovered_by: "engine-v3",
       ...(quantityCapture ? { quantity_capture: quantityCapture } : {}),
     },
   };
+  if (archived) return await persistReinterpretation(adoptionPayload(row, archived, reinterpretation), {
+    fetch, url: SUPABASE_URL, headers: SB_HDRS(),
+  });
   return await insertReport(row);
 }
 
