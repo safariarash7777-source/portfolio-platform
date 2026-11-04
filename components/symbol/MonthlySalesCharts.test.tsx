@@ -29,7 +29,6 @@ function renderChart(reports: CodalN30Data[], capture = true, previewSelection?:
   let stateIndex = 0;
   const isolatedRequire = (id: string) => {
     if (id === 'react' && previewSelection) return { ...React, useEffect() {}, useState: () => [previewSelection[stateIndex++], () => {}] };
-    if (id.endsWith('.module.css')) return { __esModule: true, default: new Proxy({}, { get: (_, key) => String(key) }) };
     if (id === "recharts" && capture) return recharts;
     return require(id.startsWith("@/") ? `../../${id.slice(2)}` : id);
   };

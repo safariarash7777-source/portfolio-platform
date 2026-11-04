@@ -20,7 +20,6 @@ import {
 } from "recharts";
 import type { DerivedQuarter, TtmPoint } from "@/lib/core/quarterly";
 import { useEffect, useState } from "react";
-import styles from "./SymbolDossier.module.css";
 import { toPersianDigits } from "@/lib/format";
 
 const nf = new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 0 });
@@ -134,10 +133,10 @@ export default function QuarterlyCharts({
         </p>
       </header>
 
-      {previewControls ? <div className={styles.previewControls}><label>بازهٔ نمودار درآمد و حاشیه‌های فصلی<select value={range} onChange={event => {
+      {previewControls ? <div className="company-chart-controls"><label>بازهٔ نمودار درآمد و حاشیه‌های فصلی<select value={range} onChange={event => {
         const value = Number(event.target.value); setRange(value);
         const url = new URL(window.location.href); url.searchParams.set('quarters', String(value));
-        window.history.replaceState(window.history.state, '', url);
+        window.history.replaceState(null, '', url);
       }}>{[4, 8, 12].map(value => <option key={value} value={value}>{toPersianDigits(String(value))} فصل آخر</option>)}</select>
         <span>فصل فاقد زنجیرهٔ کامل خالی می‌ماند؛ محاسبهٔ TTM از تاریخچهٔ کامل حفظ می‌شود.</span>
       </label></div> : null}

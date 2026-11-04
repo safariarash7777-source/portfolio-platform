@@ -474,10 +474,11 @@ test('company layout query is Preview-only and cannot change Production, unknown
 
 test('switching company layouts retains the mounted chart slot, tab and existing URL selections', () => {
   const states: unknown[] = ['fundamental','decision']; let index = 0;
-  const location = {href:'https://preview.invalid/symbol/example?view=decision&monthlyYear=1404&quarters=4#fundamental'};
-  const Tabs = clientComponent('SymbolTabs', { ...React, useEffect() {}, useId:()=> 'p14-tabs',
+  const events: Record<string, ()=>void> = {};
+  const location = {href:'https://preview.invalid/symbol/example?view=decision&monthlyYear=1404&quarters=4#fundamental', get search(){return new URL(this.href).search;}};
+  const Tabs = clientComponent('SymbolTabs', { ...React, useEffect(fn:()=>void,deps:unknown[]) {if(deps[0]==='decision') fn();}, useId:()=> 'p14-tabs',
     useState:()=> {const slot=index++; return [states[slot], (value:unknown)=>{states[slot]=value;}];},
-  }, { URL, window:{location, history:{state:null, replaceState:(_state:unknown,_title:string,url:URL)=>{location.href=String(url);}}} });
+  }, { URL, URLSearchParams, window:{location, addEventListener:(name:string,fn:()=>void)=>{events[name]=fn;},removeEventListener(){},history:{state:{__NA:true}, replaceState:(state:unknown,_title:string,url:URL)=>{assert.equal(state,null,'Next History must synchronize search params instead of skipping reserved state');location.href=String(url);}}} });
   const chart = React.createElement('span', {'data-actual-chart':'same'}, 'same chart instance');
   const props={overview:'overview',fundamental:chart,reports:'reports',assembly:'assembly',previewView:'decision',companySources:'source'};
   const render=()=>{index=0;return presentationNodes(Tabs(props));};
@@ -489,6 +490,8 @@ test('switching company layouts retains the mounted chart slot, tab and existing
     const url=new URL(location.href); assert.equal(url.searchParams.get('monthlyYear'),'1404'); assert.equal(url.searchParams.get('quarters'),'4'); assert.equal(url.hash,'#fundamental');
     assert.equal(updated.filter(node=>node.props.role==='tabpanel').length,4);
   }
+  location.href=location.href.replace('view=decision','view=dossier'); events.popstate();
+  assert.equal(states[1],'dossier'); assert.equal(states[0],'fundamental');
 });
 
 test("symbol tabs preserve click/hash navigation and expose RTL keyboard selection with linked panels", () => {

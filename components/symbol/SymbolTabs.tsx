@@ -38,6 +38,16 @@ export default function SymbolTabs({
   const [view, setView] = useState<CompanyView>(previewView ?? "decision");
   const tabId = useId();
 
+  useEffect(() => {
+    if (!previewView) return;
+    const restore = () => {
+      const value = new URLSearchParams(window.location.search).get('view');
+      setView(value === 'decision' || value === 'dossier' ? value : previewView);
+    };
+    restore(); window.addEventListener('popstate', restore);
+    return () => window.removeEventListener('popstate', restore);
+  }, [previewView]);
+
   // خواندن hash اولیه (لینک مستقیم به تب)
   useEffect(() => {
     const sync = () => {
@@ -80,7 +90,7 @@ export default function SymbolTabs({
               setView(key);
               const url = new URL(window.location.href);
               url.searchParams.set('view', key);
-              window.history.replaceState(window.history.state, '', url);
+              window.history.replaceState(null, '', url);
             }}>{label}</button>)}
         </div>
       </section> : null}

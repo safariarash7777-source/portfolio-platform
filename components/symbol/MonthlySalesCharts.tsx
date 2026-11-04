@@ -6,7 +6,6 @@
 // روایت template‌ای قطعی زیر هر چارت، رنگ فقط از توکن‌ها.
 
 import { useEffect, useMemo, useState } from "react";
-import styles from "./SymbolDossier.module.css";
 import {
   Bar,
   BarChart,
@@ -449,7 +448,7 @@ export default function MonthlySalesCharts({
     if (value === 'all') url.searchParams.delete(key); else url.searchParams.set(key, value);
     if (key === 'monthlyYear') { setYear(value); setRateIndex('all'); url.searchParams.delete('rateSeries'); }
     else setRateIndex(value);
-    window.history.replaceState(window.history.state, '', url);
+    window.history.replaceState(null, '', url);
   };
   if (!m) return null;
   const rateKey = (series: RateSeries) => JSON.stringify([series.productName, series.market]);
@@ -484,7 +483,7 @@ export default function MonthlySalesCharts({
         </div>
       </header>
 
-      {previewControls ? <div className={styles.previewControls}>
+      {previewControls ? <div className="company-chart-controls">
         <label>سال تقویمی گزارش‌های ماهانه<select value={selectedYear} onChange={event => setSelection('monthlyYear', event.target.value)}>
           {years.map(value => <option key={value} value={value}>{toPersianDigits(value)}</option>)}
         </select><span>همراه سال قبل؛ تجمیعی همچنان عددِ گزارش از آغاز سال مالی شرکت است.</span></label>
