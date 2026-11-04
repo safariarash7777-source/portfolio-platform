@@ -5,7 +5,7 @@ import {createMcpQuoteBridge,createQuoteRpc,validMcpQuote,runtimeHeaders} from '
 import {quote as normalizeQuote} from './mcpfarsi-adapter.mjs';
 const raw=JSON.parse(await readFile(new URL('./fixtures/mcpfarsi-fmli-20261104.json',import.meta.url),'utf8'));
 const initialTime=Date.parse('2026-11-05T10:00:00Z');
-const env={MCPFARSI_QUOTE_ENABLED:'1',MCPFARSI_HEADERS_FILE:'/private/not-read-in-test.json',SUPABASE_URL:'https://db-fixture.invalid',SUPABASE_SERVICE_ROLE_KEY:'synthetic-only'};
+const env={MCPFARSI_QUOTE_ENABLED:'1',MCPFARSI_HEADERS_FILE:'/private/not-read-in-test.json',SUPABASE_URL:'https://db-fixture.invalid',SUPABASE_SERVICE_ROLE_KEY:'dummy-service-role'};
 const normalized=()=>normalizeQuote(raw,new Date(initialTime).toISOString(),'فملی');
 function setup(opts={}){
  let now=initialTime,stored=opts.stored??null,posts=0,mcp=0;const requests=[];
