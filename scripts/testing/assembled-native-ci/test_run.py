@@ -4,6 +4,7 @@ import ast
 from contextlib import ExitStack
 import hashlib
 import importlib.util
+import io
 import json
 import os
 import re
@@ -13,6 +14,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import tarfile
 import unittest
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -111,8 +113,21 @@ class CapsuleAndReceipt(unittest.TestCase):
         cls.temp = tempfile.TemporaryDirectory()
         cls.private = Path(cls.temp.name)
         cls.capsule = cls.private / 'capsule'; cls.capsule.mkdir()
-        cls.raw = (HERE / 'sealed-v2.tar').read_bytes()
+        cls.raw = (HERE / 'sealed-v3-stage-observation.tar').read_bytes()
         cls.contract = runner.unpack_capsule(cls.raw, cls.capsule)
+        cls.parent_raw = (HERE / 'sealed-v2.tar').read_bytes()
+        if hashlib.sha256(cls.parent_raw).hexdigest() != 'f5020a6afebcc685b2e713a7f895646f2a5718ee04b72c846edccec41adb86fc':
+            raise AssertionError('preserved_parent_capsule_changed')
+        cls.parent_capsule = cls.private / 'parent-capsule'; cls.parent_capsule.mkdir()
+        with tarfile.open(fileobj=io.BytesIO(cls.parent_raw)) as archive:
+            for member in archive.getmembers():
+                relative = Path(member.name)
+                if not member.isfile() or relative.is_absolute() or '..' in relative.parts:
+                    raise AssertionError('invalid_parent_source_fixture')
+                target = cls.parent_capsule / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                with target.open('xb') as handle:
+                    handle.write(archive.extractfile(member).read())
 
     @classmethod
     def tearDownClass(cls):
@@ -132,6 +147,32 @@ class CapsuleAndReceipt(unittest.TestCase):
         with tempfile.TemporaryDirectory() as destination:
             with self.assertRaises(ValueError): runner.unpack_capsule(self.raw[:-1] + b'!', Path(destination))
             self.assertEqual(list(Path(destination).iterdir()), [])
+
+    def test_stage_capsule_binding_preserves_parent_and_all_other_helper_bytes(self):
+        self.assertEqual(runner.CAPSULE, '57d35ddc07e2883bb2dd5b0a7e051625a235c1294e3c5283e06ecec4438ccd81')
+        self.assertEqual(runner.DRIVER, '94e50f1ede5cb926e8daf7a677e1e5b84de72540df25edec6b97dec0865bc511')
+        with tarfile.open(fileobj=io.BytesIO(self.parent_raw)) as parent, tarfile.open(fileobj=io.BytesIO(self.raw)) as child:
+            self.assertEqual(parent.getnames(), child.getnames())
+            changed = [name for name in parent.getnames()
+                       if parent.extractfile(name).read() != child.extractfile(name).read()]
+        prefix = 'overlay/scripts/testing/consultation-tickets/'
+        self.assertEqual(set(changed), {prefix + name for name in
+                         ['assembled-member-scenario.mjs', 'assembled-native.mjs', 'assembled-overlay.json']})
+        parent_contract = json.loads((self.parent_capsule / prefix / 'assembled-overlay.json').read_bytes())
+        self.assertEqual({**parent_contract, 'files': []}, {**self.contract, 'files': []})
+        with tempfile.TemporaryDirectory() as destination:
+            with self.assertRaises(ValueError): runner.unpack_capsule(self.parent_raw, Path(destination))
+            self.assertEqual(list(Path(destination).iterdir()), [])
+
+    def test_actual_sealed_stage_observer_offline_without_browser_or_network(self):
+        env = {key: os.environ[key] for key in ['PATH', 'LANG', 'CI', 'SYSTEMROOT', 'WINDIR'] if key in os.environ}
+        env.update(ASSEMBLED_STAGE_PARENT_ROOT=str(self.parent_capsule), ASSEMBLED_STAGE_CANDIDATE_ROOT=str(self.capsule))
+        result = subprocess.run([shutil.which('node'), '--test', str(HERE / 'stages.test.mjs')], env=env, capture_output=True)
+        output = result.stdout.decode('utf8')
+        self.assertEqual(result.returncode, 0, output + result.stderr.decode('utf8'))
+        self.assertIn('tests 6', output)
+        self.assertIn('pass 6', output)
+        self.assertIn('fail 0', output)
 
     def intent_fixture(self, folder):
         paths = ['/api/portfolio/holdings', '/api/personal-finance/cash-flow', '/api/consultation']
@@ -461,6 +502,88 @@ class ChromeObservation(unittest.TestCase):
             self.assertNotIn(forbidden, workflow)
 
 
+class StageProjection(unittest.TestCase):
+    @staticmethod
+    def marker(name, edge):
+        return 'P03_ASSEMBLED_STAGE ' + json.dumps({'stage': name, 'edge': edge})
+
+    def test_missing_empty_and_old_logs_are_not_invented_stages(self):
+        self.assertEqual(runner.project_stage_log(None)['stageReadback'], 'MISSING')
+        for raw in [b'', b'old run has no stage records', b'P03_ASSEMBLED_FAILURE {"reason":"playwright_timeout"}']:
+            value = runner.project_stage_log(raw)
+            self.assertEqual(value['stageReadback'], 'NO_STAGE_RECORDS')
+            self.assertIsNone(value['lastObservedStage'])
+            self.assertFalse(value['malformedStageRecords'])
+        self.assertEqual(runner.project_stage_log('SYNTHETIC_PRIVATE')['stageReadback'], 'UNAVAILABLE_OR_TOO_LARGE')
+
+    def test_nested_failure_preserves_incomplete_leaf_without_claiming_completion(self):
+        raw = '\n'.join([self.marker('legacy-open', 'before'), self.marker('legacy-context', 'before'),
+                         self.marker('legacy-context', 'after'), self.marker('legacy-document', 'before')]).encode()
+        value = runner.project_stage_log(raw)
+        self.assertEqual(value['lastObservedStage'], 'legacy-document')
+        self.assertEqual(value['lastObservedStageEdge'], 'before')
+        self.assertFalse(value['malformedStageRecords'])
+        complete = runner.project_stage_log((self.marker('rest-own', 'before') + '\n' + self.marker('rest-own', 'after')).encode())
+        self.assertEqual(complete['lastObservedStageEdge'], 'after')
+
+    def test_unknown_payload_extra_duplicate_or_out_of_order_markers_fail_closed(self):
+        invalid = [
+            'P03_ASSEMBLED_STAGE {"stage":"rest-unknown-private","edge":"before"}',
+            'P03_ASSEMBLED_STAGE {"stage":"rest-own","edge":"SYNTHETIC_PRIVATE"}',
+            'P03_ASSEMBLED_STAGE {"stage":"rest-own","edge":"before","url":"https://private.invalid"}',
+            'P03_ASSEMBLED_STAGE {"stage":"SYNTHETIC_PRIVATE","stage":"rest-own","edge":"before"}',
+            'P03_ASSEMBLED_STAGE {bad', self.marker('rest-own', 'after'),
+            self.marker('rest-own', 'before') + '\n' + self.marker('rest-foreign', 'after'),
+            '\n'.join([self.marker('legacy-open', 'before')] * 17),
+        ]
+        for raw in invalid:
+            with self.subTest(raw=raw):
+                value = runner.project_stage_log(raw.encode())
+                self.assertEqual(value['stageReadback'], 'UNVERIFIED_STAGE_RECORD')
+                self.assertIsNone(value['lastObservedStage'])
+                self.assertIsNone(value['lastObservedStageEdge'])
+                self.assertTrue(value['malformedStageRecords'])
+                self.assertNotIn('private', json.dumps(value).lower())
+
+    def test_stage_records_do_not_become_checks_or_change_existing_error_projection(self):
+        old = ('P03_ASSEMBLED_NATIVE_CHECK ' + json.dumps({'name': runner.OBSERVED_CHECKS[0], 'status': 'PASS'})
+               + '\nP03_ASSEMBLED_FAILURE {"reason":"playwright_timeout"}').encode()
+        annotated = (self.marker('rest-own', 'before') + '\n').encode() + old
+        self.assertEqual(runner.project_failure_log(old), runner.project_failure_log(annotated))
+        self.assertEqual(runner.project_failure_log(annotated)['observedPassedChecks'], [runner.OBSERVED_CHECKS[0]])
+        self.assertEqual(runner.static_native_error('assembled_stage_invalid'), 'assembled_stage_invalid')
+        self.assertIsNone(runner.static_native_error('assembled_stage_private_payload'))
+
+    def test_failure_only_integration_keeps_exit_counts_and_original_failure(self):
+        with tempfile.TemporaryDirectory() as folder:
+            private = Path(folder)
+            raw = (self.marker('rest-own', 'before') + '\nP03_ASSEMBLED_FAILURE {"reason":"playwright_timeout"}').encode()
+            (private / 'native.log').write_bytes(raw)
+            state = {'stage': 'EXECUTED', 'exitCode': 1, 'fallbackUsed': False}
+            with patch.object(runner, 'owned', return_value=None), patch.object(runner, 'native_state', return_value=None):
+                value, captured = runner.failure_observation(state, private, private)
+            self.assertEqual(captured, raw)
+            self.assertEqual(value['actualExitCode'], 1)
+            self.assertEqual(value['nativeFailureCode'], 'playwright_timeout')
+            self.assertEqual(value['lastObservedStage'], 'rest-own')
+            self.assertEqual(value['lastObservedStageEdge'], 'before')
+            self.assertIsNone(value['observedProductPostIntents'])
+            self.assertEqual(value['observedPassedChecks'], [])
+
+    def test_actual_sealed_emitter_and_projector_share_fixed_table(self):
+        with tarfile.open(HERE / 'sealed-v3-stage-observation.tar') as archive:
+            source = archive.extractfile('overlay/scripts/testing/consultation-tickets/assembled-member-scenario.mjs').read().decode('utf8')
+        table = json.loads(re.search(r'assembledStageNames = Object.freeze\((\[.*?\])\);', source, re.S).group(1))
+        self.assertEqual(tuple(table), runner.OBSERVED_STAGES)
+        self.assertEqual(len(set(table)), 33)
+
+    def test_existing_chrome_app_tree_and_fourteen_native_checks_are_pinned(self):
+        self.assertEqual(runner.CHROME, '95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72')
+        self.assertEqual(runner.CANDIDATE, '4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a')
+        self.assertEqual(runner.TREE, 'c96d462d72505f2471c54c8e7e5293fe2b39b3d1')
+        self.assertEqual(len(set(runner.OBSERVED_CHECKS)), 14)
+
+
 class Workflow(unittest.TestCase):
     def test_success_criteria_private_flags_and_frame_remain_frozen(self):
         receipt = (HERE / 'receipt.mjs').read_text(encoding='utf8')
@@ -468,6 +591,12 @@ class Workflow(unittest.TestCase):
         self.assertEqual(tuple(re.findall(r"'([^']+)'", literal)), runner.OBSERVED_CHECKS)
         self.assertEqual(len(set(runner.OBSERVED_CHECKS)), 14)
         tree = ast.parse((HERE / 'run.py').read_text(encoding='utf8'))
+        # The sole authorized execution-frame delta is the reviewed capsule filename.
+        prepare = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'prepare')
+        filenames = [node for node in ast.walk(prepare) if isinstance(node, ast.Constant)
+                     and node.value == 'sealed-v3-stage-observation.tar']
+        self.assertEqual(len(filenames), 1)
+        filenames[0].value = 'sealed-v2.tar'
         names = {'context', 'actual_context', 'paths', 'private_json', 'safe_env', 'expected_sql',
                  'prepare', 'load_state', 'execute', 'native_state', 'owned_docker_resource', 'cleanup',
                  'verify_native_state', 'write_outcome_unknown', 'claim_execution', 'stop_child'}
