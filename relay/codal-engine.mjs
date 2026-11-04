@@ -240,7 +240,7 @@ async function pushFeedRows(items) {
 async function fetchPageWithRetry(params) {
   try { return await fetchAnnouncementsPage(params); }
   catch (e) {
-    if (e?.name === "AnnouncementSchemaError" || isBrsLocalDeferral(e)) throw e;
+    if (e?.noRetry === true || e?.name === "AnnouncementSchemaError" || isBrsLocalDeferral(e)) throw e;
     await new Promise((r) => setTimeout(r, 4000));
     return await fetchAnnouncementsPage(params);
   }
@@ -268,7 +268,9 @@ async function pollGlobalFeed() {
       const k = sentKey(a);
       if (!k || typeof a.link !== "string" || !a.link.trim() || k > previousKey) {
         st.incompleteReason = "invalid_order_or_identity";
-        throw new Error("announcement invalid date/link or feed order");
+        // Keep the verified prefix, but never acknowledge a gap in the feed.
+        // The next scheduled cycle resumes from the unchanged watermark.
+        break outer;
       }
       previousKey = k;
       // Only an older timestamp proves the same-time group is exhausted.
