@@ -1,0 +1,22 @@
+{
+  "schema": "p15-source-review.v1",
+  "sourceZipSha256": "14fb1d5af87d3b2fb1d4bad3e9606adec5a5200aa19a15cf4313a0ac5cdf3f6e",
+  "entries": 92,
+  "independentReview": "SOURCE_PASS_LIMITED",
+  "p1": 0,
+  "p2": 0,
+  "manifestEntriesVerified": 91,
+  "sourceIndexAndFrozenIndexVerified": true,
+  "canonicalPatchZipSha256": "7650ddcfec2c9ab8323f4dfeb6ff53715350ec65ca85876d6fca6920e0ce2a14",
+  "canonicalReview": "PENDING",
+  "integrated": false,
+  "namespaceProvisioned": false,
+  "authorityIssued": false,
+  "captureVerifyExecuted": false,
+  "actualArchiveRecords": null,
+  "actualArchiveStreams": null,
+  "expectedRecords": 26,
+  "expectedStreams": 25,
+  "backupCurrentDatabase": false,
+  "releaseAuthorized": false
+}

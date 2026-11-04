@@ -1,0 +1,148 @@
+{
+  "schema": "p09-independent-ci-review.v1",
+  "runId": 41767243456,
+  "head": "960903ca8390bd9767c2d87a309dbb48c815cedb",
+  "actualCiCheckout": "1def1f9d32e745a69a54d68feb8d771188113bc1",
+  "actualCiTree": "500674ba9c99a4cf1652f9cb021dc96e1f333122",
+  "parents": [
+    "06e7f0c7746c57645235854d160f267fdc41e0c7",
+    "960903ca8390bd9767c2d87a309dbb48c815cedb"
+  ],
+  "jobs": [
+    {
+      "id": 126368370605,
+      "name": "Database RLS · Integrity (Postgres)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126368370751,
+      "name": "Typecheck · Lint · Tests · Build",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126368370850,
+      "name": "Dependencies",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126368370893,
+      "name": "Secret scan · SQL validation",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126370561361,
+      "name": "CI Gate",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 126370589209,
+      "name": "Assembled native · explicit allocation only",
+      "status": "completed",
+      "conclusion": "skipped"
+    }
+  ],
+  "logReview": [
+    {
+      "jobId": 126368370751,
+      "characters": 1451221,
+      "fullLogsRead": true,
+      "checkoutObserved": "1def1f9d32e745a69a54d68feb8d771188113bc1",
+      "nonzeroFailures": 0,
+      "terminalCounters": [
+        "# tests 6",
+        "# pass 6",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# tests 86",
+        "# pass 86",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# tests 6",
+        "# pass 6",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# tests 11",
+        "# pass 11",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# tests 34",
+        "# pass 34",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# tests 2",
+        "# pass 2",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# tests 15",
+        "# pass 15",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# tests 31",
+        "# pass 31",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# tests 8",
+        "# pass 8",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# tests 6",
+        "# pass 6",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# tests 62",
+        "# pass 62",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# tests 154",
+        "# pass 154",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0"
+      ]
+    },
+    {
+      "jobId": 126368370605,
+      "characters": 3451545,
+      "fullLogsRead": true,
+      "checkoutObserved": "1def1f9d32e745a69a54d68feb8d771188113bc1",
+      "nonzeroFailures": 0,
+      "terminalCounters": [
+        "# tests 406",
+        "# pass 406",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# tests 2",
+        "# pass 2",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0",
+        "# tests 38",
+        "# pass 38",
+        "# fail 0",
+        "# cancelled 0",
+        "# skipped 0"
+      ]
+    }
+  ],
+  "nativeAcceptance": "NOT_RUN",
+  "pageCloseBrowserOnThisSnapshot": "NOT_RUN",
+  "primarySqlApplied": false,
+  "productionDeployment": false
+}

@@ -1,3 +1,7 @@
+## ادغام پژوهش و اصلاح شواهد محلی
+
+[P09/source960903](p09-current-source-integration.json) از همان journal پذیرفته‌شده a2 و با حفظ کد e0 ترکیب شد؛ ۱۰۹ آزمون مرتبط محلی، پذیرش CI یا مقصد نیست. CI قبلی41766554604 شش cancelled داشت؛ ثبت suite و dependency تاریخی SQL در نسخه جدید اصلاح شدند و [CI41767243456 هر پنج job موفق شد](p09-root-ci-final-review.json). شش آزمون واقعی journal در PG با پروفایل‌های legacy/explicit اجرا شدند؛ [۱۹ فایل مربوطه برابر و tree کل متفاوت است](p09-root-ci-source-binding.json). SQL اصلی، migration و native اجرا نشده‌اند. [raw لاگ محلی dirty-first بازنویسی شده](p09-local-log-preservation-correction.json)؛ هش و خلاصه جای آن را نمی‌گیرند، لاگ رسمی failedCI محفوظ است. نتیجهٔ تاریخی بازیابی P09 به snapshot تازه منتقل نمی‌شود.
+
 ## انتشار تشخیص و خواندن واقعی تازه
 
 [PR404 در main06e و Production READY](funds-read-observer-production.json) با tree دقیق CI و بازبینی مستقل بدونP1/P2 منتشر شد. [یک GET سایت اصلی](funds-production-single-page-read.json) در۰۳:۲۱UTC پاسخ۲۰۰/MISS داد؛ متن خطای قبلی در متن خارج script/style نبود. علت قبلی هنوز معلوم نیست و این نتیجه نه رفع پایدار است نه آزمون تعاملی یا اعتبار همهٔ ردیف‌ها. پنجرهٔ پنج‌دقیقه‌ای همان deployment رخداد funds_read_failure نداشت؛ نبود لاگ شاهد نبود خرابی نیست. [ماتریس پنج خانواده](data-source-page-current-matrix.json) منشأ، دریافت، ساعت نامعلوم و اقدام هر مالک را مشخص می‌کند؛ آخرین چرخهٔ کامل موفق هنوز null است.

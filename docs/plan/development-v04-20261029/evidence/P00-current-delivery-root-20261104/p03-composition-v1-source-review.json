@@ -1,0 +1,18 @@
+{
+  "schema": "source-review.v1",
+  "recordedAtUtc": "2026-11-04T03:43:21.991542+00:00",
+  "patchSha256": "59ab1dc1192a31a9c6d9a3a642bf4c267614d6c7d2b63cedbeca3e66b1f93958",
+  "sourcePass": false,
+  "p1": 0,
+  "p2": 3,
+  "findings": [
+    "Browser auth/rest mutation can bypass API-only admission",
+    "Nested caps mutable and actor IDs not snapshotted",
+    "Result status finalized before durable journal acknowledgement"
+  ],
+  "fixOwner": "B",
+  "nextReview": "version2b plus retained navigation helper delta",
+  "nativeExecuted": false,
+  "helperClarification": "Existing sealed capsule supplies assembled-member-scenario; overlay provenance must be explicit. No absolute missing-helper P1.",
+  "historicalF07Unchanged": true
+}

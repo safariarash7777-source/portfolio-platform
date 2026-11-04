@@ -1,0 +1,69 @@
+{
+  "schema": "p09-existing-source-integration-root.v1",
+  "recordedAtUtc": "2026-11-04T03:30:16.151823+00:00",
+  "pr": 385,
+  "head": "960903ca8390bd9767c2d87a309dbb48c815cedb",
+  "tree": "88d0dee7300fb2232a1a5c142b824fa226140eb3",
+  "restoredFrom": "a2d710858fa3acb8b6ba8300eacf24e6ecfa5a6c",
+  "frozenPreview": "e0b930927563d7f9f6d79e848917c4ba0d77ed6f",
+  "rootSourceVerification": {
+    "exactExistingSourceBlobs": 17,
+    "noIndependentE0ChangesInThosePaths": true,
+    "threeExistingTestsRegistered": true,
+    "pgIntegrationMovedFromCoreToExistingSerialDb": true,
+    "sqlPath": "docs/ops/research-workbook-recovery-20261029/intent-store.candidate.sql",
+    "sqlBlob": "7e3f7c7f85cb26281851e844c31f3c1ad0e5d9b1",
+    "sqlRawSha256": "bd0d6700fb9fa6415c94d6db9d9695d8a4bc013856f3e0098c7abbf457f749e6",
+    "sqlBytes": 4553,
+    "finalFixChangedPaths": [
+      "docs/ops/research-workbook-recovery-20261029/intent-store.candidate.sql",
+      "package.json"
+    ]
+  },
+  "localTargetedTests": {
+    "passCount": 109,
+    "fullCiAcceptance": false
+  },
+  "previousFailedCi": {
+    "runId": 41766554604,
+    "tests": 2474,
+    "passed": 2468,
+    "failed": 0,
+    "cancelled": 6,
+    "skipped": 0,
+    "cause": "PG integration test incorrectly registered in Core; historical SQL dependency missing",
+    "officialLogsRetained": true
+  },
+  "currentCi": {
+    "runId": 41767243456,
+    "status": "completed",
+    "conclusion": "success",
+    "rootFullFinalLogsReviewed": true,
+    "requiredJobsSuccess": 5,
+    "optionalNative": "skipped"
+  },
+  "isolatedCiHarness": {
+    "image": "postgres:16-alpine",
+    "servicePort": "5433:5432",
+    "PGHOST": "127.0.0.1",
+    "CI": "true",
+    "profiles": [
+      "legacy",
+      "explicit"
+    ],
+    "databaseNames": [
+      "wb_intents_legacy",
+      "wb_intents_explicit"
+    ],
+    "externalTargetFallback": false,
+    "alternateContainerRequiresExactNameAndLabelAndNetworkNone": true
+  },
+  "localRawLogCorrection": "p09-local-log-preservation-correction.json",
+  "primaryMigrationRegistered": false,
+  "primarySqlApplied": false,
+  "nativeOnThisSnapshot": "NOT_RUN",
+  "pageCloseUnknownSaveAcceptance": "NOT_ESTABLISHED",
+  "productionDeployment": false,
+  "historicalNativePassTransferred": false,
+  "ciSourceBinding": "p09-root-ci-source-binding.json"
+}

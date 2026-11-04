@@ -1,0 +1,133 @@
+{
+  "head": "960903ca8390bd9767c2d87a309dbb48c815cedb",
+  "headTree": "88d0dee7300fb2232a1a5c142b824fa226140eb3",
+  "actualCiCheckout": "1def1f9d32e745a69a54d68feb8d771188113bc1",
+  "actualCiTree": "500674ba9c99a4cf1652f9cb021dc96e1f333122",
+  "wholeTreeEqual": false,
+  "exactRelevantFiles": [
+    {
+      "path": "app/api/admin/intelligence/workbooks/route.test.ts",
+      "headObject": "7c218c9b05b92872e8c01173f4df3139d102ca47",
+      "ciObject": "7c218c9b05b92872e8c01173f4df3139d102ca47",
+      "exact": true
+    },
+    {
+      "path": "app/api/admin/intelligence/workbooks/route.ts",
+      "headObject": "149b3ef79e11f5bff9934bdd80e33d1932cac4ba",
+      "ciObject": "149b3ef79e11f5bff9934bdd80e33d1932cac4ba",
+      "exact": true
+    },
+    {
+      "path": "components/admin/ResearchHistoryPanel.test.tsx",
+      "headObject": "ce3480c4028a94e90effd7a417a895d70310c0ba",
+      "ciObject": "ce3480c4028a94e90effd7a417a895d70310c0ba",
+      "exact": true
+    },
+    {
+      "path": "components/admin/ResearchHistoryPanel.tsx",
+      "headObject": "93cfb1fcc060286d10ddd4192a3535e7c4cfe1c0",
+      "ciObject": "93cfb1fcc060286d10ddd4192a3535e7c4cfe1c0",
+      "exact": true
+    },
+    {
+      "path": "components/admin/ResearchPreparationFields.tsx",
+      "headObject": "a3082d4e6ad97431b309eba1b08fe8e6c94aa659",
+      "ciObject": "a3082d4e6ad97431b309eba1b08fe8e6c94aa659",
+      "exact": true
+    },
+    {
+      "path": "components/admin/ResearchWorkbook.test.ts",
+      "headObject": "bf7cce89853dfd1082ef5d9aa0c6293419c2c036",
+      "ciObject": "bf7cce89853dfd1082ef5d9aa0c6293419c2c036",
+      "exact": true
+    },
+    {
+      "path": "components/admin/ResearchWorkbook.tsx",
+      "headObject": "5e21eef71e3004ded0cecf8c4253683c996f95ea",
+      "ciObject": "5e21eef71e3004ded0cecf8c4253683c996f95ea",
+      "exact": true
+    },
+    {
+      "path": "components/admin/p07-component-test-host.ts",
+      "headObject": "e742e08aab10bcb4b8f48782ab4ed1874cc90328",
+      "ciObject": "e742e08aab10bcb4b8f48782ab4ed1874cc90328",
+      "exact": true
+    },
+    {
+      "path": "lib/intelligence/p07-workflow-fixture.ts",
+      "headObject": "3b6437c76d2af24f95e7bdbc7b137171759318f3",
+      "ciObject": "3b6437c76d2af24f95e7bdbc7b137171759318f3",
+      "exact": true
+    },
+    {
+      "path": "lib/intelligence/research-history-metadata.ts",
+      "headObject": "caed02b69ce74570cfdf55542b87bb2767e4091d",
+      "ciObject": "caed02b69ce74570cfdf55542b87bb2767e4091d",
+      "exact": true
+    },
+    {
+      "path": "lib/intelligence/research-history.test.ts",
+      "headObject": "102d07d7f9fc2c25cf5613d971c85696fdb1927f",
+      "ciObject": "102d07d7f9fc2c25cf5613d971c85696fdb1927f",
+      "exact": true
+    },
+    {
+      "path": "lib/intelligence/research-history.ts",
+      "headObject": "d3873954d7cb420aa17774a60643814c8052792f",
+      "ciObject": "d3873954d7cb420aa17774a60643814c8052792f",
+      "exact": true
+    },
+    {
+      "path": "lib/intelligence/workbook-intent-store.ts",
+      "headObject": "d837836c9f8f230c68439d56932fdf959eb39f83",
+      "ciObject": "d837836c9f8f230c68439d56932fdf959eb39f83",
+      "exact": true
+    },
+    {
+      "path": "lib/intelligence/workbook-intent.integration.test.ts",
+      "headObject": "a239977c274ac673790758113aad3ab9cd459859",
+      "ciObject": "a239977c274ac673790758113aad3ab9cd459859",
+      "exact": true
+    },
+    {
+      "path": "lib/intelligence/workbook-save-intent.ts",
+      "headObject": "a5e2ee1b490a2faac2d53f7f801ccd9deb859b75",
+      "ciObject": "a5e2ee1b490a2faac2d53f7f801ccd9deb859b75",
+      "exact": true
+    },
+    {
+      "path": "lib/intelligence/workbook-store.test.ts",
+      "headObject": "77f9241c860b2be7701ab5d1525ed1e334287698",
+      "ciObject": "77f9241c860b2be7701ab5d1525ed1e334287698",
+      "exact": true
+    },
+    {
+      "path": "lib/intelligence/workbook-store.ts",
+      "headObject": "e46bb2350f75e0435ed537ed36d33972f8a84f2b",
+      "ciObject": "e46bb2350f75e0435ed537ed36d33972f8a84f2b",
+      "exact": true
+    },
+    {
+      "path": "package.json",
+      "headObject": "b10ded459db82156f23cb1def192b0a20b65bed9",
+      "ciObject": "b10ded459db82156f23cb1def192b0a20b65bed9",
+      "exact": true
+    },
+    {
+      "path": "docs/ops/research-workbook-recovery-20261029/intent-store.candidate.sql",
+      "headObject": "7e3f7c7f85cb26281851e844c31f3c1ad0e5d9b1",
+      "ciObject": "7e3f7c7f85cb26281851e844c31f3c1ad0e5d9b1",
+      "exact": true
+    }
+  ],
+  "otherDifferences": [
+    ".github/workflows/relay-health.yml",
+    "lib/market-funds-read.server.ts",
+    "lib/market-stored.test.ts",
+    "scripts/ops/liara-binding-discovery-runner.mjs",
+    "scripts/ops/liara-binding-discovery-runner.test.mjs",
+    "scripts/ops/liara-binding-discovery.mjs",
+    "scripts/ops/liara-binding-discovery.test.mjs",
+    "scripts/ops/liara-discovery-source.json"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "schema": "artifact-preservation-correction.v1",
+  "priorRawLogSha256": "c61f180aec4557814f6add459cd62d8722d3fc155584344d552da6c3f4a3b7e7",
+  "priorSummary": {
+    "exit": 1,
+    "pass": 2452,
+    "fail": 1,
+    "reason": "assembly tracked source is dirty",
+    "test": "scripts/testing/consultation-tickets/source-boundary.test.mjs:27",
+    "remainingCommandsAfterAnd": "NOT_RUN",
+    "gateBypassed": false
+  },
+  "incident": "The local helper reused its output path for a new clean-tree Core run. The prior complete raw local log was overwritten. Its recorded hash, summary, exact failure excerpts in chat tool history and source-readback.json remain. No reconstructed raw log is represented as original.",
+  "remedy": "On completion the new output is copied to v2/full-core-clean-960903c.txt. All later runs use versioned paths.",
+  "githubFailedRun41766554604": "Official log remains intact; independent from the overwritten local dirty-tree run.",
+  "priorRawLogRelativeLocation": "outputs/p09-e0-integration-source-v1/full-core.txt",
+  "sourceReceiptRawSha256": "6a465d4b23b083356a76cea9055cd095e71bc83e206db50df2b8ba4ccc7ede0b"
+}
