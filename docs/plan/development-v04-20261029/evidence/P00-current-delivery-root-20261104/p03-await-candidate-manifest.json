@@ -1,0 +1,72 @@
+{
+  "files": {
+    ".gitattributes": {
+      "sha256": "e9eb514d331d16acdb3bfbe64684664cca670340d32aa061cf86330310d47b73",
+      "bytes": 215
+    },
+    "ATTRIBUTES-PROPOSAL.patch": {
+      "sha256": "415ff3982f77621be7f61d1712e0c5d6c74f4ad6882f8db8abc7006fe7faa952",
+      "bytes": 366
+    },
+    "PROJECTION-PROPOSAL.fa.md": {
+      "sha256": "c9f80947c11fa816f079ad39bbb85f5905add4da42ea323d50cfc990fd66c429",
+      "bytes": 4815
+    },
+    "PROPOSED-await.patch": {
+      "sha256": "3b5c0c7dcd21b8f79624eba3f7ee61d79fcd295811689fbd775fdfb7226759e5",
+      "bytes": 492
+    },
+    "REVIEW.fa.md": {
+      "sha256": "b1b61f1c5eea2042bbe7dfb1cabacc3df288bd034e0eadf964949bdbcdd2b416",
+      "bytes": 7416
+    },
+    "await-regression-tests.txt": {
+      "sha256": "dbc4d5c8e63b68328f56de66ff676a819d704b67abed9fd2c18dfdb67b2e7c63",
+      "bytes": 1247
+    },
+    "await-regression.test.cjs": {
+      "sha256": "264797a312a3343d9dc135bf94a531b0093d73ec331564eea4c5f214f1e14162",
+      "bytes": 8653
+    },
+    "base-capsule54.tar": {
+      "sha256": "54d35e1aa4b48962e48085140af0c214547bd139870ea1b9e08e644ac5c8d255",
+      "bytes": 204800
+    },
+    "canonical-validator-fixture.json": {
+      "sha256": "deb5aab9f73c7ecdec81beb12bea1a51df435df985762434a262e88247d1528a",
+      "bytes": 137447
+    },
+    "capsule-manifest.json": {
+      "sha256": "4e9f29a20ef0512dac57ae5f295d0950551bd477456348f251ab147922db119a",
+      "bytes": 7675
+    },
+    "package-revision2.cjs": {
+      "sha256": "540b3f5c6c9360b348044b29b6d31024a6d634e1a4ccc7d0696c6d2bce996ae1",
+      "bytes": 6647
+    },
+    "projection-proposal.json": {
+      "sha256": "6b6ea6cc0dc108f450470854deb18a846aee922fba42c1d284182c31bac18858",
+      "bytes": 1728
+    },
+    "pure-node-guard.cjs": {
+      "sha256": "4f572d05be71696339860f301d4891f6dbe0e4ab3a7f70570052ce69eb9bb028",
+      "bytes": 1864
+    },
+    "pure-node-guard.test.mjs": {
+      "sha256": "a6bc1a6c3e54ae71b853674761415b03761555a8e3e3bd33f473ecfe25158d72",
+      "bytes": 2143
+    },
+    "seal-revision2.cjs": {
+      "sha256": "d2d2ecd093094b0431865f9eb4c94d71a27c3bc4ef26921522b03c07261932bd",
+      "bytes": 4369
+    },
+    "sealed-p03-composition-e0-await-v1.tar": {
+      "sha256": "f41acf251bd63dc8f7a938b4f4f4308073c44c3bd9085b4f6978dfacad1d7486",
+      "bytes": 204800
+    },
+    "receipt.json": {
+      "sha256": "90a7da8bb6756289af22960a118b62d2576a78439498cffda4910787708f188b",
+      "bytes": 5320
+    }
+  }
+}

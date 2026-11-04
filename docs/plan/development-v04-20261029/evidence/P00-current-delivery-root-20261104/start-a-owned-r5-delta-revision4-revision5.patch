@@ -1,0 +1,18 @@
+--- a/scripts/testing/consultation-feedback/install-feedback.py
++++ b/scripts/testing/consultation-feedback/install-feedback.py
+@@ -425,7 +425,14 @@
+         except Exception:
+             matched = False
+         result = self.record('MATCHED_TARGET_STATE_READBACK' if matched else 'OUTCOME_UNKNOWN_READBACK_REQUIRED', responseLost=response_lost, originalWriteOutcome='unknown' if response_lost else 'response_received')
+-        self.persist('apply-readback.json', result)
++        # Original result is immutable. Explicit subsequent read-only observations
++        # use a bounded append-only namespace while the same exclusive lock is held.
++        name = 'apply-readback.json'
++        if self.io.exists(name):
++            name = next(('apply-observation-%04d.json' % n for n in range(1, 1001)
++                         if not self.io.exists('apply-observation-%04d.json' % n)), None)
++            check(name is not None, 'owned_observation_limit_requires_review')
++        self.persist(name, result)
+         return result
+ 
+     def apply_readback(self):

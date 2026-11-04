@@ -1,0 +1,139 @@
+{
+  "version": 2,
+  "status": "LOCAL_CI_PACKAGING_CANDIDATE_NOT_ADOPTED",
+  "preservedV1": {
+    "receiptSha256": "89b0fd81f946688268b5779a8a0699ddb7b88c8c9124d1cd6dd72b376b0492a6",
+    "manifestSha256": "82556bd72638046ccea6f15b0626a1aa3b5df76d7953537a7a5dd9080008d0a5",
+    "allPayloadPinsStillMatch": true
+  },
+  "controller": "d6ccafec6b0ea793c9cb7a90a11d4d43833a71c9",
+  "app": "e0b930927563d7f9f6d79e848917c4ba0d77ed6f",
+  "appTree": "c6c67f2a78cd2cf672cf4f489f81e7f14cb041da",
+  "capsuleSha256": "f41acf251bd63dc8f7a938b4f4f4308073c44c3bd9085b4f6978dfacad1d7486",
+  "driverSha256": "924500227397f6a72e99766238fb828e6d00f13842d763bada5d660c54242d3a",
+  "phaseBaseSha256": "6227f16978b64de4c4a37fece9451d8d8f9b36209fb7be912ea883918e5d5536",
+  "phaseCandidateSha256": "817f95289fe3f588f8cf27f960462f697c66eb6d226d2b5f6831966f1798cd99",
+  "capsuleAndPhaseUnchangedFromV1": true,
+  "sourcePatchSha256": "3b5c0c7dcd21b8f79624eba3f7ee61d79fcd295811689fbd775fdfb7226759e5",
+  "validatorFixtureSha256": "deb5aab9f73c7ecdec81beb12bea1a51df435df985762434a262e88247d1528a",
+  "validatorFixture": {
+    "file": "canonical-validator-fixture.json",
+    "modules": 14,
+    "fields": [
+      "path",
+      "text",
+      "bytes",
+      "sha256",
+      "gitBlob"
+    ],
+    "actualGitCommit": "e0b930927563d7f9f6d79e848917c4ba0d77ed6f",
+    "gitBlobAndShaVerified": true,
+    "activeTypeScriptCopies": 0,
+    "loader": "actual() reads raw inert JSON text, verifies bytes/SHA/Gitblob and compiles actual e0 contracts; no validator stub"
+  },
+  "compiler": {
+    "resolution": "createRequire(__filename) from existing control project node_modules; explicit hash-verified CLI module path optional when outside project; no fixed host path or env binding",
+    "version": "5.9.3",
+    "sha256": "3ae902c92cc44dace175c0e69e13a4b0899f6983c6121d76b9ab8dd5795e7675"
+  },
+  "tests": {
+    "affectedRegressions": 4,
+    "pass": 4,
+    "fail": 0,
+    "rerunsAfterPackaging": 1,
+    "noAdditionalScenarioCount": true,
+    "log": "await-regression-tests.txt",
+    "node": "v24.22.1",
+    "guard": "same existing R5 hash/marker required; probe4PASS inherited from sealed v1, not rerun or recounted",
+    "normalAndRejectUseRealAsyncValidator": true,
+    "rpc403": "synthetic transport/RPC fixture only; no Auth acceptance",
+    "linuxCI": "NOT_RUN"
+  },
+  "rawPins": {
+    "attributes": ".gitattributes",
+    "proposal": "ATTRIBUTES-PROPOSAL.patch",
+    "scope": "Place alongside only this revision2 packet inside allocated control folder; never overwrite root attributes"
+  },
+  "adoption": {
+    "deliverOnlyRevision2": true,
+    "rootOwnsWrapperRunPyWorkflowPins": true,
+    "controllerChanged": false,
+    "workflowChanged": false,
+    "newRuntimeAttempt": false
+  },
+  "projectionProposal": "Unchanged separate NOT_APPLIED; not folded into await capsule",
+  "failedRun41816967134": {
+    "runtimeCause": "UNPROVEN",
+    "replay": false
+  },
+  "native": false,
+  "network": false,
+  "sql": false,
+  "rootRepoWrites": false,
+  "files": {
+    ".gitattributes": {
+      "sha256": "e9eb514d331d16acdb3bfbe64684664cca670340d32aa061cf86330310d47b73",
+      "bytes": 215
+    },
+    "ATTRIBUTES-PROPOSAL.patch": {
+      "sha256": "415ff3982f77621be7f61d1712e0c5d6c74f4ad6882f8db8abc7006fe7faa952",
+      "bytes": 366
+    },
+    "PROJECTION-PROPOSAL.fa.md": {
+      "sha256": "c9f80947c11fa816f079ad39bbb85f5905add4da42ea323d50cfc990fd66c429",
+      "bytes": 4815
+    },
+    "PROPOSED-await.patch": {
+      "sha256": "3b5c0c7dcd21b8f79624eba3f7ee61d79fcd295811689fbd775fdfb7226759e5",
+      "bytes": 492
+    },
+    "REVIEW.fa.md": {
+      "sha256": "b1b61f1c5eea2042bbe7dfb1cabacc3df288bd034e0eadf964949bdbcdd2b416",
+      "bytes": 7416
+    },
+    "await-regression-tests.txt": {
+      "sha256": "dbc4d5c8e63b68328f56de66ff676a819d704b67abed9fd2c18dfdb67b2e7c63",
+      "bytes": 1247
+    },
+    "await-regression.test.cjs": {
+      "sha256": "264797a312a3343d9dc135bf94a531b0093d73ec331564eea4c5f214f1e14162",
+      "bytes": 8653
+    },
+    "base-capsule54.tar": {
+      "sha256": "54d35e1aa4b48962e48085140af0c214547bd139870ea1b9e08e644ac5c8d255",
+      "bytes": 204800
+    },
+    "canonical-validator-fixture.json": {
+      "sha256": "deb5aab9f73c7ecdec81beb12bea1a51df435df985762434a262e88247d1528a",
+      "bytes": 137447
+    },
+    "capsule-manifest.json": {
+      "sha256": "4e9f29a20ef0512dac57ae5f295d0950551bd477456348f251ab147922db119a",
+      "bytes": 7675
+    },
+    "package-revision2.cjs": {
+      "sha256": "540b3f5c6c9360b348044b29b6d31024a6d634e1a4ccc7d0696c6d2bce996ae1",
+      "bytes": 6647
+    },
+    "projection-proposal.json": {
+      "sha256": "6b6ea6cc0dc108f450470854deb18a846aee922fba42c1d284182c31bac18858",
+      "bytes": 1728
+    },
+    "pure-node-guard.cjs": {
+      "sha256": "4f572d05be71696339860f301d4891f6dbe0e4ab3a7f70570052ce69eb9bb028",
+      "bytes": 1864
+    },
+    "pure-node-guard.test.mjs": {
+      "sha256": "a6bc1a6c3e54ae71b853674761415b03761555a8e3e3bd33f473ecfe25158d72",
+      "bytes": 2143
+    },
+    "seal-revision2.cjs": {
+      "sha256": "d2d2ecd093094b0431865f9eb4c94d71a27c3bc4ef26921522b03c07261932bd",
+      "bytes": 4369
+    },
+    "sealed-p03-composition-e0-await-v1.tar": {
+      "sha256": "f41acf251bd63dc8f7a938b4f4f4308073c44c3bd9085b4f6978dfacad1d7486",
+      "bytes": 204800
+    }
+  }
+}

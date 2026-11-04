@@ -1,0 +1,16 @@
+{
+  "schema": "root-start-a-r5-source-only-review.v1",
+  "atUtc": "2026-11-04T11:33:32.331710+00:00",
+  "receiptSha256": "592ea95f2309d967221307e985f8fb1068ce2bd600ff3f198dc26040cd7a68e3",
+  "verifiedArtifactFiles": 10,
+  "ownedEntryClosedBeforeImport": true,
+  "newModuleImportedOrTestsRepeated": false,
+  "sourceAcceptance": "SOURCE_CLOSURE_PASS_BOUNDED",
+  "native": "NOT_RUN",
+  "caller": "NOT_WIRED",
+  "restoreProof": "LIMITED_16_TABLES_AND_OLD_KERNEL_NOT_FULL_CATALOG_ACL_ROLES",
+  "primaryInstall": "NOT_APPLIED",
+  "existingPurpose": "owned-start-a-copy / GHA-owned-copy.v1",
+  "blockingOwner": "root: actual allocation/topology/lifecycle/IO/cleanup/reader coupling",
+  "noUserDecisionNeededForRoutineCoupling": true
+}

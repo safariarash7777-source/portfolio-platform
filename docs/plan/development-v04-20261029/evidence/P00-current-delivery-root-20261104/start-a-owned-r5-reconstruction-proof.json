@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "path": "scripts/testing/consultation-feedback/install-feedback.py",
+      "baseCommit": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+      "baseSha256": "b489a04e5beddf37cb5d175c1af4a43712ce6e0676ed2df33c3e1e8693bd40fe",
+      "proposedSha256": "f62e682515c0c87aedb1104feb6238d237d2315a25d40b11ad8b1f8eba46d092",
+      "unchangedFromR4": false,
+      "reconstructedSha256": "f62e682515c0c87aedb1104feb6238d237d2315a25d40b11ad8b1f8eba46d092",
+      "byteExact": true
+    },
+    {
+      "path": "scripts/testing/consultation-tickets/feedback-reader-native.mjs",
+      "baseCommit": "1bf8f86b7bcaaedcb8320e178b1589a33b88e306",
+      "baseSha256": "18893829ff88c8e7853e925d7158dd8fd556dc12fb05a1cc661dba1f2316812d",
+      "proposedSha256": "f2ec4a524dff3e5572538dc72c8616ebb15db854159770c0b6d3f0f138e3d4d3",
+      "unchangedFromR4": true,
+      "reconstructedSha256": "f2ec4a524dff3e5572538dc72c8616ebb15db854159770c0b6d3f0f138e3d4d3",
+      "byteExact": true
+    }
+  ],
+  "persianLabelsVerified": [
+    "\u0628\u062e\u0634\u06cc \u0627\u0646\u062c\u0627\u0645 \u062f\u0627\u062f\u0645",
+    "\u0627\u0646\u062c\u0627\u0645 \u0646\u062f\u0627\u062f\u0645",
+    "\u0633\u0627\u0628\u0642\u0647\u0654 \u0645\u0634\u0627\u0647\u062f\u0647 \u0648 \u0627\u0642\u062f\u0627\u0645\u200c\u0647\u0627"
+  ],
+  "method": "actual git apply, command-local core.autocrlf=false, raw byte equality"
+}

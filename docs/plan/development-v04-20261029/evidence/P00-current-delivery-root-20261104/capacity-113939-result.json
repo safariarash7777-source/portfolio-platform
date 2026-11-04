@@ -1,0 +1,230 @@
+{
+  "status": "READ_ONLY_SAMPLE_COMPLETE",
+  "atUtc": "2026-11-04T11:39:39.801874+00:00",
+  "sampleSeconds": 1.001020445022732,
+  "logicalCores": 4,
+  "cpu": {
+    "busyExcludingIowaitStealPercentAllCores": 9.462915601023019,
+    "idlePercentAllCores": 90.53708439897699,
+    "iowaitPercentAllCores": 0.0,
+    "stealPercentAllCores": 0.0,
+    "guestNotDoubleCounted": true
+  },
+  "memoryBytes": {
+    "MemTotal": 8276856832,
+    "MemAvailable": 6144516096,
+    "SwapTotal": 2147479552,
+    "SwapFree": 1799352320
+  },
+  "filesystemBytes": {
+    "total": 81839546368,
+    "available": 14370189312
+  },
+  "services": [
+    {
+      "name": "finance-dashboard-20261028-v12-130524",
+      "cpuPercentOneCore": 0.07,
+      "memoryUsedBytes": 45246054.4,
+      "memoryLimitBytes": 402653184.0,
+      "memoryApproximate": true
+    },
+    {
+      "name": "fx-dashboard",
+      "cpuPercentOneCore": 0.9,
+      "memoryUsedBytes": 272315187.2,
+      "memoryLimitBytes": 8276401979.392,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-auth219-20261002-auth",
+      "cpuPercentOneCore": 0.0,
+      "memoryUsedBytes": 11072962.56,
+      "memoryLimitBytes": 134217728.0,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-auth219-20261002-storage",
+      "cpuPercentOneCore": 0.0,
+      "memoryUsedBytes": 93186949.12,
+      "memoryLimitBytes": 268435456.0,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-auth219-20261002-rest",
+      "cpuPercentOneCore": 0.23,
+      "memoryUsedBytes": 9634316.288,
+      "memoryLimitBytes": 134217728.0,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-auth219-20261002-sink",
+      "cpuPercentOneCore": 0.08,
+      "memoryUsedBytes": 11387535.36,
+      "memoryLimitBytes": 100663296.0,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-auth219-20261002-db",
+      "cpuPercentOneCore": 0.0,
+      "memoryUsedBytes": 15414067.2,
+      "memoryLimitBytes": 536870912.0,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-demo844-app",
+      "cpuPercentOneCore": 0.0,
+      "memoryUsedBytes": 0.0,
+      "memoryLimitBytes": 0.0,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-demo844-gateway",
+      "cpuPercentOneCore": 0.0,
+      "memoryUsedBytes": 11114905.6,
+      "memoryLimitBytes": 67108864.0,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-demo844-storage",
+      "cpuPercentOneCore": 0.0,
+      "memoryUsedBytes": 92652175.36,
+      "memoryLimitBytes": 268435456.0,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-demo844-rest",
+      "cpuPercentOneCore": 0.23,
+      "memoryUsedBytes": 9256828.928,
+      "memoryLimitBytes": 134217728.0,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-demo844-auth",
+      "cpuPercentOneCore": 0.0,
+      "memoryUsedBytes": 7008681.984,
+      "memoryLimitBytes": 134217728.0,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-demo844-db",
+      "cpuPercentOneCore": 0.0,
+      "memoryUsedBytes": 9641656.32,
+      "memoryLimitBytes": 536870912.0,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-accept195-app",
+      "cpuPercentOneCore": 0.0,
+      "memoryUsedBytes": 0.0,
+      "memoryLimitBytes": 0.0,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-accept195-gateway",
+      "cpuPercentOneCore": 0.0,
+      "memoryUsedBytes": 21181235.2,
+      "memoryLimitBytes": 67108864.0,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-accept195-storage",
+      "cpuPercentOneCore": 0.01,
+      "memoryUsedBytes": 93774151.68,
+      "memoryLimitBytes": 268435456.0,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-accept195-rest",
+      "cpuPercentOneCore": 0.21,
+      "memoryUsedBytes": 9043968.0,
+      "memoryLimitBytes": 134217728.0,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-accept195-auth",
+      "cpuPercentOneCore": 0.0,
+      "memoryUsedBytes": 7393509.376,
+      "memoryLimitBytes": 134217728.0,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-accept195-db",
+      "cpuPercentOneCore": 0.0,
+      "memoryUsedBytes": 10477371.392,
+      "memoryLimitBytes": 536870912.0,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-stage-gateway-1",
+      "cpuPercentOneCore": 0.21,
+      "memoryUsedBytes": 14302576.64,
+      "memoryLimitBytes": 8276401979.392,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-stage-auth-1",
+      "cpuPercentOneCore": 9.06,
+      "memoryUsedBytes": 14722007.04,
+      "memoryLimitBytes": 8276401979.392,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-stage-rest-1",
+      "cpuPercentOneCore": 5.09,
+      "memoryUsedBytes": 84945141.76,
+      "memoryLimitBytes": 8276401979.392,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-stage-storage-1",
+      "cpuPercentOneCore": 0.0,
+      "memoryUsedBytes": 123731968.0,
+      "memoryLimitBytes": 8276401979.392,
+      "memoryApproximate": true
+    },
+    {
+      "name": "portfolio-stage-db-1",
+      "cpuPercentOneCore": 5.76,
+      "memoryUsedBytes": 457388851.2,
+      "memoryLimitBytes": 8276401979.392,
+      "memoryApproximate": true
+    },
+    {
+      "name": "fx-dashboard-proxy",
+      "cpuPercentOneCore": 0.0,
+      "memoryUsedBytes": 28238151.68,
+      "memoryLimitBytes": 8276401979.392,
+      "memoryApproximate": true
+    }
+  ],
+  "dockerCpuDenominator": "100 percent equals one logical core; separate short sample",
+  "sourceBefore": {
+    "idExpected": true,
+    "imageExpected": true,
+    "healthy": true,
+    "restartCount": 0
+  },
+  "sourceAfter": {
+    "idExpected": true,
+    "imageExpected": true,
+    "healthy": true,
+    "restartCount": 0
+  },
+  "hermes": {
+    "commandOnSystemPath": false,
+    "systemPythonDistributionVersion": null,
+    "rootHermesDirectoryObserved": false,
+    "modelConnectionTested": false,
+    "authStoreRead": false
+  },
+  "sustainedCapacityProven": false,
+  "sqlExecuted": false,
+  "deliberateRemoteWrites": false,
+  "servicesChanged": false,
+  "modelCalls": 0,
+  "sshExit": 0,
+  "authenticatedObserved": true,
+  "commandSentObserved": true,
+  "observedAtUtc": "2026-11-04T11:39:39.179199+00:00",
+  "automaticRetry": false
+}

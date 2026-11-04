@@ -1,0 +1,8 @@
+{
+  "atUtc": "2026-11-04T11:39:31.742851+00:00",
+  "payloadSha256": "ac728f2518cf151f082e9db95f0acb139faaf5cd4d8e0c2dedb0aed254e29517",
+  "target": "existing pinned VPS",
+  "automaticRetry": false,
+  "deadlineSeconds": 35,
+  "operation": "read-only OS/service resource metadata; no SQL, auth-store, model or service changes"
+}

@@ -1,0 +1,25 @@
+{
+  "schema": "root-p03-summary-await-source-adoption.v1",
+  "atUtc": "2026-11-04T11:29:35.338480+00:00",
+  "baseRemote": "d6ccafec6b0ea793c9cb7a90a11d4d43833a71c9",
+  "preservedLocalMerge": "c7963b650d16cb2d20e0f6b3519187691fbea5ec",
+  "unchangedMergeTree": "05dc24cde8664038a69d9b3073e7e2d5050848bf",
+  "packetManifest": "8533b0a2917cd4bc66556e1aac96edeee2090a9b4c606240818c759990f72fa9",
+  "actualE0JsonModulesComparedToGit": 14,
+  "activeProductTypeScriptCopiesAdded": 0,
+  "capsuleChangedMembers": [
+    "overlay/scripts/testing/consultation-tickets/assembled-overlay.json",
+    "overlay/scripts/testing/consultation-tickets/composition-member-phase.mjs"
+  ],
+  "onlyPhaseOperationDelta": "await actual preparation validator before reading preparationId",
+  "capsuleSha256": "f41acf251bd63dc8f7a938b4f4f4308073c44c3bd9085b4f6978dfacad1d7486",
+  "driverSha256": "924500227397f6a72e99766238fb828e6d00f13842d763bada5d660c54242d3a",
+  "controllerOperationDelta": "two reviewed pins only",
+  "testRegistration": "same test_run.py; one wrapper, four regression scenarios and four existing guard probes",
+  "workflowSqlAppAuthBudgetAcceptanceChanged": false,
+  "nativeCauseOf418169": "UNPROVEN",
+  "nativeAfterFix": "NOT_RUN",
+  "projectionProposal": "NOT_APPLIED",
+  "primaryInstall": "NOT_APPLIED",
+  "productRight": "NOT_CONNECTED"
+}

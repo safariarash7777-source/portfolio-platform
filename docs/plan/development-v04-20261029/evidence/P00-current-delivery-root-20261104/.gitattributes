@@ -43,3 +43,8 @@ p07-admission-followup-* -text -whitespace
 p03-native-418169-* -text -whitespace
 
 p14-guide-* -text -whitespace
+
+p03-await-* -text -whitespace
+p03-native-418224-* -text -whitespace
+start-a-owned-r5-* -text -whitespace
+capacity-113939-* -text -whitespace

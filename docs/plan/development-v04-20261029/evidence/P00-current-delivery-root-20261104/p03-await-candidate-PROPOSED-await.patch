@@ -1,0 +1,5 @@
+--- a/overlay/scripts/testing/consultation-tickets/composition-member-phase.mjs
++++ b/overlay/scripts/testing/consultation-tickets/composition-member-phase.mjs
+@@ -68,1 +68,1 @@
+- const prepared=preparation.validateTicketPreparationReceipt(await expect('owner','/api/consultation/ticket-attempts',input),await read('owner'),exact);
++ const prepared=await preparation.validateTicketPreparationReceipt(await expect('owner','/api/consultation/ticket-attempts',input),await read('owner'),exact);

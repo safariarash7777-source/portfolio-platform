@@ -1,0 +1,50 @@
+{
+  "schema": "root-p03-await-native-readback.v1",
+  "atUtc": "2026-11-04T11:51:53.922185+00:00",
+  "run": 41822436979,
+  "artifact": 13317442536,
+  "zipSha256": "44becdbdefedb95bcb39384183f017f223c30b414d67a73adc0fb3270ff4df8b",
+  "receiptSha256": "0295872c31843557d8cf10de4be23cc819942060e1bfdcd352e7d628e1ef4d0e",
+  "binding": {
+    "acceptanceProfile": "p03-composition-e0-v1",
+    "allocationId": "a1e22e4b-93d9-4e8f-b222-2b20269ae8f1",
+    "attempt": 1,
+    "candidateCommit": "e0b930927563d7f9f6d79e848917c4ba0d77ed6f",
+    "capsuleSha256": "f41acf251bd63dc8f7a938b4f4f4308073c44c3bd9085b4f6978dfacad1d7486",
+    "driverContractSha256": "924500227397f6a72e99766238fb828e6d00f13842d763bada5d660c54242d3a",
+    "executionAllocationId": "b24d1316-7be9-5723-8ae8-3f2e093a7f63",
+    "repository": "safariarash7777-source/portfolio-platform",
+    "runId": "41822436979",
+    "workflowCommit": "7122a56519d7ae3f34202bb0f9575573143dc80e"
+  },
+  "status": "FAIL_NATIVE_NOT_ACCEPTED",
+  "nativeAttempted": true,
+  "ownedCleanupReadback": "CONFIRMED",
+  "writeOutcomeUnknown": null,
+  "actualExitCode": 1,
+  "timedOutOrInterrupted": false,
+  "nativeFailureCode": "selector_ambiguous",
+  "lastObservedStage": "composition-fixture-binding",
+  "lastObservedStageEdge": "after",
+  "lastStageIsExactFailureLocation": false,
+  "directIntents": {
+    "total": 14,
+    "financial": 2,
+    "parentConsultation": 8,
+    "other": 4
+  },
+  "directIntentsAreNotCompleteBrowserAdmissionOrSuccessfulEffects": true,
+  "observedSqlAppliedCount": 19,
+  "observedDefaultPrepareHttpStatus": null,
+  "fullPublicJobLogRead": {
+    "job": 126551077630,
+    "characters": 46992,
+    "actualController": "7122a56519d7ae3f34202bb0f9575573143dc80e"
+  },
+  "privateLogRead": false,
+  "replay": false,
+  "primaryInstall": "NOT_APPLIED",
+  "serviceRight": "NOT_CONNECTED",
+  "wholeMemberPath": "NOT_ACCEPTED",
+  "nextOwner": "root/C: meaningful unique history summary selector in frozen case; source counterexample before another allocation"
+}

@@ -1,0 +1,68 @@
+{
+  "state": "SOURCE_ONLY_NOT_WIRED_NOT_EXECUTED",
+  "atUtc": "2026-11-04T11:14:45.155870+00:00",
+  "productFiles": 2,
+  "changedFromR4": 1,
+  "tests": {
+    "pythonPassed": 14,
+    "pythonFailed": 0,
+    "consumerRerun": false,
+    "referencedConsumerPass": 3,
+    "native": false
+  },
+  "priorConsumerLog": {
+    "path": "../revision3/consumer-phase-tests3.log",
+    "sha256": "cf263ed22c4f3676663c4c3a8130f052f3185312cfeb2e439102304d2327aeee"
+  },
+  "files": {
+    "PROPOSED.patch": {
+      "sha256": "894b7b5638378b5aa368be94104e32e807a72a90c0185c53179ae4c5ecae59c6",
+      "bytes": 37573
+    },
+    "delta-revision4-revision5.patch": {
+      "sha256": "ae56f50e224351a6bc719eac549d77fe9e7961b772bd5eaa6d5a07dfa85fa220",
+      "bytes": 1064
+    },
+    "reconstruction-proof.json": {
+      "sha256": "b3dadd860d46132e7dd9ecad1c7d937d29e5c0cf1e59cb320e08bcee7e522e75",
+      "bytes": 1407
+    },
+    "git-apply.log": {
+      "sha256": "98b1a8851b1983927ea59b8f98bc92f82312716ea843c4314ac9b0359db53572",
+      "bytes": 326
+    },
+    "README.md": {
+      "sha256": "50f23a38a045de0e1245cf73bc91427af5917bec19652eccc2e6e56599c22fe4",
+      "bytes": 2072
+    },
+    "test_exercise.py": {
+      "sha256": "5f784a37155d5a21288315c0e4c6e8dc3c3a355bead23770d0ac5fa819a4826f",
+      "bytes": 8625
+    },
+    "offline-exercise.log": {
+      "sha256": "5e156742d1f628b949efda9f1a0100d05f6779211b4cee9f149906fc1355c5eb",
+      "bytes": 118
+    },
+    "proposed/scripts/testing/consultation-feedback/install-feedback.py": {
+      "sha256": "f62e682515c0c87aedb1104feb6238d237d2315a25d40b11ad8b1f8eba46d092",
+      "bytes": 45356
+    },
+    "proposed/scripts/testing/consultation-tickets/feedback-reader-native.mjs": {
+      "sha256": "f2ec4a524dff3e5572538dc72c8616ebb15db854159770c0b6d3f0f138e3d4d3",
+      "bytes": 21343
+    },
+    "offline-exercise-sequence-closure.log": {
+      "sha256": "dc8de7d2135c3ebee0e30e8a9150f86bcc2438cd0c48cb201dca1e52af816648",
+      "bytes": 118
+    }
+  },
+  "updatedAtUtc": "2026-11-04T11:15:19.756372+00:00",
+  "sequenceClosure": {
+    "initialLostResponse": true,
+    "laterMatchingObservationOriginalOutcomeUnknown": true,
+    "originalReceiptMockSerializedBytesUnchanged": true,
+    "ddlRequests": 1,
+    "originalReceiptReadByAlgorithm": false,
+    "lockAndExclusiveWritePreserved": true
+  }
+}

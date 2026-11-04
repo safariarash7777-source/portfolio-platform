@@ -1,0 +1,431 @@
+--- a/scripts/testing/consultation-feedback/install-feedback.py
++++ b/scripts/testing/consultation-feedback/install-feedback.py
+@@ -111,6 +111,7 @@
+ 
+ 
+ def validate_rehearsal(safety, proof, binding):
++    check(proof.get('profile', 'legacy') == 'legacy' and proof.get('productionGateEligible', True) is True, 'owned_proof_not_production_eligible')
+     check(proof.get('status') == 'APPLIED' and proof.get('mode') == 'copy'
+           and proof.get('binding') == binding and proof.get('targetStopped') is True
+           and proof.get('sourceHealthyAfter') is True and proof.get('existingCatalogUnchanged') is True
+@@ -140,12 +141,13 @@
+             'readerAttestationSha256':safety.digest(json.dumps(reader,sort_keys=True).encode()) if reader else None}
+ 
+ 
+-def reconcile(mode, attestation, operation, *, safety=None, reader=None):
++def reconcile(mode, attestation, operation, *, safety=None, reader=None, profile='legacy'):
+     """Observe one existing intent. Never DDL, start/stop, replay or replace evidence.
+ 
+     A stopped copy must be started separately by its authorized owner. Old state
+     cannot prove an unknown original operation will never commit: it stays unresolved.
+     """
++    check(profile == 'legacy', 'owned_reconcile_integration_pending')
+     import fcntl
+     safety = safety or load_safety()
+     # Check the original attestation's exact structure/identity, without pretending
+@@ -205,9 +207,271 @@
+         return result
+ 
+ 
+-def run(mode, attestation, operation, *, safety=None, reader=None):
++# Proposed in-file profile. No credential or production authority is accepted.
++class OwnedCopySafety:
++    def __init__(self, helper, allocation, expected_sha, context):
++        check(isinstance(expected_sha, str) and re.fullmatch(r'[a-f0-9]{64}', expected_sha), 'owned_allocation_pin_required')
++        check(helper.digest(json.dumps(allocation, sort_keys=True, separators=(',', ':')).encode()) == expected_sha, 'owned_allocation_pin_changed')
++        self.helper = helper
++        self.allocation = json.loads(json.dumps(allocation))
++        self.context = dict(context)
++        self.__file__ = helper.__file__
++        self.validate_attestation(self.allocation)
++        self.BACKUPS = Path('/tmp') / ('start-a-owned-' + allocation['allocationId'])
++
++    def __getattr__(self, name):
++        return getattr(self.helper, name)
++
++    def validate_attestation(self, value, now=None):
++        keys = {'contractVersion', 'runId', 'attempt', 'sourceCommit', 'allocationId', 'checkpoint', 'checkpointReceiptSha256', 'source', 'copy', 'databaseMarker'}
++        check(isinstance(value, dict) and set(value) == keys and value == self.allocation, 'owned_allocation_shape_or_drift')
++        check(value['contractVersion'] == 'GHA-owned-copy.v1', 'owned_profile_required')
++        check(self.context.get('GITHUB_ACTIONS') == 'true' and self.context.get('RUNNER_OS') == 'Linux', 'owned_context_required')
++        for field, env in [('runId', 'GITHUB_RUN_ID'), ('attempt', 'GITHUB_RUN_ATTEMPT'), ('sourceCommit', 'GITHUB_SHA')]:
++            check(isinstance(value[field], str) and value[field] == self.context.get(env), 'owned_run_binding_changed')
++        check(re.fullmatch(r'[1-9][0-9]{0,19}', value['runId']) and re.fullmatch(r'[1-9][0-9]{0,5}', value['attempt']) and re.fullmatch(r'[a-f0-9]{40}', value['sourceCommit']), 'owned_context_shape')
++        check(isinstance(value['allocationId'], str) and re.fullmatch(r'[a-f0-9]{32}', value['allocationId']), 'owned_allocation_id')
++        check(value['databaseMarker'] == 'start-a-owned-' + value['allocationId'], 'owned_marker_shape')
++        check(isinstance(value['checkpointReceiptSha256'], str) and re.fullmatch(r'[a-f0-9]{64}', value['checkpointReceiptSha256']), 'owned_checkpoint_pin')
++        stamp = dt.datetime.strptime(value['checkpoint'], '%Y%m%dT%H%M%SZ').replace(tzinfo=dt.timezone.utc)
++        check(0 <= ((now or dt.datetime.now(dt.timezone.utc))-stamp).total_seconds() <= 86400, 'owned_checkpoint_expired')
++        for role in ('source', 'copy'):
++            item = value[role]
++            check(isinstance(item, dict) and set(item) == {'name', 'id', 'image'}, 'owned_resource_shape')
++            check(item['name'] == 'start-a-owned-' + value['allocationId'] + '-' + role and isinstance(item['id'], str) and re.fullmatch(r'[a-f0-9]{64}', item['id']) and isinstance(item['image'], str) and re.fullmatch(r'sha256:[a-f0-9]{64}', item['image']), 'owned_resource_identity')
++        check(value['source']['id'] != value['copy']['id'] and value['source']['image'] == value['copy']['image'], 'owned_resources_not_independent')
++
++    def resource_safe(self, state, role, running):
++        a = self.allocation
++        expected = a[role]
++        check(state['Name'] == '/' + expected['name'] and state['Id'] == expected['id'] and state['Image'] == expected['image'] and state['State']['Running'] is running, 'owned_identity_changed')
++        check(state['HostConfig']['NetworkMode'] == 'none' and not state['HostConfig'].get('PortBindings') and not any((state['NetworkSettings'].get('Ports') or {}).values()), 'owned_network_not_isolated')
++        labels = state['Config'].get('Labels') or {}
++        check(all(labels.get('portfolio.owned.' + key) == a[key] for key in ('runId', 'attempt', 'sourceCommit', 'allocationId')) and labels.get('portfolio.owned.role') == role, 'owned_labels_changed')
++        check('cron.launch_active_jobs=off' in (state['Config'].get('Cmd') or []), 'owned_cron_enabled')
++        # Fixed reviewed synthetic contract; not inferred from an image default.
++        data_dir = '/var/lib/postgresql/data'
++        mounts = state['Mounts']
++        check(isinstance(mounts, list) and len(mounts) == 1 and mounts[0].get('Type') == 'tmpfs' and mounts[0].get('Destination') == data_dir and mounts[0].get('RW') is True, 'owned_data_mount_not_exact_tmpfs')
++        env = state['Config'].get('Env')
++        check(isinstance(env, list) and all(isinstance(v, str) for v in env) and [v for v in env if v.startswith('PGDATA=')] == ['PGDATA=' + data_dir], 'owned_pgdata_changed')
++
++    def marker(self, state):
++        raw = self.command(['docker', 'exec', '-i', '-e', 'PGOPTIONS=-c statement_timeout=5s', state['Id'], 'psql', '-XqAt', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1'], b"BEGIN READ ONLY; SELECT current_setting('portfolio.owned_copy_marker',true); COMMIT;")
++        check(raw.strip() == self.allocation['databaseMarker'], 'owned_database_marker_changed')
++
++    def source_safe(self, state, attestation):
++        self.validate_attestation(attestation)
++        self.resource_safe(state, 'source', True)
++        check(state['State'].get('Health', {}).get('Status') == 'healthy', 'owned_source_unhealthy')
++        self.marker(state)
++
++    def copy_safe(self, state, source, attestation, running):
++        self.validate_attestation(attestation)
++        self.resource_safe(state, 'copy', running)
++        self.resource_safe(source, 'source', True)
++        if running:
++            self.marker(state)
++
++    def validate_backup(self, raw, attestation):
++        check(self.digest(raw) == attestation['checkpointReceiptSha256'], 'owned_backup_pin_changed')
++        proof = json.loads(raw)
++        check(set(proof) == {'contractVersion', 'allocationId', 'runId', 'attempt', 'sourceCommit', 'sourceId', 'copyId', 'databaseMarker', 'restoredEqual', 'sourceHealthy', 'copyStopped', 'syntheticOnly'}, 'owned_backup_shape')
++        check(proof['contractVersion'] == 'GHA-owned-copy-backup.v1' and all(proof[k] == attestation[k] for k in ('allocationId', 'runId', 'attempt', 'sourceCommit', 'databaseMarker')) and proof['sourceId'] == attestation['source']['id'] and proof['copyId'] == attestation['copy']['id'], 'owned_backup_binding')
++        check(all(proof[k] is True for k in ('restoredEqual', 'sourceHealthy', 'copyStopped', 'syntheticOnly')), 'owned_backup_not_verified')
++
++
++class OwnedCopyExercise:
++    """Underlying owned-only algorithm. No default transport, CLI or activation.
++
++    Caller supplies reviewed exclusive journal/blob store and bounded transport.
++    The public run/reconcile gate remains CLOSED until that integration is reviewed.
++    Evidence bodies/history stay private; returned receipts contain only bindings.
++    """
++    def __init__(self, guard, io, repo=ROOT):
++        check(type(guard) is OwnedCopySafety, 'owned_guard_required')
++        self.guard, self.io, self.repo = guard, io, repo
++        self.binding = {'profile': 'GHA-owned-copy.v1', 'allocationId': guard.allocation['allocationId'],
++                        'runId': guard.allocation['runId'], 'attempt': guard.allocation['attempt'],
++                        'sourceCommit': guard.allocation['sourceCommit'],
++                        'allocationSha256': guard.digest(json.dumps(guard.allocation, sort_keys=True, separators=(',', ':')).encode()),
++                        'payloadSha256': guard.digest(payload(guard, 'apply', repo).encode())}
++        check(self.binding['payloadSha256'] == 'c53de46a216a57b90afaff760c0474cb5d95911f56ff022832fd1536affae8a8', 'owned_payload_changed')
++
++    def resources(self):
++        a = self.guard.allocation
++        source = self.io.inspect(a['source']['id'])
++        copy = self.io.inspect(a['copy']['id'])
++        self.guard.validate_attestation(a)
++        self.guard.resource_safe(source, 'source', True)
++        self.guard.resource_safe(copy, 'copy', True)
++        check(source['State'].get('Health', {}).get('Status') == 'healthy', 'owned_source_unhealthy')
++        # Use the SAME injected bounded transport for metadata too; never fall
++        # through guard.helper.command to a native default.
++        for role in ('source','copy'):
++            result = self.transport(role, ['psql','-XqAt','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1'], b"BEGIN READ ONLY; SELECT current_setting('portfolio.owned_copy_marker',true); COMMIT;")
++            check(result['exitCode'] == 0 and result['sqlstate'] is None and result['stdout'].decode('utf-8').strip() == a['databaseMarker'], 'owned_database_marker_changed')
++        return source, copy
++
++    def transport(self, role, program, body=None):
++        check(role in ('source','copy'), 'owned_target_role_invalid')
++        target = self.guard.allocation[role]['id']
++        result = self.io.execute(['docker', 'exec', '-i', '-e',
++            'PGOPTIONS=-c lock_timeout=5s -c statement_timeout=60s', target, *program], body,
++            timeout=90, max_stdout_bytes=64*1024*1024)
++        check(isinstance(result, dict) and set(result) == {'exitCode','stdout','sqlstate'}
++              and type(result['exitCode']) is int and isinstance(result['stdout'], bytes)
++              and len(result['stdout']) <= 64*1024*1024
++              and (result['sqlstate'] is None or result['sqlstate'] == 'PT409'), 'owned_transport_result_invalid')
++        return result
++
++    def execute(self, role, program, body=None):
++        self.resources()
++        return self.transport(role, program, body)
++
++    def query(self, sql, role='copy', expected_error=None):
++        result = self.execute(role, ['psql', '-XqAt', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1'], sql.encode())
++        if expected_error:
++            check(result['exitCode'] != 0 and result['sqlstate'] == expected_error, 'owned_expected_sqlstate_missing')
++            return None
++        check(result['exitCode'] == 0 and result['sqlstate'] is None, 'owned_query_failed')
++        return result['stdout'].decode('utf-8')
++
++    def snapshot(self, role='copy'):
++        rows = [json.loads(line) for line in self.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;'+INVENTORY+HISTORY+'COMMIT;', role).splitlines() if line.strip()]
++        check(len(rows) == 2 and all(isinstance(x, dict) for x in rows), 'owned_snapshot_invalid')
++        check(set(rows[1]) == set(HISTORY_TABLES), 'owned_history_roster_changed')
++        for entry in rows[1].values():
++            check(isinstance(entry, dict) and set(entry) == {'count','sha256'} and type(entry['count']) is int and entry['count'] >= 0 and isinstance(entry['sha256'], str) and re.fullmatch(r'[a-f0-9]{64}', entry['sha256']), 'owned_history_fingerprint_invalid')
++        return {'catalog':rows[0], 'history':rows[1]}
++
++    def kernel(self, extended):
++        result = json.loads(self.query('BEGIN READ ONLY;'+checks(self.guard, extended)+'COMMIT;'))
++        self.guard.all_passed(result, 9)
++
++    def persist(self, name, value):
++        self.io.write_exclusive(name, value)  # Contract: file AND directory fsync before return.
++
++    def record(self, state, **fields):
++        return {'state':state, 'binding':self.binding, 'targetInstall':'NOT_APPLIED',
++                'productionGateEligible':False, 'automaticReplay':False, **fields}
++
++    def backup_restore(self):
++        # Empty target must be independently allocated; never clean an existing DB.
++        with self.io.lock_exclusive():
++            check(not self.io.exists('restore-intent.json'), 'owned_restore_no_replay')
++            self.resources()
++            empty = self.query("BEGIN READ ONLY; SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname NOT LIKE 'pg_%' AND n.nspname <> 'information_schema' AND c.relkind IN('r','p','v','m','S','f'); COMMIT;")
++            check(empty.strip() == '0', 'owned_restore_target_not_empty')
++            before = self.snapshot('source')
++            dump = self.execute('source', ['pg_dump','-U','postgres','-d','postgres','--format=custom','--no-password'])
++            check(dump['exitCode'] == 0 and dump['sqlstate'] is None and dump['stdout'].startswith(b'PGDMP'), 'owned_dump_failed')
++            archive = dump['stdout']
++            archive_sha = self.guard.digest(archive)
++            self.io.write_blob_exclusive('synthetic-backup.dump', archive)
++            stored = self.io.read_blob('synthetic-backup.dump', 64*1024*1024)
++            check(isinstance(stored, bytes) and self.guard.digest(stored) == archive_sha, 'owned_backup_readback_failed')
++            intent = self.record('RESTORE_INTENT', archiveSha256=archive_sha, sourceBefore=before)
++            self.persist('restore-intent.json', intent)
++            # Unknown restore is NEVER retried. A later readback uses this same intent.
++            result = self.execute('copy', ['pg_restore','-U','postgres','-d','postgres','--exit-on-error','--single-transaction'], stored)
++            check(result['exitCode'] == 0 and result['sqlstate'] is None, 'owned_restore_unknown_requires_readback')
++            return self.restore_readback_locked(intent)
++
++    def restore_readback_locked(self, intent):
++        check(isinstance(intent,dict) and intent.get('binding') == self.binding and intent.get('state') == 'RESTORE_INTENT', 'owned_restore_intent_changed')
++        archive = self.io.read_blob('synthetic-backup.dump',64*1024*1024)
++        check(self.guard.digest(archive) == intent.get('archiveSha256'), 'owned_archive_changed')
++        source = self.snapshot('source'); copy = self.snapshot()
++        self.kernel(False)
++        check(source == intent['sourceBefore'] and copy['history'] == source['history'], 'owned_restore_data_mismatch')
++        proof = self.record('RESTORED_READBACK', archiveSha256=intent['archiveSha256'], sourceSnapshotSha256=self.guard.digest(json.dumps(source,sort_keys=True).encode()), copySnapshotSha256=self.guard.digest(json.dumps(copy,sort_keys=True).encode()))
++        self.persist('restore-readback.json', proof)
++        return proof
++
++    def restore_readback(self):
++        with self.io.lock_exclusive():
++            return self.restore_readback_locked(self.io.read('restore-intent.json'))
++
++    def apply(self):
++        with self.io.lock_exclusive():
++            check(not self.io.exists('apply-intent.json'), 'owned_apply_no_replay')
++            proof = self.io.read('restore-readback.json')
++            check(proof.get('state') == 'RESTORED_READBACK' and proof.get('binding') == self.binding, 'owned_restore_proof_missing')
++            restore_intent = self.io.read('restore-intent.json')
++            check(restore_intent.get('binding') == self.binding and restore_intent.get('state') == 'RESTORE_INTENT', 'owned_restore_intent_changed')
++            archive = self.io.read_blob('synthetic-backup.dump',64*1024*1024)
++            check(isinstance(archive,bytes) and self.guard.digest(archive) == restore_intent.get('archiveSha256') == proof.get('archiveSha256'), 'owned_archive_changed')
++            self.kernel(False)
++            before = self.snapshot()
++            source_before = self.snapshot('source')
++            check(source_before == restore_intent['sourceBefore'] and before['history'] == source_before['history'], 'owned_restore_proof_stale')
++            intent = self.record('APPLY_INTENT', before=before)
++            self.persist('apply-intent.json', intent)
++            # Exactly one atomic request containing the two reviewed migrations.
++            try:
++                self.query(payload(self.guard, 'apply', self.repo))
++            except Exception:
++                # Readback has no write/retry path; uncertainty remains until observed.
++                return self.apply_readback_locked(intent, response_lost=True)
++            return self.apply_readback_locked(intent, response_lost=False)
++
++    def apply_readback_locked(self, intent, response_lost=True):
++        check(isinstance(intent, dict) and intent.get('binding') == self.binding and intent.get('state') == 'APPLY_INTENT', 'owned_apply_intent_changed')
++        try:
++            self.kernel(True)
++            after = self.snapshot()
++            matched = after == intent['before'] and self.query('BEGIN READ ONLY;'+ROLLOUT_DEFAULT_OFF+'COMMIT;').strip() == 't'
++        except Exception:
++            matched = False
++        result = self.record('MATCHED_TARGET_STATE_READBACK' if matched else 'OUTCOME_UNKNOWN_READBACK_REQUIRED', responseLost=response_lost, originalWriteOutcome='unknown' if response_lost else 'response_received')
++        # Original result is immutable. Explicit subsequent read-only observations
++        # use a bounded append-only namespace while the same exclusive lock is held.
++        name = 'apply-readback.json'
++        if self.io.exists(name):
++            name = next(('apply-observation-%04d.json' % n for n in range(1, 1001)
++                         if not self.io.exists('apply-observation-%04d.json' % n)), None)
++            check(name is not None, 'owned_observation_limit_requires_review')
++        self.persist(name, result)
++        return result
++
++    def apply_readback(self):
++        with self.io.lock_exclusive():
++            return self.apply_readback_locked(self.io.read('apply-intent.json'))
++
++    # The existing JavaScript consumer now exports its ACTUAL second phase.
++    # No invented cross-language callback is executed here. The named root caller
++    # must bind that phase to the same allocated context; entry remains closed.
++
++    def validate_reader_snapshot(self, value, enabled):
++        check(isinstance(value,dict) and set(value)=={'binding','actions','extendedFeedbackWrite','financialFingerprints'} and value['binding']==self.binding and value['extendedFeedbackWrite'] is enabled, 'owned_reader_receipt_invalid')
++        rows=value['actions']
++        check(isinstance(rows,list) and len(rows)==2, 'owned_reader_rows_missing')
++        fields={'id','sessionId','actionKey','version','status','text','actorId','createdAt'}
++        for row,status in zip(rows,('partial','not_done')):
++            check(isinstance(row,dict) and set(row)==fields and row['status']==status and type(row['version']) is int and row['version']==1, 'owned_reader_row_shape')
++            check(all(isinstance(row[k],str) and re.fullmatch(r'[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}',row[k]) for k in ('id','sessionId','actionKey','actorId')), 'owned_reader_row_identity')
++            check(isinstance(row['text'],str) and 0<len(row['text'])<=4000 and isinstance(row['createdAt'],str) and len(row['createdAt'])<=40, 'owned_reader_row_details')
++            dt.datetime.fromisoformat(row['createdAt'].replace('Z','+00:00'))
++        check(rows[0]['id']!=rows[1]['id'] and rows[0]['actorId']!=rows[1]['actorId'] and rows[0]['actionKey']!=rows[1]['actionKey'] and rows[0]['sessionId']==rows[1]['sessionId'], 'owned_reader_two_actor_binding')
++        fingerprints=value['financialFingerprints']
++        expected={'member_holding_versions','member_holding_positions','member_debt_positions','member_cash_flow_versions','member_cash_flow_entries','member_goals_versions'}
++        check(isinstance(fingerprints,dict) and set(fingerprints)==expected and all(isinstance(x,str) and re.fullmatch(r'[a-f0-9]{64}',x) for x in fingerprints.values()), 'owned_financial_fingerprints_invalid')
++
++
++
++def run(mode, attestation, operation, *, safety=None, reader=None, profile='legacy', expected_allocation_sha=None, context=None):
++    check(profile in ('legacy', 'GHA-owned-copy.v1'), 'unknown_execution_profile')
++    owned = profile == 'GHA-owned-copy.v1'
++    check(not owned or (mode == 'copy' and reader is None), 'owned_production_authority_rejected')
++    # Caller reserved: assembled-native-ci/run.py, purpose owned-start-a-copy.
++    # Independent allocation pin does not prove directory, backup, reader/history
++    # or reconciliation gates. No runtime option opens this source gate.
++    check(not owned, 'owned_copy_integration_pending')
+     import fcntl  # No fallback lock or Windows operational execution.
+     safety = safety or load_safety()
++    if owned:
++        safety = OwnedCopySafety(safety, attestation, expected_allocation_sha, context or {})
+     safety.validate_attestation(attestation)
+     check(mode in ('copy', 'source'), 'explicit_mode_required')
+     sql = payload(safety, operation)
+@@ -215,7 +479,8 @@
+     if reader:
+         validate_reader(reader,attestation,safety.digest(sql.encode()))
+     check(safety.digest(Path(safety.__file__).read_bytes()) == SAFETY_SHA, 'safety_helper_bytes_changed')
+-    check(safety.digest(safety.HELPER.read_bytes()) == attestation['backupHelperSha256'], 'backup_helper_hash_changed')
++    if not owned:
++        check(safety.digest(safety.HELPER.read_bytes()) == attestation['backupHelperSha256'], 'backup_helper_hash_changed')
+     os.umask(0o077)
+     checkpoint = safety.BACKUPS / attestation['checkpoint']
+     directory = checkpoint / 'consultation-feedback-install' / operation
+@@ -262,6 +527,8 @@
+                   'targetId': attestation[mode]['id'], 'automaticReplay': False,
+                   'schemaReloadRequested': False, 'nativeAcceptance': False,
+                   'encryptedBackupVerification': 'external_coordinator_attestation_not_decrypted_by_adapter'}
++        if owned:
++            result.update({'profile': 'GHA-owned-copy.v1', 'targetInstall': 'NOT_APPLIED', 'productionGateEligible': False, 'encryptedBackupVerification': 'not_applicable_owned_synthetic_only'})
+         try:
+             if mode == 'copy':
+                 safety.command(['docker', 'start', attestation['copy']['id']])
+@@ -333,12 +600,14 @@
+ 
+ def main():
+     parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--profile', choices=('legacy', 'GHA-owned-copy.v1'), default='legacy')
+     parser.add_argument('--attestation', required=True, type=Path)
+     parser.add_argument('--mode', required=True, choices=('copy', 'source'))
+     parser.add_argument('--operation', required=True, choices=('apply', 'rollback'))
+     parser.add_argument('--reconcile', action='store_true', help='Read an existing intent; no DDL, resource start/stop or replay')
+     parser.add_argument('--reader-attestation', type=Path, help='Required and bound before copy rehearsal intended to authorize source')
+     args = parser.parse_args()
++    check(args.profile == 'legacy', 'owned_trusted_caller_binding_required')
+     action = reconcile if args.reconcile else run
+     reader=json.loads(args.reader_attestation.read_text(encoding='utf-8')) if args.reader_attestation else None
+     action(args.mode, json.loads(args.attestation.read_text(encoding='utf-8')), args.operation,reader=reader)
+--- a/scripts/testing/consultation-tickets/feedback-reader-native.mjs
++++ b/scripts/testing/consultation-tickets/feedback-reader-native.mjs
+@@ -27,7 +27,7 @@
+ async function exercise(ctx,s){
+  const contracts=await load('lib/consultation/contracts.ts'),cash=await load('lib/portfolio/cashFlowApiContract.ts');
+  const {users,sql,api}=ctx,checks=[],posts=new Map(),needles=[];
+- let domPosts=0,privateStorageHits=0,privateUrlHits=0;const pageErrors=[];
++ const observed={domPosts:0,privateStorageHits:0,privateUrlHits:0};const pageErrors=[];
+  const pass=(name,evidence={})=>{check(feedbackReaderChecks.includes(name)&&!checks.some(x=>x.name===name),'p03_feedback_check_identity');checks.push({name,status:'PASS'});ctx.pass(name,evidence);};
+  const expect=async(actor,path,body,expected=body===undefined?200:201)=>{const result=await api(actor,path,body);check(result.status===expected,'p03_feedback_http_status');return result.value;};
+  const postRequest=async(actor,request,expected=201)=>{
+@@ -75,11 +75,36 @@
+  ctx.write('feedback-original-rows.json',{rows:original},true);
+  pass('actual-two-actor-partial-not-done',{actors:2,realPosts:2,originalIdsRecorded:true,originalTimesRecorded:true,originalRowsHash:digest(stable(original))});
+ 
++ const {member,owner,verifyDom}=await stopFeedbackAndVerifyHistory(ctx,s,{contracts,users,sql,read,command,body,relation,original,keys,session,actors,posts,needles,pageErrors,pass,observed,details,privateNote});
++
++ await command('a',{kind:'feedback',relationshipId:relation,sessionId:session.id,actionKey:keys[2],baseVersion:0,status:'doing',text:null});
++ await command('owner',{kind:'feedback',relationshipId:relation,sessionId:session.id,actionKey:keys[3],baseVersion:0,status:'done',text:null});
++ const legacy=await read('a',relation);requireOriginalFeedbackRows(original,originalFeedbackRows(legacy,keys.slice(0,2)));check(legacy.actions.find(x=>x.actionKey===keys[2])?.status==='doing'&&legacy.actions.find(x=>x.actionKey===keys[3])?.status==='done','p03_feedback_legacy_states_closed');
++ const afterHoldings=await expect('a','/api/portfolio/holdings'),afterCash=cash.validateCashFlowRead(await expect('a','/api/personal-finance/cash-flow?'+new URLSearchParams(PERIOD)),{ownerId:users.a.id,period:PERIOD});
++ check(afterHoldings.positions[0]?.declared_value===1000000&&afterCash.report.actual.closingToman===580000&&afterCash.report.planned.netToman===null,'p03_feedback_closed_financial_reader_changed');
++ check(financialFingerprint()===beforeFinancial,'p03_feedback_financial_fingerprint_changed');
++ pass('legacy-doing-done-and-stable-financials',{legacyRealPosts:2,legacyDoing:true,legacyDone:true,newFeedbackRowsUnchanged:true,financialFingerprintUnchanged:true});
++
++ await command('a',{kind:'revoke',relationshipId:relation});
++ for(const actor of ['owner','b','admin']){const denied=await expect(actor,'/api/consultation?'+new URLSearchParams({...PERIOD,relationshipId:relation}),undefined,403);check(!stable(denied).includes(details[0])&&!stable(denied).includes(privateNote),'p03_feedback_private_denial_leaked');}
++ const revoked=await read('a',relation);requireOriginalFeedbackRows(original,originalFeedbackRows(revoked,keys.slice(0,2)));check(revoked.selected.revoked===true&&revoked.capabilities.extendedFeedbackWrite===false,'p03_feedback_revoked_member_history');
++ await member.page.reload({waitUntil:'domcontentloaded'});await ctx.wait(()=>member.page.getByText(body.topic,{exact:true}).isVisible(),'p03_feedback_revoked_dom_ready',60);await verifyDom(member);
++ check(financialFingerprint()===beforeFinancial&&sql(`SELECT count(*) FROM public.consultation_actions WHERE session_id=${quote(session.id)} AND status IN ('partial','not_done')`)==='2','p03_feedback_final_effect_changed');
++ pass('revocation-and-member-history',{revokedAdvisorDenied:true,unrelatedMemberDenied:true,unrelatedAdminDenied:true,memberHistoryRetained:true,newStatusRows:2,financialFingerprintUnchanged:true});
++ check(!s.asyncFailure&&pageErrors.length===0&&observed.domPosts===0&&[...posts.values()].every(n=>n===1),'p03_feedback_unexpected_post_or_runtime');
++ const removed=await cleanup(s);s.cleaned=true;
++ pass('owned-browser-cleanup-and-no-repeat',{processStopped:removed.processStopped,contextsClosed:removed.contextsClosed,ownedTempRemoved:removed.ownedTempRemoved,repeatedPosts:0,domAutomaticPosts:0});
++ return {browser:{status:'PASS',readerSha:feedbackReaderSha,driverVersion:'1.64.1',sourceExecutable:'/opt/google/chrome/chrome',sourceSha256:s.sourceSha256,executable:s.executable,ownedTemp:s.local,ownerId:s.owner,chromeVersion:s.chromeVersion,chromeSha256:s.chromeSha256,closure:s.closure,checks,freshAuthActors:2,originalRowsStable:true,domHistoryVerified:true,appStopVerified:true,dbStopVerified:true,legacyStatesVerified:true,financialFingerprintUnchanged:true,revocationVerified:true,repeatedPosts:0,domAutomaticPosts:observed.domPosts,privateStorageHits:observed.privateStorageHits,privateUrlHits:observed.privateUrlHits,cleanup:removed}};
++}
++// Same real second phase used by the existing default exercise. No fixture,
++// account, holdings, cash-flow, advisor or consent creation occurs in this phase.
++export async function stopFeedbackAndVerifyHistory(ctx,s,phase){
++ const {contracts,users,sql,read,command,body,relation,original,keys,session,actors,posts,needles,pageErrors,pass,observed,details,privateNote}=phase;
+  const openPage=async(actor)=>{
+   const context=await s.browser.newContext({serviceWorkers:'block',viewport:actor==='a'?{width:390,height:844}:{width:1440,height:1000}});s.contexts.push(context);
+   needles.push(users[actor].session.token,...sdkCookies(users[actor].session.cookie).map(x=>x.value));await context.addCookies(sdkCookies(users[actor].session.cookie));
+   const page=await context.newPage();page.on('pageerror',()=>pageErrors.push('runtime_error'));
+-  await context.route('**/*',async route=>{const request=route.request();if(!browserDestination(request.url(),request.method(),MODE)){s.asyncFailure='p03_feedback_browser_destination';await route.abort();return;}if(request.method()==='POST'&&new URL(request.url()).pathname==='/api/consultation')domPosts++;await route.continue();});
++  await context.route('**/*',async route=>{const request=route.request();if(!browserDestination(request.url(),request.method(),MODE)){s.asyncFailure='p03_feedback_browser_destination';await route.abort();return;}if(request.method()==='POST'&&new URL(request.url()).pathname==='/api/consultation')observed.domPosts++;await route.continue();});
+   await page.goto(ctx.origin+(actor==='a'?'/dashboard/consultation':'/admin/consultation')+'?'+new URLSearchParams({relation}),{waitUntil:'domcontentloaded'});
+   await ctx.wait(async()=>{if(s.asyncFailure)throw Error(s.asyncFailure);return await page.getByText(body.topic,{exact:true}).isVisible();},'p03_feedback_page_ready',60);
+   return {page,context,actor};
+@@ -100,7 +125,7 @@
+  for(const item of [beforeMember,beforeOwner])await item.context.close();
+  for(const actor of actors){const previous=users[actor].session.token;const signedOut=await ctx.post('/auth/v1/logout',{}, {Authorization:'Bearer '+previous,apikey:ctx.anon});check([200,204].includes(signedOut.status),'p03_feedback_password_logout');users[actor].session=await ctx.newSession(actor);check(users[actor].session.token!==previous,'p03_feedback_password_session_not_fresh');}
+  for(const actor of actors){const current=await read(actor,relation);requireOriginalFeedbackRows(original,originalFeedbackRows(current,keys.slice(0,2)));check(current.capabilities?.extendedFeedbackWrite===false,'p03_feedback_fresh_capability_open');}
+- const newDomStart=domPosts,newPostCount=posts.size;
++ const newDomStart=observed.domPosts,newPostCount=posts.size;
+  const member=await openPage('a'),owner=await openPage('owner');
+  const verifyDom=async item=>{
+   const history=item.page.locator('details').filter({has:item.page.locator('summary').filter({hasText:'سابقهٔ مشاهده و اقدام‌ها'})});
+@@ -115,30 +140,20 @@
+   for(const label of ['بخشی انجام دادم','انجام ندادم'])for(const button of await item.page.getByRole('button',{name:label,exact:true}).all())check(await button.isDisabled(),'p03_feedback_dom_writer_open');
+   if(item.actor==='a')check(!(await item.page.textContent('body')).includes(privateNote),'p03_feedback_member_private_note');
+   check(await item.page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth),'p03_feedback_dom_page_overflow');
+-  const audit=await storageAudit(item.page,needles);privateStorageHits+=audit.hits;privateUrlHits+=audit.urlHit?1:0;
++  const audit=await storageAudit(item.page,needles);observed.privateStorageHits+=audit.hits;observed.privateUrlHits+=audit.urlHit?1:0;
+  };
+  await verifyDom(member);await verifyDom(owner);
+- check(domPosts===newDomStart&&posts.size===newPostCount,'p03_feedback_fresh_history_caused_post');
++ check(observed.domPosts===newDomStart&&posts.size===newPostCount,'p03_feedback_fresh_history_caused_post');
+  pass('fresh-password-sdk-get-and-original-dom-history',{freshActors:2,originalIdsPreserved:true,originalTextPreserved:true,originalTimeAttributesPreserved:true,domStatusLabels:true,capability:false,automaticPosts:0});
+ 
+- await command('a',{kind:'feedback',relationshipId:relation,sessionId:session.id,actionKey:keys[2],baseVersion:0,status:'doing',text:null});
+- await command('owner',{kind:'feedback',relationshipId:relation,sessionId:session.id,actionKey:keys[3],baseVersion:0,status:'done',text:null});
+- const legacy=await read('a',relation);requireOriginalFeedbackRows(original,originalFeedbackRows(legacy,keys.slice(0,2)));check(legacy.actions.find(x=>x.actionKey===keys[2])?.status==='doing'&&legacy.actions.find(x=>x.actionKey===keys[3])?.status==='done','p03_feedback_legacy_states_closed');
+- const afterHoldings=await expect('a','/api/portfolio/holdings'),afterCash=cash.validateCashFlowRead(await expect('a','/api/personal-finance/cash-flow?'+new URLSearchParams(PERIOD)),{ownerId:users.a.id,period:PERIOD});
+- check(afterHoldings.positions[0]?.declared_value===1000000&&afterCash.report.actual.closingToman===580000&&afterCash.report.planned.netToman===null,'p03_feedback_closed_financial_reader_changed');
+- check(financialFingerprint()===beforeFinancial,'p03_feedback_financial_fingerprint_changed');
+- pass('legacy-doing-done-and-stable-financials',{legacyRealPosts:2,legacyDoing:true,legacyDone:true,newFeedbackRowsUnchanged:true,financialFingerprintUnchanged:true});
+-
+- await command('a',{kind:'revoke',relationshipId:relation});
+- for(const actor of ['owner','b','admin']){const denied=await expect(actor,'/api/consultation?'+new URLSearchParams({...PERIOD,relationshipId:relation}),undefined,403);check(!stable(denied).includes(details[0])&&!stable(denied).includes(privateNote),'p03_feedback_private_denial_leaked');}
+- const revoked=await read('a',relation);requireOriginalFeedbackRows(original,originalFeedbackRows(revoked,keys.slice(0,2)));check(revoked.selected.revoked===true&&revoked.capabilities.extendedFeedbackWrite===false,'p03_feedback_revoked_member_history');
+- await member.page.reload({waitUntil:'domcontentloaded'});await ctx.wait(()=>member.page.getByText(body.topic,{exact:true}).isVisible(),'p03_feedback_revoked_dom_ready',60);await verifyDom(member);
+- check(financialFingerprint()===beforeFinancial&&sql(`SELECT count(*) FROM public.consultation_actions WHERE session_id=${quote(session.id)} AND status IN ('partial','not_done')`)==='2','p03_feedback_final_effect_changed');
+- pass('revocation-and-member-history',{revokedAdvisorDenied:true,unrelatedMemberDenied:true,unrelatedAdminDenied:true,memberHistoryRetained:true,newStatusRows:2,financialFingerprintUnchanged:true});
+- check(!s.asyncFailure&&pageErrors.length===0&&domPosts===0&&[...posts.values()].every(n=>n===1),'p03_feedback_unexpected_post_or_runtime');
+- const removed=await cleanup(s);s.cleaned=true;
+- pass('owned-browser-cleanup-and-no-repeat',{processStopped:removed.processStopped,contextsClosed:removed.contextsClosed,ownedTempRemoved:removed.ownedTempRemoved,repeatedPosts:0,domAutomaticPosts:0});
+- return {browser:{status:'PASS',readerSha:feedbackReaderSha,driverVersion:'1.64.1',sourceExecutable:'/opt/google/chrome/chrome',sourceSha256:s.sourceSha256,executable:s.executable,ownedTemp:s.local,ownerId:s.owner,chromeVersion:s.chromeVersion,chromeSha256:s.chromeSha256,closure:s.closure,checks,freshAuthActors:2,originalRowsStable:true,domHistoryVerified:true,appStopVerified:true,dbStopVerified:true,legacyStatesVerified:true,financialFingerprintUnchanged:true,revocationVerified:true,repeatedPosts:0,domAutomaticPosts:domPosts,privateStorageHits,privateUrlHits,cleanup:removed}};
++ return {member,owner,verifyDom};
++}
++// Owned integration remains closed; this is not an activation flag or dispatch API.
++export async function runOwnedFeedbackHistory(ctx,s,phase,reviewed){
++ check(false,'p03_feedback_owned_context_not_adopted');
++ // Future caller must bind exact runtime reader blobs, allocation/run/attempt,
++ // owned DB marker and original private rows before reaching the shared phase.
++ return stopFeedbackAndVerifyHistory(ctx,s,phase);
+ }
+ export async function runFeedbackReader(){
+  let state;

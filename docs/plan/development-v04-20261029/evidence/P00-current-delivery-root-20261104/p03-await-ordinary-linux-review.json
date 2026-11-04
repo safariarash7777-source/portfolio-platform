@@ -1,0 +1,31 @@
+{
+  "schema": "root-p03-summary-await-ordinary-linux-review.v1",
+  "atUtc": "2026-11-04T11:37:18.336801+00:00",
+  "source": "7122a56519d7ae3f34202bb0f9575573143dc80e",
+  "tree": "51ce8b875c23b347762854e2bb7f0aac41ccee68",
+  "run": 41821605557,
+  "actualCiCheckout": "5c197bb3e9ada911de82d44f75d05f232cfcafbf",
+  "actualCiTree": "51ce8b875c23b347762854e2bb7f0aac41ccee68",
+  "actualCiParents": [
+    "5ec4bf43be9fd617bb0830aef8e4e1795625ce23",
+    "7122a56519d7ae3f34202bb0f9575573143dc80e"
+  ],
+  "fullTreeEqual": true,
+  "requiredJobs": "5_SUCCESS",
+  "optionalNative": "SKIPPED",
+  "actualLinuxPythonMethods": 71,
+  "fullDecodedLogsRead": [
+    {
+      "job": 126545859535,
+      "characters": 1282955
+    },
+    {
+      "job": 126545859692,
+      "characters": 3280234
+    }
+  ],
+  "actualValidatorScenarios": 4,
+  "scenariosAreInsideOnePythonWrapperNotAdditionalProductAcceptance": true,
+  "nativeAfterFix": "NOT_RUN_AT_REVIEW",
+  "primaryInstall": "NOT_APPLIED"
+}

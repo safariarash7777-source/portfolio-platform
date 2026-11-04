@@ -1,0 +1,28 @@
+{
+  "schema": "root-p03-summary-await-publication.v1",
+  "atUtc": "2026-11-04T11:33:32.229872+00:00",
+  "source": "7122a56519d7ae3f34202bb0f9575573143dc80e",
+  "tree": "51ce8b875c23b347762854e2bb7f0aac41ccee68",
+  "awaitCommit": "c39c13863af7bac45beef49b27b2b3a07cc799e2",
+  "sourceParents": [
+    "c39c13863af7bac45beef49b27b2b3a07cc799e2"
+  ],
+  "remotePrHeadReadback": "7122a56519d7ae3f34202bb0f9575573143dc80e",
+  "pullRequest": 403,
+  "draft": true,
+  "merged": false,
+  "localMergePreservedBothHistories": "c7963b650d16cb2d20e0f6b3519187691fbea5ec",
+  "localTargetedWrapper": "PASS_4_REGRESSION_PLUS_4_GUARD_PROBES",
+  "localActualLint": "PASS",
+  "localFullPythonMethods": 71,
+  "localFullPythonLogSha256": "0e46120b509879f03a54bffba7c7ee9fc5dace3bfb5e2dd90098d55b228f8d3f",
+  "projectionOnlyAddedFixedLiterals": 16,
+  "projectionAddedRegexOrStatusFields": false,
+  "ciRun": 41821605557,
+  "ciStatusAtPublication": "IN_PROGRESS",
+  "nativeAfterFix": "NOT_RUN",
+  "priorRunReplay": false,
+  "productionChanged": false,
+  "targetInstall": "NOT_APPLIED",
+  "productServiceRight": "NOT_CONNECTED"
+}
