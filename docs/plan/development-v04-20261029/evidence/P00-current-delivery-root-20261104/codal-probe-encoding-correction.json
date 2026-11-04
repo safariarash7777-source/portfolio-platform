@@ -1,0 +1,76 @@
+{
+  "localPreferredEncoding": "cp1256",
+  "literalAudit": [
+    {
+      "file": "remote-codal-latest-20261104.py",
+      "scope": "folad",
+      "literalUtf8Hex": "d981d988d984d8a7d8af",
+      "codepoints": [
+        "U+0641",
+        "U+0648",
+        "U+0644",
+        "U+0627",
+        "U+062F"
+      ],
+      "payloadSha256": "9524cfe60f3df2bb2d25f16ab5b04cfc6f12e7367e34366107314da91625be3e"
+    },
+    {
+      "file": "remote-codal-latest-20261104.py",
+      "scope": "femeli",
+      "literalUtf8Hex": "d981d985d984db8c",
+      "codepoints": [
+        "U+0641",
+        "U+0645",
+        "U+0644",
+        "U+06CC"
+      ],
+      "payloadSha256": "9524cfe60f3df2bb2d25f16ab5b04cfc6f12e7367e34366107314da91625be3e"
+    },
+    {
+      "file": "remote-codal-latest-payload-20261104.py",
+      "scope": "folad",
+      "literalUtf8Hex": "d8b8d9bed8b8cb86d8b8e2809ed8b7c2a7d8b7c2af",
+      "codepoints": [
+        "U+0638",
+        "U+067E",
+        "U+0638",
+        "U+02C6",
+        "U+0638",
+        "U+201E",
+        "U+0637",
+        "U+00A7",
+        "U+0637",
+        "U+00AF"
+      ],
+      "payloadSha256": "82ff58409a4820c8844a042a1f7634b4e2b507fe84cf84dae16e1b5c1c1536de"
+    },
+    {
+      "file": "remote-codal-latest-payload-20261104.py",
+      "scope": "femeli",
+      "literalUtf8Hex": "d8b8d9bed8b8e280a6d8b8e2809ed8bac592",
+      "codepoints": [
+        "U+0638",
+        "U+067E",
+        "U+0638",
+        "U+2026",
+        "U+0638",
+        "U+201E",
+        "U+063A",
+        "U+0152"
+      ],
+      "payloadSha256": "82ff58409a4820c8844a042a1f7634b4e2b507fe84cf84dae16e1b5c1c1536de"
+    }
+  ],
+  "remoteQueries": 0,
+  "canonicalCountCandidateSymbols": [
+    {
+      "feedId": 19270,
+      "symbolUtf8Hex": "d981d988d984d8a7d8af"
+    },
+    {
+      "feedId": 22948,
+      "symbolUtf8Hex": "d981d985d984db8c"
+    }
+  ],
+  "finding": "Previous exact-symbol latest queries were corrupted by implicit cp1256 decoding during local payload assembly. Global max-id and canonical count candidate symbols were unaffected. No data absence conclusion is supported by those two empty latest-query results."
+}

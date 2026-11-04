@@ -1,0 +1,132 @@
+{
+  "schema": "scope-v2-local-source-review.v1",
+  "head": "7f8ec13e84e74bab3f5df507fc4ea93c905b997b",
+  "tree": "476354bc59eb97dc4c1c32a945805a9a96762022",
+  "parent": "72254d5737daa81262b286092686f44a3e4982bf",
+  "clean": true,
+  "changedPaths": [
+    ".github/workflows/ci.yml",
+    "package.json",
+    "scripts/testing/consultation-tickets/assembly-source-scope.mjs",
+    "scripts/testing/consultation-tickets/assembly-source-scope.test.mjs",
+    "scripts/testing/consultation-tickets/source-boundary.test.mjs"
+  ],
+  "priorProtectedPins": {
+    "fingerprints27": {
+      "SAME": 27
+    },
+    "bootstrapSql18": {
+      "SAME": 18
+    },
+    "explicitProtectedAppFiles": {
+      "SAME": 26,
+      "CHANGED": 2
+    }
+  },
+  "coreRegistry": "All prior literal tests and commands retained; only one new16-test scope suite registered",
+  "fullCore": [
+    {
+      "segment": 1,
+      "exit": 0,
+      "log": "scope-v2-core-segment-1.txt",
+      "sha256": "1de8bfe5d671fa5a49cbc5aa504d7348d4f226f7fb2924c0406e100b3f1dab36",
+      "summary": [
+        "ℹ tests 2369",
+        "ℹ pass 2369",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0"
+      ]
+    },
+    {
+      "segment": 2,
+      "exit": 0,
+      "log": "scope-v2-core-segment-2.txt",
+      "sha256": "b9d2f669c90dadf155d0bebebd432b6d757284e5b35fcf22c97214642c00bde4",
+      "summary": [
+        "ℹ tests 23",
+        "ℹ pass 23",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0"
+      ]
+    },
+    {
+      "segment": 3,
+      "exit": 0,
+      "log": "scope-v2-core-segment-3.txt",
+      "sha256": "f4a0d0cb29d9edc2006516e990eed2d105925350bb08421d67a07d48819f19b0",
+      "summary": [
+        "ℹ tests 6",
+        "ℹ pass 6",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0"
+      ]
+    },
+    {
+      "segment": 4,
+      "exit": 0,
+      "log": "scope-v2-core-segment-4.txt",
+      "sha256": "54c010ecec716c7bd474b0770aa2ceebe832dab453254b485fe2e66a728439a6",
+      "summary": [
+        "ℹ tests 5",
+        "ℹ pass 5",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "check": "scope-v2-negative-tests",
+      "exit": 0,
+      "expectedExit": 0,
+      "sha256": "9e5bc902cc3aa04973dc44b29787e8f19e2b4638220351862854e933b04b9277",
+      "log": "scope-v2-negative-tests.txt"
+    },
+    {
+      "check": "reject-v1-downgrade",
+      "exit": 1,
+      "expectedExit": 1,
+      "sha256": "f502236076d4134e46b97cfee2649ef11990f1653891c30388581bd17d01e4fb",
+      "log": "reject-v1-downgrade.txt"
+    },
+    {
+      "check": "reject-unknown-scope",
+      "exit": 1,
+      "expectedExit": 1,
+      "sha256": "a7e4963354c60c1bf99dbe0cfa0dee98238ed72c4ce353afb3c1ac56060b1e3b",
+      "log": "reject-unknown-scope.txt"
+    },
+    {
+      "check": "scope-v2-eslint",
+      "exit": 0,
+      "expectedExit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log": "scope-v2-eslint.txt"
+    }
+  ],
+  "historicalRead": "6ccb106ace4711be7359c7fc8c8d6ab33670f719 unchanged",
+  "runtime": {
+    "push": false,
+    "preview": false,
+    "native": false,
+    "capsule": false,
+    "DB": false,
+    "deploy": false
+  },
+  "artifacts": [
+    {
+      "path": "scope-v2-actual-wiring.patch",
+      "bytes": 29663,
+      "sha256": "ab8b006a5aa387e612a69d277da8b74e1a779b929e3fb00d84462539b18dc82f"
+    },
+    {
+      "path": "request-ui-capability-proposal.json",
+      "bytes": 4015,
+      "sha256": "899130774fbf128a7d7c18b579e356cb768090b9563b4ec14ec6c3cc2ab40fce"
+    }
+  ]
+}
