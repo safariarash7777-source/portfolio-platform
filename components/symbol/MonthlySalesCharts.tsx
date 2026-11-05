@@ -5,7 +5,7 @@
 // قواعد: گپ واقعی برای ماه غایب (connectNulls=false)، واحد صریح روی محور،
 // روایت template‌ای قطعی زیر هر چارت، رنگ فقط از توکن‌ها.
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -16,11 +16,14 @@ import {
   Line,
   LineChart,
   ReferenceLine,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import MeasuredResponsiveContainer from "./MeasuredResponsiveContainer";
+import MonthlyPointSourceLabel from "./MonthlyPointSourceLabel";
+import MonthlySourceChartFrame from "./MonthlySourceChartFrame";
+import { monthlyPointSources, type MonthlyPointSource, type MonthlySourceRecord } from "./monthly-point-provenance";
 import { toPersianDigits } from "@/lib/format";
 import type { CodalN30Data } from "@/lib/fundamental/types";
 import {
@@ -117,15 +120,16 @@ const tooltipStyle = {
 
 /* ── چارت ۱: فروش ماهانه سال جاری در برابر سال قبل + خط میانگین ─────────── */
 
-function MonthlyBars({ m }: { m: MonthlySales }) {
+function MonthlyBars({ m, sources }: { m: MonthlySales; sources?: ReadonlyMap<string, MonthlyPointSource> }) {
   const data = m.currentMonths.map((cm, i) => ({
     label: cm.monthLabel,
     current: cm.amount,
     prior: m.priorMonths ? m.priorMonths[i].amount : null,
+    ...(sources ? { currentMonthKey: cm.monthKey, priorMonthKey: m.priorMonths?.[i].monthKey ?? null } : {}),
   }));
   return (
-    <div style={{ height: 280 }} dir="ltr">
-      <ResponsiveContainer width="100%" height="100%">
+    <MonthlySourceChartFrame enabled={!!sources}>{(trigger, portal) => (
+      <MeasuredResponsiveContainer>
         <ComposedChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
           <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--text-3)" }} reversed />
@@ -136,7 +140,11 @@ function MonthlyBars({ m }: { m: MonthlySales }) {
             orientation="right"
           />
           <Tooltip
+            trigger={trigger}
+            portal={portal}
             contentStyle={tooltipStyle}
+            wrapperStyle={sources ? { pointerEvents: "auto", maxWidth: "min(280px, 75vw)", overflowWrap: "anywhere" } : undefined}
+            labelFormatter={sources ? (label, payload) => <MonthlyPointSourceLabel label={label} payload={payload} sources={sources} /> : undefined}
             formatter={(v: unknown, name: unknown) => [v == null ? "—" : fmtMR(Number(v)), String(name)]}
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
@@ -153,22 +161,23 @@ function MonthlyBars({ m }: { m: MonthlySales }) {
             />
           ) : null}
         </ComposedChart>
-      </ResponsiveContainer>
-    </div>
+      </MeasuredResponsiveContainer>
+    )}</MonthlySourceChartFrame>
   );
 }
 
 /* ── چارت ۲: تجمیعی از ابتدای سال مالی، جاری در برابر قبل ──────────────── */
 
-function CumulativeChart({ m }: { m: MonthlySales }) {
+function CumulativeChart({ m, sources }: { m: MonthlySales; sources?: ReadonlyMap<string, MonthlyPointSource> }) {
   const data = m.currentMonths.map((cm, i) => ({
     label: cm.monthLabel,
     current: cm.cumulative,
     prior: m.priorMonths ? m.priorMonths[i].cumulative : null,
+    ...(sources ? { currentMonthKey: cm.monthKey, priorMonthKey: m.priorMonths?.[i].monthKey ?? null } : {}),
   }));
   return (
-    <div style={{ height: 280 }} dir="ltr">
-      <ResponsiveContainer width="100%" height="100%">
+    <MonthlySourceChartFrame enabled={!!sources}>{(trigger, portal) => (
+      <MeasuredResponsiveContainer>
         <LineChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
           <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--text-3)" }} reversed />
@@ -179,7 +188,11 @@ function CumulativeChart({ m }: { m: MonthlySales }) {
             orientation="right"
           />
           <Tooltip
+            trigger={trigger}
+            portal={portal}
             contentStyle={tooltipStyle}
+            wrapperStyle={sources ? { pointerEvents: "auto", maxWidth: "min(280px, 75vw)", overflowWrap: "anywhere" } : undefined}
+            labelFormatter={sources ? (label, payload) => <MonthlyPointSourceLabel label={label} payload={payload} sources={sources} /> : undefined}
             formatter={(v: unknown, name: unknown) => [v == null ? "—" : fmtMR(Number(v)), String(name)]}
           />
           <Legend wrapperStyle={{ fontSize: 12 }} />
@@ -202,8 +215,8 @@ function CumulativeChart({ m }: { m: MonthlySales }) {
             connectNulls={false}
           />
         </LineChart>
-      </ResponsiveContainer>
-    </div>
+      </MeasuredResponsiveContainer>
+    )}</MonthlySourceChartFrame>
   );
 }
 
@@ -240,7 +253,7 @@ function RateChart({ m }: { m: MonthlySales }) {
         return <div key={unit} role="group" aria-label={`نرخ فروش — ${unitLabel}`}>
           <p className="mb-2 text-[12px]" style={{ color: "var(--text-3)" }}>واحد نرخ: {unitLabel}</p>
           <div style={{ height: 280 }} dir="ltr">
-            <ResponsiveContainer width="100%" height="100%">
+            <MeasuredResponsiveContainer>
               <LineChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
                 <XAxis dataKey="label" tick={{ fontSize: 11, fill: "var(--text-3)" }} reversed />
@@ -271,7 +284,7 @@ function RateChart({ m }: { m: MonthlySales }) {
                   />
                 ))}
               </LineChart>
-            </ResponsiveContainer>
+            </MeasuredResponsiveContainer>
           </div>
         </div>;
       })}
@@ -386,7 +399,7 @@ function ProdSalesChart({ points, label }: { points: ProdSalesPoint[]; label?: s
       {units.map(unit => <div key={unit} role="group" aria-label={`${label ?? "تولید و فروش"} — ${unit}`}>
         <p className="mb-2 text-[12px]" style={{ color: "var(--text-3)" }}>واحد مقدار: {unit}</p>
         <div style={{ height: 280 }} dir="ltr">
-          <ResponsiveContainer width="100%" height="100%">
+          <MeasuredResponsiveContainer>
             <BarChart data={points.map(point => ({
               ...point,
               production: hasQuantityUnit(point, unit) ? point.production : null,
@@ -408,7 +421,7 @@ function ProdSalesChart({ points, label }: { points: ProdSalesPoint[]; label?: s
               <Bar dataKey="production" name="مقدار تولید" fill="var(--line-strong)" radius={[3, 3, 0, 0]} />
               <Bar dataKey="sales" name="مقدار فروش" fill="var(--navy)" radius={[3, 3, 0, 0]} />
             </BarChart>
-          </ResponsiveContainer>
+          </MeasuredResponsiveContainer>
         </div>
       </div>)}
       {points.some(point => !hasQuantityUnit(point)) ? <p role="status" className="text-[12px]" style={{ color: "var(--text-3)" }}>ماه فاقد مقدار کامل یا واحد معتبر خالی می‌ماند؛ واحدهای متفاوت در نمودارهای جدا نمایش داده می‌شوند.</p> : null}
@@ -422,16 +435,46 @@ export default function MonthlySalesCharts({
   reports,
   sourceTitle,
   sourceUrl,
+  sourceRecords,
+  previewControls = false,
 }: {
   reports: CodalN30Data[];
   sourceTitle: string;
   sourceUrl: string | null;
+  sourceRecords?: MonthlySourceRecord[];
+  previewControls?: boolean;
 }) {
-  const m = useMemo(() => buildMonthlySales(reports), [reports]);
+  const years = useMemo(() => previewControls ? [...new Set((reports ?? []).flatMap(report =>
+    typeof report?.period_end === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(report.period_end) ? [report.period_end.slice(0, 4)] : []))].sort().reverse() : [], [reports, previewControls]);
+  const [year, setYear] = useState('');
+  const [rateIndex, setRateIndex] = useState('all');
+  const pointSources = useMemo(() => previewControls ? monthlyPointSources(reports, sourceRecords) : undefined, [reports, sourceRecords, previewControls]);
+  useEffect(() => {
+    if (!previewControls) return;
+    const restore = () => { const query = new URLSearchParams(window.location.search); setYear(query.get('monthlyYear') ?? ''); setRateIndex(query.get('rateSeries') ?? 'all'); };
+    restore(); window.addEventListener('popstate', restore);
+    return () => window.removeEventListener('popstate', restore);
+  }, [previewControls]);
+  const selectedYear = previewControls && years.includes(year) ? year : years[0];
+  const m = useMemo(() => buildMonthlySales(previewControls && selectedYear
+    ? reports.filter(report => { const value = typeof report?.period_end === 'string' ? Number(report.period_end.slice(0, 4)) : NaN; return value === Number(selectedYear) || value === Number(selectedYear) - 1; })
+    : reports), [reports, previewControls, selectedYear]);
+  const setSelection = (key: string, value: string) => {
+    const url = new URL(window.location.href);
+    if (value === 'all') url.searchParams.delete(key); else url.searchParams.set(key, value);
+    if (key === 'monthlyYear') { setYear(value); setRateIndex('all'); url.searchParams.delete('rateSeries'); }
+    else setRateIndex(value);
+    window.history.replaceState(null, '', url);
+  };
   if (!m) return null;
-  const firstRate = m.rateSeries[0];
+  const rateKey = (series: RateSeries) => JSON.stringify([series.productName, series.market]);
+  const selectableRates = m.rateSeries.filter(series => m.rateSeries.filter(other => rateKey(other) === rateKey(series)).length === 1);
+  const chosenRate = selectableRates.find(series => rateKey(series) === rateIndex);
+  const selectedRateIndex = chosenRate ? rateIndex : 'all';
+  const rateModel = previewControls && chosenRate ? { ...m, rateSeries: [chosenRate] } : m;
+  const firstRate = rateModel.rateSeries[0];
   const rateNarrative = firstRate?.rateUnit && firstRate.points.every(point => point.rate === null || hasRateUnit(point, firstRate.rateUnit!.denominator))
-    ? narrativeRate(m) : null;
+    ? narrativeRate(rateModel) : null;
   const lastQuantity = m.prodVsSales[m.prodVsSales.length - 1];
   const quantityNarrative = !m.quantitySeries?.length && lastQuantity && hasQuantityUnit(lastQuantity) ? narrativeProdVsSales(m) : null;
 
@@ -448,13 +491,23 @@ export default function MonthlySalesCharts({
               <>
                 {" · "}
                 <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: "var(--navy-ink)" }}>
-                  {sourceTitle}
+                  {previewControls ? `مرجع بستهٔ گزارش‌ها: ${sourceTitle}` : sourceTitle}
                 </a>
               </>
             ) : null}
           </p>
         </div>
       </header>
+
+      {previewControls ? <div className="company-chart-controls">
+        <label>سال تقویمی گزارش‌های ماهانه<select value={selectedYear} onChange={event => setSelection('monthlyYear', event.target.value)}>
+          {years.map(value => <option key={value} value={value}>{toPersianDigits(value)}</option>)}
+        </select><span>همراه سال قبل؛ تجمیعی همچنان عددِ گزارش از آغاز سال مالی شرکت است.</span></label>
+        <label>محصول و بازار در نمودار نرخ<select value={selectedRateIndex} onChange={event => setSelection('rateSeries', event.target.value)}>
+          <option value="all">همهٔ سری‌های نرخ موجود</option>
+          {selectableRates.map(series => <option key={rateKey(series)} value={rateKey(series)}>{series.label}</option>)}
+        </select><span>فقط نمودار نرخ فیلتر می‌شود؛ مبلغ کل و مقدار محصول اصلی تغییر نمی‌کند.</span></label>
+      </div> : null}
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <QCard
@@ -463,7 +516,7 @@ export default function MonthlySalesCharts({
           subtitle={`درآمد ماهانهٔ سال ${faDigits(m.currentFY)}${m.priorFY ? ` در کنار سال ${faDigits(m.priorFY)}` : ""} · خط طلایی: میانگین سال جاری · ماه بدون گزارش خالی است`}
           narrative={narrativeMonthlyVsAvg(m)}
         >
-          <MonthlyBars m={m} />
+          <MonthlyBars m={m} sources={pointSources} />
         </QCard>
 
         <QCard
@@ -472,7 +525,7 @@ export default function MonthlySalesCharts({
           subtitle={`فروش تجمیعی (fy_cumulative از خود گزارش) — سال ${faDigits(m.currentFY)}${m.priorFY ? ` در برابر ${faDigits(m.priorFY)}` : ""}`}
           narrative={narrativeCumulative(m)}
         >
-          <CumulativeChart m={m} />
+          <CumulativeChart m={m} sources={pointSources} />
         </QCard>
 
         {m.rateSeries.length > 0 ? (
@@ -482,9 +535,9 @@ export default function MonthlySalesCharts({
             subtitle="واحد نرخ کنار هر نمودار · واحدهای متفاوت جدا هستند · خط‌چین = صادراتی · ماه بدون رکورد = گپ واقعی"
             narrative={rateNarrative}
           >
-            <RateChart m={m} />
+            <RateChart m={rateModel} />
           </QCard>
-        ) : null}
+        ) : previewControls ? <QCard id="q-rate-trend" question="نرخ فروش چه روندی دارد؟" narrative={null}><p role="status">سری نرخ قابل نمایش در این بازه موجود نیست؛ مقدار نامعلوم صفر نمی‌شود.</p></QCard> : null}
 
         {m.latestMix.length > 0 ? (
           <QCard
@@ -510,7 +563,7 @@ export default function MonthlySalesCharts({
               <ProdSalesChart key={series.market} points={series.points} label={series.label} />
             ))}</div> : <ProdSalesChart points={m.prodVsSales} />}
           </QCard>
-        ) : null}
+        ) : previewControls ? <QCard id="q-prod-vs-sales" question="تولید و فروش هم‌خوان‌اند؟" narrative={null}><p role="status">دادهٔ مقدار محصول اصلی در این بازه موجود نیست؛ واحد یا مقدار حدس زده نمی‌شود.</p></QCard> : null}
       </div>
     </div>
   );

@@ -16,11 +16,11 @@ import {
   LabelList,
   Legend,
   Line,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
+import MeasuredResponsiveContainer from "./MeasuredResponsiveContainer";
 import { Link2, Check, Info } from "lucide-react";
 import { toPersianDigits } from "@/lib/format";
 import type { SymbolFundamentals } from "@/lib/fundamental/types";
@@ -261,7 +261,7 @@ function TrendChart({ derived, usdRate }: { derived: N10Derived; usdRate: number
   }));
   return (
     <div dir="ltr" className="h-72 w-full">
-      <ResponsiveContainer>
+      <MeasuredResponsiveContainer>
         <ComposedChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
           <XAxis dataKey="fy" tick={TICK} />
@@ -299,7 +299,7 @@ function TrendChart({ derived, usdRate }: { derived: N10Derived; usdRate: number
             dot={{ r: 3 }}
           />
         </ComposedChart>
-      </ResponsiveContainer>
+      </MeasuredResponsiveContainer>
     </div>
   );
 }
@@ -316,7 +316,7 @@ function MarginsChart({ derived, fyLabel, priorLabel }: { derived: N10Derived; f
   ].filter((r) => r.cur !== null && r.prior !== null);
   return (
     <div dir="ltr" className="h-64 w-full">
-      <ResponsiveContainer>
+      <MeasuredResponsiveContainer>
         <BarChart data={rows} margin={{ top: 16, right: 8, left: 8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
           <XAxis dataKey="name" tick={{ ...TICK, fontSize: 12 }} />
@@ -333,7 +333,7 @@ function MarginsChart({ derived, fyLabel, priorLabel }: { derived: N10Derived; f
             <LabelList dataKey="cur" position="top" formatter={fmtLabelPct} style={{ fontSize: 11, fill: "var(--navy)" }} />
           </Bar>
         </BarChart>
-      </ResponsiveContainer>
+      </MeasuredResponsiveContainer>
     </div>
   );
 }
@@ -363,7 +363,7 @@ function NetProfitChart({
   ];
   return (
     <div dir="ltr" className="h-64 w-full">
-      <ResponsiveContainer>
+      <MeasuredResponsiveContainer>
         <BarChart data={rows} margin={{ top: 20, right: 8, left: 8, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
           <XAxis dataKey="name" tick={{ ...TICK, fontSize: 12 }} />
@@ -379,7 +379,7 @@ function NetProfitChart({
             ))}
           </Bar>
         </BarChart>
-      </ResponsiveContainer>
+      </MeasuredResponsiveContainer>
     </div>
   );
 }
@@ -416,7 +416,7 @@ function SalesMixChart({ d30 }: { d30: N30Derived }) {
   }));
   return (
     <div style={{ width: "100%", height: 260 }}>
-      <ResponsiveContainer>
+      <MeasuredResponsiveContainer>
         <BarChart data={data} layout="vertical" margin={{ top: 4, right: 44, left: 8, bottom: 4 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" horizontal={false} />
           <XAxis type="number" tick={TICK} tickFormatter={(v) => `٪${faTick(v as number)}`} domain={[0, "dataMax"]} />
@@ -435,7 +435,7 @@ function SalesMixChart({ d30 }: { d30: N30Derived }) {
             <LabelList dataKey="share" position="right" formatter={(v: unknown) => `٪${toPersianDigits(String(v))}`} style={{ fontSize: 11, fill: "var(--text-2)" }} />
           </Bar>
         </BarChart>
-      </ResponsiveContainer>
+      </MeasuredResponsiveContainer>
     </div>
   );
 }
@@ -449,7 +449,7 @@ function ProductRateChart({ d30 }: { d30: N30Derived }) {
   }));
   return (
     <div style={{ width: "100%", height: 260 }}>
-      <ResponsiveContainer>
+      <MeasuredResponsiveContainer>
         <ComposedChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
           <XAxis dataKey="month" tick={TICK} />
@@ -466,7 +466,7 @@ function ProductRateChart({ d30 }: { d30: N30Derived }) {
           <Bar yAxisId="qty" dataKey="qty" name="مقدار فروش" fill="color-mix(in srgb, var(--navy) 70%, white)" radius={[4, 4, 0, 0]} barSize={22} />
           <Line yAxisId="rate" dataKey="rate" name="نرخ فروش (ریال)" stroke="var(--gold)" strokeWidth={2} dot={{ r: 3 }} connectNulls={false} />
         </ComposedChart>
-      </ResponsiveContainer>
+      </MeasuredResponsiveContainer>
     </div>
   );
 }
@@ -480,7 +480,7 @@ function ProdVsSalesChart({ d30 }: { d30: N30Derived }) {
   }));
   return (
     <div style={{ width: "100%", height: 260 }}>
-      <ResponsiveContainer>
+      <MeasuredResponsiveContainer>
         <BarChart data={data} margin={{ top: 8, right: 8, left: 8, bottom: 4 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" />
           <XAxis dataKey="month" tick={TICK} />
@@ -490,7 +490,7 @@ function ProdVsSalesChart({ d30 }: { d30: N30Derived }) {
           <Bar dataKey="production" name="تولید" fill="var(--navy-deep)" radius={[4, 4, 0, 0]} barSize={16} />
           <Bar dataKey="sales" name="فروش" fill="var(--gold)" radius={[4, 4, 0, 0]} barSize={16} />
         </BarChart>
-      </ResponsiveContainer>
+      </MeasuredResponsiveContainer>
     </div>
   );
 }

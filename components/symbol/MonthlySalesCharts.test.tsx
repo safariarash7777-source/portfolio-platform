@@ -10,10 +10,23 @@ import { buildMonthlySales, narrativeRate } from "../../lib/core/monthlyReport";
 import type { CodalN30Data, N30ProductRow } from "../../lib/fundamental/types";
 import { withKnownMonthlyQuantities, type QuantityWitnessedReport } from "../../lib/core/monthly-quantity";
 import { foladQuantityFixture } from "../../relay/fixtures/codal-offline.mjs";
+import MeasuredResponsiveContainer from "./MeasuredResponsiveContainer";
+import type { MonthlySourceRecord } from "./monthly-point-provenance";
 
 type Trace = { component: string; props: Record<string, unknown> };
 const require = createRequire(import.meta.url);
-function renderChart(reports: CodalN30Data[], capture = true) {
+function loadTooltipDependency(name: "MonthlyPointSourceLabel" | "CodalSourceLink") {
+  const source = readFileSync(new URL(`./${name}.tsx`, import.meta.url), "utf8");
+  const javascript = ts.transpileModule(source, { compilerOptions: {
+    jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022,
+  } }).outputText;
+  const compiledModule = { exports: {} };
+  const resolve = (id: string) => id === "./CodalSourceLink" ? loadTooltipDependency("CodalSourceLink")
+    : require(id.startsWith("@/") ? `../../${id.slice(2)}` : id);
+  vm.runInNewContext(javascript, { module: compiledModule, exports: compiledModule.exports, require: resolve, React }, { filename: `actual-${name}.tsx` });
+  return compiledModule.exports;
+}
+function renderChart(reports: CodalN30Data[], capture = true, previewSelection?: [string, string], sourceRecords?: MonthlySourceRecord[]) {
   const traces: Trace[] = [];
   const source = readFileSync(new URL("./MonthlySalesCharts.tsx", import.meta.url), "utf8");
   const javascript = ts.transpileModule(source, { compilerOptions: {
@@ -25,8 +38,16 @@ function renderChart(reports: CodalN30Data[], capture = true) {
     traces.push({ component, props });
     return React.createElement("div", { "data-test-chart": component }, props.children);
   }]));
-  const chartModule = { exports: {} as { default: React.ComponentType<{ reports: CodalN30Data[]; sourceTitle: string; sourceUrl: string | null }> } };
+  const chartModule = { exports: {} as { default: React.ComponentType<{ reports: CodalN30Data[]; sourceTitle: string; sourceUrl: string | null; previewControls?: boolean; sourceRecords?: MonthlySourceRecord[] }> } };
+  let stateIndex = 0;
   const isolatedRequire = (id: string) => {
+    if (id === "./MonthlyPointSourceLabel") return loadTooltipDependency("MonthlyPointSourceLabel");
+    if (id === 'react' && previewSelection) return { ...React, useEffect() {}, useState: () => [previewSelection[stateIndex++], () => {}] };
+    // These are data/format tests, not layout tests. Exercise the real gate in
+    // SSR mode; chart traces bypass measurement just as they stub Recharts.
+    if (id === "./MeasuredResponsiveContainer") return { default: capture
+      ? ({ children }: { children: React.ReactNode }) => React.createElement(React.Fragment, null, children)
+      : MeasuredResponsiveContainer };
     if (id === "recharts" && capture) return recharts;
     return require(id.startsWith("@/") ? `../../${id.slice(2)}` : id);
   };
@@ -34,10 +55,34 @@ function renderChart(reports: CodalN30Data[], capture = true) {
   const before = structuredClone(reports);
   const html = renderToStaticMarkup(React.createElement(chartModule.exports.default, {
     reports, sourceTitle: "گزارش همان شرکت", sourceUrl: "https://codal.ir/Reports/fixture",
+    previewControls: previewSelection !== undefined,
+    sourceRecords,
   }));
   assert.deepEqual(reports, before, "Rendering must not mutate reports or backfill units");
   return { html, traces };
 }
+
+test('Preview period/rate selection uses existing models without changing totals, gaps or unknown units', () => {
+  const reports = [report('1405-01-31'), report('1404-03-31'), report('1404-01-31'), report('1403-01-31')];
+  const chosen = renderChart(reports, true, ['1404', JSON.stringify(['محصول آزمون', 'داخلی'])]);
+  assert.match(chosen.html, /سال تقویمی گزارش‌های ماهانه/);
+  assert.match(chosen.html, /سال ۱۴۰۴ در کنار سال ۱۴۰۳/);
+  const bars = chosen.traces.find(trace => trace.component === 'ComposedChart')!;
+  assert.deepEqual(values(bars, 'current').slice(0, 4), [1, null, 1, null]);
+  assert.deepEqual(values(bars, 'prior').slice(0, 4), [1, null, null, null]);
+  const unknown = renderChart([report('1404-01-31', [product({qty_unit:null})])], true, ['9999', 'invalid']);
+  assert.match(unknown.html, /سال ۱۴۰۴/);
+  assert.doesNotMatch(unknown.html, /ریال به ازای تن/);
+  assert.match(unknown.html, /واحد نامعلوم|واحد معتبر|واحد نرخ/);
+  assert.doesNotMatch(renderChart(reports).html, /سال تقویمی گزارش‌های ماهانه/);
+});
+
+test('Preview rate selection cannot identify ambiguous market series as one verified product', () => {
+  const rows = [product({market:'داخلی', market_basis:undefined}), product({market:'صادراتی', market_basis:undefined})];
+  const shown = renderChart([report('1404-01-31', rows)], true, ['1404', JSON.stringify(['محصول آزمون','نامشخص'])]);
+  assert.doesNotMatch(shown.html, /<option[^>]*>محصول آزمون — تفکیک نامعلوم<\/option>/);
+  assert.match(shown.html, /همهٔ سری‌های نرخ موجود/);
+});
 function product(overrides: Partial<N30ProductRow> = {}): N30ProductRow {
   return { product_name: "محصول آزمون", market: "داخلی", market_basis: "section_header", qty_unit: "تن",
     production_qty: 20, sales_qty: 10, sales_rate: 100, sales_amount: 1, ...overrides };
@@ -50,6 +95,167 @@ function report(date: string, products = [product()], overrides: Partial<CodalN3
 const chartData = (trace: Trace) => trace.props.data as Array<Record<string, string | number | null>>;
 const values = (trace: Trace, key: string) => Array.from(chartData(trace), row => row[key]);
 const formatter = (trace: Trace) => trace.props.formatter as (value: unknown, name: unknown) => [string, string];
+
+function sourceRecord(period: string, id: number): MonthlySourceRecord {
+  return { id, financialPeriodEnd: period, storedPeriodEnd: null,
+    sourceUrl: `https://codal.ir/Reports/Decision.aspx?LetterSerial=point-${id}`,
+    publishedAt: `${period.replaceAll('-', '/')} 14:15:16`, publishedDateRaw: null, publishedTimeRaw: null,
+    publishedAtUtc: null, publicationUtcConfidence: "unknown",
+    capturedAtRaw: "2026-11-04T13:22:33.123456+03:30", capturedAt: "2026-11-04T09:52:33.123Z",
+    parserVersion: 2, parserVersionSource: "raw", amendment: false };
+}
+
+test("Preview monthly and cumulative tooltips bind current/prior point identities after year selection", () => {
+  const reports = [report("1405-01-31"), report("1404-03-31"), report("1403-03-31")];
+  const records = reports.map((r, i) => sourceRecord(r.period_end, i + 1));
+  const shown = renderChart(reports, true, ["1404", "all"], records);
+  const charts = shown.traces.filter(t => t.component === "ComposedChart" || t.component === "LineChart");
+  const tooltips = shown.traces.filter(t => t.component === "Tooltip");
+  for (const index of [0, 1]) {
+    const point = chartData(charts[index])[2];
+    assert.equal(point.currentMonthKey, "1404-03");assert.equal(point.priorMonthKey, "1403-03");
+    const label = tooltips[index].props.labelFormatter as (label: string, payload: unknown[]) => React.ReactElement;
+    const html = renderToStaticMarkup(label("خرداد", [
+      { dataKey: "current", name: "سال جاری", value: point.current, payload: point },
+      { dataKey: "prior", name: "سال قبل", value: point.prior, payload: point },
+    ]));
+    assert.ok(html.includes("point-2") && html.includes("point-3"));assert.ok(!html.includes("point-1"));
+    assert.ok(html.includes("۱۴۰۴/۰۳/۳۱ ۱۴:۱۵:۱۶"));assert.ok(html.includes("۱۴۰۳/۰۳/۳۱ ۱۴:۱۵:۱۶"));
+    assert.ok(html.includes("2026-11-04T13:22:33.123456+03:30"));assert.ok(html.includes("2026-11-04T09:52:33.123Z"));
+    assert.ok(html.includes('dir="ltr" style="display:block;white-space:normal;overflow-wrap:anywhere;word-break:break-all;text-align:left"'));
+    assert.ok(html.includes("واحد مبلغ گزارش: میلیون ریال"));
+    assert.ok(!html.includes("https://codal.ir/Reports/fixture"), "bundle reference is never a point source");
+  }
+});
+
+test("Preview tooltip keeps reported zero and null metadata distinct from missing point and unsafe link", () => {
+  const reports = [report("1404-01-31", [], { period_total_amount: 0, unit: null })];
+  const record = { ...sourceRecord("1404-01-31", 1), sourceUrl: "javascript:alert(1)", publishedAt: null, capturedAtRaw: null, capturedAt: null };
+  const shown = renderChart(reports, true, ["1404", "all"], [record]);
+  const point = chartData(shown.traces.find(t => t.component === "ComposedChart")!)[0];
+  const label = shown.traces.find(t => t.component === "Tooltip")!.props.labelFormatter as (label: string, payload: unknown[]) => React.ReactElement;
+  const html = renderToStaticMarkup(label("فروردین", [
+    { dataKey: "current", name: "صفر گزارش‌شده", value: 0, payload: point },
+    { dataKey: "prior", name: "داده غایب", value: null, payload: point },
+  ]));
+  assert.ok(html.includes("منشأ صفر گزارش‌شده"));assert.ok(!html.includes("منشأ داده غایب"));
+  assert.ok(html.includes("واحد مبلغ گزارش: نامعلوم"));assert.ok(html.includes("انتشار در کدال (زمان محلی): نامعلوم"));
+  assert.ok(html.includes("پیوند دقیق این رکورد نامعلوم است"));assert.ok(!html.includes("javascript:"));
+  assert.ok(!html.includes("https://codal.ir/Reports/fixture"));
+  const noRecords = renderChart(reports, true, ["1404", "all"]);
+  const unknownLabel = noRecords.traces.find(t => t.component === "Tooltip")!.props.labelFormatter as typeof label;
+  const unknown = renderToStaticMarkup(unknownLabel("فروردین", [{ dataKey: "current", value: 0, payload: point }]));
+  assert.ok(unknown.includes("منشأ دقیق این نقطه نامعلوم است"));assert.ok(!unknown.includes("اطلاعیهٔ همین رکورد"));
+});
+
+test("non-Preview monthly charts ignore supplied point records and retain original tooltip/data shape", () => {
+  const reports = [report("1404-01-31")], records = [sourceRecord("1404-01-31", 1)];
+  const shown = renderChart(reports, true, undefined, records);
+  for (const tooltip of shown.traces.filter(t => t.component === "Tooltip").slice(0, 2)) {
+    assert.equal(tooltip.props.labelFormatter, undefined);assert.equal(tooltip.props.wrapperStyle, undefined);
+    assert.equal(tooltip.props.trigger, undefined);
+    assert.equal(tooltip.props.portal, undefined);
+  }
+  const point = chartData(shown.traces.find(t => t.component === "ComposedChart")!)[0];
+  assert.equal(Object.hasOwn(point, "currentMonthKey"), false);assert.equal(Object.hasOwn(point, "priorMonthKey"), false);
+});
+
+test("Preview source charts pin pointer selection with click trigger, while ordinary tooltips remain unchanged", () => {
+  const shown = renderChart([report("1404-01-31")], true, ["1404", "all"]);
+  const tips = shown.traces.filter(t => t.component === "Tooltip");
+  assert.equal(tips[0].props.trigger, "click");assert.equal(tips[1].props.trigger, "click");
+  assert.equal(tips[0].props.portal, null);assert.equal(tips[1].props.portal, null);
+  assert.ok(tips.slice(2).every(t => t.props.trigger === undefined));
+  assert.ok(shown.html.includes("با Tab به پیوند منبع بروید"));
+  assert.ok(!renderChart([report("1404-01-31")]).html.includes("با Tab به پیوند منبع بروید"));
+});
+
+function interactionFrame() {
+  class Target { constructor(public source = false) {} closest() { return this.source ? this : null; } }
+  const states: unknown[] = ["click", null];
+  let stateIndex = 0, childPortal: unknown;
+  const source = readFileSync(new URL("./MonthlySourceChartFrame.tsx", import.meta.url), "utf8");
+  const compiled = { exports: {} as { default: (props: { enabled: boolean; children: (trigger: unknown, portal?: unknown) => unknown }) => React.ReactElement } };
+  const javascript = ts.transpileModule(source, { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
+  vm.runInNewContext(javascript, { module: compiled, exports: compiled.exports, Element: Target, require: (id: string) => id === "react"
+    ? { ...React, useState: () => { const index = stateIndex++; return [states[index], (value: unknown) => { states[index] = value; }]; } } : require(id) });
+  const render = (enabled = true) => {
+    stateIndex = 0;
+    const element = compiled.exports.default({ enabled, children: (value, portal) => { childPortal = portal; return value; } });
+    const props = element.props as { children: React.ReactElement[] };
+    const frame = (enabled ? props.children[1] : element).props as Record<string, unknown>;
+    if (!enabled) return frame;
+    const slots = frame.children as React.ReactElement[];
+    return { ...frame, children: (slots[0].props as { children: unknown }).children, slots };
+  };
+  const event = (target = new Target()) => ({ target, relatedTarget: null as Target | null, currentTarget: { contains: () => true }, key: "", stopped: false,
+    stopPropagation() { this.stopped = true; }, preventDefault() { assert.fail("native navigation and scrolling must not be cancelled"); } });
+  const send = (props: Record<string, unknown>, name: string, e: ReturnType<typeof event>) => (props[name] as (event: unknown) => void)(e);
+  return { Target, render, event, send, childPortal: () => childPortal };
+}
+
+test("source frame preserves keyboard-to-link focus and isolates native pointer movement without cancelling defaults", () => {
+  const { Target, render, event, send } = interactionFrame();
+  let props = render();assert.equal(props.children, "click");
+  for (const name of ["onMouseOverCapture", "onMouseMoveCapture", "onTouchMoveCapture"]) {
+    const e = event();send(props, name, e);assert.equal(e.stopped, true);
+  }
+  const arrow = event();arrow.key = "ArrowRight";send(props, "onKeyDownCapture", arrow);
+  props = render();assert.equal(props.children, "hover");assert.equal(arrow.stopped, false);
+  const link = new Target(true), blur = event();blur.relatedTarget = link;
+  send(props, "onBlurCapture", blur);assert.equal(blur.stopped, true);
+  const reverse = event(link);reverse.relatedTarget = new Target();
+  send(props, "onBlurCapture", reverse);assert.equal(reverse.stopped, true, "Shift+Tab to the same chart retains keyboard selection");
+  const external = event();external.relatedTarget = link;external.currentTarget.contains = () => false;
+  send(props, "onBlurCapture", external);assert.equal(external.stopped, false);
+  const leave = event();send(props, "onBlurCapture", leave);assert.equal(leave.stopped, false);
+  send(props, "onPointerDownCapture", event(link));assert.equal(render().children, "hover");
+  send(props, "onPointerDownCapture", event());assert.equal(render().children, "click");
+  const plain = render(false);assert.equal(plain.children, undefined);
+  assert.ok(!Object.keys(plain).some(key => key.startsWith("on")));
+});
+
+test("Preview source portal is after the fixed-height chart and hands its mounted host to Tooltip without scripted focus", () => {
+  const { render, Target, childPortal } = interactionFrame();
+  const props = render(), slots = props.slots as React.ReactElement[];
+  assert.equal(slots.length, 2);
+  const chart = slots[0].props as { style: { height: number } };
+  const portal = slots[1].props as { dir: string; tabIndex?: number; "data-monthly-source-portal": string };
+  const attach = (slots[1] as unknown as { ref: (host: unknown) => void }).ref;
+  assert.equal(chart.style.height, 280);
+  assert.equal(portal["data-monthly-source-portal"], "");assert.equal(portal.dir, "rtl");
+  assert.equal(portal.tabIndex, undefined);assert.equal(props.style, undefined, "outer frame must expand for normal-flow portal content");
+  assert.equal(childPortal(), null);
+  const host = new Target();attach(host);render();assert.equal(childPortal(), host);
+  attach(null);render();assert.equal(childPortal(), null);
+  render(false);assert.equal(childPortal(), undefined);
+});
+
+test("actual Recharts reducer and selector keep clicked point on movement and support the isolated keyboard lane", () => {
+  const slice = require("recharts/lib/state/tooltipSlice");
+  const { combineTooltipInteractionState: select } = require("recharts/lib/state/selectors/combiners/combineTooltipInteractionState");
+  let state = slice.tooltipReducer(undefined, { type: "init" });
+  const pick = (index: string) => ({ activeIndex: index, activeCoordinate: { x: 20, y: 30 } });
+  state = slice.tooltipReducer(state, slice.setMouseClickAxisIndex(pick("2")));
+  state = slice.tooltipReducer(state, slice.setMouseOverAxisIndex(pick("8")));
+  assert.equal(select(state, "axis", "click").index, "2", "pointer motion cannot replace click selection");
+  state = slice.tooltipReducer(state, slice.mouseLeaveChart());
+  assert.equal(select(state, "axis", "click").index, "2");
+  state = slice.tooltipReducer(state, slice.setKeyboardInteraction({ ...pick("3"), active: true }));
+  assert.equal(select(state, "axis", "click").index, "2", "click lane would otherwise mask arrow navigation");
+  assert.equal(select(state, "axis", "hover").index, "3", "isolated hover lane exposes keyboard selection");
+});
+
+test("source label stops chart click/focus/Enter handlers without suppressing anchor navigation or Escape", () => {
+  const mod = loadTooltipDependency("MonthlyPointSourceLabel") as { default: (props: { label: string; payload: unknown[]; sources: Map<string, unknown> }) => React.ReactElement };
+  const label = mod.default({ label: "ماه", payload: [], sources: new Map() });
+  const props = label.props as Record<string, (event: unknown) => void>;
+  for (const [handler, key, expected] of [["onClick", "", true], ["onFocus", "", true], ["onKeyDown", "Enter", true], ["onKeyDown", "Escape", false]] as const) {
+    let stopped = false;
+    props[handler]({ key, stopPropagation() { stopped = true; }, preventDefault() { assert.fail("must preserve native anchor default"); } });
+    assert.equal(stopped, expected);
+  }
+});
 
 test("monthly charts render declared units, actual values, calendar gaps and unit-bearing tooltips", () => {
   const reports = [report("1405-01-31"), report("1405-03-31", [product({ sales_rate: 200 })])];

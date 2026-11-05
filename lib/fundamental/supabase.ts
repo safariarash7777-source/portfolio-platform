@@ -473,7 +473,7 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
   const periodRows = n10all.filter(
     (r) => reportScope(r.title) === "company" && fiscalChainKey(r.data as CodalN10Data) !== null,
   );
-  const n10Periods = periodRows.map((r) => ({ id: r.id, data: r.data as CodalN10Data, scope: "company" as const }));
+  const n10Periods = periodRows.map((r) => ({ id: r.id, data: r.data as CodalN10Data, scope: "company" as const, record: rowProvenance(r) }));
   const scopeUnknown = n10all.filter(r => reportScope(r.title) === "unknown").length;
   const scopeAmbiguous = n10all.filter(r => reportScope(r.title) === "consolidated_ambiguous").length;
 

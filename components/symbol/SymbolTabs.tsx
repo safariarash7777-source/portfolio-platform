@@ -8,6 +8,7 @@
 import { useEffect, useId, useState, type ReactNode } from "react";
 import MarketAutoRefresh from "../market/MarketAutoRefresh";
 import styles from "./SymbolDossier.module.css";
+import type { CompanyView } from "@/lib/company-view";
 
 const TABS = [
   { key: "overview", label: "نمای کلی" },
@@ -23,14 +24,29 @@ export default function SymbolTabs({
   fundamental,
   reports,
   assembly,
+  previewView = null,
+  companySources,
 }: {
   overview: ReactNode;
   fundamental: ReactNode;
   reports: ReactNode;
   assembly: ReactNode;
+  previewView?: CompanyView | null;
+  companySources?: ReactNode;
 }) {
   const [active, setActive] = useState<TabKey>("overview");
+  const [view, setView] = useState<CompanyView>(previewView ?? "decision");
   const tabId = useId();
+
+  useEffect(() => {
+    if (!previewView) return;
+    const restore = () => {
+      const value = new URLSearchParams(window.location.search).get('view');
+      setView(value === 'decision' || value === 'dossier' ? value : previewView);
+    };
+    restore(); window.addEventListener('popstate', restore);
+    return () => window.removeEventListener('popstate', restore);
+  }, [previewView]);
 
   // خواندن hash اولیه (لینک مستقیم به تب)
   useEffect(() => {
@@ -64,8 +80,20 @@ export default function SymbolTabs({
   };
 
   return (
-    <div className={styles.tabs}>
+    <div className={styles.tabs} data-company-view={previewView ? view : undefined}>
       <MarketAutoRefresh />
+      {previewView ? <section className={styles.previewToolbar} aria-label="مقایسهٔ دو چیدمان شرکت">
+        <div><strong>پیش‌نمایش صفحهٔ شرکت</strong><p>دو چیدمان از همان گزارش‌ها و نمودارها؛ دادهٔ ناموجود تکمیل نمی‌شود.</p></div>
+        <div className={styles.previewSwitch} role="group" aria-label="چیدمان صفحه">
+          {([['decision', 'نمای پرسش‌محور'], ['dossier', 'پروندهٔ مستند']] as const).map(([key, label]) => <button
+            key={key} type="button" aria-pressed={view === key} onClick={() => {
+              setView(key);
+              const url = new URL(window.location.href);
+              url.searchParams.set('view', key);
+              window.history.replaceState(null, '', url);
+            }}>{label}</button>)}
+        </div>
+      </section> : null}
       <div
         role="tablist"
         aria-label="بخش‌های صفحهٔ نماد"
@@ -106,7 +134,15 @@ export default function SymbolTabs({
           <div key={tab.key} role="tabpanel" id={`${tabId}-${tab.key}-panel`}
             aria-labelledby={`${tabId}-${tab.key}-tab`} tabIndex={0}
             data-symbol-tab={tab.key} hidden={active !== tab.key}>
-            {{ overview, fundamental, reports, assembly }[tab.key]}
+            {tab.key === 'fundamental' && previewView ? <div className={styles.previewFundamental}>
+              {(view === 'dossier' ? ['sources', 'path', 'charts'] : ['path', 'charts', 'sources']).map(section => section === 'path' ? <nav key={section} className={styles.previewReadingPath} aria-label="مسیر خواندن تحلیل شرکت">
+                <strong>{view === 'decision' ? 'از پرسش شروع کنید' : 'فهرست پرونده'}</strong>
+                <a href="#chart-5y-trend">روند درآمد</a><a href="#chart-net-profit">سود خالص</a>
+                <a href="#chart-margins">حاشیهٔ سود</a><a href="#chart-product-rates">نرخ محصولات</a>
+                <a href="#chart-prod-vs-sales">مقدار تولید و فروش</a><a href="#company-sources">منبع و دوره</a>
+              </nav> : section === 'sources' ? <div key={section} className={styles.previewSourceSlot}>{companySources}</div>
+                : <div key={section} className={styles.previewChartSlot}>{fundamental}</div>)}
+            </div> : { overview, fundamental, reports, assembly }[tab.key]}
           </div>
         ))}
       </div>
