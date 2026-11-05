@@ -1,0 +1,80 @@
+{
+  "status": "PASS",
+  "generatedAt": "2026-10-23T13:19:05.3919000Z",
+  "execution": "offline synthetic only",
+  "sshExecuted": false,
+  "databaseAccess": false,
+  "providerAccess": false,
+  "privateBackupDestinationWritten": false,
+  "bufferBytes": 65536,
+  "fixtureBytes": 196645,
+  "checks": [
+    {
+      "name": "seven allowlisted files; buffer-crossing and empty plaintext roundtrip",
+      "status": "PASS"
+    },
+    {
+      "name": "checkpoint has no local plaintext source files",
+      "status": "PASS"
+    },
+    {
+      "name": "core authenticates before decrypt: altered header",
+      "status": "PASS"
+    },
+    {
+      "name": "wrapper rejects altered header with stage-only output",
+      "status": "PASS"
+    },
+    {
+      "name": "core authenticates before decrypt: altered ciphertext",
+      "status": "PASS"
+    },
+    {
+      "name": "wrapper rejects altered ciphertext with stage-only output",
+      "status": "PASS"
+    },
+    {
+      "name": "core authenticates before decrypt: altered tag",
+      "status": "PASS"
+    },
+    {
+      "name": "wrapper rejects altered tag with stage-only output",
+      "status": "PASS"
+    },
+    {
+      "name": "core rejects wrong AES/HMAC master",
+      "status": "PASS"
+    },
+    {
+      "name": "wrapper rejects different DPAPI-wrapped master",
+      "status": "PASS"
+    },
+    {
+      "name": "wrapper rejects missing allowlisted ciphertext",
+      "status": "PASS"
+    },
+    {
+      "name": "manifest is authenticated",
+      "status": "PASS"
+    },
+    {
+      "name": "Capture refuses existing destination; preserved evidence",
+      "status": "PASS"
+    },
+    {
+      "name": "unreviewed helper hash rejected before capture",
+      "status": "PASS"
+    },
+    {
+      "name": "preloaded crypto type rejected before destination/key creation",
+      "status": "PASS"
+    },
+    {
+      "name": "source health failure rejected before destination/key creation",
+      "status": "PASS"
+    }
+  ],
+  "testOutput": "C:\\Users\\Asus\\Documents\\ChatGPT\\توسعه سایت\\outputs\\cashflow-execution-20261023\\checkpoint-reviewed\\test-output\\3083e54ec0cf411890667077ecde5de0",
+  "scriptSha256": "d2f7921bbd3193f082c67d9aec26ce48f26c74e5ebffb152282e634c5e7e1810",
+  "cryptoSha256": "6cd46deb80af9341002c30bd05723cb503087b0ccc7ce1a3f66fd7e86317d3d7"
+}

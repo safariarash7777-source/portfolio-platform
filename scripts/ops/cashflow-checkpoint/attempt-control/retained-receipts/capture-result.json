@@ -1,0 +1,10 @@
+{
+  "atUtc": "2026-10-31T08:35:18.081162+00:00",
+  "exitCode": 1,
+  "captureCompleteReceiptPresent": false,
+  "verifiedReceiptPresent": false,
+  "automaticRetry": false,
+  "partialEvidencePreserved": true,
+  "primarySqlWrites": false,
+  "installation": false
+}
