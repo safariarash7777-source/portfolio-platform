@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
-export const candidate = '4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a';
+export const candidate = 'f07e0543c46cea88822dc0d400080b5bb94bef91';
 export const checks = Object.freeze([
   'isolation-attested', 'four-fresh-auth-users-and-sdk-getuser',
   'assembled-financial-receipts-and-null-readback', 'assembled-consent-and-authorized-version-basis',

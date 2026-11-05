@@ -23,10 +23,10 @@ import uuid
 HERE = Path(__file__).resolve().parent
 CONTROL = HERE.parents[2]
 REPOSITORY = 'safariarash7777-source/portfolio-platform'
-CANDIDATE = '4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a'
-TREE = 'c96d462d72505f2471c54c8e7e5293fe2b39b3d1'
-CAPSULE = '57d35ddc07e2883bb2dd5b0a7e051625a235c1294e3c5283e06ecec4438ccd81'
-DRIVER = '94e50f1ede5cb926e8daf7a677e1e5b84de72540df25edec6b97dec0865bc511'
+CANDIDATE = 'f07e0543c46cea88822dc0d400080b5bb94bef91'
+TREE = '8e43eab0bd66705b5455713ea15dd5c1d9c5f81a'
+CAPSULE = '04899c1754525365daad2fbe2b11bd9c7c1c3a417d751bd36151332aaca7d2f4'
+DRIVER = '0103a765d4862c27a22089414c6a59bcb555dac3f36913ddf48b373e751ecb2a'
 CHROME = '95dc9473b4f904cb3ab0800fc7206081fcae12abc094a088bd741a13f1747b72'
 LABEL = 'p03.assembled-native-lab'
 PREFIX = 'assembled-member-admin-'
@@ -45,6 +45,36 @@ OVERLAY_NAMES = {'assembled-auth-runtime.mjs', 'assembled-auth-gateway.mjs', 'as
 # Failure diagnostics only. Literal codes from the reviewed frozen sources;
 # never forward an arbitrary exception/message or a regex-matching user string.
 NATIVE_FAILURE_CODES = frozenset({
+    # Literal failures from the frozen summary phase and its existing wait().
+    # Diagnostics only: no arbitrary text, pattern expansion or status acceptance.
+    'p03_composition_http_200',
+    'p03_composition_http_201',
+    'p03_composition_summary_missing',
+    'p03_composition_published_basis',
+    'p03_composition_ticket_link_version',
+    'p03_composition_foreign_rpc_denial',
+    'p03_composition_feedback_session_article_not_unique',
+    'p03_composition_feedback_history_summary_not_unique',
+    'p03_composition_feedback_rows',
+    'p03_composition_feedback_financial_change',
+    'p09_browser_fixture_capability_not_read_not_ready',
+    'p09_browser_fixture_capability_not_read_read_failed',
+    'p09_browser_uncertain_ui_not_seen_not_ready',
+    'p09_browser_uncertain_ui_not_seen_read_failed',
+    'p09_browser_advisor_not_ready_not_ready',
+    'p09_browser_advisor_not_ready_read_failed',
+    'p09_browser_advisor_reply_not_read_not_ready',
+    'p09_browser_advisor_reply_not_read_read_failed',
+    'p03_composition_shared_admission_stopped',
+    'p03_composition_stopped',
+    'p03_composition_result_shape',
+    'p03_composition_result_binding',
+    'p03_composition_journal_failed_stop',
+    'p03_composition_transport_poisoned',
+    'p03_composition_transport_rejection_journal_failed',
+
+    "p03_composition_default_form_exposed",
+    "p03_composition_default_prepare_not_closed",
     "assembled_stage_invalid",
     "assembled_acceptance_boundary",
     "assembled_canonical_receipts_required",
@@ -303,6 +333,7 @@ NATIVE_FAILURE_CODES = frozenset({
 })
 
 CONTROLLER_FAILURE_CODES = frozenset({
+    "assembled_composition_invalid",
     "assembled_app_copy_not_exact",
     "assembled_applied_sql_not_exact",
     "assembled_artifact_location",
@@ -356,6 +387,7 @@ CONTROLLER_FAILURE_CODES = frozenset({
 })
 
 OBSERVED_CHECKS = (
+    "browser-owned-nonzero-dossier-real-consent",
     "isolation-attested",
     "four-fresh-auth-users-and-sdk-getuser",
     "assembled-financial-receipts-and-null-readback",
@@ -371,6 +403,455 @@ OBSERVED_CHECKS = (
     "actual-sdk-signout-clear",
     "private-storage-url-and-owned-cleanup",
 )
+
+
+# Proposed additions to the SAME root controller; no independent entrypoint.
+COMPOSITION = 'p03-composition-e0-v1'
+SELECTED_PROFILE = 'assembled-member-admin-v1'
+CAPSULE_FILE = 'sealed-v4b-app-f07.tar'
+NATIVE_GLOB = 'assembled-member-admin-native-*'
+COMPOSITION_SPEC = {'application': 'e0b930927563d7f9f6d79e848917c4ba0d77ed6f', 'tree': 'c6c67f2a78cd2cf672cf4f489f81e7f14cb041da', 'capsuleSha256': 'c3bbd84d308774e2775f7fa267b652e90036e52be9794450275bd52aae5b1e90', 'driverSha256': '9d58d2714bca03aea2808bbf5fa413a0508b1e788344e2395bc5bdbf4a5a5b8d', 'overlayNames': ['assembled-auth-gateway.mjs', 'assembled-auth-runtime.mjs', 'assembled-member-scenario.mjs', 'assembled-native-profile.mjs', 'assembled-native-source.json', 'assembled-native.mjs', 'assembled-observer-policy.mjs', 'assembled-overlay-gate.mjs', 'composition-browser-case.mjs', 'composition-contract.mjs', 'composition-contract.test.mjs', 'composition-member-phase.mjs', 'composition-transport.mjs', 'composition-transport.test.mjs']}
+
+
+def composition_json(raw):
+    need(isinstance(raw, bytes) and 0 < len(raw) <= 2 * 1024 * 1024, 'assembled_composition_invalid')
+    def unique(pairs):
+        row = dict(pairs)
+        need(len(row) == len(pairs), 'assembled_composition_invalid')
+        return row
+    def invalid(_):
+        raise ValueError('assembled_composition_invalid')
+    return json.loads(raw.decode('utf-8'), object_pairs_hook=unique, parse_constant=invalid)
+
+
+# Existing controller, M1 purpose only. No separate runner, native Auth or browser.
+OWNED_START_A = 'owned-start-a-copy'
+M1_BASE = '0d63a8b64e4975a3c9dab3f1f579f91302602b01'
+M1_TREE = '15cc4ab8315e6c1a2594a5d3eda24b2bb375619a'
+M1_ADAPTER_SHA = '88da3b8b1699e0bfb0655d0fbba49bac0220aa8069abea0a654faa074788f353'
+
+
+def m1_module(app):
+    path=CONTROL/'scripts/testing/consultation-feedback/install-feedback.py'
+    need(sha(path.read_bytes())==M1_ADAPTER_SHA,'m1_adapter_pin_changed')
+    spec=importlib.util.spec_from_file_location('reviewed_owned_start_a',path)
+    module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+    helper=module.load_safety(app/'scripts/testing/consultation-next/install-native.py')
+    return module,helper
+
+
+def m1_recipe(binding,module):
+    # Issued HERE from independently verified actual_context; never adapter JSON.
+    prefix='start-a-owned-'+uuid.UUID(binding['executionAllocationId']).hex
+    labels={'portfolio.owned.runId':binding['runId'],'portfolio.owned.attempt':'1','portfolio.owned.sourceCommit':M1_BASE,'portfolio.owned.allocationId':binding['executionAllocationId'],'portfolio.owned.controller':binding['workflowCommit'],'portfolio.owned.purpose':OWNED_START_A}
+    return {'purpose':OWNED_START_A,'contractVersion':'GHA-owned-copy.v1','runId':binding['runId'],'attempt':'1','controllerCommit':binding['workflowCommit'],'sourceCommit':M1_BASE,'allocationId':binding['executionAllocationId'],'image':module.M1_IMAGE,'imageContract':module.M1_IMAGE_CONTRACT,'databaseMarker':prefix,'resources':{r:{'name':prefix+'-'+r,'image':module.M1_IMAGE,'imageContract':module.M1_IMAGE_CONTRACT,'labels':{**labels,'portfolio.owned.role':r}} for r in ('source','copy','restore')}}
+
+
+def m1_prepare(binding):
+    _,_,private,app=paths()
+    need(git(app,'rev-parse','HEAD')==M1_BASE and git(app,'rev-parse','HEAD^{tree}')==M1_TREE and git(app,'status','--porcelain','--untracked-files=no')=='','m1_baseline_checkout_changed')
+    module,helper=m1_module(app)
+    for name,pin in module.M1_BASELINE_PINS:
+        need(sha((app/name).read_bytes())==pin,'m1_baseline_bytes_changed')
+    for paths_and_pins in module.ARTIFACTS.values():
+        for name,pin in paths_and_pins:need(sha((app/name).read_bytes())==pin,'m1_sql_bytes_changed')
+    module.capacity(private.parent)
+    private.mkdir(mode=0o700);owned(private,True)
+    store=module.OwnedPrivateStore(private)
+    try:
+        recipe=m1_recipe(binding,module)
+        store.write_exclusive('m1-recipe.json',recipe)
+        store.write_exclusive('m1-controller-binding.json',{'binding':binding,'recipeSha256':sha(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode()),'adapterSha256':M1_ADAPTER_SHA,'stage':'PREPARED'})
+    finally:store.close()
+    return 'PREPARED_M1_NOT_EXECUTED'
+
+
+def m1_inspect_planned(module,object_id,planned,*,running=None):
+    need(isinstance(object_id,str) and re.fullmatch(r'[a-f0-9]{64}',object_id),'m1_full_container_id_required')
+    result=module.bounded_owned_process(['docker','inspect',object_id],timeout=10,max_stdout_bytes=262144)
+    need(result['exitCode']==0,'m1_inspect_failed');rows=json.loads(result['stdout']);need(isinstance(rows,list) and len(rows)==1,'m1_inspect_shape')
+    row=rows[0]
+    module.m1_verify_image(module.bounded_owned_process,planned.get('imageContract'))
+    need(row['Id']==object_id and row['Name']=='/'+planned['name'] and row['Image']==planned['image'] and all((row['Config'].get('Labels') or {}).get(k)==v for k,v in planned['labels'].items()),'m1_planned_identity_changed')
+    need(row['HostConfig']['NetworkMode']=='none' and not row['HostConfig'].get('PortBindings') and not any((row['NetworkSettings'].get('Ports') or {}).values()),'m1_planned_network_changed')
+    if running is not None:need(row['State']['Running'] is running,'m1_planned_state_changed')
+    return row
+
+
+def m1_allocate(module,store,recipe,deadline):
+    module.m1_verify_image(module.bounded_owned_process,recipe.get('imageContract'))
+    actual={}
+    for role in ('source','copy','restore'):
+        planned=recipe['resources'][role]
+        need(time.monotonic()<deadline,'m1_deadline')
+        prior=module.bounded_owned_process(['docker','container','ls','-aq','--filter','name=^/'+planned['name']+'$'],timeout=10,max_stdout_bytes=1024)
+        need(prior['exitCode']==0 and not prior['stdout'].strip(),'m1_resource_name_already_exists')
+        store.write_exclusive('m1-'+role+'-create-intent.json',{'recipe':recipe,'role':role,'automaticReplay':False})
+        args=['docker','create','--pull','never','--name',planned['name'],'--network','none','--memory','768m','--cpus','1','--mount','type=tmpfs,destination=/var/lib/postgresql/data,tmpfs-size=536870912','--env','PGDATA=/var/lib/postgresql/data','--env','POSTGRES_HOST_AUTH_METHOD=trust','--health-cmd','pg_isready -U postgres','--health-interval','1s','--health-timeout','1s','--health-retries','30']
+        for key,value in sorted(planned['labels'].items()):args+=['--label',key+'='+value]
+        args+=[planned['image'],'postgres','-c','cron.launch_active_jobs=off','-c','portfolio.owned_copy_marker='+recipe['databaseMarker']]
+        result=module.bounded_owned_process(args,timeout=30,max_stdout_bytes=1024)
+        need(result['exitCode']==0,'m1_create_unknown_no_replay');object_id=result['stdout'].decode().strip()
+        row=m1_inspect_planned(module,object_id,planned,running=False)
+        actual[role]={**planned,'id':row['Id']}
+        store.write_exclusive('m1-'+role+'-identity.json',{'role':role,'actual':actual[role],'recipeSha256':sha(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode())})
+        store.write_exclusive('m1-'+role+'-start-intent.json',{'id':object_id,'automaticReplay':False})
+        started=module.bounded_owned_process(['docker','start',object_id],timeout=30,max_stdout_bytes=1024)
+        need(started['exitCode']==0,'m1_start_unknown_no_replay')
+        for _ in range(45):
+            need(time.monotonic()<deadline,'m1_deadline')
+            observed=m1_inspect_planned(module,object_id,planned,running=True)
+            if observed['State'].get('Health',{}).get('Status')=='healthy':break
+            time.sleep(1)
+        else:raise RuntimeError('m1_database_not_ready')
+    allocation={k:recipe[k] for k in ('purpose','contractVersion','runId','attempt','controllerCommit','sourceCommit','allocationId','databaseMarker')}
+    allocation.update(actual)
+    store.write_exclusive('m1-actual-allocation.json',allocation)
+    # Caller-issued pin binds BOTH independently observed IDs and reviewed recipe.
+    expected=sha(json.dumps(allocation,sort_keys=True,separators=(',',':')).encode())
+    store.write_exclusive('m1-actual-binding.json',{'allocationSha256':expected,'recipeSha256':sha(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode())})
+    return allocation,expected
+
+
+M1_PHASES=frozenset({'controller_binding','allocation','initial_roles','bootstrap','backup','restore_copy','restore_third','prewrite_inverse','apply_history','result','cleanup'})
+M1_PHASE_EVIDENCE_NAMES={phase:'m1-phase-'+phase.replace('_','-')+'.json' for phase in M1_PHASES}
+M1_FAILURE_CODES=frozenset({'m1_controller_binding_changed','m1_deadline','m1_create_unknown_no_replay','m1_start_unknown_no_replay','m1_database_not_ready','m1_image_provenance_changed','m1_initial_roles_changed','m1_db_role_settings_unsupported','m1_source_not_empty','m1_restore_target_not_empty','m1_result_not_accepted','m1_public_evidence_unconfirmed','m1_full_restore_mismatch','owned_query_failed','m1_image_inspect_failed','m1_cleanup_unknown','m1_cleanup_not_confirmed','m1_cleanup_unconfirmed','m1_execution_not_confirmed'})
+
+
+def m1_failure_projection(phase,error):
+    # Never stringify exceptions: only exact reviewed literal args are eligible.
+    code=error.args[0] if type(error) in (RuntimeError,ValueError) and len(error.args)==1 else None
+    return {'phase':phase if type(phase) is str and phase in M1_PHASES else None,'code':code if type(code) is str and code in M1_FAILURE_CODES else None}
+
+
+def m1_failure_readback(record,binding):
+    if not isinstance(record,dict) or set(record)!={'binding','phase','code'} or record.get('binding')!=binding:return {'phase':None,'code':None}
+    phase,code=record.get('phase'),record.get('code')
+    if type(phase) is not str or phase not in M1_PHASES or (code is not None and (type(code) is not str or code not in M1_FAILURE_CODES)):return {'phase':None,'code':None}
+    return {'phase':phase,'code':code}
+
+
+def m1_execute(binding):
+    _,_,private,app=paths();module,helper=m1_module(app);store=module.OwnedPrivateStore(private)
+    deadline=time.monotonic()+22*60
+    phase='controller_binding'
+    def observe_phase(value):
+        nonlocal phase
+        phase=value
+        store.write_exclusive(M1_PHASE_EVIDENCE_NAMES[value],{'binding':binding,'phase':value})
+    try:
+        observe_phase('controller_binding')
+        authority=store.read('m1-controller-binding.json');recipe=store.read('m1-recipe.json')
+        need(authority['binding']==binding and authority['stage']=='PREPARED' and recipe==m1_recipe(binding,module) and sha(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode())==authority['recipeSha256'],'m1_controller_binding_changed')
+        module.capacity(private)
+        with store.lock_exclusive():
+            need(not store.exists('m1-execution-intent.json'),'m1_execution_no_replay')
+            store.write_exclusive('m1-execution-intent.json',{'binding':binding,'recipeSha256':authority['recipeSha256'],'automaticReplay':False})
+            observe_phase('allocation')
+            allocation,expected=m1_allocate(module,store,recipe,deadline)
+        def bounded(args,body=None,**options):
+            remaining=int(deadline-time.monotonic());need(remaining>0,'m1_deadline')
+            options['timeout']=min(options.get('timeout',90),remaining)
+            return module.bounded_owned_process(args,body,**options)
+        io=module.OwnedDockerIO(store,allocation,expected,process=bounded)
+        guard=module.M1BoundSafety(helper,allocation,expected)
+        exercise=module.M1Exercise(guard,io,app)
+        observe_phase('initial_roles')
+        module.m1_capture_initial_roles(exercise)
+        observe_phase('bootstrap')
+        module.m1_bootstrap_source(exercise)
+        module.capacity(private)
+        observe_phase('backup')
+        exercise.archive_baseline()
+        observe_phase('restore_copy')
+        exercise.restore_target('copy')
+        observe_phase('restore_third')
+        exercise.restore_target('restore')
+        observe_phase('prewrite_inverse')
+        module.m1_prewrite_inverse_on_third(exercise)
+        observe_phase('apply_history')
+        result=module.m1_apply_and_history(exercise)
+        observe_phase('result')
+        need(result['state']=='PASS_M1_SQL_COPY_ONLY','m1_result_not_accepted')
+        store.write_exclusive('m1-execution-result.json',{'binding':binding,'result':result,'deadlineMet':time.monotonic()<deadline})
+        return 'M1_SQL_COPY_EXECUTED_PENDING_CLEANUP'
+    except Exception as error:
+        try:
+            if not store.exists('m1-failure.json'):store.write_exclusive('m1-failure.json',{'binding':binding,**m1_failure_projection(phase,error)})
+        except Exception:pass  # Missing diagnostic is unknown, never acceptance.
+        raise
+    finally:store.close()
+
+
+
+def m1_public_evidence(store,binding,execution,module):
+    """Project verified hashes and fixed outcomes; no journal bodies or actors."""
+    need(execution.get('binding')==binding,'m1_public_evidence_unconfirmed')
+    # Derive authority from the reviewed caller recipe and independently issued
+    # actual allocation, rather than trusting matching downstream receipts.
+    recipe=m1_recipe(binding,module)
+    recipe_sha=sha(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode())
+    need(store.read('m1-recipe.json')==recipe and store.read('m1-controller-binding.json')=={
+        'binding':binding,'recipeSha256':recipe_sha,'adapterSha256':M1_ADAPTER_SHA,'stage':'PREPARED'},'m1_public_evidence_unconfirmed')
+    allocation=store.read('m1-actual-allocation.json')
+    fields=('purpose','contractVersion','runId','attempt','controllerCommit','sourceCommit','allocationId','databaseMarker')
+    need(isinstance(allocation,dict) and set(allocation)==set(fields)|{'source','copy','restore'}
+         and all(allocation.get(k)==recipe[k] for k in fields),'m1_public_evidence_unconfirmed')
+    ids=[]
+    for role in ('source','copy','restore'):
+        actual=allocation[role];planned=recipe['resources'][role]
+        need(isinstance(actual,dict) and set(actual)==set(planned)|{'id'}
+             and all(actual.get(k)==v for k,v in planned.items())
+             and isinstance(actual.get('id'),str) and re.fullmatch(r'[a-f0-9]{64}',actual['id'])
+             and store.read('m1-'+role+'-identity.json')=={
+                 'role':role,'actual':actual,'recipeSha256':recipe_sha},'m1_public_evidence_unconfirmed')
+        ids.append(actual['id'])
+    allocation_sha=sha(json.dumps(allocation,sort_keys=True,separators=(',',':')).encode())
+    need(len(set(ids))==3 and store.read('m1-actual-binding.json')=={
+        'allocationSha256':allocation_sha,'recipeSha256':recipe_sha},'m1_public_evidence_unconfirmed')
+    expected_install={'profile':'GHA-owned-copy.v1','purpose':OWNED_START_A,
+        'allocationId':binding['executionAllocationId'],'runId':binding['runId'],
+        'attempt':recipe['attempt'],'sourceCommit':M1_BASE,'allocationSha256':allocation_sha,
+        'payloadSha256':'c53de46a216a57b90afaff760c0474cb5d95911f56ff022832fd1536affae8a8'}
+    backup=store.read('m1-backup-readback.json');history=store.read('m1-history-readback.json')
+    install=backup.get('binding')
+    need(install==expected_install and history.get('binding')==expected_install,'m1_public_evidence_unconfirmed')
+    need(backup.get('state')=='BASELINE_ARCHIVED' and execution.get('result')==history
+         and history.get('state')=='PASS_M1_SQL_COPY_ONLY' and history.get('historyRows')==3
+         and history.get('partialNotDoneRetained') is True and history.get('sqlRollbackState')=='PT409'
+         and history.get('fullConsumer')=='NOT_WIRED' and history.get('authAcceptance') is False
+         and history.get('readerAcceptance') is False,'m1_public_evidence_unconfirmed')
+    archive=store.read_blob('m1-baseline.dump',64*1024*1024)
+    need(archive.startswith(b'PGDMP') and sha(archive)==backup.get('archiveSha256'),'m1_public_evidence_unconfirmed')
+    snapshot=backup.get('before');need(isinstance(snapshot,dict),'m1_public_evidence_unconfirmed')
+    snapshot_sha=sha(json.dumps(snapshot,sort_keys=True).encode())
+    for role in ('copy','restore'):
+        receipt=store.read('m1-'+role+'-restore-readback.json')
+        need(receipt.get('binding')==install and receipt.get('state')=='FULL_OWNED_BASELINE_RESTORE_MATCHED'
+             and receipt.get('role')==role and receipt.get('archiveSha256')==sha(archive)
+             and receipt.get('snapshotSha256')==snapshot_sha,'m1_public_evidence_unconfirmed')
+    inverse=store.read('m1-third-readback.json')
+    need(inverse.get('binding')==install and inverse.get('state')=='PREWRITE_SQL_INVERSE_MATCHED'
+         and inverse.get('role')=='restore' and inverse.get('afterNewHistory') is False,'m1_public_evidence_unconfirmed')
+    need(snapshot.get('rolesAndDatabase',{}).get('dbRoleSettings')==[]
+         and snapshot.get('tables',{}).get('public.member_debt_positions',{}).get('count',0)>0,'m1_public_evidence_unconfirmed')
+    return {'sourceCommit':M1_BASE,'adapterSha256':M1_ADAPTER_SHA,
+            'payloadSha256':install['payloadSha256'],'archiveSha256':sha(archive),'archiveBytes':len(archive),
+            'restoredSnapshotSha256':snapshot_sha,'restoredCopies':2,'prewriteInverseMatched':True,
+            'historyRows':3,'partialNotDoneRetained':True,'posthistorySqlRollback':'PT409',
+            'unsupportedDatabaseRoleSettings':'OBSERVED_EMPTY',
+            'scope':'quiescent synthetic SQL copy only; no concurrent or primary backup claim'}
+
+
+def m1_finalize(binding):
+    workspace,_,private,app=paths();module,_=m1_module(app);store=module.OwnedPrivateStore(private)
+    report={'schemaVersion':'owned-start-a-copy.v1','binding':binding,'status':'FAIL_M1_NOT_ACCEPTED','targetInstall':'NOT_APPLIED','fullConsumer':'NOT_WIRED','authBrowserAcceptance':False,'automaticReplay':False,'cleanup':'UNCONFIRMED','failurePhase':None,'failureCode':None}
+    phase='cleanup';failure=None
+    try:
+        if store.exists('m1-failure.json'):
+            try:failure=m1_failure_readback(store.read('m1-failure.json'),binding)
+            except Exception:failure={'phase':None,'code':None}
+        recipe=store.read('m1-recipe.json');need(recipe==m1_recipe(binding,module),'m1_recipe_changed')
+        unknown=False;failed=[]
+        for role,planned in recipe['resources'].items():
+            try:
+                identity='m1-'+role+'-identity.json'
+                if not store.exists(identity):
+                    if store.exists('m1-'+role+'-create-intent.json'):unknown=True
+                    continue
+                record=store.read(identity);need(record['role']==role and record['recipeSha256']==sha(json.dumps(recipe,sort_keys=True,separators=(',',':')).encode()),'m1_cleanup_binding_changed')
+                object_id=record['actual']['id'];m1_inspect_planned(module,object_id,planned)
+                store.write_exclusive('m1-'+role+'-cleanup-intent.json',{'id':object_id,'recipeSha256':record['recipeSha256']})
+                result=module.bounded_owned_process(['docker','rm','-f','-v',object_id],timeout=30,max_stdout_bytes=1024)
+                need(result['exitCode']==0,'m1_cleanup_unknown')
+                left=module.bounded_owned_process(['docker','container','ls','-aq','--no-trunc','--filter','id='+object_id],timeout=10,max_stdout_bytes=1024)
+                need(left['exitCode']==0 and not left['stdout'].strip(),'m1_cleanup_not_confirmed')
+            except Exception as error:
+                if failure is None:failure=m1_failure_projection('cleanup',error)
+                failed.append(role)  # Continue other independently bound IDs once.
+        report['cleanupFailedRoles']=failed
+        need(not unknown and not failed,'m1_cleanup_unconfirmed')
+        report['cleanup']='CONFIRMED'
+        phase='result'
+        execution=store.read('m1-execution-result.json')
+        need(execution['binding']==binding and execution['deadlineMet'] is True and execution['result']['state']=='PASS_M1_SQL_COPY_ONLY','m1_execution_not_confirmed')
+        need(failure is None,'m1_prior_failure_record_present')
+        with store.lock_exclusive():
+            report['evidence']=m1_public_evidence(store,binding,execution,module)
+        report['status']='PASS_M1_SQL_COPY_ONLY'
+    except Exception as error:
+        if failure is None:failure=m1_failure_projection(phase,error)
+        report['failurePhase']=failure['phase'];report['failureCode']=failure['code']
+        report['writeOutcomeUnknown']=True if store.exists('apply-intent.json') or store.exists('m1-history-intent.json') else None
+    finally:
+        store.write_exclusive('m1-public-receipt.json',report);store.close()
+    public=workspace/'assembled-native-artifact';public.mkdir(exist_ok=True);need(not public.is_symlink(),'m1_artifact_path')
+    private_json(public/'receipt.json',report,True)
+    need(report['status']=='PASS_M1_SQL_COPY_ONLY','m1_not_accepted_see_receipt')
+    return report['status']
+
+
+
+def select_profile(inputs):
+    global SELECTED_PROFILE, CANDIDATE, TREE, CAPSULE, DRIVER, PREFIX, CAPSULE_FILE, NATIVE_GLOB, OVERLAY_NAMES
+    profile = inputs.get('acceptance_profile', 'assembled-member-admin-v1')
+    extra = [inputs.get(key, '') for key in ('candidate_sha', 'capsule_sha256', 'driver_sha256')]
+    if profile == 'owned-start-a-copy':
+        need(extra == [M1_BASE, '', ''], 'm1_explicit_baseline_input_required')
+        SELECTED_PROFILE, CANDIDATE, TREE = profile, M1_BASE, M1_TREE
+        return profile
+    if profile == 'assembled-member-admin-v1':
+        need(extra == ['', '', ''] and SELECTED_PROFILE == profile, 'assembled_composition_invalid')
+        return profile
+    need(profile == COMPOSITION and extra == [COMPOSITION_SPEC[k] for k in ('application', 'capsuleSha256', 'driverSha256')], 'assembled_composition_invalid')
+    SELECTED_PROFILE = profile
+    CANDIDATE, TREE = COMPOSITION_SPEC['application'], COMPOSITION_SPEC['tree']
+    CAPSULE, DRIVER = extra[1:]
+    CAPSULE_FILE, PREFIX, NATIVE_GLOB = 'sealed-p03-composition-e0-v1.tar', 'consultation-ticket-', 'consultation-ticket-native-*'
+    OVERLAY_NAMES = set(COMPOSITION_SPEC['overlayNames'])
+    return profile
+
+
+def composition_read(local, name):
+    # Local private artifacts only. No shell, DB, network or capsule imports.
+    path = local / name
+    owned(path)
+    need(not local.is_symlink() and hasattr(os, 'O_NOFOLLOW'), 'assembled_composition_invalid')
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    try:
+        before = os.fstat(fd)
+        need(stat.S_ISREG(before.st_mode) and before.st_nlink == 1 and 0 < before.st_size <= 2 * 1024 * 1024, 'assembled_composition_invalid')
+        raw = bytearray()
+        while len(raw) <= before.st_size:
+            chunk = os.read(fd, min(65536, before.st_size + 1 - len(raw)))
+            if not chunk:
+                break
+            raw.extend(chunk)
+        need(len(raw) == before.st_size and file_identity(before) == file_identity(os.fstat(fd)) == file_identity(path.lstat()), 'assembled_composition_invalid')
+        return composition_json(bytes(raw)), sha(bytes(raw))
+    finally:
+        os.close(fd)
+
+
+def reconcile_composition(records, run_id, candidate):
+    """Pure independent reader: rederive counts from persisted attempts/results."""
+    need(isinstance(records, dict) and len(records) <= 256, 'assembled_composition_invalid')
+    get = lambda name: records[name]
+    intents, results, direct, direct_results = {}, {}, {}, {}
+    for name, row in records.items():
+        for pattern, target in [(r'composition-intent-(\d{3})\.json', intents), (r'composition-result-(\d{3})\.json', results),
+                                (r'intent-(\d{3})\.json', direct), (r'transport-result-(\d{3})\.json', direct_results)]:
+            match = re.fullmatch(pattern, name)
+            if match:
+                target[int(match[1])] = row
+    need(set(intents) == set(results) == set(range(1, 27)) and set(direct) == set(direct_results) == set(range(1, 36)), 'assembled_composition_invalid')
+    caps = {('a','/api/portfolio/holdings'):2, ('a','/api/personal-finance/cash-flow'):1,
+            ('a','/api/consultation'):4, ('owner','/api/consultation'):5,
+            ('a','/api/consultation/tickets'):3, ('owner','/api/consultation/tickets'):2,
+            ('a','/api/consultation/ticket-attempts'):5, ('owner','/api/consultation/ticket-attempts'):2,
+            ('owner','/api/consultation/replies'):2}
+    counts, statuses, tokens, products = Counter(), Counter(), set(), {}
+    for index, row in intents.items():
+        need(isinstance(row, dict) and set(row)=={'kind','ordinal','actor','path','body','bodySha256','token'} and row['kind']=='intent' and type(row['ordinal']) is int and row['ordinal']==index and isinstance(row['body'],str), 'assembled_composition_invalid')
+        body = composition_json(row['body'].encode())
+        token=body.get('clientToken',body.get('client_token'))
+        key=(row['actor'],row['path'])
+        need(key in caps and row['token']==token and isinstance(token,str) and UUID.fullmatch(token) and sha(row['body'].encode())==row['bodySha256'], 'assembled_composition_invalid')
+        identity=(*key,token)
+        need(identity not in tokens, 'assembled_composition_invalid');tokens.add(identity);counts[key]+=1
+        result=results[index]
+        need(isinstance(result,dict) and set(result)=={'kind','ordinal','status'} and result['kind']=='result' and type(result['ordinal']) is int and result['ordinal']==index and type(result['status']) is int and result['status'] in (200,201,409,503), 'assembled_composition_invalid')
+        statuses[result['status']]+=1
+        products[(row['path'],token)] = (body,result['status'])
+    need(counts==Counter(caps) and statuses[200]+statuses[201]==24 and statuses[409]==1 and statuses[503]==1, 'assembled_composition_invalid')
+    auth=Counter();matched=set()
+    for index,row in direct.items():
+        need(isinstance(row,dict) and set(row)=={'path','body','sha'} and row['sha']==candidate and isinstance(row['path'],str), 'assembled_composition_invalid')
+        result=direct_results[index]
+        need(isinstance(result,dict) and set(result)=={'ordinal','path','status','sha'} and type(result['ordinal']) is int and result['ordinal']==index and result['path']==row['path'] and result['sha']==candidate and type(result['status']) is int, 'assembled_composition_invalid')
+        path=row['path'];body=row['body']
+        if path.startswith('/api/'):
+            need(isinstance(body,dict), 'assembled_composition_invalid')
+            key=(path,body.get('clientToken',body.get('client_token')))
+            need(key not in matched and key in products and products[key]==(body,result['status']), 'assembled_composition_invalid');matched.add(key)
+        else:
+            need(path in ('/auth/v1/admin/users','/auth/v1/token?grant_type=password','/auth/v1/logout','/rest/v1/rpc/lookup_consultation_ticket_attempt'), 'assembled_composition_invalid')
+            allowed=(403,) if path.startswith('/rest/') else ((200,204) if path.endswith('/logout') else (200,201))
+            need(result['status'] in allowed, 'assembled_composition_invalid');auth[path]+=1
+    need(len(matched)==17 and auth==Counter({'/auth/v1/admin/users':4,'/auth/v1/token?grant_type=password':9,'/auth/v1/logout':4,'/rest/v1/rpc/lookup_consultation_ticket_attempt':1}), 'assembled_composition_invalid')
+    transport=get('transport-observation.json');proof=get('composition-observed.json');db=get('composition-database-observation.json');binding=get('composition-binding.json')
+    need(transport.get('sha')==candidate and transport.get('runId')==run_id and transport.get('schema')=='p03-owned-transport.v1' and transport.get('poisoned') is False and type(transport.get('rejected')) is int and transport['rejected']==0 and type(transport.get('authorizedPostRequests')) is int and transport['authorizedPostRequests']==35 and type(transport.get('sdkReads')) is int and 9<=transport['sdkReads']<=36, 'assembled_composition_invalid')
+    need(proof.get('sha')==candidate and proof.get('appSha')==candidate and proof.get('runId')==run_id and proof.get('schema')=='p03-composition-observed.v1' and binding.get('runId')==run_id and binding.get('appSha')==candidate and binding.get('appTree')==COMPOSITION_SPEC['tree'], 'assembled_composition_invalid')
+    ids=binding.get('authCreatedIds');actors=binding.get('actors')
+    need(isinstance(ids,list) and len(ids)==4 and len(set(ids))==4 and all(isinstance(i,str) and UUID.fullmatch(i) for i in ids) and isinstance(actors,list) and len(actors)==4 and {a['id'] for a in actors}==set(ids) and all(a['run']==run_id for a in actors), 'assembled_composition_invalid')
+    need(db.get('databaseMarker')==run_id and type(db.get('authUsers')) is int and db['authUsers']==4, 'assembled_composition_invalid')
+    for key,value in {'requests':2,'ticketEvents':5,'preparedIntents':6,'summaryEvents':3,'publications':1,'feedback':3,'replyVersions':1,'holdingVersions':2,'cashFlowVersions':1}.items():
+        need(type(db.get(key)) is int and db[key]==value, 'assembled_composition_invalid')
+    need(len(db.get('relationships',[]))==len(db.get('sessions',[]))==1, 'assembled_composition_invalid')
+    rel=db['relationships'][0];session=db['sessions'][0];summary=proof['summary']
+    need(rel['clientId'] in ids and rel['advisorId'] in ids and rel['clientId']!=rel['advisorId'] and rel['revoked'] is True and session['relationshipId']==rel['id']==summary['replyReceipt']['command']['relationshipId'] and session['id']==summary['sessionId'] and session['contentHash']==summary['contentHash'] and isinstance(session['contentHash'],str) and HEX.fullmatch(session['contentHash']) and type(session['version']) is int and session['version']==1, 'assembled_composition_invalid')
+    for identifier in (rel['id'],session['id'],summary['requestId']):
+        need(isinstance(identifier,str) and UUID.fullmatch(identifier), 'assembled_composition_invalid')
+    links=db.get('requestLinks');recommendations=db.get('recommendationLinks')
+    need(isinstance(links,list) and len(links)==2 and len({r['requestId'] for r in links})==2 and all(r['relationshipId']==rel['id'] for r in links) and summary['requestId'] in {r['requestId'] for r in links}, 'assembled_composition_invalid')
+    need(isinstance(recommendations,list) and len(recommendations)==1 and recommendations[0]['requestId']==summary['requestId'] and type(recommendations[0]['version']) is int and recommendations[0]['version']==3 and recommendations[0]['recommendation']=={'sessionId':session['id'],'version':1,'contentHash':session['contentHash']}, 'assembled_composition_invalid')
+    actor_map={'a':rel['clientId'],'owner':rel['advisorId']}
+    holding_rows=db.get('holdingOwnership')
+    need(isinstance(holding_rows,list) and len(holding_rows)==2 and all(type(r.get('version')) is int for r in holding_rows) and {r['version'] for r in holding_rows}=={1,2}, 'assembled_composition_invalid')
+    for row in intents.values():
+        body=composition_json(row['body'].encode())
+        if row['path']=='/api/portfolio/holdings':
+            # This API derives ownership from the authenticated session, not a body field.
+            need(row['actor']=='a' and 'expectedActorId' not in body and 'expectedOwnerId' not in body and type(body.get('base_version')) is int and body['base_version'] in (0,1), 'assembled_composition_invalid')
+            matches=[h for h in holding_rows if h.get('clientToken')==body.get('client_token')]
+            need(len(matches)==1 and matches[0]['userId']==actor_map['a'] and matches[0]['version']==body['base_version']+1, 'assembled_composition_invalid')
+        else:
+            field='expectedOwnerId' if row['path']=='/api/personal-finance/cash-flow' else 'expectedActorId'
+            need(body.get(field)==actor_map[row['actor']], 'assembled_composition_invalid')
+    need(proof.get('unknownScope')=='P03-ticket-only' and proof.get('p09HistoricalAcceptanceTransferred') is False and proof.get('p09UnknownSave')=='NOT_COVERED_MISSING_JOURNAL' and type(proof.get('modelCalls')) is int and proof['modelCalls']==0 and type(proof.get('workbookPosts')) is int and proof['workbookPosts']==0, 'assembled_composition_invalid')
+    expected_browser=['browser-preflight-before-provision','real-member-page-default-right-closed','real-201-discard-live-page-one-post','same-attempt-get-only-recovery','fresh-sdk-context-and-reload-get-only','real-advisor-response-and-member-followup','real-revoke-and-private-fallback-denial','desktop-mobile-and-private-storage-cache-url','unconfirmed-command-destroy-and-server-intent-get-only','unknown-preparation-destroy-no-command','owned-browser-cleanup']
+    checks=proof.get('browserChecks')
+    need(isinstance(checks,list) and len(checks)==11 and {r['name'] for r in checks}==set(expected_browser) and all(r['status']=='PASS' for r in checks), 'assembled_composition_invalid')
+    return {'schemaVersion':'p03-independent-journal.v1','runId':run_id,'sourceCommit':candidate,'productAttempts':26,'positive':24,'denied':2,'directPostAttempts':35,'directProductAttempts':17,'browserProductAttempts':9,'authCreate':4,'authPassword':9,'authLogout':4,'negativeRpc':1,'unresolved':0,'journalMatched':True,'databaseMatched':True,'sqlFilesVerified':19}
+
+
+def verify_composition_state(data, private):
+    need(data and data['migrations']==expected_sql(private), 'assembled_applied_sql_not_exact')
+    local=Path(data['local']);records={};digests={}
+    with os.scandir(local) as entries:
+        for index,entry in enumerate(entries):
+            need(index<256,'assembled_composition_invalid')
+            if entry.name.startswith(('intent-','transport-result-','composition-')) or entry.name=='transport-observation.json':
+                need(entry.name.endswith('.json') and entry.is_file(follow_symlinks=False), 'assembled_composition_invalid')
+                records[entry.name],digests[entry.name]=composition_read(local,entry.name)
+    independent=reconcile_composition(records,data['id'],CANDIDATE)
+    independent.update(dockerContainers=0,dockerNetworks=0,browserTemps=0,fallbackUsed=False)
+    independent.update(compositionProofSha256=digests['composition-observed.json'],transportProofSha256=digests['transport-observation.json'])
+    return independent
+
+
+def project_composition(raw, independent, binding):
+    need(isinstance(raw,bytes) and len(raw)<=64*1024*1024, 'assembled_composition_invalid')
+    rows=[];checks=[]
+    for line in raw.splitlines():
+        if line.startswith(b'P03_ASSEMBLED_NATIVE_AUTH '):
+            rows.append(composition_json(line[len(b'P03_ASSEMBLED_NATIVE_AUTH '):]))
+        if line.startswith(b'P03_ASSEMBLED_NATIVE_CHECK '):
+            checks.append(composition_json(line[len(b'P03_ASSEMBLED_NATIVE_CHECK '):]))
+    need(len(rows)==1, 'assembled_composition_invalid')
+    row=rows[0]
+    names=['isolation-attested','four-fresh-auth-users-and-sdk-getuser','browser-owned-nonzero-dossier-real-consent','assembled-real-member-navigation-and-read-only-dom','browser-real-consumer-checked','composition-summary-published-exact-link','composition-question-reply-and-feedback','composition-fresh-summary-dom-get-only','composition-feedback-stable-before-basis-change','composition-financial-basis-change-readonly','composition-isolation-revocation-history','composition-auth-api-cdp-counts','composition-owned-browser-cleanup']
+    need(len(checks)==13 and {r.get('name') for r in checks}==set(names) and all(r.get('status')=='PASS' for r in checks), 'assembled_composition_invalid')
+    need(row.get('sha')==CANDIDATE and row.get('allocationId')==binding['executionAllocationId'] and row.get('status')=='PASS_BOUNDED_P03_COMPOSITION_NATIVE' and row.get('cleanup')=='REMOVED_OWNED_RESOURCES' and type(row.get('scenarios')) is int and row['scenarios']==13, 'assembled_composition_invalid')
+    need(independent.get('journalMatched') is True and independent.get('databaseMatched') is True and independent.get('fallbackUsed') is False and independent.get('sourceCommit')==CANDIDATE, 'assembled_composition_invalid')
+    for key in ('compositionProofSha256','transportProofSha256'):
+        need(isinstance(row.get(key),str) and HEX.fullmatch(row[key]) and row[key]==independent.get(key), 'assembled_composition_invalid')
+    safe_independent={}
+    for key,value in {'productAttempts':26,'positive':24,'denied':2,'directPostAttempts':35,'directProductAttempts':17,'browserProductAttempts':9,'authCreate':4,'authPassword':9,'authLogout':4,'negativeRpc':1,'unresolved':0,'sqlFilesVerified':19,'dockerContainers':0,'dockerNetworks':0,'browserTemps':0}.items():
+        need(type(independent.get(key)) is int and independent[key]==value, 'assembled_composition_invalid')
+        safe_independent[key]=value
+    safe_independent.update(journalMatched=True,databaseMatched=True,fallbackUsed=False)
+    return {'status':'PASS_BOUNDED_P03_COMPOSITION_NATIVE','nativeChecks':13,'browserChecks':11,'independent':safe_independent,'targetInstall':'NOT_APPLIED','arashAcceptance':'UNOBSERVED','fullAssembledAcceptance':'NOT_ESTABLISHED','p09UnknownSave':'NOT_COVERED_MISSING_JOURNAL'}
 
 
 def need(value, code):
@@ -579,8 +1060,12 @@ def paths():
 
 def actual_context():
     value = context(os.environ, sys.platform)
-    event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_bytes())
+    event = composition_json(Path(os.environ['GITHUB_EVENT_PATH']).read_bytes())
     inputs = event.get('inputs', {})
+    need(isinstance(inputs,dict), 'assembled_event_input_binding')
+    profile=select_profile(inputs)
+    if profile==COMPOSITION:
+        value.update(acceptanceProfile=profile,candidateCommit=CANDIDATE,capsuleSha256=CAPSULE,driverContractSha256=DRIVER)
     need(inputs.get('assembled_native') in (True, 'true') and inputs.get('allocation_id') == value['allocationId']
          and inputs.get('reviewed_helper_sha') == value['workflowCommit'], 'assembled_event_input_binding')
     need(git(CONTROL, 'rev-parse', 'HEAD') == value['workflowCommit'], 'assembled_helper_checkout_changed')
@@ -623,18 +1108,21 @@ def expected_sql(private):
     overlay = json.loads((base / 'assembled-overlay.json').read_bytes())
     pins = {p['path']: p for p in source['files'] + overlay['additionalBootstrap']}
     names = source['bootstrap'] + [p['path'] for p in overlay['additionalBootstrap']]
-    need(len(names) == len(set(names)) == 18, 'assembled_sql_pin_set')
+    need(len(names) == len(set(names)) == (19 if SELECTED_PROFILE==COMPOSITION else 18), 'assembled_sql_pin_set')
     return [{'file': name, 'sha256': pins[name]['sha256']} for name in names]
 
 
 def prepare():
     binding = actual_context()
+    if SELECTED_PROFILE == OWNED_START_A:
+        return m1_prepare(binding)
     _, temp, private, app = paths()
     private.mkdir(mode=0o700)
     owned(private, True)
     state = {'binding': binding, 'stage': 'PREPARING', 'attempted': False, 'fallbackUsed': False,
-             'beforeNative': sorted(p.name for p in temp.glob('assembled-member-admin-native-*')),
+             'beforeNative': sorted(p.name for p in temp.glob(NATIVE_GLOB)),
              'beforeBrowser': sorted(p.name for p in temp.glob('p09b-*'))}
+    if SELECTED_PROFILE==COMPOSITION:state['compositionStartedMonotonic']=time.monotonic()
     private_json(private / 'state.json', state, True)
     need(git(app, 'rev-parse', 'HEAD') == CANDIDATE and git(app, 'rev-parse', 'HEAD^{tree}') == TREE
          and git(app, 'status', '--porcelain', '--untracked-files=no') == '', 'assembled_app_copy_not_exact')
@@ -645,7 +1133,7 @@ def prepare():
         need(config.returncode == 1 and not config.stdout, 'assembled_git_credential_not_allowed')
     capsule_dir = private / 'capsule'
     capsule_dir.mkdir(mode=0o700)
-    unpack_capsule((HERE / 'sealed-v3-stage-observation.tar').read_bytes(), capsule_dir)
+    unpack_capsule((HERE / CAPSULE_FILE).read_bytes(), capsule_dir)
     need(Path('/opt/google/chrome/chrome').is_file()
          and sha(Path('/opt/google/chrome/chrome').read_bytes()) == CHROME, 'assembled_existing_chrome_pin_required')
     need(Path('/var/run/docker.sock').is_socket(), 'assembled_existing_local_docker_required')
@@ -704,6 +1192,8 @@ def claim_execution(private, binding, state):
 
 def execute():
     binding = actual_context()
+    if SELECTED_PROFILE == OWNED_START_A:
+        return m1_execute(binding)
     _, _, private, app = paths()
     state = load_state(binding, private)
     claim_execution(private, binding, state)
@@ -711,12 +1201,17 @@ def execute():
     need(node, 'assembled_existing_node_required')
     args = [node, '--import', 'tsx', 'scripts/testing/consultation-tickets/assembled-native.mjs', '--execute',
             '--allocation-id', binding['executionAllocationId'], '--driver-contract-sha256', DRIVER]
+    if SELECTED_PROFILE==COMPOSITION:
+        need(0<=time.monotonic()-state['compositionStartedMonotonic']<22*60,'assembled_composition_invalid')
     with (private / 'native.log').open('xb') as log:
         process = subprocess.Popen(args, cwd=app, env=safe_env(private), stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
         state.update(pid=process.pid, birth=birth(process.pid), stage='RUNNING')
         private_json(private / 'state.json', state)
         try:
-            state['exitCode'] = process.wait(timeout=25 * 60)
+            remaining=25*60
+            if SELECTED_PROFILE==COMPOSITION:
+                remaining=max(0.001,22*60-(time.monotonic()-state['compositionStartedMonotonic']))
+            state['exitCode'] = process.wait(timeout=remaining)
         except (subprocess.TimeoutExpired, KeyboardInterrupt):
             state['timedOutOrInterrupted'] = True
             stop_child(state)
@@ -729,7 +1224,7 @@ def execute():
 
 
 def native_state(temp, private, state):
-    new = [p for p in temp.glob('assembled-member-admin-native-*') if p.name not in state['beforeNative']]
+    new = [p for p in temp.glob(NATIVE_GLOB) if p.name not in state['beforeNative']]
     need(len(new) <= 1, 'assembled_native_temp_ambiguous')
     if not new:
         return None
@@ -794,6 +1289,7 @@ def cleanup(temp, private, app, state):
 
 
 def verify_native_state(data, private):
+    if SELECTED_PROFILE==COMPOSITION:return verify_composition_state(data,private)
     need(data and data['migrations'] == expected_sql(private), 'assembled_applied_sql_not_exact')
     local = Path(data['local'])
     posts = Counter()
@@ -844,7 +1340,7 @@ def static_native_error(value):
     return None
 
 
-OBSERVED_STAGES = ('rest-baseline-denial', 'rest-own', 'rest-foreign', 'rest-second-own', 'legacy-open', 'legacy-ready', 'legacy-context', 'legacy-cookies', 'legacy-page', 'legacy-routes', 'legacy-document', 'legacy-section-ready', 'legacy-state-ready', 'legacy-service-label', 'legacy-write-disabled', 'legacy-details-open', 'legacy-source-text', 'legacy-images', 'legacy-body', 'member-context', 'member-cookies', 'member-page', 'member-routes', 'member-dashboard', 'member-holdings-link', 'member-holdings-ready', 'member-holdings-body', 'member-dashboard-link', 'member-consultation-link', 'member-consultation-ready', 'member-viewport', 'member-storage-audit', 'member-context-close')
+OBSERVED_STAGES = ('composition-financial-before-write', 'composition-context-binding', 'composition-fixture-apply', 'composition-fixture-binding', 'composition-default-prepare', 'composition-default-page', 'rest-baseline-denial', 'rest-own', 'rest-foreign', 'rest-second-own', 'legacy-open', 'legacy-ready', 'legacy-context', 'legacy-cookies', 'legacy-page', 'legacy-routes', 'legacy-document', 'legacy-section-ready', 'legacy-state-ready', 'legacy-service-label', 'legacy-write-disabled', 'legacy-details-open', 'legacy-source-text', 'legacy-images', 'legacy-body', 'member-context', 'member-cookies', 'member-page', 'member-routes', 'member-dashboard', 'member-holdings-link', 'member-holdings-ready', 'member-holdings-body', 'member-dashboard-link', 'member-consultation-link', 'member-consultation-ready', 'member-viewport', 'member-storage-audit', 'member-context-close')
 
 
 def project_stage_log(raw):
@@ -973,6 +1469,60 @@ def project_attested_counts(data, private):
     return result
 
 
+def project_default_prepare_status(data, observation):
+    # Failure-only local response observation, never proof of a committed write.
+    # Exact ordinal12: attested initial8 Auth POSTs +3 product POSTs +negative prepare.
+    if (SELECTED_PROFILE != COMPOSITION or not isinstance(data, dict)
+            or data.get('sha') != CANDIDATE or not isinstance(observation, dict)
+            or observation.get('stageReadback') != 'OBSERVED'
+            or observation.get('malformedStageRecords') is not False
+            or observation.get('lastObservedStage') != 'composition-default-prepare'
+            or observation.get('lastObservedStageEdge') != 'before'):
+        return None
+    try:
+        local = Path(data['local'])
+        binding, _ = composition_read(local, 'composition-binding.json')
+        admission, _ = composition_read(local, 'composition-intent-004.json')
+        if (not isinstance(binding, dict) or binding.get('schema') != 'p03-composition-binding.v1'
+                or binding.get('appSha') != CANDIDATE or binding.get('appTree') != COMPOSITION_SPEC['tree']
+                or binding.get('runId') != data.get('id') or binding.get('databaseMarker') != data.get('id')
+                or binding.get('local') != str(local) or binding.get('profile') != 'consultation-ticket'
+                or not isinstance(binding.get('transportInitial'), dict)
+                or type(binding['transportInitial'].get('authorizedPostRequests')) is not int
+                or binding['transportInitial']['authorizedPostRequests'] != 8
+                or binding['transportInitial'].get('poisoned') is not False
+                or not isinstance(admission, dict)
+                or set(admission) != {'kind','ordinal','actor','path','body','bodySha256','token'}
+                or admission['kind'] != 'intent' or type(admission['ordinal']) is not int
+                or admission['ordinal'] != 4 or admission['actor'] != 'a'
+                or admission['path'] != '/api/consultation/ticket-attempts'
+                or not isinstance(admission['body'], str)
+                or sha(admission['body'].encode()) != admission['bodySha256']):
+            return None
+        admitted_body = composition_json(admission['body'].encode())
+        intent, _ = composition_read(local, 'intent-012.json')
+        result, _ = composition_read(local, 'transport-result-012.json')
+        route = '/api/consultation/ticket-attempts'
+        if (not isinstance(intent, dict) or set(intent) != {'sha', 'path', 'body'}
+                or intent['sha'] != CANDIDATE or intent['path'] != route
+                or json.dumps(intent['body'],sort_keys=True,ensure_ascii=False) != json.dumps(admitted_body,sort_keys=True,ensure_ascii=False)
+                or not isinstance(admitted_body, dict) or admitted_body.get('clientToken') != admission['token']
+                or not isinstance(binding.get('authCreatedIds'), list)
+                or admitted_body.get('expectedActorId') not in binding['authCreatedIds']
+                or not isinstance(intent['body'], dict)
+                or intent['body'].get('contractVersion') != 'consultation-ticket-request.v1'
+                or not isinstance(intent['body'].get('command'), dict)
+                or intent['body']['command'].get('kind') != 'open'
+                or not isinstance(result, dict) or set(result) != {'ordinal', 'path', 'status', 'sha'}
+                or type(result['ordinal']) is not int or result['ordinal'] != 12
+                or result['sha'] != CANDIDATE or result['path'] != route
+                or type(result['status']) is not int or not 100 <= result['status'] <= 599):
+            return None
+        return result['status']
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
 def failure_observation(state, temp, private):
     # This path runs even if cleanup raised. It has no cleanup/account/network
     # operations, and cannot change acceptance or replay an operation.
@@ -1000,27 +1550,32 @@ def failure_observation(state, temp, private):
         data = None
     result.update(project_attested_counts(data, private))
     result.update(project_stage_log(raw))
+    result['observedDefaultPrepareHttpStatus'] = project_default_prepare_status(data, result)
     result['chromePreflight'] = project_chrome_observation(state.get('chromePreflight'))
     return result, raw
 
 
 def finalize():
     binding = actual_context()
+    if SELECTED_PROFILE == OWNED_START_A:
+        return m1_finalize(binding)
     workspace, temp, private, app = paths()
     state = load_state(binding, private)
     public = workspace / 'assembled-native-artifact'
     public.mkdir(exist_ok=True)
     need(not public.is_symlink(), 'assembled_artifact_location')
     report_path = public / 'receipt.json'
+    expected_status='PASS_BOUNDED_P03_COMPOSITION_NATIVE' if SELECTED_PROFILE==COMPOSITION else 'PASS_BOUNDED_ASSEMBLED_NATIVE'
     if report_path.exists():
         previous = json.loads(report_path.read_bytes())
         need(previous.get('binding') == binding, 'assembled_existing_receipt_binding')
-        need(previous.get('status') == 'PASS_BOUNDED_ASSEMBLED_NATIVE', 'assembled_existing_failure_no_replay')
+        need(previous.get('status') == expected_status, 'assembled_existing_failure_no_replay')
         return previous['status']
     report = {'schemaVersion': 'assembled-native-ci.v1', 'status': 'FAIL_NATIVE_NOT_ACCEPTED', 'binding': binding,
               'source': {'commit': CANDIDATE, 'tree': TREE, 'capsuleSha256': CAPSULE, 'driverContractSha256': DRIVER},
               'nativeAttempted': state['attempted'], 'targetInstall': 'NOT_APPLIED', 'arashAcceptance': 'UNOBSERVED',
               'privateArtifactsUploaded': False, 'automaticReplay': False}
+    if SELECTED_PROFILE==COMPOSITION:report['schemaVersion']='p03-composition-native-ci.v1'
     try:
         data = cleanup(temp, private, app, state)
         report['ownedCleanupReadback'] = 'CONFIRMED'
@@ -1029,10 +1584,14 @@ def finalize():
         raw = (private / 'native.log').read_bytes()
         need(len(raw) <= 64 * 1024 * 1024, 'assembled_native_log_bound')
         payload = {'log': raw.decode('utf8'), 'binding': binding, 'tempRoot': str(temp), 'independent': independent}
-        result = command([shutil.which('node'), str(HERE / 'receipt.mjs'), str(app)], env=safe_env(private),
-                         body=json.dumps(payload).encode(), timeout=30)
-        safe = json.loads(result)
-        need(safe.get('status') == 'PASS_BOUNDED_ASSEMBLED_NATIVE', 'assembled_sanitized_receipt_required')
+        if SELECTED_PROFILE==COMPOSITION:
+            need(0<=time.monotonic()-state['compositionStartedMonotonic']<=25*60,'assembled_composition_invalid')
+            safe=project_composition(raw,independent,binding)
+        else:
+            result = command([shutil.which('node'), str(HERE / 'receipt.mjs'), str(app)], env=safe_env(private),
+                             body=json.dumps(payload).encode(), timeout=30)
+            safe = json.loads(result)
+        need(safe.get('status') == expected_status, 'assembled_sanitized_receipt_required')
         report.update(safe)
         report['privateLogSha256'] = sha(raw)
     except Exception as error:
@@ -1041,12 +1600,12 @@ def finalize():
         diagnostics, raw = failure_observation(state, temp, private)
         report['failureDiagnostics'] = diagnostics
         report['privateLogSha256'] = sha(raw) if raw is not None else None
-        report['writeOutcomeUnknown'] = write_outcome_unknown(state, raw if raw is not None else b'')
+        report['writeOutcomeUnknown'] = (True if write_outcome_unknown(state,raw or b'') else None) if SELECTED_PROFILE==COMPOSITION else write_outcome_unknown(state,raw or b'')
     # Only this freshly constructed projection is eligible for upload, never logs.
     private_json(report_path, report, True)
     state['stage'] = 'FINALIZED'
     private_json(private / 'state.json', state)
-    need(report['status'] == 'PASS_BOUNDED_ASSEMBLED_NATIVE', 'assembled_native_not_accepted_see_receipt')
+    need(report['status'] == expected_status, 'assembled_native_not_accepted_see_receipt')
     return report['status']
 
 

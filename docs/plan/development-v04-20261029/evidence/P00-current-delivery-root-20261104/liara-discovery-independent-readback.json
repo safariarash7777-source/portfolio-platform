@@ -1,0 +1,14 @@
+{
+  "runId": 41757658120,
+  "workflowSha": "343b3c82a53a0963ebeaf80078e560c1ece62880",
+  "artifactId": 13288743830,
+  "zipSha256": "8bc451f13bf957c5e3e38476243b5a80ffbb5d3beaa1c694b99fd2f34bf25d46",
+  "receiptSha256": "19311490d251cf5d5383737bd87ed8a3cdc16a468652251e551511d4b155c310",
+  "state": "protocol_rejected",
+  "remoteHalt": "unknown",
+  "keys": [
+    "state",
+    "remoteHalt"
+  ],
+  "automaticRetry": false
+}
