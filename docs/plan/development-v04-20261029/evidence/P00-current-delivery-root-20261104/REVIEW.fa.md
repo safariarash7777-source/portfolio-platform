@@ -1,3 +1,13 @@
+**تازه‌تر، ۰۱:۳۴UTC:** [PR400 و پنج CI واقعی](ops400-source-acceptance.json) در main5eda ادغام شدند؛ ابزار همچنان بسته و اجرای زنده صفر است. alias در این مشاهده ff5/READY بود؛ انتشار تازه هنوز اثبات نشده.
+
+## تازه‌سازی ۰۱:۲۵UTC — ۴ نوامبر
+
+Production روی mainff5 و READY است؛ [هویت و CI399](ops399-publication.json). محصول نسبت به a42 آزموده‌شده ثابت است. [پنج گزارش قبلی موجودند](codal-fiveids.json)؛ [نتیجهٔ صفر نمادی قبلی خطای رمزگذاری ابزار بود](codal-probe-encoding-correction.json). بزرگ‌ترین ID ذخیره‌شده12219 با captured_at ساعت۰۰:۲۰ و دورهٔ قدیمی است؛ [این رسید چرخهٔ کامل یا تازگی منبع را اثبات نمی‌کند](codal-last-stored-observation.json).
+
+[قرارداد رسمی فولاد](codal-official-scope-blocked-instance.json) مسدود و غیرقابل اجراست: scope جدول و دوره باز، چهار blank همچنان null و fullTableEquality=false. [تحویل آفلاین](codal-official-scope-proposal-delivery.json) validator یا admission فعال نیست. فملی در دریافت دوم HTTP500 داد. [نامزد یکپارچهٔ عضو7f8ec](assembly-v2-local-source-review.json) با حفظ هجده SQL و کامل‌گذشتن آزمون محلی برای CI همان PR385 آماده است؛ native تازه و مقصد هنوز پذیرفته نیست. [installer خواندنی](installer-v2-native-review.json) واقعی PASS است؛ Capture/Apply و حق خدمت بازند.
+
+مرجع وضعیت جاری [COMMAND-CENTER](../../../../COMMAND-CENTER.md) است؛ رسیدهای پایین تاریخ خود را دارند.
+
 # تحویل جاری — ۴ نوامبر تهران
 
 | خروجی | مسیر و نسخه | نتیجه واقعی | محدودیت و اقدام مسئول |

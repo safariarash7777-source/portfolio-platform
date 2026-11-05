@@ -1,0 +1,92 @@
+{
+  "atUtc": "2026-11-04T01:24:27.780848+00:00",
+  "status": "BLOCKED_TYPED_EVIDENCE_PROPOSAL_ONLY",
+  "sourceHead": "5b5974405a952fe782419a23ca03134c7247cd7e",
+  "parserBlob": "7708402d34a2fc2b9d0bdce58b94a4a7075e3d73",
+  "workingTreeClean": true,
+  "priorArchivesUnchanged": [
+    {
+      "path": "p07-public-codal-fixtures-20261104/public-codal-fixtures-19270-22948.zip",
+      "sha256": "33bbfe9fd208349e83fa355374426e7e9656f1865f6b42eaecbb2577c9ef3cdd"
+    },
+    {
+      "path": "p07-public-codal-followup-20261104/public-codal-followup-scope-and-http500.zip",
+      "sha256": "fcd470cd956b74eb5bc2204306f8eb107e15c681d77ca7114fad400544e0e034"
+    }
+  ],
+  "tests": {
+    "pass": 28,
+    "fail": 0,
+    "skip": 0
+  },
+  "typecheck": {
+    "command": "node node_modules/typescript/bin/tsc --noEmit --strict --skipLibCheck --target es2022 --module NodeNext --moduleResolution NodeNext <table-scope-proposal.ts> <proposal-instance.ts>",
+    "exitCode": 0,
+    "meaning": "proposal shape only; no runtime validator or admission verification"
+  },
+  "runtimeValidatorBuilt": false,
+  "scopeApplied": false,
+  "blankConvertedToZero": false,
+  "newGetRequests": 0,
+  "dbRpc": false,
+  "providerAccount": false,
+  "deployed": false,
+  "offlineCounters": {
+    "network": 0,
+    "childProcess": 0,
+    "sensitiveEnvironment": 0,
+    "privateFile": 0
+  },
+  "files": [
+    {
+      "name": "REVIEW-CONTRACT.fa.md",
+      "bytes": 8897,
+      "sha256": "f75c7f969a7a065d029b1a85cfa362c5e5559550514db6d88170a11577a5d9e1"
+    },
+    {
+      "name": "assemble-proposal.py",
+      "bytes": 4516,
+      "sha256": "7c9b2d44a530db57517cbfd9e9ab1fcc5dda0572a5a24409a245d6a588bdb579"
+    },
+    {
+      "name": "inspect-cells.test.mjs",
+      "bytes": 4847,
+      "sha256": "89563ca53052acc0341c24e07b3c118ce55bbee1b490e47779192d25c4b5c0bf"
+    },
+    {
+      "name": "inspect-existing-loader.mjs",
+      "bytes": 1168,
+      "sha256": "1e81e2554efca100336c127ec2e91587f1abb43e7589d7ca01eae3673577cc62"
+    },
+    {
+      "name": "proposal-instance.json",
+      "bytes": 4104,
+      "sha256": "65fca3ee5f307d7ddaa6565b7b76927e7c51a0319b2577f5db92ba60d1ea3e70"
+    },
+    {
+      "name": "proposal-instance.ts",
+      "bytes": 4237,
+      "sha256": "fc9dd20470358a5c3a34b6648275c6a121176a2b47c1a79a913e9f84c44972a5"
+    },
+    {
+      "name": "raw-cell-evidence.json",
+      "bytes": 8364,
+      "sha256": "8b710ea219bd368c2e044a3db4b53a3e3bf6a54328098a2e4f5a6d09d884e344"
+    },
+    {
+      "name": "seal.py",
+      "bytes": 3053,
+      "sha256": "127f7874ae8c496e9de7a830d3fd0c5baca8bafc95c0e48bde149baf9cdd0cfe"
+    },
+    {
+      "name": "table-scope-proposal.ts",
+      "bytes": 3785,
+      "sha256": "3fd79947a950fae06c64e397dc9e3a2993734db7b39ad1efb6a50185c90b1b20"
+    },
+    {
+      "name": "tests.txt",
+      "bytes": 3749,
+      "sha256": "422276e4516656f83e2156e671698d1408d1ecbcbcde6cdde4a3382f43bc5cdf"
+    }
+  ]
+}

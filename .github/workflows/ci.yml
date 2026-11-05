@@ -87,6 +87,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Source ancestry remains verifiable on future main/PR descendants.
+          fetch-depth: 0
+          fetch-tags: false
+      - name: Fetch only the pinned reader-release baseline object
+        run: git fetch --no-tags --depth=1 origin 23f9b93a6f40b201b66301bed5464b643d011a03
+      - name: Fetch only the frozen reader699 object
+        run: git fetch --no-tags --depth=1 origin 699ea1677c21c216be52869318cf0ac1c4525744
+      - name: Fetch exact historical and v2 assembly inputs
+        run: git fetch --no-tags origin 928609f0b92703b6b1671cb22bea9c227af08eae 6ccb106ace4711be7359c7fc8c8d6ab33670f719 ff5c49ffca82f3338331596e262f8778e5e50960 4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a 72254d5737daa81262b286092686f44a3e4982bf
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -107,6 +117,8 @@ jobs:
         run: npm run lint:ci
 
       - name: Core tests
+        env:
+          P03_SOURCE_SCOPE: rootff5c-member4dc-v2
         run: npm run test:core
 
       - name: Research provenance tests (offline)

@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-24",
+  "kind": "read-only-catalog",
+  "target": "existing-native-database",
+  "memberRowsRead": false,
+  "writes": false,
+  "tables": {
+    "risk_assessments": {
+      "columns": {"id": "uuid NOT NULL", "user_id": "uuid NOT NULL", "total_score": "integer NOT NULL", "risk_category": "text NOT NULL", "answers_json": "jsonb NULL", "created_at": "timestamptz NOT NULL"},
+      "indexes": ["PRIMARY KEY (id)", "btree (user_id, created_at DESC)"]
+    },
+    "risk_revalidations": {
+      "columns": {"id": "uuid NOT NULL", "user_id": "uuid NOT NULL", "expired_at": "timestamptz NOT NULL", "reason": "text NULL", "created_by": "uuid NULL", "created_at": "timestamptz NOT NULL"},
+      "indexes": ["PRIMARY KEY (id)", "btree (user_id, expired_at DESC)"]
+    }
+  },
+  "limits": ["Catalog compatibility only; no member data validation", "No migration or deployment performed"]
+}

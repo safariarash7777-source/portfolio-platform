@@ -8,6 +8,10 @@
 
 [قرارداد انتقال، تطبیق محدود و مالکیت](plan/development-v04-20261029/INTEGRATION.md) و [تفاوت/منشأ فایل‌ها](plan/development-v04-20261029/SOURCE-DIFF.json) اصل بسته را بدون جایگزینی اسناد قبلی نگه می‌دارند. [بازبینی تاریخی پیوست](plan/development-v04-20261029/source/HANDOFF-REVIEW.fa.md) شاهد runtime امروز نیست. وضعیت اجرا فقط در [COMMAND-CENTER](COMMAND-CENTER.md#development-v04-20261029)، حدود مجوز در [DECISION-LOG](DECISION-LOG.md#development-v04-start-20261029) و جهت در [PRODUCT-BLUEPRINT](PRODUCT-BLUEPRINT.md#development-v04-scope) است.
 
+## تکمیل فیلتر اعضا و پاسخ مشاور — ۲۰۲۶-۱۰-۲۴
+
+[برنامه و معیار پذیرش بسته تکمیلی](ops/advisor-next-20261024/PLAN.md) دامنه ساخت دو قابلیت افزایشی روی میز مشاور موجود است. وضعیت واقعی ساخت و انتشار در COMMAND-CENTER ثبت می‌شود.
+
 ## مقایسه مشاهدات صندوق — ۲۰۲۶-۱۰-۲۴
 
 [گزارش بسته و حدود پذیرش](ops/fund-observation-comparison-20261024/DELIVERY.md): انتخاب دستی مشاهدات با کنترل آمادگی داده؛ طبقه واحد نامعلوم است و مقایسه عددی زنده ادعا نمی‌شود.

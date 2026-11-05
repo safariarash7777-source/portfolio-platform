@@ -1,0 +1,96 @@
+{
+  "page": 1,
+  "rows": [
+    {
+      "risk": {
+        "state": "invalid",
+        "source": "risk_assessments",
+        "category": null,
+        "expiresAt": null,
+        "assessedAt": null,
+        "assessmentId": null,
+        "forcedExpiredAt": null
+      },
+      "goals": {
+        "state": "not_recorded",
+        "versionId": null
+      },
+      "cashFlow": {
+        "state": "not_recorded",
+        "versionId": null
+      },
+      "clientId": "00000000-0000-4000-8000-000000000002",
+      "holdings": {
+        "state": "not_recorded",
+        "versionId": null
+      },
+      "grantedAt": "2026-10-24T08:51:26.899803+00:00",
+      "assetValue": {
+        "state": "unavailable",
+        "reason": "valuation_not_in_roster_v1",
+        "totalToman": null
+      },
+      "clientLabel": "ALLOWED_B",
+      "missingCodes": [
+        "risk_invalid",
+        "holdings_not_recorded",
+        "cashflow_period_not_recorded",
+        "goals_not_recorded"
+      ],
+      "relationshipId": "9d560f92-a7e1-4a56-a8ab-7f8d3cdb3fae"
+    },
+    {
+      "risk": {
+        "state": "ambiguous",
+        "source": "risk_assessments",
+        "category": null,
+        "expiresAt": null,
+        "assessedAt": null,
+        "assessmentId": null,
+        "forcedExpiredAt": null
+      },
+      "goals": {
+        "state": "empty",
+        "versionId": "9f4a20d6-48fa-4299-b511-a57ea90003dc"
+      },
+      "cashFlow": {
+        "state": "not_recorded",
+        "versionId": null
+      },
+      "clientId": "00000000-0000-4000-8000-000000000001",
+      "holdings": {
+        "state": "empty",
+        "versionId": "3a4750a8-7f9e-4301-ba6e-f336d82fc121"
+      },
+      "grantedAt": "2026-10-24T08:51:26.073569+00:00",
+      "assetValue": {
+        "state": "unavailable",
+        "reason": "valuation_not_in_roster_v1",
+        "totalToman": null
+      },
+      "clientLabel": "ALLOWED_A",
+      "missingCodes": [
+        "risk_ambiguous",
+        "holdings_empty",
+        "cashflow_period_not_recorded",
+        "goals_empty"
+      ],
+      "relationshipId": "a18a0809-cf25-4ad7-a176-fed222ba047f"
+    }
+  ],
+  "period": {
+    "endOn": "2026-10-31",
+    "startOn": "2026-10-01"
+  },
+  "actorId": "00000000-0000-4000-8000-000000000003",
+  "pageSize": 100,
+  "generatedAt": "2026-10-24T08:51:35.970467+00:00",
+  "capabilities": {
+    "risk": true,
+    "assetValueRange": false,
+    "financialPresence": true
+  },
+  "totalMatched": 2,
+  "contractVersion": "consultation-roster.v1",
+  "totalAuthorized": 2
+}
