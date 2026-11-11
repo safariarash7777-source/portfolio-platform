@@ -1,0 +1,268 @@
+{
+  "atUtc": "2026-11-11T08:16:08.232707+00:00",
+  "database": {
+    "code": 0,
+    "row": {
+      "fetchedAt": 1794384962891,
+      "snapshot": null,
+      "stocks": 787,
+      "funds": 345,
+      "gold": 9,
+      "currency": 28,
+      "sampleStock": {
+        "id": "فولاد",
+        "pe": 7.1,
+        "eps": 693,
+        "buyI": 805228202,
+        "buyN": 225110101,
+        "unit": "toman",
+        "price": 495,
+        "sellI": 129772437,
+        "sellN": 900565866,
+        "value": 5100174599850,
+        "change": 14,
+        "dayLow": 495,
+        "faName": "فولاد مبارکه اصفهان",
+        "volume": 1030338303,
+        "bandLow": 467,
+        "dayHigh": 495,
+        "bandHigh": 495,
+        "industry": "فلزات اساسی",
+        "buyCountI": 1206,
+        "industryId": 27,
+        "sellCountI": 1606,
+        "sourceTime": "11:45:08",
+        "marketValue": 9578250000000000,
+        "bestBidPrice": 495,
+        "closingPrice": 495,
+        "bestAskVolume": 0,
+        "bestBidVolume": 1494897075,
+        "changePercent": 2.91,
+        "marketValueExact": "9578250000000000",
+        "closingChangePercent": 2.91
+      },
+      "sampleFund": {
+        "id": "اهرم",
+        "pe": null,
+        "eps": null,
+        "nav": 9907,
+        "buyI": 379927449,
+        "buyN": 90914429,
+        "type": "صندوق های سرمایه گذاری اهرمی",
+        "unit": "toman",
+        "price": 9370,
+        "sellI": 397682798,
+        "sellN": 73159080,
+        "value": 44148517943975,
+        "change": 444,
+        "dayLow": 9114,
+        "faName": "صندوق س سهامی کاریزما- اهرمی",
+        "volume": 470841878,
+        "bandLow": 8391,
+        "dayHigh": 9462,
+        "navDate": "1405-08-20",
+        "navTime": "11:40:04",
+        "bandHigh": 9462,
+        "industry": "صندوق سرمایه‌گذاری قابل معامله",
+        "navIssue": 10047,
+        "buyCountI": 9767,
+        "industryId": 68,
+        "sellCountI": 7191,
+        "sourceTime": "11:45:24",
+        "marketValue": 515707500000000,
+        "bestAskPrice": 9369,
+        "bestBidPrice": 9365,
+        "closingPrice": 9377,
+        "bestAskVolume": 9537,
+        "bestBidVolume": 9730,
+        "bubblePercent": -5.42,
+        "changePercent": 4.97,
+        "marketValueExact": "515707500000000",
+        "closingChangePercent": 5.04
+      }
+    }
+  },
+  "siteHttp": "200",
+  "siteExit": 0,
+  "site": {
+    "fetchedAt": 1794384962891,
+    "counts": {
+      "stocks": 787,
+      "funds": 345,
+      "gold": 9,
+      "currency": 28
+    },
+    "availability": {
+      "global": {
+        "state": "ready",
+        "sourceAt": 1794384753528,
+        "receivedAt": 1794384753528,
+        "validAt": null,
+        "readAt": 1794384969400
+      },
+      "iran": {
+        "state": "unknown-time",
+        "reason": "missing-price-time",
+        "receivedAt": 1794384962891,
+        "validAt": null,
+        "families": {
+          "gold": {
+            "rows": 9,
+            "rejectedRows": 0,
+            "unknownTimeRows": 0,
+            "staleRows": 0,
+            "validAt": 1794383700000,
+            "receivedAt": 1794384962891,
+            "retained": false,
+            "sourceState": "received",
+            "state": "ready"
+          },
+          "currency": {
+            "rows": 28,
+            "rejectedRows": 0,
+            "unknownTimeRows": 0,
+            "staleRows": 0,
+            "validAt": 1794384660000,
+            "receivedAt": 1794384962891,
+            "retained": false,
+            "sourceState": "received",
+            "state": "ready"
+          },
+          "funds": {
+            "rows": 345,
+            "rejectedRows": 0,
+            "unknownTimeRows": 345,
+            "staleRows": 0,
+            "validAt": null,
+            "receivedAt": 1794384962891,
+            "retained": false,
+            "sourceState": "received",
+            "state": "unknown-time"
+          },
+          "stocks": {
+            "rows": 787,
+            "rejectedRows": 0,
+            "unknownTimeRows": 787,
+            "staleRows": 0,
+            "validAt": null,
+            "receivedAt": 1794384962891,
+            "retained": false,
+            "sourceState": "received",
+            "state": "unknown-time"
+          },
+          "crypto": {
+            "rows": 19,
+            "rejectedRows": 0,
+            "unknownTimeRows": 0,
+            "staleRows": 0,
+            "validAt": 1794384660000,
+            "receivedAt": 1794384962891,
+            "retained": false,
+            "sourceState": "received",
+            "state": "ready"
+          },
+          "options": {
+            "rows": 1498,
+            "rejectedRows": 0,
+            "unknownTimeRows": 1498,
+            "staleRows": 0,
+            "validAt": null,
+            "receivedAt": 1794384962891,
+            "retained": false,
+            "sourceState": "received",
+            "state": "unknown-time"
+          },
+          "indices": {
+            "rows": 1,
+            "rejectedRows": 0,
+            "unknownTimeRows": 0,
+            "staleRows": 0,
+            "validAt": 1794384926000,
+            "receivedAt": 1794384962891,
+            "retained": false,
+            "sourceState": "received",
+            "state": "ready"
+          }
+        },
+        "snapshotState": "complete",
+        "sourceAt": 1794384962891,
+        "readAt": 1794384970619
+      }
+    },
+    "diag": {
+      "at": 1794384969398,
+      "source": "supabase",
+      "supabaseConfigured": true,
+      "relayUrlConfigured": false,
+      "reached": true,
+      "status": 200,
+      "ok": true,
+      "fromCache": false,
+      "ageSec": 8,
+      "counts": {
+        "gold": 9,
+        "currency": 28,
+        "funds": 345,
+        "stocks": 787,
+        "crypto": 19
+      },
+      "error": null,
+      "ms": 1221
+    }
+  },
+  "sameSnapshotClock": true,
+  "sampleFundComparison": {
+    "id": {
+      "stored": "اهرم",
+      "site": "اهرم",
+      "equal": true
+    },
+    "price": {
+      "stored": 9370,
+      "site": 9370,
+      "equal": true
+    },
+    "unit": {
+      "stored": "toman",
+      "site": "toman",
+      "equal": true
+    },
+    "closingPrice": {
+      "stored": 9377,
+      "site": 9377,
+      "equal": true
+    },
+    "volume": {
+      "stored": 470841878,
+      "site": 470841878,
+      "equal": true
+    },
+    "sourceTime": {
+      "stored": "11:45:24",
+      "site": "11:45:24",
+      "equal": true
+    },
+    "nav": {
+      "stored": 9907,
+      "site": 9907,
+      "equal": true
+    },
+    "navIssue": {
+      "stored": 10047,
+      "site": 10047,
+      "equal": true
+    },
+    "navDate": {
+      "stored": "1405-08-20",
+      "site": "1405-08-20",
+      "equal": true
+    },
+    "navTime": {
+      "stored": "11:40:04",
+      "site": "11:40:04",
+      "equal": true
+    }
+  },
+  "sameFundValues": true,
+  "siteNavCount": 243
+}

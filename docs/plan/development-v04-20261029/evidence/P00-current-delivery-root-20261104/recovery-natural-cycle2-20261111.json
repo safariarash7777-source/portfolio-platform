@@ -1,0 +1,537 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-11-11T08:16:37.835Z",
+  "completedAt": "2026-11-11T08:16:39.374Z",
+  "sampleCount": 1,
+  "mode": "passive",
+  "health": {
+    "status": "ok",
+    "httpStatus": 200,
+    "error": null
+  },
+  "debug": {
+    "status": "read",
+    "httpStatus": 200,
+    "error": null,
+    "acceptance": "passed",
+    "spacing": "passed",
+    "data": {
+      "relayAt": "2026-11-11T08:16:38.795Z",
+      "warmedUp": true,
+      "ageSec": 36,
+      "lastRefresh": "2026-11-11T08:16:02.891Z",
+      "lastAttempt": "2026-11-11T08:16:02.891Z",
+      "error": null,
+      "counts": {
+        "gold": 9,
+        "currency": 28,
+        "crypto": 19,
+        "stocks": 787,
+        "funds": 345,
+        "options": 1498,
+        "indices": null
+      },
+      "snapshot": {
+        "state": "complete",
+        "attemptedAt": "2026-11-11T08:16:02.891Z",
+        "families": {
+          "gold": {
+            "state": "received",
+            "receivedAt": "2026-11-11T08:16:02.891Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          },
+          "currency": {
+            "state": "received",
+            "receivedAt": "2026-11-11T08:16:02.891Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          },
+          "crypto": {
+            "state": "received",
+            "receivedAt": "2026-11-11T08:16:02.891Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          },
+          "stocks": {
+            "state": "received",
+            "receivedAt": "2026-11-11T08:16:02.891Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          },
+          "funds": {
+            "state": "received",
+            "receivedAt": "2026-11-11T08:16:02.891Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          },
+          "options": {
+            "state": "received",
+            "receivedAt": "2026-11-11T08:16:02.891Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          },
+          "indices": {
+            "state": "received",
+            "receivedAt": "2026-11-11T08:16:02.891Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          }
+        }
+      },
+      "baseline": {
+        "state": "loaded",
+        "error": null
+      },
+      "sources": {
+        "brsapi_gold_currency": {
+          "ok": true,
+          "gold": 9,
+          "currency": 28,
+          "stocks": null,
+          "funds": null,
+          "cached": null,
+          "updated": null,
+          "failed": null,
+          "error": null
+        },
+        "brsapi_stocks": {
+          "ok": true,
+          "gold": null,
+          "currency": null,
+          "stocks": 787,
+          "funds": 345,
+          "cached": null,
+          "updated": null,
+          "failed": null,
+          "error": null
+        },
+        "brsapi_index": {
+          "ok": true,
+          "gold": null,
+          "currency": null,
+          "stocks": null,
+          "funds": null,
+          "cached": null,
+          "updated": null,
+          "failed": null,
+          "error": null
+        },
+        "brsapi_nav": {
+          "ok": true,
+          "gold": null,
+          "currency": null,
+          "stocks": null,
+          "funds": null,
+          "cached": 148,
+          "updated": 148,
+          "failed": 2,
+          "error": null
+        },
+        "brsapi_fund_meta": {
+          "ok": true,
+          "gold": null,
+          "currency": null,
+          "stocks": null,
+          "funds": null,
+          "cached": 50,
+          "updated": 50,
+          "failed": 0,
+          "error": null
+        }
+      },
+      "storage": {
+        "enabled": true,
+        "ok": true,
+        "httpStatus": 200,
+        "at": "2026-11-11T08:16:03.971Z",
+        "error": null
+      },
+      "codal": {
+        "ok": false,
+        "lastRun": "2026-11-11T08:07:19.154Z",
+        "lastDate": null,
+        "rows": null,
+        "error": "other",
+        "skipped": null,
+        "lastAttemptStartedAt": "2026-11-11T08:07:19.154Z",
+        "failureDiagnostics": {
+          "version": 1,
+          "totals": {
+            "download": {
+              "exception": 227
+            },
+            "admission": {
+              "rejected": 2791,
+              "exception": 0
+            },
+            "persistence": {
+              "exception": 0
+            }
+          },
+          "lastCycle": {
+            "download": {
+              "exception": 0
+            },
+            "admission": {
+              "rejected": 20,
+              "exception": 0
+            },
+            "persistence": {
+              "exception": 0
+            }
+          }
+        },
+        "admissionDiagnostics": {
+          "version": 1,
+          "totals": {
+            "\u0646-\u06f1\u06f0": {
+              "context_invalid": 88,
+              "geometry_ambiguous": 0,
+              "scope_unknown": 688,
+              "scope_unsupported": 1608,
+              "statement_ambiguous": 0,
+              "unit_unverified": 0,
+              "values_unobserved": 0,
+              "period_unverified": 0,
+              "arithmetic_mismatch": 0,
+              "capital_unverified": 0,
+              "normalized_identity_mismatch": 0,
+              "eps_unverified": 0,
+              "internal_exception": 0,
+              "unspecified": 0
+            },
+            "\u0646-\u06f3\u06f0": {
+              "unsupported_layout": 333,
+              "short_rows": 19,
+              "missing_sales": 0,
+              "zero_sales_only": 4,
+              "arithmetic_mismatch": 0,
+              "mixed_rows": 0,
+              "no_product_rows": 0,
+              "unspecified": 0
+            }
+          },
+          "lastCycle": {
+            "\u0646-\u06f1\u06f0": {
+              "context_invalid": 0,
+              "geometry_ambiguous": 0,
+              "scope_unknown": 10,
+              "scope_unsupported": 10,
+              "statement_ambiguous": 0,
+              "unit_unverified": 0,
+              "values_unobserved": 0,
+              "period_unverified": 0,
+              "arithmetic_mismatch": 0,
+              "capital_unverified": 0,
+              "normalized_identity_mismatch": 0,
+              "eps_unverified": 0,
+              "internal_exception": 0,
+              "unspecified": 0
+            },
+            "\u0646-\u06f3\u06f0": {
+              "unsupported_layout": 0,
+              "short_rows": 0,
+              "missing_sales": 0,
+              "zero_sales_only": 0,
+              "arithmetic_mismatch": 0,
+              "mixed_rows": 0,
+              "no_product_rows": 0,
+              "unspecified": 0
+            }
+          }
+        },
+        "archive": {
+          "ok": true,
+          "lastAttemptFinishedAt": "2026-11-11T08:12:22.545Z",
+          "error": null,
+          "budgetDate": "2026-11-11",
+          "dailyCap": 200,
+          "usedToday": 16,
+          "cursor": 170,
+          "queueSize": 300,
+          "doneSymbols": 11,
+          "lastCycle": {
+            "pages": 2,
+            "downloaded": 14,
+            "inserted": 10,
+            "parseFailed": 4,
+            "persistenceUnconfirmed": 0
+          },
+          "coverage": {
+            "n30Symbols": 102,
+            "n10Symbols": 232,
+            "lastChecked": "2026-11-11T08:12:22.575Z"
+          }
+        },
+        "feed": {
+          "pages": 6,
+          "seen": 120,
+          "matched": 22,
+          "downloaded": 10,
+          "inserted": 2,
+          "parseFailed": 8,
+          "complete": false,
+          "incompleteReason": "other",
+          "incompleteReasonCode": "download_limit"
+        },
+        "feedTable": {
+          "attempted": 120,
+          "inserted": 120,
+          "duplicates": 0,
+          "error": null,
+          "httpStatus": null,
+          "sqlCode": null
+        },
+        "backfill": {
+          "queueSize": 200,
+          "inserted": 0,
+          "parseFailed": 12,
+          "skippedCovered": 6
+        }
+      },
+      "history": {
+        "eodHistory": {
+          "ok": null,
+          "lastRun": null,
+          "lastDate": null,
+          "rows": 0,
+          "error": null,
+          "skipped": null
+        },
+        "indexHistory": {
+          "ok": null,
+          "lastRun": null,
+          "lastDate": null,
+          "rows": null,
+          "error": null,
+          "skipped": null
+        },
+        "marketBreadth": {
+          "ok": null,
+          "lastRun": null,
+          "lastDate": null,
+          "rows": null,
+          "error": null,
+          "skipped": null
+        },
+        "historyPrune": {
+          "ok": null,
+          "lastRun": "2026-11-11T08:10:52.391Z",
+          "lastDate": null,
+          "rows": null,
+          "error": null,
+          "skipped": null
+        }
+      },
+      "commodity": {
+        "enabled": true,
+        "rows": 14,
+        "reqToday": 3,
+        "dailyCap": 300,
+        "remaining": 297,
+        "lastFetchAt": "2026-11-11T08:16:02.890Z",
+        "counterScope": "process",
+        "dayKey": "2026-11-11",
+        "error": null
+      },
+      "ime": {
+        "certificate": {
+          "rows": 0,
+          "reqToday": 1,
+          "lastFetchAt": null,
+          "error": "tls",
+          "eod": {
+            "dayCalendar": "gregorian",
+            "dayTimezone": "Asia/Tehran",
+            "lastPushDay": null,
+            "pushed": 0,
+            "skippedSourceDate": null,
+            "table": "unknown",
+            "skip": null,
+            "error": null
+          }
+        },
+        "physical": {
+          "dayCalendar": "gregorian",
+          "dayTimezone": "Asia/Tehran",
+          "lastAttemptDay": null,
+          "lastRunDay": null,
+          "cycleDay": null,
+          "inserted": 0,
+          "maxProviderRequestsPerDay": 2,
+          "maxStorageAttemptsPerTarget": 3,
+          "table": "unknown",
+          "error": null,
+          "retryScope": "process-memory-tehran-day",
+          "targetCount": 0,
+          "targetsTruncated": false,
+          "targets": []
+        }
+      },
+      "mcpfarsiQuote": {
+        "enabled": true,
+        "configured": true,
+        "requests": 0,
+        "pendingPublication": false,
+        "publication": "none",
+        "error": "mcpfarsi_quote_refresh_failed",
+        "sourceDateRaw": null,
+        "sourceAtUtc": null
+      },
+      "transport": {
+        "enabled": true,
+        "scope": "process",
+        "spacingMs": 300,
+        "pending": 4,
+        "sent": 372,
+        "minStartGapMs": 317.33844099997077,
+        "rollingWindowMs": 300000,
+        "rollingLimit": 300,
+        "ipWindowMs": 1000,
+        "ipLimit": 20,
+        "policy": "conservative_unverified_plan",
+        "windowScope": "process_lifetime",
+        "priorProcessWindow": "unknown",
+        "coldStartPolicy": "full_window_defer",
+        "globalEnforced": false,
+        "clockValid": true
+      },
+      "budget": {
+        "providerAccountUsage": null,
+        "providerResetAt": null,
+        "liaraCost": null,
+        "clientEnabled": false,
+        "client": {
+          "accountingScope": "internal_allocation_not_provider_usage",
+          "accountingState": null,
+          "available": null,
+          "persistent": null,
+          "day": null,
+          "softBudget": null,
+          "hardCeiling": null,
+          "used": null,
+          "remaining": null,
+          "rejectedByBudget": null,
+          "softExhausted": null,
+          "store": {
+            "healthy": null,
+            "errors": null,
+            "error": null,
+            "httpStatus": null,
+            "sqlCode": null
+          }
+        },
+        "legacy": {
+          "enforced": true,
+          "usedAggregate": 407,
+          "rejectedAggregate": 5,
+          "overBudgetPassedAggregate": 0,
+          "unmetered": 0,
+          "budget": {
+            "accountingScope": "internal_allocation_not_provider_usage",
+            "accountingState": "confirmed_internal_estimate",
+            "available": null,
+            "persistent": true,
+            "day": "2026-11-11",
+            "softBudget": 6000,
+            "hardCeiling": 9000,
+            "used": 404,
+            "remaining": 8596,
+            "rejectedByBudget": 6,
+            "softExhausted": false,
+            "store": {
+              "healthy": true,
+              "errors": 2,
+              "error": null,
+              "httpStatus": null,
+              "sqlCode": null
+            }
+          }
+        },
+        "stopped": false,
+        "servedAgeMs": 35904
+      }
+    }
+  },
+  "backend": {
+    "status": "reachable",
+    "httpStatus": 401,
+    "httpOk": false,
+    "error": null
+  },
+  "storedRead": {
+    "status": "read",
+    "httpStatus": 200,
+    "error": null,
+    "rowCount": 21
+  },
+  "controlPlane": {
+    "project": {
+      "status": "read",
+      "httpStatus": 200,
+      "data": {
+        "projectId": "arsadata",
+        "status": null,
+        "cpuLimit": null,
+        "ramLimit": null,
+        "reviewedBackendBinding": {
+          "present": true,
+          "parseValid": true,
+          "noCredentialsQueryHash": true,
+          "exactReviewedBackendMatch": true,
+          "duplicateNameRejected": false,
+          "reason": "exact_match"
+        },
+        "envNames": [
+          "BRSAPI_COMMODITY_ENABLED",
+          "BRSAPI_KEY",
+          "CODAL_ENABLED",
+          "CODAL_PER_CYCLE",
+          "CODAL_SYMBOLS",
+          "MCPFARSI_QUOTE_ENABLED",
+          "MCP_FARSI_API_KEY",
+          "NODE_ENV",
+          "PORT",
+          "RELAY_TOKEN",
+          "SUPABASE_SERVICE_ROLE_KEY",
+          "SUPABASE_URL"
+        ],
+        "envNamesComplete": true
+      }
+    },
+    "releases": {
+      "status": "read",
+      "httpStatus": 200,
+      "data": {
+        "currentReleaseId": "6aebbe9fbb7b539b67857d2d",
+        "match": "exact",
+        "release": {
+          "id": "6aebbe9fbb7b539b67857d2d",
+          "state": "READY",
+          "createdAt": "2026-11-04T23:24:15.383Z",
+          "finishedAt": null,
+          "commit": null,
+          "branch": null
+        }
+      }
+    },
+    "identity": "matched_control_plane_metadata",
+    "limitations": [
+      "Environment values arrive in API memory only; names and booleans for one reviewed backend URL comparison are emitted.",
+      "Control-plane metadata is not proof of running process code, collector exclusion, budget or ingestion success."
+    ]
+  },
+  "limitations": [
+    "No source quote clocks are exposed by this debug contract; receipt time is not source time.",
+    "Process counters are not provider account usage or Liara billing.",
+    "Backend root HTTP 401 is an expected authentication challenge; HTTP 2xx or 401 alone do not prove database health. A successful stored Codal read proves that bounded public read only, may be cached, and does not prove all database services, deployed identity or fresh/complete reports."
+  ]
+}
