@@ -1,0 +1,131 @@
+{
+  "atUtc": "2026-11-11T07:50:00.726238+00:00",
+  "database": {
+    "code": 255
+  },
+  "siteHttp": "200",
+  "siteExit": 0,
+  "site": {
+    "fetchedAt": null,
+    "counts": {
+      "stocks": 0,
+      "funds": 0,
+      "gold": 0,
+      "currency": 0
+    },
+    "availability": {
+      "global": {
+        "state": "ready",
+        "sourceAt": 1794383407697,
+        "receivedAt": 1794383407697,
+        "validAt": null,
+        "readAt": 1794383407697
+      },
+      "iran": {
+        "state": "timeout",
+        "reason": "read-timeout",
+        "receivedAt": null,
+        "validAt": null,
+        "families": {
+          "gold": {
+            "rows": 0,
+            "rejectedRows": 0,
+            "unknownTimeRows": 0,
+            "staleRows": 0,
+            "validAt": null,
+            "receivedAt": null,
+            "retained": false,
+            "sourceState": null,
+            "state": "unavailable"
+          },
+          "currency": {
+            "rows": 0,
+            "rejectedRows": 0,
+            "unknownTimeRows": 0,
+            "staleRows": 0,
+            "validAt": null,
+            "receivedAt": null,
+            "retained": false,
+            "sourceState": null,
+            "state": "unavailable"
+          },
+          "funds": {
+            "rows": 0,
+            "rejectedRows": 0,
+            "unknownTimeRows": 0,
+            "staleRows": 0,
+            "validAt": null,
+            "receivedAt": null,
+            "retained": false,
+            "sourceState": null,
+            "state": "unavailable"
+          },
+          "stocks": {
+            "rows": 0,
+            "rejectedRows": 0,
+            "unknownTimeRows": 0,
+            "staleRows": 0,
+            "validAt": null,
+            "receivedAt": null,
+            "retained": false,
+            "sourceState": null,
+            "state": "unavailable"
+          },
+          "crypto": {
+            "rows": 0,
+            "rejectedRows": 0,
+            "unknownTimeRows": 0,
+            "staleRows": 0,
+            "validAt": null,
+            "receivedAt": null,
+            "retained": false,
+            "sourceState": null,
+            "state": "unavailable"
+          },
+          "options": {
+            "rows": 0,
+            "rejectedRows": 0,
+            "unknownTimeRows": 0,
+            "staleRows": 0,
+            "validAt": null,
+            "receivedAt": null,
+            "retained": false,
+            "sourceState": null,
+            "state": "unavailable"
+          },
+          "indices": {
+            "rows": 0,
+            "rejectedRows": 0,
+            "unknownTimeRows": 0,
+            "staleRows": 0,
+            "validAt": null,
+            "receivedAt": null,
+            "retained": false,
+            "sourceState": null,
+            "state": "unavailable"
+          }
+        },
+        "sourceAt": null,
+        "readAt": 1794383411119
+      }
+    },
+    "diag": {
+      "at": 1794383411118,
+      "source": null,
+      "supabaseConfigured": true,
+      "relayUrlConfigured": true,
+      "reached": false,
+      "status": null,
+      "ok": false,
+      "fromCache": false,
+      "ageSec": null,
+      "counts": null,
+      "error": "DeadlineError",
+      "ms": 5000
+    }
+  },
+  "sameSnapshotClock": false,
+  "sampleFundComparison": null,
+  "sameFundValues": false,
+  "siteNavCount": 0
+}
