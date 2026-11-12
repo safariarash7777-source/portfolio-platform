@@ -4,7 +4,7 @@ import { brsFetch as fetch } from "./brsapi-transport.mjs";
 import { brsTransportMetrics, waitForBrsReadiness } from "./brsapi-transport.mjs";
 import { createNavRefreshSequence } from "./nav-refresh-sequence.mjs";
 import { writeDailyFx } from "./daily-fx.mjs";
-import { retainMarketFamilies, retainCommoditySnapshot, mergeStoredBaseline, sourceErrorCategory, validStoredSnapshot } from "./market-retention.mjs";
+import { retainMarketFamilies, retainCommoditySnapshot, mergeStoredBaseline, sourceErrorCategory, validStoredSnapshot, NAV_STALE_MS } from "./market-retention.mjs";
 // ─────────────────────────────────────────────────────────────────────────────
 // رلهٔ بازارِ ایران — باید روی هاستِ «داخل ایران» اجرا شود (لیارا/آروان/پارس‌پک).
 // چرا: منابعِ ایرانی (BrsApi) به IPِ خارجی ۴۰۳ می‌دهند؛ این سرویسِ
@@ -521,7 +521,6 @@ async function fetchStocksAndFunds() {
 const NAV_REFRESH_MS = 60 * 60 * 1000; // هر ساعت
 const NAV_TOP = 150;                   // سقف صندوق‌ها در حالت تک‌نمادی
 const NAV_CONCURRENCY = 4;
-const NAV_STALE_MS = 24 * 60 * 60 * 1000; // NAV کهنه‌تر از یک روز منتشر نمی‌شود
 const navCache = new Map(); // l18 → { nav, navIssue, navDate, navTime, at } (ریال)
 let lastNavRound = 0;
 let navBulkMode = null; // null = هنوز نامشخص
@@ -703,7 +702,7 @@ function applyNav(funds) {
   const now = Date.now();
   for (const f of funds) {
     const c = navCache.get(f.id);
-    if (!c || now - c.at > NAV_STALE_MS) continue;
+    if (!c || typeof c.at !== "number" || !Number.isFinite(c.at) || c.at <= 0 || c.at > now || now - c.at > NAV_STALE_MS) continue;
     const navToman = c.nav / 10;
     if (navToman <= 0 || !isFinite(navToman)) continue;
     const ratio = f.price / navToman;
@@ -712,6 +711,8 @@ function applyNav(funds) {
     f.navIssue = c.navIssue ? Math.round(c.navIssue / 10) : null;
     f.navDate = c.navDate;
     f.navTime = c.navTime;
+    f.navReceivedAt = typeof c.at === "number" && Number.isFinite(c.at) && c.at > 0 && c.at <= now ? c.at : null;
+    f.navRetained = false;
     f.bubblePercent = Number((((f.price - navToman) / navToman) * 100).toFixed(2));
   }
 }
@@ -1286,7 +1287,9 @@ async function codalFetchBridge() {
 }
 
 // ── رفرش پس‌زمینه ────────────────────────────────────────────────────────────
-const mcpQuotes = createMcpQuoteBridge();
+// Owner retired MCP market collection on 2026-11-12. Old deployment flags must
+// not resume paid/quota-limited calls; retain the existing dated cache unchanged.
+const mcpQuotes = createMcpQuoteBridge({env:{...process.env,MCPFARSI_QUOTE_ENABLED:'0'}});
 let refreshing = null;
 function refresh() {
   if (refreshing) return refreshing;

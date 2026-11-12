@@ -191,6 +191,10 @@ function projectMetadata(body) {
   return { projectId: 'arsadata', status: choice(p.status, ['running', 'stopped', 'starting', 'stopping', 'ready', 'failed']),
     // No verified CPU/RAM response contract in the installed CLI.
     cpuLimit: null, ramLimit: null,
+    // CLI IProjectDetails declares these DETAIL fields, not running pod counts.
+    configuredScale: Number.isSafeInteger(p.scale) && p.scale > 0 ? p.scale : null,
+    configuredZeroDowntime: typeof p.zeroDowntime === 'boolean' ? p.zeroDowntime : null,
+    configuredNotActual: true,
     reviewedBackendBinding: reviewedBackendBinding(p.envs, envNamesComplete),
     envNames: envNamesComplete ? [...new Set(p.envs.map(e => e.key))].sort() : null, envNamesComplete };
 }

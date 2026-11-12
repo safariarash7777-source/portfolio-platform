@@ -12,6 +12,7 @@ import { periodicReturns, type PeriodicReturns, RETURN_WINDOWS, TOLERANCE_DAYS }
 const REVALIDATE_MS = 60 * 1000;
 let cacheAt = 0;
 let cacheVal: Map<string, PeriodicReturns> | null = null;
+let cacheKey = "";
 
 function env(): { url: string; anon: string } | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -32,10 +33,14 @@ interface SlimRow {
  * بازده‌های دوره‌ای همهٔ نمادهای دارای داده در ~۱۰۵ روز اخیر.
  * خروجی: Map نماد → PeriodicReturns. نماد بدون داده در Map نیست.
  */
-export async function getBulkReturns(): Promise<Map<string, PeriodicReturns>> {
-  if (cacheVal && Date.now() - cacheAt < REVALIDATE_MS) return cacheVal;
+export async function getBulkReturns(symbols?: readonly string[]): Promise<Map<string, PeriodicReturns>> {
   const e = env();
   if (!e) return new Map();
+  if (symbols && (symbols.length > 1000 || symbols.some(s => typeof s !== "string" || !s || s.length > 100 || /[\x00-\x1f]/.test(s)))) return new Map();
+  const selected = symbols ? [...new Set(symbols)].sort() : null;
+  if (selected?.length === 0) return new Map();
+  const key = JSON.stringify([e.url, e.anon, selected]);
+  if (cacheVal && cacheKey === key && Date.now() - cacheAt < REVALIDATE_MS) return cacheVal;
 
   const sinceDays = RETURN_WINDOWS.m3 + TOLERANCE_DAYS + 5;
   const since = new Date(Date.now() - sinceDays * 86_400_000).toISOString().slice(0, 10);
@@ -45,7 +50,13 @@ export async function getBulkReturns(): Promise<Map<string, PeriodicReturns>> {
   const rows: SlimRow[] = [];
   const PAGE = 1000;
   try {
-    const signal = AbortSignal.timeout(20000);
+    const controller = new AbortController();
+    const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(12000)]);
+    const groups: (string[] | null)[] = selected
+      ? Array.from({ length: Math.ceil(selected.length / 50) }, (_, i) => selected.slice(i * 50, (i + 1) * 50))
+      : [null];
+    let cursor = 0;
+    const readGroup = async (group: string[] | null) => {
     let before: number | null = null;
     for (;;) {
       const qs = new URLSearchParams({
@@ -54,22 +65,29 @@ export async function getBulkReturns(): Promise<Map<string, PeriodicReturns>> {
         order: "id.desc",
         limit: String(PAGE),
       });
+      if (group) qs.set("symbol", `in.(${group.map(s => JSON.stringify(s)).join(",")})`);
       if (before !== null) qs.set("id", `lt.${before}`);
       const res = await fetch(`${e.url}/rest/v1/symbol_history?${qs}`, {
         headers: { apikey: e.anon, Authorization: `Bearer ${e.anon}` },
         signal,
         cache: "no-store",
       });
-      if (!res.ok) return new Map();
+      if (!res.ok) throw new Error("history_read_failed");
       const batch = (await res.json()) as SlimRow[];
-      if (!Array.isArray(batch)) return new Map();
+      if (!Array.isArray(batch) || (group && batch.some(r => !group.includes(r.symbol)))) throw new Error("history_scope_invalid");
       if (batch.length === 0) break;
       const next = batch[batch.length - 1].id;
-      if (!Number.isSafeInteger(next) || (before !== null && next >= before)) return new Map();
+      if (!Number.isSafeInteger(next) || (before !== null && next >= before)) throw new Error("history_cursor_invalid");
       before = next;
       rows.push(...batch);
-      if (rows.length > 400_000) return new Map();
+      if (rows.length > 400_000) throw new Error("history_limit");
     }
+    };
+    try {
+      await Promise.all(Array.from({ length: Math.min(4, groups.length) }, async () => {
+        while (cursor < groups.length) { const group = groups[cursor++]; await readGroup(group); }
+      }));
+    } finally { controller.abort(); }
   } catch {
     return new Map();
   }
@@ -101,6 +119,7 @@ export async function getBulkReturns(): Promise<Map<string, PeriodicReturns>> {
   }
 
   cacheAt = Date.now();
+  cacheKey = key;
   cacheVal = out;
   return out;
 }
