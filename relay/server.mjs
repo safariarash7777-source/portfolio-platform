@@ -1287,7 +1287,9 @@ async function codalFetchBridge() {
 }
 
 // ── رفرش پس‌زمینه ────────────────────────────────────────────────────────────
-const mcpQuotes = createMcpQuoteBridge();
+// Owner retired MCP market collection on 2026-11-12. Old deployment flags must
+// not resume paid/quota-limited calls; retain the existing dated cache unchanged.
+const mcpQuotes = createMcpQuoteBridge({env:{...process.env,MCPFARSI_QUOTE_ENABLED:'0'}});
 let refreshing = null;
 function refresh() {
   if (refreshing) return refreshing;

@@ -119,6 +119,7 @@ async function probe(scenario) {
       env:{...process.env,RELAY_TOKEN:'synthetic',BRSAPI_KEY:'synthetic',BRSAPI_BASE:'https://brsapi.ir/Api',
         SUPABASE_URL:'https://isolated.invalid',SUPABASE_SERVICE_ROLE_KEY:'synthetic',BRSAPI_CLIENT_ENABLED:scenario.startsWith('client-')?'1':'0',
         BRSAPI_LEASE_SIZE:'1',BRSAPI_DAILY_SOFT:'900',BRSAPI_DAILY_HARD:'1000',
+        MCPFARSI_QUOTE_ENABLED:'1',MCP_FARSI_API_KEY:'synthetic',
         BRSAPI_BUDGET_ENFORCE_LEGACY:'0',BRSAPI_COMMODITY_KEY:'',CODAL_ENABLED:'0',CANDLE_BACKFILL_ENABLED:'0',
         IME_ENABLED:'0',EOD_AFTER_HOUR:scenario.startsWith('daily-')||scenario==='client-budget-midcycle'?'14':'25',IR_HISTORY_SECTIONS:'gold,currency,stocks,funds'},
       stdio:['ignore','pipe','pipe']});
@@ -135,6 +136,8 @@ async function probe(scenario) {
 test('actual relay: healthy → partial timeout → recovery preserves failed rows and advances options independently',async()=>{
   const r=await probe('partial-recovery');
   assert.equal(r.blockedHosts,0);
+  assert.equal(r.debug.mcpfarsiQuote.enabled,false,'retired MCP stays disabled even with the old deployed flag');
+  assert.equal(r.debug.mcpfarsiQuote.requests,0);
   assert.equal(r.second.body.stocks.length,1);
   assert.deepEqual(r.second.body.stocks,r.first.body.stocks);
   assert.deepEqual(r.second.body.funds,r.first.body.funds);
