@@ -2,6 +2,7 @@ import { brsFetch as fetch } from "./brsapi-transport.mjs";
 import { isBrsLocalDeferral } from "./brsapi-policy.mjs";
 import { notifyAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 import { createHash } from "node:crypto";
+import { loadDecisionStatement } from "./codal-statement-source.mjs";
 // ماژول کدال — دریافت خودکار گزارش‌های بنیادی از وب‌سرویس کدالِ BrsApi.
 // چرا این‌جا (رله): excel.codal.ir و codal.ir به IP خارجی پاسخ نمی‌دهند؛
 // فقط هاست داخل ایران (لیارا) می‌تواند اکسل گزارش‌ها را دانلود کند.
@@ -1021,7 +1022,7 @@ function metaFrom(a, kind) {
   const title = a.title || "";
   const period_end = jalaliStr(a.date_title) || jalaliStr(title);
   let period_months = 12;
-  const pm = faToEnDigits(title).match(/دوره\s*(\d{1,2})\s*ماهه/);
+  const pm = faToEnDigits(title).match(/(?:دوره\s*)?(\d{1,2})\s*ماهه/);
   if (pm) period_months = Number(pm[1]);
   else if (kind === "ن-۳۰") period_months = 1;
   return {
@@ -1105,9 +1106,19 @@ export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejec
   let body = null;
   const html = await downloadExcelHtml(a.link_excel, kind === "ن-۳۰" ? value => { body = value; } : undefined);
   // Stage boundary only: never pass report content to diagnostics.
-  onDownloaded();
   const meta = metaFrom(a, kind);
-  if (kind === "ن-۱۰") return admitN10Html(html, meta, onRejected);
+  if (kind === "ن-۱۰") {
+    let rejection;
+    const legacy = admitN10Html(html, meta, event => { rejection ??= event; });
+    if (legacy) { onDownloaded(); return legacy; }
+    // Discovery remains the shared BRSAPI feed. The official statement pages
+    // supplement missing Excel context; they never bypass financial validation.
+    const result = await loadDecisionStatement(a, meta, { fetchImpl: fetch });
+    onDownloaded();
+    if (result.data) return result.data;
+    return notifyAdmissionRejection(onRejected, kind, rejection?.reason ?? "context_invalid");
+  }
+  onDownloaded();
   const source = body && sameQuantityResponseSource(body.sourceRef, body.responseUrl)
     ? { version: 1, sourceId: body.sourceRef, htmlSha256: createHash("sha256").update(body.htmlBytes).digest("hex"),
       htmlBytes: body.htmlBytes, symbol: meta.symbol, periodEnd: meta.period_end } : null;

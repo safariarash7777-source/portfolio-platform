@@ -44,6 +44,7 @@ async function fixture(options = {}) {
   } } });
   globalThis.fetch = async (input, init = {}) => {
     const url = new URL(input);
+    if (url.hostname === 'codal.ir' && options.officialBody !== undefined) return new Response(options.officialBody);
     if (url.hostname === "excel.invalid") {
       calls.excel.push(url.pathname);
       if (options.excelErrorCode) throw Object.assign(new Error(options.excelErrorCode), { code: options.excelErrorCode });
@@ -116,6 +117,16 @@ async function fixture(options = {}) {
 test.afterEach(() => {
   globalThis.fetch = originalFetch;
   codal.setCodalBudgetPorts(null);
+});
+
+test('invalid statement retry ledger is never cached as valid state on a later cycle', async () => {
+  const f = await fixture({ pages: [[]], initialState: { watermark, fails: {}, decisionStatementV1Attempts: { bad: 2 } } });
+  for (let i = 0; i < 2; i++) {
+    await f.engine.runEngineCycle();
+    assert.equal(f.engine.engineStatus.ok, false);
+    assert.equal(f.calls.pages.length, 0);
+    assert.equal(f.calls.saves.length, 0);
+  }
 });
 test('local announcement deferral keeps watermark and failure ledger and does not retry', async () => {
   const f = await fixture({ announcementErrorCode: 'brs_transport_queue_full' });
@@ -344,6 +355,20 @@ test("metadata-only report cannot release a blocked ledger or advance watermark"
   assert.deepEqual(f.persisted.watermark, watermark);
   assert.equal(f.persisted.fails[a.link], 3);
   assert.equal(f.calls.excel.length, 0);
+});
+
+test('new statement adapter grants one bounded retry to an old official N10 failure and persists its use', async()=>{
+  const a={...financial(1),link:'https://codal.ir/Reports/Decision.aspx?LetterSerial=fixture'};
+  const options={pages:[[a,boundary],[]],excelHtml:'<table></table>',officialBody:'<html></html>'};
+  const f=await fixture({...options,initialState:{watermark,backfillCursor:0,fails:{[a.link]:3}}});
+  await f.engine.runEngineCycle();
+  assert.equal(f.calls.excel.length,1);assert.equal(f.persisted.fails[a.link],4);
+  assert.equal(f.persisted.decisionStatementV1Attempts[a.link],1);
+  assert.deepEqual(f.persisted.watermark,watermark);
+  await f.engine.runEngineCycle();assert.equal(f.calls.excel.length,1);
+  const restarted=await fixture({...options,initialState:f.persisted});
+  await restarted.engine.runEngineCycle();assert.equal(restarted.calls.excel.length,0);
+  assert.equal(restarted.persisted.fails[a.link],4);
 });
 
 test("archive duplicate response counts zero actual inserts", async () => {
