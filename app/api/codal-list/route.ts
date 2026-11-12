@@ -35,11 +35,28 @@ export async function GET(req: Request) {
   let upstreamStatus: number | undefined;
   try {
     const qs = codalFeedQuery(symbol);
-    const res = await fetch(`${url.replace(/\/+$/, "")}/rest/v1/codal_feed?${qs}`, {
+    const target = `${url.replace(/\/+$/, "")}/rest/v1/codal_feed?${qs}`;
+    const signal = AbortSignal.timeout(15000);
+    const options: RequestInit = {
+      method: "GET", redirect: "error", credentials: "omit",
       headers: { apikey: anon, Authorization: `Bearer ${anon}`, Accept: "application/json" },
       cache: "no-store",
-      signal: AbortSignal.timeout(15000),
-    });
+      signal,
+    };
+    let res: Response;
+    try { res = await fetch(target, options); }
+    catch (error) {
+      const code = (error as { cause?: { code?: unknown } } | null)?.cause?.code;
+      // A read-only connection timeout can recover on a new connection. Reuse
+      // the same destination, credentials and overall deadline; never retry an
+      // HTTP, body, TLS or authorization failure, and never reset the timer.
+      if (code !== "UND_ERR_CONNECT_TIMEOUT" || signal.aborted || Date.now() - startedAt >= 15000) throw error;
+      res = await fetch(target, options);
+      if (res.ok) {
+        try { console.warn("stored_read_recovered", { route: "codal-list", attempts: 2, elapsedMs: Date.now() - startedAt }); }
+        catch { /* Logging cannot change a successful read. */ }
+      }
+    }
     phase = "headers";
     upstreamStatus = res.status;
     if (!res.ok) {

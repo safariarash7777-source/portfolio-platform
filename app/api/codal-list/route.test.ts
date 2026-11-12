@@ -88,6 +88,48 @@ function configure(key = jwt()) {
 }
 const request = (symbol = "فولاد") => new Request(`https://candidate.invalid/api/codal-list?symbol=${encodeURIComponent(symbol)}`);
 
+test('one connection retry recovers the same read within one shared deadline', async () => {
+  configure();
+  const timeouts: number[] = [], calls: { target: string; options?: RequestInit }[] = [];
+  const controller = new AbortController();
+  fixture.timeout = ms => { timeouts.push(ms); return controller.signal; };
+  fixture.fetch = async (input, options) => {
+    calls.push({ target: String(input), options });
+    if (calls.length === 1) throw new TypeError('fetch failed', { cause: { code: 'UND_ERR_CONNECT_TIMEOUT' } });
+    return Response.json([]);
+  };
+  const response = await GET(request());
+  assert.equal(response.status, 200);
+  assert.deepEqual((await response.json()).data, []);
+  assert.deepEqual(timeouts, [15000]);
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0].target, calls[1].target);
+  assert.equal(calls[0].options, calls[1].options);
+  assert.equal(calls[1].options?.signal, controller.signal);
+  assert.equal(calls[1].options?.method, 'GET');
+  assert.equal(calls[1].options?.redirect, 'error');
+  assert.equal(calls[1].options?.body, undefined);
+  assert.equal(diagnostics[0][0], 'stored_read_recovered');
+});
+
+test('expired shared deadline prevents a retry even for a connection timeout', async () => {
+  configure();const controller = new AbortController();let calls = 0;
+  fixture.timeout = () => controller.signal;
+  fixture.fetch = async () => { calls++;controller.abort();throw new TypeError('fetch failed', { cause: { code: 'UND_ERR_CONNECT_TIMEOUT' } }); };
+  assert.equal((await GET(request())).status, 502);
+  assert.equal(calls, 1);
+});
+
+test('HTTP, TLS and unknown errors do not receive a retry or an empty success', async () => {
+  configure();
+  for (const failure of [401,403,500,new TypeError('TLS', {cause:{code:'CERT_HAS_EXPIRED'}}),new TypeError('unknown')]) {
+    let calls = 0;
+    fixture.fetch = async () => { calls++; if(typeof failure === 'number')return new Response('',{status:failure});throw failure; };
+    assert.equal((await GET(request())).status,502);
+    assert.equal(calls,1);
+  }
+});
+
 test("announcement list reads feed metadata, including unparsed notices, without fetching financial reports or relay", async () => {
   const previous = { fetch: fixture.fetch, url: environment.NEXT_PUBLIC_SUPABASE_URL, key: environment.NEXT_PUBLIC_SUPABASE_ANON_KEY };
   environment.NEXT_PUBLIC_SUPABASE_URL = "https://database.example.test";
@@ -139,7 +181,7 @@ test('transport failure logs only an allowlisted cause and preserves the existin
     const response = await GET(new Request('https://site.example.test/api/codal-list?symbol=SECRET_SYMBOL'));
     assert.equal(response.status, 502);
     assert.equal((await response.json()).error, 'fetch failed');
-    assert.equal(calls, 1);
+    assert.equal(calls, 2);
     assert.equal(logs.length, 1);
     const fields = logs[0][1] as Record<string, unknown>;
     assert.equal(logs[0][0], 'stored_read_failed');
