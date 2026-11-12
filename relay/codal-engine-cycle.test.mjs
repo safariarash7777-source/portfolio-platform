@@ -35,6 +35,10 @@ async function fixture(options = {}) {
   let rejectFeed = !!options.rejectFeed;
   let rejectSave = !!options.rejectSave;
   codal.setCodalBudgetPorts({ client: { request: async (job) => {
+    if (!job.params.l18) {
+      assert.equal(job.producer, 'codal-list');
+      assert.equal(job.budgetClass, 'standard');
+    }
     calls.pages.push(Number(job.params.page));
     if (options.announcementErrorCode) throw Object.assign(new Error(options.announcementErrorCode), { code: options.announcementErrorCode });
     if (options.backfillPages && job.params.l18) {
