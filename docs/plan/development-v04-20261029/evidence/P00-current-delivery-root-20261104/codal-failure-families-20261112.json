@@ -1,0 +1,39 @@
+{
+  "atUtc": "2026-11-12T19:42:01.849111+00:00",
+  "database": {
+    "code": 0,
+    "row": [
+      {
+        "code": "metadata unavailable",
+        "title_group": "no retained feed metadata",
+        "reports": 315,
+        "attempts_blocked": 62
+      },
+      {
+        "code": "ن-۱۰",
+        "title_group": "consolidated title",
+        "reports": 22,
+        "attempts_blocked": 7
+      },
+      {
+        "code": "ن-۱۰",
+        "title_group": "other title: no scope conclusion",
+        "reports": 164,
+        "attempts_blocked": 66
+      },
+      {
+        "code": "ن-۳۰",
+        "title_group": "other title: no scope conclusion",
+        "reports": 44,
+        "attempts_blocked": 20
+      },
+      {
+        "code": "ن-۳۱",
+        "title_group": "other title: no scope conclusion",
+        "reports": 55,
+        "attempts_blocked": 22
+      }
+    ],
+    "queryError": null
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "observedAtUtc": "2026-11-12T19:48:26.929Z",
+  "deployment": "dpl_4ih4QigKhozTjT1sB13tcMsFaVoR",
+  "requestId": "ddnth-1794512896213-50bf7c9a546d",
+  "route": "codal-list",
+  "phase": "request",
+  "elapsedMs": 10500,
+  "upstreamStatus": null,
+  "errorName": "TypeError",
+  "causeCode": "UND_ERR_CONNECT_TIMEOUT",
+  "source": "Vercel runtime log retrieved via connector; no upstream HTTP response"
+}

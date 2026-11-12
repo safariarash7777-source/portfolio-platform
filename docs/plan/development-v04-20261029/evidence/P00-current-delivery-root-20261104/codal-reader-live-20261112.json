@@ -1,0 +1,28 @@
+{
+  "atUtc": "2026-11-12T20:02:24.532906+00:00",
+  "deployment": "dpl_94whyRUCmdNd8ECG3uVnsPYqxKBp",
+  "main": "38404968391cc868d9e893e1960abef0f69f3132",
+  "results": [
+    {
+      "symbol": "فولاد",
+      "url": "https://portfolio-platform-fawn.vercel.app/api/codal-list?symbol=%D9%81%D9%88%D9%84%D8%A7%D8%AF&verify=pr425",
+      "exit": 0,
+      "httpAndSeconds": "200 1.568300",
+      "source": "codal_feed",
+      "coverage": "stored-announcements",
+      "rows": 21,
+      "errorPresent": false
+    },
+    {
+      "symbol": "کاوان",
+      "url": "https://portfolio-platform-fawn.vercel.app/api/codal-list?symbol=%DA%A9%D8%A7%D9%88%D8%A7%D9%86&verify=pr425",
+      "exit": 0,
+      "httpAndSeconds": "200 1.447488",
+      "source": "codal_feed",
+      "coverage": "stored-announcements",
+      "rows": 30,
+      "errorPresent": false
+    }
+  ],
+  "limitation": "Successful bounded reads do not prove that every future network outage will recover."
+}
