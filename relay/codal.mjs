@@ -1051,7 +1051,13 @@ export const existingUrlsFor = existingUrls;
 /** دریافت یک صفحهٔ اطلاعیه — بدون l18، فید سراسری کل بازار را می‌دهد
  * (جدیدترین‌ها اول، ۲۰تایی). موتور v3 برای واترمارک فید و بک‌فیل نمادی
  * از همین استفاده می‌کند. */
-export async function fetchAnnouncementsPage({ l18, category, page = 1, date_start } = {}) {
+export async function fetchAnnouncementsPage({ l18, category, page = 1, date_start, purpose = "archive" } = {}) {
+  if (!["current", "archive"].includes(purpose)) throw new Error("invalid announcement purpose");
+  // Current discovery must not stop with historical backfill. Reuse the existing
+  // standard allocation; never promote it to critical or change any ceiling.
+  const allocation = purpose === "current"
+    ? { producer: "codal-list", budgetClass: "standard" }
+    : { producer: "codal-archive", budgetClass: "bulk" };
   if (process.env.CODAL_ANNOUNCEMENT_SOURCE === 'official') return readOfficialAnnouncements({ l18, category, page, date_start });
   const qs = new URLSearchParams({
     key: BRSAPI_KEY, page: String(page),
@@ -1069,13 +1075,14 @@ export async function fetchAnnouncementsPage({ l18, category, page = 1, date_sta
     if (date_start) params.date_start = String(date_start);
     json = await client.request({
       endpoint: "Codal/Announcement.php", params,
-      producer: "codal-archive", priority: "background",
-      // صفحه‌گردیِ آرشیو — تاریخی و بی‌عجله.
-      budgetClass: "bulk",
+      ...allocation, priority: "background",
       dedupeTtlMs: 300_000, timeoutMs: 25_000,
     });
   } else {
-    if (countLegacy) await countLegacy("codal-archive", "bulk");
+    if (countLegacy) {
+      if (purpose === "current") await countLegacy("codal-list", "standard");
+      else await countLegacy("codal-archive", "bulk");
+    }
     const res = await fetch(`${BRSAPI_BASE}/Codal/Announcement.php?${qs}`, {
       headers: HDRS, signal: AbortSignal.timeout(25000),
     });

@@ -272,7 +272,7 @@ async function pollGlobalFeed() {
 
   outer:
   for (let page = 1; page <= FEED_MAX_PAGES; page++) {
-    const items = await fetchPageWithRetry({ page }); // بدون l18 → کل بازار
+    const items = await fetchPageWithRetry({ page, purpose: "current" }); // بدون l18 → کل بازار
     st.pages = page;
     if (!items.length) { st.complete = true; st.incompleteReason = null; break; }
     for (const a of items) {

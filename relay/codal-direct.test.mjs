@@ -1,8 +1,42 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { DailyBudget } from './brsapi-client.mjs';
 import { createOfficialAnnouncements, officialAnnouncementRows, officialSearchUrl } from './codal-direct.mjs';
 const row={TracingNo:1,Symbol:'نمونه',CompanyName:'نمونه',Title:'گزارش نمونه',LetterCode:'ن-۳۰',SentDateTime:'۱۴۰۵/۰۸/۰۶ ۱۲:۳۰:۰۰',PublishDateTime:null,Url:'/Reports/Decision.aspx?LetterSerial=example%3d%3d&rt=0',ExcelUrl:'https://excel.codal.ir/service/Excel/GetAll/example/0',PdfUrl:''};
 const body={Total:1,Letters:[row]};
+
+test('current feed keeps the standard reserve after archive stops, without raising the hard ceiling',async()=>{
+ const codal=await import('./codal.mjs');
+ const budget=new DailyBudget({softBudget:2,hardCeiling:6});
+ assert.equal(budget.reserve('bulk'),true);assert.equal(budget.reserve('bulk'),true);
+ let sends=0;
+ codal.setCodalBudgetPorts({client:{request:async job=>{
+  assert.equal('purpose' in job.params,false);
+  assert.equal(job.priority,'background');
+  if(!budget.reserve(job.budgetClass))throw Error('allocation exhausted');
+  sends++;assert.equal(job.producer,'codal-list');return {announcement:[]};
+ }}});
+ try{
+  await assert.rejects(codal.fetchAnnouncementsPage({}),/allocation exhausted/);
+  assert.deepEqual(await codal.fetchAnnouncementsPage({purpose:'current'}),[]);
+  assert.deepEqual(await codal.fetchAnnouncementsPage({purpose:'current'}),[]);
+  await assert.rejects(codal.fetchAnnouncementsPage({purpose:'current'}),/allocation exhausted/);
+  await assert.rejects(codal.fetchAnnouncementsPage({purpose:'critical'}),/invalid announcement purpose/);
+  assert.equal(sends,2);assert.equal(budget.snapshot().used,4);
+  assert.equal(budget.reserve('critical'),true);assert.equal(budget.reserve('critical'),true);
+  assert.equal(budget.reserve('critical'),false);
+ }finally{codal.setCodalBudgetPorts(null);}
+});
+
+test('legacy accounting receives the same explicit current/archive classes before any send',async()=>{
+ const codal=await import('./codal.mjs');const calls=[];
+ codal.setCodalBudgetPorts({countLegacy:async(producer,cls)=>{calls.push([producer,cls]);throw Error('stop before network');}});
+ try{
+  await assert.rejects(codal.fetchAnnouncementsPage({purpose:'current'}),/stop before network/);
+  await assert.rejects(codal.fetchAnnouncementsPage({}),/stop before network/);
+  assert.deepEqual(calls,[['codal-list','standard'],['codal-archive','bulk']]);
+ }finally{codal.setCodalBudgetPorts(null);}
+});
 test('official identity maps into existing contract without guessed dates or values',()=>{
   const [r]=officialAnnouncementRows(body);
   assert.equal(r.link,'https://codal.ir/Reports/Decision.aspx?LetterSerial=example%3d%3d&rt=0');

@@ -34,7 +34,9 @@ async function fixture(options = {}) {
   const reports = new Map((options.initialReports ?? []).map(r => [r.source_url, r]));
   let rejectFeed = !!options.rejectFeed;
   let rejectSave = !!options.rejectSave;
+  const budgetJobs = [];
   codal.setCodalBudgetPorts({ client: { request: async (job) => {
+    budgetJobs.push({ producer: job.producer, budgetClass: job.budgetClass });
     calls.pages.push(Number(job.params.page));
     if (options.announcementErrorCode) throw Object.assign(new Error(options.announcementErrorCode), { code: options.announcementErrorCode });
     if (options.backfillPages && job.params.l18) {
@@ -109,7 +111,7 @@ async function fixture(options = {}) {
   };
   const engine = await import(`./codal-engine.mjs?mock=${++scenario}`);
   return {
-    engine, calls, get persisted() { return persisted; },
+    engine, calls, budgetJobs, get persisted() { return persisted; },
     allowFeed: () => { rejectFeed = false; }, allowSave: () => { rejectSave = false; },
   };
 }
@@ -117,6 +119,12 @@ async function fixture(options = {}) {
 test.afterEach(() => {
   globalThis.fetch = originalFetch;
   codal.setCodalBudgetPorts(null);
+});
+
+test('scheduled global discovery explicitly uses the standard current-feed allocation', async () => {
+  const f = await fixture({ pages: [[]] });
+  await f.engine.runEngineCycle();
+  assert.deepEqual(f.budgetJobs, [{ producer: 'codal-list', budgetClass: 'standard' }]);
 });
 
 test('invalid statement retry ledger is never cached as valid state on a later cycle', async () => {
