@@ -182,7 +182,9 @@ jobs:
   # یک تستِ جداگانه عمداً نسخهٔ معیوب را می‌سازد و ثابت می‌کند گارد پوچ نیست.
   leads-db:
     name: Database RLS · Integrity (Postgres)
-    runs-on: ubuntu-latest
+    # Match pg_dump/psql to the PG16 restore target. ubuntu-latest now installs
+    # PG18, whose dumps contain transaction_timeout unsupported by PG16.
+    runs-on: ubuntu-24.04
     services:
       postgres:
         # Postgresِ یک‌بارمصرفِ داخلِ runner. نه Supabase، نه دادهٔ واقعی، نه سکرت.
@@ -202,7 +204,14 @@ jobs:
       - run: npm ci
 
       - name: نصبِ کلاینتِ psql
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends postgresql-client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends postgresql-client-16
+          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
+      - name: Verify backup client version matches restore server
+        run: |
+          pg_dump --version | grep -E '^pg_dump \(PostgreSQL\) 16\.'
+          psql --version | grep -E '^psql \(PostgreSQL\) 16\.'
 
       # `CI=true` را خودِ GitHub Actions ست می‌کند و تست روی همان تکیه می‌کند:
       # اگر Postgres یا psql نباشد، به‌جای skip **خطا می‌دهد**.
