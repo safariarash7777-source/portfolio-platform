@@ -1,0 +1,83 @@
+{
+  "atUtc": "2026-11-12T19:29:31.478088+00:00",
+  "database": {
+    "code": 0,
+    "row": {
+      "reports": [
+        {
+          "report_kind": "ن-۱۰",
+          "rows": 3996,
+          "symbols": 504,
+          "last_insert": "2026-11-12T18:42:28.630888+00:00"
+        },
+        {
+          "report_kind": "ن-۳۰",
+          "rows": 8450,
+          "symbols": 389,
+          "last_insert": "2026-11-12T11:06:06.404247+00:00"
+        }
+      ],
+      "new_adapter": 1,
+      "accepted": [
+        {
+          "id": 12485,
+          "symbol": "کاوان",
+          "title": "اطلاعات و صورت‌های مالی میاندوره‌ای  دوره ۶ ماهه منتهی به  ۱۴۰۵/۰۶/۳۱ (حسابرسی نشده)(اصلاحیه)",
+          "source_url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=QQQaQQQadLPIgetxkfx0nEOBIx3w%3d%3d&rt=0&let=6&ct=0&ft=-1#pv2",
+          "period_end": "2026-09-22",
+          "captured_at": "2026-11-12T18:42:28.630888+00:00",
+          "data": {
+            "unit": "میلیون ریال",
+            "symbol": "کاوان",
+            "audited": false,
+            "capital": 2500000,
+            "period_end": "1405-06-31",
+            "standalone": {
+              "cogs": 6029318,
+              "revenue": 12250151,
+              "net_profit": 5279341,
+              "gross_profit": 6220833,
+              "operating_profit": 5121345
+            },
+            "report_kind": "ن-۱۰",
+            "company_name": "مس کاوان نماد",
+            "period_months": 6,
+            "restated_prior": true,
+            "statement_provenance": {
+              "scope": "standalone",
+              "equity": {
+                "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=QQQaQQQadLPIgetxkfx0nEOBIx3w%3D%3D&rt=0&let=6&ct=0&ft=-1&sheetId=1060",
+                "sha256": "210c51c8ece85cff76d80221519f07c4fd4b73bec726c8ae1f2f5b145b91c876",
+                "sheetCode": 1060,
+                "tableCode": 1088
+              },
+              "income": {
+                "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=QQQaQQQadLPIgetxkfx0nEOBIx3w%3d%3d&rt=0&let=6&ct=0&ft=-1",
+                "sha256": "fbd65df41ca083b774a32f2f6781415ce90bc091337b4e6b04cfdffdf6e88d72",
+                "sheetCode": 1,
+                "tableCode": 904
+              },
+              "version": 1,
+              "tracingNo": 1633253,
+              "periodKind": "cumulative",
+              "epsAccepted": false,
+              "priorAccepted": false
+            }
+          }
+        }
+      ],
+      "state": {
+        "updated_at": "2026-11-12T18:43:04.376+00:00",
+        "watermark": {
+          "key": 14050721232817,
+          "links": [
+            "https://codal.ir/Reports/Attachment.aspx?LetterSerial=iaEmTRjSwXNJIaFe4n9KmA%3d%3d"
+          ]
+        },
+        "cursor": 1326,
+        "fails": 600
+      }
+    },
+    "queryError": null
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "symbol": "کاوان",
+  "meta": {
+    "symbol": "کاوان",
+    "company_name": "مس کاوان نماد",
+    "period_end": "1405-06-31",
+    "period_months": 6,
+    "audited": false
+  },
+  "accepted": true,
+  "reason": null,
+  "provenance": {
+    "version": 1,
+    "scope": "standalone",
+    "periodKind": "cumulative",
+    "tracingNo": 1633253,
+    "income": {
+      "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=QQQaQQQadLPIgetxkfx0nEOBIx3w%3d%3d&rt=0&let=6&ct=0&ft=-1",
+      "sha256": "fbd65df41ca083b774a32f2f6781415ce90bc091337b4e6b04cfdffdf6e88d72",
+      "sheetCode": 1,
+      "tableCode": 904
+    },
+    "equity": {
+      "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=QQQaQQQadLPIgetxkfx0nEOBIx3w%3D%3D&rt=0&let=6&ct=0&ft=-1&sheetId=1060",
+      "sha256": "210c51c8ece85cff76d80221519f07c4fd4b73bec726c8ae1f2f5b145b91c876",
+      "sheetCode": 1060,
+      "tableCode": 1088
+    },
+    "priorAccepted": false,
+    "epsAccepted": false
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "atUtc": "2026-11-12T18:28:53.414203+00:00",
+  "database": {
+    "code": 0,
+    "row": {
+      "reports": [
+        {
+          "report_kind": "ن-۱۰",
+          "rows": 3995,
+          "symbols": 503,
+          "last_insert": "2026-10-13T19:41:20.25823+00:00"
+        },
+        {
+          "report_kind": "ن-۳۰",
+          "rows": 8450,
+          "symbols": 389,
+          "last_insert": "2026-11-12T11:06:06.404247+00:00"
+        }
+      ],
+      "new_adapter": 0,
+      "state": {
+        "updated_at": "2026-11-12T18:11:14.433+00:00",
+        "watermark": {
+          "key": 14050721232817,
+          "links": [
+            "https://codal.ir/Reports/Attachment.aspx?LetterSerial=iaEmTRjSwXNJIaFe4n9KmA%3d%3d"
+          ]
+        },
+        "cursor": 1323,
+        "fails": 600
+      }
+    },
+    "queryError": null
+  }
+}

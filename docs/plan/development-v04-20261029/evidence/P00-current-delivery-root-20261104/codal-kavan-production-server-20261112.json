@@ -1,0 +1,23 @@
+{
+  "atUtc": "2026-11-12T19:29:28.985605+00:00",
+  "observedVia": "read-only SSH public HTTPS fetch from existing backend VM",
+  "url": "https://portfolio-platform-fawn.vercel.app/symbol/%DA%A9%D8%A7%D9%88%D8%A7%D9%86",
+  "httpStatus": 200,
+  "seconds": 3.4784936904907227,
+  "htmlCharacters": 102684,
+  "recordId": 12485,
+  "sourceSerialPresent": true,
+  "periodPresent": true,
+  "period": "1405-06-31",
+  "rawValuePresence": {
+    "revenue": 12250151,
+    "net_profit": 5279341,
+    "capital": 2500000
+  },
+  "unit": "million rial",
+  "limitations": [
+    "Data-render check, not full visual acceptance",
+    "Local laptop attempts failed DNS/connect; independent server fetch succeeded",
+    "No guarantee that every issuer or financial format is supported"
+  ]
+}
