@@ -121,6 +121,16 @@ test.afterEach(() => {
   codal.setCodalBudgetPorts(null);
 });
 
+test('unsupported explicit monthly code preserves feed metadata without parsing as N30', async () => {
+  const a = announcement(1, { code: "ن-۳۱", title: "گزارش فعالیت ماهانه", link_excel: "https://excel.invalid/1" });
+  const f = await fixture({ pages: [[a, boundary], []] });
+  await f.engine.runEngineCycle();
+  assert.equal(f.calls.excel.length, 0);
+  assert.equal(f.calls.reportWrites.length, 0);
+  assert.ok(f.calls.feedWrites.some(write => write.rows.some(row => row.link === a.link)));
+  assert.equal(f.engine.engineStatus.feed.parseFailed, 0);
+});
+
 test('scheduled global discovery explicitly uses the standard current-feed allocation', async () => {
   const f = await fixture({ pages: [[]] });
   await f.engine.runEngineCycle();
