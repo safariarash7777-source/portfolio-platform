@@ -19,7 +19,8 @@ export async function fetchFundamentalRows(
       });
     } catch (error) {
       const code = (error as { cause?: { code?: unknown } } | null)?.cause?.code;
-      const retryable = firstHeaders.signal.aborted || code === 'UND_ERR_CONNECT_TIMEOUT';
+      const retryable = (firstHeaders.signal.aborted && error === firstHeaders.signal.reason)
+        || code === 'UND_ERR_CONNECT_TIMEOUT';
       if (attempt !== 0 || deadline.aborted || !retryable) throw error;
     } finally {
       if (timer !== null) clearTimeout(timer);

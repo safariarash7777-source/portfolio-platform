@@ -56,6 +56,16 @@ test('headers finishing before cutoff leave body usable without retry', async ()
   assert.deepEqual(await response.json(), [{ id: 2 }]);
 });
 
+test('a simultaneous TLS error cannot borrow the header deadline retry', async () => {
+  let calls = 0;
+  await assert.rejects(fetchFundamentalRows(url, headers, async (_, options) => {
+    calls++;
+    return new Promise<Response>((_, reject) => options!.signal!.addEventListener('abort', () =>
+      reject(Object.assign(new TypeError('certificate failure'), { cause: { code: 'CERT_HAS_EXPIRED' } })), { once: true }));
+  }, { totalMs: 500, firstHeadersMs: 10 }), /certificate/);
+  assert.equal(calls, 1);
+});
+
 test('second attempt shares original deadline instead of gaining another full timeout', async () => {
   let calls = 0;
   const keepAlive = setTimeout(() => {}, 1000);
