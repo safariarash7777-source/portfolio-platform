@@ -1008,9 +1008,11 @@ async function insertReport(row) {
 
 function classify(a) {
   const title = a.title || "";
-  const code = a.code || "";
-  if (code.includes("ن-۳۰") || title.includes("گزارش فعالیت ماهانه")) return "ن-۳۰";
-  const isFs = code.includes("ن-۱۰")
+  const code = typeof a.code === "string" ? faToEnDigits(a.code).trim() : "";
+  // Explicit report codes take precedence; title fallback is only for missing codes.
+  if (code && code !== "ن-30" && code !== "ن-10") return null;
+  if (code === "ن-30" || (!code && title.includes("گزارش فعالیت ماهانه"))) return "ن-۳۰";
+  const isFs = code === "ن-10"
     || title.includes("صورت‌های مالی") || title.includes("صورتهای مالی") || title.includes("صورت های مالی");
   if (!isFs) return null;
   // فقط گزارش خود شرکت اصلی (نه پرتفوی زیرمجموعه و نه تلفیقیِ جدا از اصلی — تلفیقی همراه اصلی در همان اکسل است).
