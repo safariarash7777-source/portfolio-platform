@@ -224,7 +224,8 @@ test("server.mjs: نوشتن از writeEodHistory، و چرخهٔ ناقص (بو
   assert.match(fn, /writeEodHistory\(/);
   assert.match(fn, /if \(!cycleComplete\)/);
   assert.match(fn, /lastDate: r\.complete \? r\.tradeDate : eodStatus\.lastDate/);
-  assert.match(SERVER, /if \(!result\.successes \|\| budgetStop\.active\) return;/);
+  assert.match(SERVER, /if \(!result\.successes\) return;/);
+  assert.match(SERVER, /if \(budgetStop\.active\) \{\s*if \(result\.complete\) await pushToSupabase\(body\);\s*return;\s*\}/);
   assert.match(SERVER, /pushDailyHistory\(freshBody, \{ cycleComplete: outcomes\.stocks\.ok && outcomes\.funds\.ok && outcomes\.indices\.ok \}\)/);
   assert.doesNotMatch(fn, /select=id&trade_date/, "میان‌برِ «یک ردیف هست ⇒ تمام» برگشته");
 });
