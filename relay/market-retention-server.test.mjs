@@ -6,6 +6,17 @@ async function probe(scenario) {
   const source = new URL('./server.mjs', import.meta.url).href;
   const program = `
     import http from 'node:http';
+    import { performance } from 'node:perf_hooks';
+    import timers from 'node:timers/promises';
+    import { syncBuiltinESMExports } from 'node:module';
+    // Offline child only: advance the actual transport's monotonic clock port.
+    // Production has no environment switch or shortened policy window.
+    let transportClock = 0;
+    Object.defineProperty(performance, 'now', { value: () => transportClock });
+    timers.setTimeout = async (ms, value, options = {}) => {
+      options.signal?.throwIfAborted(); transportClock += ms; options.signal?.throwIfAborted(); return value;
+    };
+    syncBuiltinESMExports();
     const scenario=${JSON.stringify(scenario)};
     const start=Date.parse('2026-10-06T06:00:00Z'); let now=start,phase=0;
     const RealDate=Date;
@@ -35,6 +46,8 @@ async function probe(scenario) {
           }));
           return reply(phase===1&&scenario==='authoritative-empty'?{gold:[],currency:[],cryptocurrency:[]}:phase===1&&scenario==='missing-currency'?{gold:gc.gold,cryptocurrency:gc.cryptocurrency}:{...gc,currency});
         }
+        if(/Nav/.test(u.pathname)&&scenario.startsWith('nav-restart'))return reply(u.searchParams.has('l18')?{predtran:0}:[{l18:fund.l18,predtran:1200,psubtran:1210,date:'1405-07-14',time:'09:30:00'},{l18:'unavailable-fund',predtran:0}]);
+        if(/AllSymbols/.test(u.pathname)&&scenario.startsWith('nav-restart'))return reply([stock,fund,{...fund,l18:'isolated-second-fund'}]);
         if(/AllSymbols/.test(u.pathname))return reply(phase===1&&scenario==='authoritative-empty'?[]:phase===1&&scenario==='invalid-fund'?[stock,{...fund,pl:0}]:[stock,fund]);
         if(/Index/.test(u.pathname))return reply({index:100,index_change:0,date:'1405-07-14',time:'09:30:00'});
         if(/Option/.test(u.pathname))return reply(phase===1&&scenario==='authoritative-empty'?[]:[{...option,pl:2000+phase*1000}]);
@@ -62,6 +75,10 @@ async function probe(scenario) {
         initialReads++;
         if(scenario==='unknown-baseline'||scenario==='retry-baseline'&&phase===0)failure();
         if(scenario==='malformed-baseline')return reply([{payload:{}}]);
+        if(scenario.startsWith('nav-restart'))return reply([{payload:{...gc,crypto:gc.cryptocurrency,stocks:[],options:[],indices:null,
+          funds:[fund.l18,'isolated-second-fund'].map(id=>({id,faName:'Synthetic retained fund',unit:'toman',price:100,nav:100,navIssue:101,
+            navDate:'1405-07-14',navTime:'08:00:00',...(scenario==='nav-restart-partial'?{navReceivedAt:start-3600000}:{})})),fetchedAt:start-3600000,
+          snapshotQuality:{families:{funds:{state:'received',receivedAt:start-3600000,retained:false}}}}}]);
         if(scenario==='hydrated-partial'||scenario==='retry-baseline')return reply([{payload:{...gc,crypto:gc.cryptocurrency,
           stocks:[stock],funds:[fund],options:[option],indices:{date:'1405-07-14',time:'09:30:00'},fetchedAt:start-3600000}}]);
       }
@@ -76,6 +93,10 @@ async function probe(scenario) {
     await new Promise(r=>server.listen(0,'127.0.0.1',r));
     if(scenario==='hydrated-partial')phase=1;
     await refresh();
+    if(scenario.startsWith('nav-restart'))for(let i=0;i<100;i++) {
+      if((await get('/debug')).body.sources.brsapi_nav?.updated===1)break;
+      await new Promise(r=>setTimeout(r,5));if(i===99)throw Error('offline NAV round did not complete');
+    }
     const first=await get('/market.json');
     if(scenario.startsWith('client-')) {
       for(let i=0;i<500;i++) {
@@ -98,6 +119,7 @@ async function probe(scenario) {
       env:{...process.env,RELAY_TOKEN:'synthetic',BRSAPI_KEY:'synthetic',BRSAPI_BASE:'https://brsapi.ir/Api',
         SUPABASE_URL:'https://isolated.invalid',SUPABASE_SERVICE_ROLE_KEY:'synthetic',BRSAPI_CLIENT_ENABLED:scenario.startsWith('client-')?'1':'0',
         BRSAPI_LEASE_SIZE:'1',BRSAPI_DAILY_SOFT:'900',BRSAPI_DAILY_HARD:'1000',
+        MCPFARSI_QUOTE_ENABLED:'1',MCP_FARSI_API_KEY:'synthetic',
         BRSAPI_BUDGET_ENFORCE_LEGACY:'0',BRSAPI_COMMODITY_KEY:'',CODAL_ENABLED:'0',CANDLE_BACKFILL_ENABLED:'0',
         IME_ENABLED:'0',EOD_AFTER_HOUR:scenario.startsWith('daily-')||scenario==='client-budget-midcycle'?'14':'25',IR_HISTORY_SECTIONS:'gold,currency,stocks,funds'},
       stdio:['ignore','pipe','pipe']});
@@ -114,6 +136,8 @@ async function probe(scenario) {
 test('actual relay: healthy → partial timeout → recovery preserves failed rows and advances options independently',async()=>{
   const r=await probe('partial-recovery');
   assert.equal(r.blockedHosts,0);
+  assert.equal(r.debug.mcpfarsiQuote.enabled,false,'retired MCP stays disabled even with the old deployed flag');
+  assert.equal(r.debug.mcpfarsiQuote.requests,0);
   assert.equal(r.second.body.stocks.length,1);
   assert.deepEqual(r.second.body.stocks,r.first.body.stocks);
   assert.deepEqual(r.second.body.funds,r.first.body.funds);
@@ -275,4 +299,19 @@ test('actual relay CLIENT_ENABLED=1: ordinary source timeout remains a partial u
   assert.equal(r.writesAfterSecond,2);
   assert.equal(r.second.body.options[0].price,300);
   assert.deepEqual(r.second.body.stocks,r.first.body.stocks);
+});
+
+
+for(const scenario of ['nav-restart-partial','nav-restart-legacy'])test(`restart NAV actual server: ${scenario} retains only truly received NAV through partial fresh rotation`,async()=>{
+  const r=await probe(scenario);assert.equal(r.blockedHosts,0);assert.equal(r.initialReads,1);
+  const row=r.second.body.funds.find(f=>f.id==='isolated-second-fund');
+  assert.equal(row.price,100); assert.equal(row.unit,'toman');
+  if(scenario==='nav-restart-partial') {
+    assert.equal(row.nav,100); assert.equal(row.navIssue,101); assert.equal(row.navDate,'1405-07-14');
+    assert.equal(row.navTime,'08:00:00'); assert.equal(row.navRetained,true); assert.equal(row.navReceivedAt,r.start-3600000);
+  } else { assert.equal(row.nav,undefined); assert.equal(row.navDate,undefined); assert.equal(row.navReceivedAt,undefined); }
+  assert.equal(r.second.body.funds.find(f=>f.id==='isolated-fund').nav,120);
+  assert.equal(r.second.body.funds.find(f=>f.id==='isolated-fund').navReceivedAt,r.start);
+  assert.equal(r.latest.at(-1).funds.find(f=>f.id==='isolated-second-fund').navReceivedAt,row.navReceivedAt);
+  assert.equal(r.second.body.snapshotQuality.families.funds.receivedAt,r.now);
 });

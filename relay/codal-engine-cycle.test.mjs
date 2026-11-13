@@ -34,8 +34,11 @@ async function fixture(options = {}) {
   const reports = new Map((options.initialReports ?? []).map(r => [r.source_url, r]));
   let rejectFeed = !!options.rejectFeed;
   let rejectSave = !!options.rejectSave;
+  const budgetJobs = [];
   codal.setCodalBudgetPorts({ client: { request: async (job) => {
+    budgetJobs.push({ producer: job.producer, budgetClass: job.budgetClass });
     calls.pages.push(Number(job.params.page));
+    if (options.announcementErrorCode) throw Object.assign(new Error(options.announcementErrorCode), { code: options.announcementErrorCode });
     if (options.backfillPages && job.params.l18) {
       return { announcement: job.params.category === "1" ? options.backfillPages : [] };
     }
@@ -43,8 +46,10 @@ async function fixture(options = {}) {
   } } });
   globalThis.fetch = async (input, init = {}) => {
     const url = new URL(input);
+    if (url.hostname === 'codal.ir' && options.officialBody !== undefined) return new Response(options.officialBody);
     if (url.hostname === "excel.invalid") {
       calls.excel.push(url.pathname);
+      if (options.excelErrorCode) throw Object.assign(new Error(options.excelErrorCode), { code: options.excelErrorCode });
       if (options.excelError) throw new Error(options.excelError);
       return new Response(options.excelHtml ?? mockIncomeHtml);
     }
@@ -106,7 +111,7 @@ async function fixture(options = {}) {
   };
   const engine = await import(`./codal-engine.mjs?mock=${++scenario}`);
   return {
-    engine, calls, get persisted() { return persisted; },
+    engine, calls, budgetJobs, get persisted() { return persisted; },
     allowFeed: () => { rejectFeed = false; }, allowSave: () => { rejectSave = false; },
   };
 }
@@ -114,6 +119,47 @@ async function fixture(options = {}) {
 test.afterEach(() => {
   globalThis.fetch = originalFetch;
   codal.setCodalBudgetPorts(null);
+});
+
+test('unsupported explicit monthly code preserves feed metadata without parsing as N30', async () => {
+  const a = announcement(1, { code: "ن-۳۱", title: "گزارش فعالیت ماهانه", link_excel: "https://excel.invalid/1" });
+  const f = await fixture({ pages: [[a, boundary], []] });
+  await f.engine.runEngineCycle();
+  assert.equal(f.calls.excel.length, 0);
+  assert.equal(f.calls.reportWrites.length, 0);
+  assert.ok(f.calls.feedWrites.some(write => write.rows.some(row => row.link === a.link)));
+  assert.equal(f.engine.engineStatus.feed.parseFailed, 0);
+});
+
+test('scheduled global discovery explicitly uses the standard current-feed allocation', async () => {
+  const f = await fixture({ pages: [[]] });
+  await f.engine.runEngineCycle();
+  assert.deepEqual(f.budgetJobs, [{ producer: 'codal-list', budgetClass: 'standard' }]);
+});
+
+test('invalid statement retry ledger is never cached as valid state on a later cycle', async () => {
+  const f = await fixture({ pages: [[]], initialState: { watermark, fails: {}, decisionStatementV1Attempts: { bad: 2 } } });
+  for (let i = 0; i < 2; i++) {
+    await f.engine.runEngineCycle();
+    assert.equal(f.engine.engineStatus.ok, false);
+    assert.equal(f.calls.pages.length, 0);
+    assert.equal(f.calls.saves.length, 0);
+  }
+});
+test('local announcement deferral keeps watermark and failure ledger and does not retry', async () => {
+  const f = await fixture({ announcementErrorCode: 'brs_transport_queue_full' });
+  await f.engine.runEngineCycle();
+  assert.equal(f.calls.pages.length, 1); assert.equal(f.engine.engineStatus.feed.parseFailed, 0);
+  assert.equal(f.engine.engineStatus.feed.incompleteReason, 'local_deferred');
+  assert.deepEqual(f.persisted.watermark, watermark); assert.deepEqual(f.persisted.fails, {});
+});
+test('local report deferral is not a parse failure or a blocked report', async () => {
+  const a = financial(1);
+  const f = await fixture({ pages: [[a, boundary], []], excelErrorCode: 'brs_transport_aborted' });
+  await f.engine.runEngineCycle();
+  assert.equal(f.calls.excel.length, 1); assert.equal(f.engine.engineStatus.feed.parseFailed, 0);
+  assert.equal(f.engine.engineStatus.feed.incompleteReason, 'local_deferred');
+  assert.deepEqual(f.persisted.watermark, watermark); assert.deepEqual(f.persisted.fails, {});
 });
 
 test("503 feed write keeps the watermark and retries the same announcement", async () => {
@@ -208,6 +254,17 @@ test("unorderable or unsorted announcements fail without acknowledging them", as
     assert.equal(f.engine.engineStatus.ok, false);
     assert.deepEqual(f.persisted.watermark, watermark);
   }
+});
+
+test('order failure stores only the verified prefix and keeps the resume watermark', async () => {
+  const good = announcement(3), bad = announcement(4), after = announcement(2);
+  const f = await fixture({ pages: [[good, bad, after]] });
+  await f.engine.runEngineCycle();
+  assert.equal(f.engine.engineStatus.ok, false);
+  assert.equal(f.engine.engineStatus.feed.incompleteReason, 'invalid_order_or_identity');
+  assert.deepEqual(f.calls.feedWrites[0].rows.map(r => r.link), [good.link]);
+  assert.deepEqual(f.persisted.watermark, watermark);
+  assert.deepEqual(f.persisted.fails, {});
 });
 
 test("state save failure rolls back the in-memory acknowledgement for retry", async () => {
@@ -316,6 +373,20 @@ test("metadata-only report cannot release a blocked ledger or advance watermark"
   assert.deepEqual(f.persisted.watermark, watermark);
   assert.equal(f.persisted.fails[a.link], 3);
   assert.equal(f.calls.excel.length, 0);
+});
+
+test('new statement adapter grants one bounded retry to an old official N10 failure and persists its use', async()=>{
+  const a={...financial(1),link:'https://codal.ir/Reports/Decision.aspx?LetterSerial=fixture'};
+  const options={pages:[[a,boundary],[]],excelHtml:'<table></table>',officialBody:'<html></html>'};
+  const f=await fixture({...options,initialState:{watermark,backfillCursor:0,fails:{[a.link]:3}}});
+  await f.engine.runEngineCycle();
+  assert.equal(f.calls.excel.length,1);assert.equal(f.persisted.fails[a.link],4);
+  assert.equal(f.persisted.decisionStatementV1Attempts[a.link],1);
+  assert.deepEqual(f.persisted.watermark,watermark);
+  await f.engine.runEngineCycle();assert.equal(f.calls.excel.length,1);
+  const restarted=await fixture({...options,initialState:f.persisted});
+  await restarted.engine.runEngineCycle();assert.equal(restarted.calls.excel.length,0);
+  assert.equal(restarted.persisted.fails[a.link],4);
 });
 
 test("archive duplicate response counts zero actual inserts", async () => {

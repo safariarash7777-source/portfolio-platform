@@ -19,7 +19,8 @@ export const metadata = pageMetadata({
 });
 
 export default async function FundsPage() {
-  const [{ data: ir, availability }, returns, access] = await Promise.all([readFundsMarket(), getBulkReturns(), getAccess()]);
+  const [{ data: ir, availability }, access] = await Promise.all([readFundsMarket(), getAccess()]);
+  const returns = await getBulkReturns((ir?.funds ?? []).map(row => row.id));
 
   // M6: بازدهٔ دوره‌ای فقط برای نمادهای دارای تاریخچه — بقیه undefined می‌ماند (در UI «—»).
   // Validate each row's own price/NAV clocks before table, rankings or stats;

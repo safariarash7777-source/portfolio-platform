@@ -26,7 +26,9 @@ import {
   insertParsedReport, existingUrlsFor, faToEn, codalEnv,
 } from "./codal.mjs";
 import { readStoredReportCounts } from "./codal-coverage.mjs";
+import { isBrsLocalDeferral } from "./brsapi-transport.mjs";
 import { admissionCounts, admissionEvent, readAdmissionDiagnostics, recordAdmissionRejection } from "./codal-admission-diagnostics.mjs";
+import { supportsDecisionUrl } from "./codal-statement-source.mjs";
 
 const { BRSAPI_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = codalEnv;
 
@@ -116,6 +118,11 @@ async function loadState() {
        Object.values(payload.fails).some(n => !Number.isInteger(n) || n < 0)))) {
     throw new Error("state cursor/ledger invalid schema");
   }
+  payload.decisionStatementV1Attempts ??= {};
+  if (typeof payload.decisionStatementV1Attempts !== 'object' || Array.isArray(payload.decisionStatementV1Attempts) ||
+      Object.entries(payload.decisionStatementV1Attempts).some(([url,n]) => url.length>4096 || n!==1)) {
+    throw new Error('statement retry ledger invalid schema');
+  }
   state = payload;
   state.watermark ??= null;
   state.backfillCursor ??= 0;
@@ -136,6 +143,8 @@ async function saveState() {
   if (entries.length > LEDGER_CAP) {
     state.fails = Object.fromEntries(entries.slice(entries.length - LEDGER_CAP));
   }
+  const statementAttempts = Object.entries(state.decisionStatementV1Attempts);
+  if (statementAttempts.length > LEDGER_CAP) state.decisionStatementV1Attempts = Object.fromEntries(statementAttempts.slice(-LEDGER_CAP));
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/ir_market_snapshots?on_conflict=key`, {
       method: "POST",
@@ -165,11 +174,15 @@ export function sentKey(a) {
   );
 }
 
-function recordFail(url) {
+function recordFail(url, kind) {
   state.fails[url] = (state.fails[url] || 0) + 1;
+  if (kind === 'ن-۱۰' && supportsDecisionUrl(url)) state.decisionStatementV1Attempts[url] = 1;
   return state.fails[url];
 }
-const isBlocked = (url) => (state.fails[url] || 0) >= MAX_FAILS;
+// One bounded attempt for previously blocked official N10 reports now supported
+// by the new adapter. Preserve old failure counts and all existing cycle limits.
+const isBlocked = (url, kind) => (state.fails[url] || 0) >= MAX_FAILS &&
+  !(kind === 'ن-۱۰' && supportsDecisionUrl(url) && !state.decisionStatementV1Attempts[url]);
 
 /* ── مسیر ۱: فید سراسری ────────────────────────────────────────────────────── */
 /** دستهٔ اطلاعیه برای فیلتر صفحهٔ /codal (M4) — فقط از کد/عنوان رسمی خود اطلاعیه. */
@@ -239,7 +252,7 @@ async function pushFeedRows(items) {
 async function fetchPageWithRetry(params) {
   try { return await fetchAnnouncementsPage(params); }
   catch (e) {
-    if (e?.name === "AnnouncementSchemaError") throw e;
+    if (e?.noRetry === true || e?.name === "AnnouncementSchemaError" || isBrsLocalDeferral(e)) throw e;
     await new Promise((r) => setTimeout(r, 4000));
     return await fetchAnnouncementsPage(params);
   }
@@ -259,7 +272,7 @@ async function pollGlobalFeed() {
 
   outer:
   for (let page = 1; page <= FEED_MAX_PAGES; page++) {
-    const items = await fetchPageWithRetry({ page }); // بدون l18 → کل بازار
+    const items = await fetchPageWithRetry({ page, purpose: "current" }); // بدون l18 → کل بازار
     st.pages = page;
     if (!items.length) { st.complete = true; st.incompleteReason = null; break; }
     for (const a of items) {
@@ -267,7 +280,9 @@ async function pollGlobalFeed() {
       const k = sentKey(a);
       if (!k || typeof a.link !== "string" || !a.link.trim() || k > previousKey) {
         st.incompleteReason = "invalid_order_or_identity";
-        throw new Error("announcement invalid date/link or feed order");
+        // Keep the verified prefix, but never acknowledge a gap in the feed.
+        // The next scheduled cycle resumes from the unchanged watermark.
+        break outer;
       }
       previousKey = k;
       // Only an older timestamp proves the same-time group is exhausted.
@@ -293,7 +308,7 @@ async function pollGlobalFeed() {
     // dedup با ردیف‌های موجودِ همان نماد
     const known = await existingUrlsFor(a.l18);
     if (known.has(a.link)) { delete state.fails[a.link]; continue; }
-    if (isBlocked(a.link)) { st.complete = false; st.incompleteReason = "blocked_report"; continue; }
+    if (isBlocked(a.link, kind)) { st.complete = false; st.incompleteReason = "blocked_report"; continue; }
     if (dl >= FEED_MAX_DL) { st.complete = false; st.incompleteReason = "download_limit"; break; }
     dl++;
     st.downloaded = dl;
@@ -310,13 +325,17 @@ async function pollGlobalFeed() {
         recordFailureDiagnostic("admission", "rejected");
         recordAdmissionRejection(state.admissionDiagnostics, kind, rejection);
         st.parseFailed++;
-        recordFail(a.link);
+        recordFail(a.link, kind);
         st.complete = false; st.incompleteReason = "report_failure";
       }
     } catch (e) {
+      if (isBrsLocalDeferral(e)) {
+        st.complete = false; st.incompleteReason = 'local_deferred';
+        throw e;
+      }
       recordFailureDiagnostic(stage, "exception");
       st.parseFailed++;
-      recordFail(a.link);
+      recordFail(a.link, kind);
       st.complete = false; st.incompleteReason = "report_failure";
       console.error(`codal-engine report failure: ${stage}/exception`);
     }
@@ -375,6 +394,7 @@ async function backfillSome() {
   let guard = 0;
   while (processedSymbols < BACKFILL_PER_CYCLE && guard < queue.length) {
     guard++;
+    const cursorBefore = state.backfillCursor;
     const sym = queue[state.backfillCursor % queue.length];
     state.backfillCursor++;
     st.cursor = state.backfillCursor;
@@ -392,7 +412,7 @@ async function backfillSome() {
       for (const a of [...fs, ...monthly]) {
         const kind = classifyAnnouncement(a);
         if (!kind || !a.link || !a.link_excel) continue;
-        if (known.has(a.link) || isBlocked(a.link)) continue;
+        if (known.has(a.link) || isBlocked(a.link, kind)) continue;
         if (dl >= BACKFILL_MAX_DL) break;
         dl++;
         let stage = "download";
@@ -408,16 +428,22 @@ async function backfillSome() {
             recordFailureDiagnostic("admission", "rejected");
             recordAdmissionRejection(state.admissionDiagnostics, kind, rejection);
             st.parseFailed++;
-            recordFail(a.link);
+            recordFail(a.link, kind);
           }
         } catch (e) {
+          if (isBrsLocalDeferral(e)) throw e;
           recordFailureDiagnostic(stage, "exception");
           st.parseFailed++;
-          recordFail(a.link);
+          recordFail(a.link, kind);
         }
       }
       console.log(`codal-engine backfill ${sym}: inserted=${st.inserted} parseFailed=${st.parseFailed}`);
     } catch (e) {
+      if (isBrsLocalDeferral(e)) {
+        state.backfillCursor = cursorBefore;
+        st.cursor = cursorBefore;
+        throw e;
+      }
       engineStatus.lastError = [engineStatus.lastError, `backfill ${sym}: ${e?.message ?? e}`].filter(Boolean).join("; ");
       console.error("codal-engine backfill:", sym, e?.message ?? e);
     }
@@ -440,16 +466,19 @@ export async function runEngineCycle() {
   state.failureDiagnostics.lastCycle = failureCounts();
   state.admissionDiagnostics.lastCycle = admissionCounts();
   const watermarkBefore = state.watermark;
+  let feedDeferred = false;
   try {
     await pollGlobalFeed();
   } catch (e) {
     engineStatus.feed.complete = false;
-    engineStatus.feed.incompleteReason ??= "feed_failure";
+    feedDeferred = isBrsLocalDeferral(e);
+    if (feedDeferred) engineStatus.feed.incompleteReason = 'local_deferred';
+    else engineStatus.feed.incompleteReason ??= "feed_failure";
     engineStatus.lastError = `feed: ${e?.message ?? e}`;
     console.error("codal-engine feed error:", e?.message ?? e);
   }
   try {
-    await backfillSome();
+    if (!feedDeferred) await backfillSome();
   } catch (e) {
     engineStatus.lastError = [engineStatus.lastError, `backfill: ${e?.message ?? e}`].filter(Boolean).join("; ");
     console.error("codal-engine backfill error:", e?.message ?? e);

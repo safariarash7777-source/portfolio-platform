@@ -61,6 +61,37 @@ export function retainCommoditySnapshot(previous, candidate, status, attemptedAt
   };
 }
 
+// Same existing relay cache age limit; a snapshot fetch never refreshes it.
+export const NAV_STALE_MS = 24 * 60 * 60 * 1000;
+const positive = value => typeof value === 'number' && Number.isFinite(value) && value > 0;
+
+/** Keep independently received NAV when a successful price round is only partial for NAV. */
+export function retainFundNav(previous, candidate, attemptedAt) {
+  if (!Array.isArray(previous) || !Array.isArray(candidate)) return candidate;
+  const byId = new Map(), duplicates = new Set();
+  for (const row of previous) {
+    if (!row || typeof row.id !== 'string' || !row.id || duplicates.has(row.id)) continue;
+    if (byId.has(row.id)) { byId.delete(row.id); duplicates.add(row.id); } else byId.set(row.id, row);
+  }
+  return candidate.map(row => {
+    if (!row || positive(row.nav) || row.navStatus != null) return row;
+    const old = byId.get(row.id);
+    if (!old || old.unit !== 'toman' || row.unit !== 'toman' || !positive(old.nav) || !positive(row.price)
+      || (old.navStatus != null && old.navStatus !== 'ready')) return row;
+    const ratio = row.price / old.nav;
+    if (ratio < 0.5 || ratio > 2) return row; // Same unit/ratio guard as applyNav.
+    // Only a NAV-specific receipt is reusable. Legacy snapshot/family clocks are not NAV clocks.
+    const receivedAt = clock(old.navReceivedAt);
+    const at = receivedAt !== null && receivedAt <= attemptedAt ? receivedAt : null;
+    // The actual reader drops receipt/retained markers: unknown must not carry any NAV forward.
+    if (at === null || attemptedAt - at > NAV_STALE_MS) return row;
+    return { ...row, nav: old.nav, navIssue: positive(old.navIssue) ? old.navIssue : null,
+      navDate: typeof old.navDate === 'string' ? old.navDate : null,
+      navTime: typeof old.navTime === 'string' ? old.navTime : null,
+      navReceivedAt: at, navRetained: true, bubblePercent: null };
+  });
+}
+
 export function retainMarketFamilies(previous, candidate, outcomes, attemptedAt) {
   const payload = structuredClone(candidate);
   const fresh = structuredClone(candidate);
@@ -69,6 +100,7 @@ export function retainMarketFamilies(previous, candidate, outcomes, attemptedAt)
   for (const k of MARKET_FAMILIES) {
     const ok = outcomes[k]?.ok === true && shaped(candidate, k);
     if (ok) {
+      if (k === 'funds') payload.funds = retainFundNav(previous?.funds, candidate.funds, attemptedAt);
       successes++;
       known++;
       families[k] = { state: empty(candidate, k) ? 'empty' : 'received', receivedAt: attemptedAt, retained: false, error: null };

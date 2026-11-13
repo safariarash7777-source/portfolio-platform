@@ -116,7 +116,7 @@ const okFlags = {
   PORT: "3400",
   IR_HISTORY_SECTIONS: null,
   BRSAPI_CLIENT_ENABLED: null,
-  BRSAPI_BUDGET_ENFORCE_LEGACY: null,
+  BRSAPI_BUDGET_ENFORCE_LEGACY: "0",
   BRSAPI_KEY_SET: true,
   SUPABASE_URL_SET: true,
   SUPABASE_SERVICE_ROLE_KEY_SET: true,
@@ -125,7 +125,7 @@ const okFlags = {
 const flags = (over = {}) => JSON.stringify({ ...okFlags, ...over });
 
 test("پیش‌پرواز: وضعیتِ سالم عبور می‌کند", () => {
-  const r = evaluateFlags(flags());
+  const r = evaluateFlags(flags(), { phase28Applied: true });
   assert.equal(r.ok, true, r.failures.join(" | "));
   assert.deepEqual(r.flags.effectiveSections, ["gold", "currency"]);
   assert.equal(r.flags.debugReachable, true);
@@ -151,6 +151,9 @@ test("پیش‌پرواز: نوعِ اشتباه رد می‌شود", () => {
 });
 
 test("پیش‌پرواز: بدونِ phase28، هر دو پرچم انتشار را رد می‌کنند", () => {
+  assert.equal(evaluateFlags(flags({ BRSAPI_BUDGET_ENFORCE_LEGACY: null })).ok, false,
+    "unset flag now enforces and requires the installed schema");
+  assert.equal(evaluateFlags(flags({ BRSAPI_BUDGET_ENFORCE_LEGACY: null }), { phase28Applied: true }).ok, true);
   const a = evaluateFlags(flags({ BRSAPI_BUDGET_ENFORCE_LEGACY: "1" }));
   assert.equal(a.ok, false);
   assert.match(a.failures.join(" "), /بی‌شمارش/);
@@ -196,6 +199,18 @@ const okDebug = {
   brsapiClient: { enabled: false },
 };
 const dbg = (over = {}) => JSON.stringify({ ...okDebug, ...over });
+test('rate release requires the complete observed local contract; missing, old and forged-ready values fail closed', () => {
+  const t = { enabled: true, scope: 'process', spacingMs: 300, sent: 2, minStartGapMs: 300,
+    rollingWindowMs: 300000, rollingLimit: 300, ipWindowMs: 1000, ipLimit: 20,
+    policy: 'conservative_unverified_plan', windowScope: 'process_lifetime', priorProcessWindow: 'unknown',
+    coldStartPolicy: 'full_window_defer', globalEnforced: false, clockValid: true };
+  const check = value => evaluateDebug(dbg({ brsapiTransport: value }), { requireTransportPolicy: true }).ok;
+  assert.equal(check(t), true); assert.equal(check(undefined), false);
+  for (const field of Object.keys(t)) { const missing = { ...t }; delete missing[field]; assert.equal(check(missing), false, field); }
+  for (const delta of [{ spacingMs: 100 }, { sent: 1 }, { clockValid: false }, { globalEnforced: true }, { rollingLimit: 2000 }, { enabled: 1 }, { scope: 'global' }, { minStartGapMs: 299 }])
+    assert.equal(check({ ...t, ...delta }), false);
+  assert.equal(evaluateDebug(dbg()).ok, true, 'historical read diagnostics keep their previous scoped contract');
+});
 
 test("پذیرش: پاسخِ سالم قبول می‌شود", () => {
   const r = evaluateDebug(dbg());
@@ -437,7 +452,8 @@ test("workflow: published_at پس از دستورِ deploy نوشته می‌ش�
 });
 
 test("workflow: پذیرش همان واقعیتِ phase28 را می‌گیرد", () => {
-  assert.match(WF, /accept "\{\\"phase28Applied\\": \$\{PHASE28_APPLIED\}\}"/);
+  assert.match(WF, /accept "\{\\"phase28Applied\\": \$\{PHASE28_APPLIED\},\\"requireTransportPolicy\\":true\}"/);
+  assert.match(WF, /for i in \$\(seq 1 40\)/);
 });
 
 test("گزارش: متنِ بازگشت، بررسیِ سلامت و تازگی را کنار نمی‌گذارد", () => {

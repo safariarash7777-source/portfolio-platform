@@ -2,6 +2,35 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { getBulkReturns } from "./bulkReturns";
 
+test("fund scopes are quoted, cached separately and empty selection never reads history", async () => {
+  const previous = { fetch: globalThis.fetch, url: process.env.NEXT_PUBLIC_SUPABASE_URL, key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY };
+  process.env.NEXT_PUBLIC_SUPABASE_URL = "https://scoped.example.test";
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "test-key";
+  let calls = 0;
+  const scopes: string[] = [];
+  globalThis.fetch = async input => {
+    calls++;
+    const scope = new URL(String(input)).searchParams.get("symbol")!;
+    scopes.push(scope);
+    return Response.json([]);
+  };
+  try {
+    await getBulkReturns([]); assert.equal(calls, 0);
+    await getBulkReturns(['صندوق,"الف']);
+    assert.equal(scopes[0], `in.(${JSON.stringify('صندوق,"الف')})`);
+    await getBulkReturns(['صندوق,"الف']); assert.equal(calls, 1);
+    await getBulkReturns(["دوم"]); assert.equal(calls, 2);
+    const symbols = Array.from({ length: 201 }, (_, i) => `F${i}`);
+    await getBulkReturns(symbols); assert.equal(calls, 7);
+    globalThis.fetch = async () => Response.json([{ id: 1, symbol: "OUTSIDE", trade_date: "2026-11-12", close: 10 }]);
+    assert.equal((await getBulkReturns(["THIRD"])).size, 0);
+  } finally {
+    globalThis.fetch = previous.fetch;
+    if (previous.url === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL; else process.env.NEXT_PUBLIC_SUPABASE_URL = previous.url;
+    if (previous.key === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY; else process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = previous.key;
+  }
+});
+
 test("fund returns traverse capped pages, prefer latest amendments, and reject partial or expired reads", async () => {
   const previous = { fetch: globalThis.fetch, now: Date.now, url: process.env.NEXT_PUBLIC_SUPABASE_URL, key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY };
   process.env.NEXT_PUBLIC_SUPABASE_URL = "https://database.example.test";

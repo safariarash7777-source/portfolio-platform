@@ -3,6 +3,7 @@ import { appendFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { ADMISSION_REASONS } from '../../relay/codal-admission-diagnostics.mjs';
 import { evaluateDebug } from '../deploy/relay-gate.mjs';
+import { observedBrsTransportPolicy } from '../../relay/brsapi-policy.mjs';
 
 const DEBUG = 'https://arsadata.liara.run/debug';
 const HEALTH = 'https://arsadata.liara.run/healthz';
@@ -59,7 +60,7 @@ function safeErrorCodes(value) {
 }
 const integer = x => Number.isSafeInteger(x) && x >= 0 ? x : null;
 const integerCounts = (value, names) => Object.fromEntries(names.map(name => [name, integer(value?.[name])]));
-const incompleteReasons = ['page_limit', 'invalid_order_or_identity', 'feed_write_failure', 'blocked_report', 'download_limit', 'report_failure', 'feed_failure'];
+const incompleteReasons = ['page_limit', 'invalid_order_or_identity', 'feed_write_failure', 'blocked_report', 'download_limit', 'report_failure', 'feed_failure', 'local_deferred'];
 function diagnostics(value, shape) {
   const valid = value?.version === 1;
   const project = name => Object.fromEntries(Object.entries(shape).map(([group, names]) =>
@@ -82,7 +83,7 @@ function codalDetails(engine, archive) {
 }
 
 const operation = x => ({ ok: boolean(x?.ok), lastRun: clock(x?.lastRun), lastDate: date(x?.lastDate ?? x?.lastJdate), rows: number(x?.rows), error: errorCategory(x?.error ?? x?.lastError), skipped: x?.skipped == null ? null : true });
-const budget = x => ({ available: boolean(x?.available), persistent: boolean(x?.persistent), day: date(x?.day), ...counts(x, ['softBudget', 'hardCeiling', 'used', 'remaining', 'rejectedByBudget']), softExhausted: boolean(x?.softExhausted), store: { healthy: boolean(x?.store?.healthy), errors: number(x?.store?.errors), error: errorCategory(x?.store?.lastError), ...safeErrorCodes(x?.store?.lastError) } });
+const budget = x => ({ accountingScope: 'internal_allocation_not_provider_usage', accountingState: choice(x?.accountingState, ['confirmed_internal_estimate', 'unknown']), available: boolean(x?.available), persistent: boolean(x?.persistent), day: date(x?.day), ...counts(x, ['softBudget', 'hardCeiling', 'used', 'remaining', 'rejectedByBudget']), softExhausted: boolean(x?.softExhausted), store: { healthy: boolean(x?.store?.healthy), errors: number(x?.store?.errors), error: errorCategory(x?.store?.lastError), ...safeErrorCodes(x?.store?.lastError) } });
 
 // IME scheduling days are Gregorian Tehran days, not timestamps. Target
 // disclosure dates are Jalali days. Preserve both precisions explicitly.
@@ -128,7 +129,18 @@ export function sanitizeDebug(d) {
     history: Object.fromEntries(['eodHistory', 'indexHistory', 'marketBreadth', 'historyPrune'].map(k => [k, operation(d?.[k])])),
     commodity: { enabled: boolean(d?.commodity?.enabled), ...counts(d?.commodity, ['rows', 'reqToday', 'dailyCap', 'remaining']), lastFetchAt: clock(d?.commodity?.lastFetchAt), counterScope: choice(d?.commodity?.counterScope, ['process']), dayKey: date(d?.commodity?.dayKey), error: errorCategory(d?.commodity?.lastError) },
     ime: imeReceipt(d?.ime),
-    transport: { enabled: boolean(d?.brsapiTransport?.enabled), scope: choice(d?.brsapiTransport?.scope, ['process']), ...counts(d?.brsapiTransport, ['spacingMs', 'pending', 'sent', 'minStartGapMs']) },
+    mcpfarsiQuote: { enabled: boolean(d?.mcpfarsiQuote?.enabled), configured: boolean(d?.mcpfarsiQuote?.configured),
+      requests: integer(d?.mcpfarsiQuote?.requests), pendingPublication: boolean(d?.mcpfarsiQuote?.pendingPublication),
+      publication: choice(d?.mcpfarsiQuote?.publication, ['none', 'confirmed', 'unknown', 'pending_unconfirmed', 'superseded', 'conflict']),
+      error: choice(d?.mcpfarsiQuote?.lastError, ['mcpfarsi_quote_refresh_failed', 'mcpfarsi_publication_requires_readback']),
+      sourceDateRaw: date(d?.mcpfarsiQuote?.sourceDateRaw), sourceAtUtc: null },
+    transport: { enabled: boolean(d?.brsapiTransport?.enabled), scope: choice(d?.brsapiTransport?.scope, ['process']),
+      ...counts(d?.brsapiTransport, ['spacingMs', 'pending', 'sent', 'minStartGapMs', 'rollingWindowMs', 'rollingLimit', 'ipWindowMs', 'ipLimit']),
+      policy: choice(d?.brsapiTransport?.policy, ['conservative_unverified_plan']),
+      windowScope: choice(d?.brsapiTransport?.windowScope, ['process_lifetime']),
+      priorProcessWindow: choice(d?.brsapiTransport?.priorProcessWindow, ['unknown']),
+      coldStartPolicy: choice(d?.brsapiTransport?.coldStartPolicy, ['full_window_defer']),
+      globalEnforced: boolean(d?.brsapiTransport?.globalEnforced), clockValid: boolean(d?.brsapiTransport?.clockValid) },
     budget: { providerAccountUsage: null, providerResetAt: null, liaraCost: null, clientEnabled: boolean(d?.brsapiClient?.enabled), client: budget(d?.brsapiClient?.budget), legacy: { enforced: boolean(d?.brsapiLegacy?.enforced), usedAggregate: sum(d?.brsapiLegacy?.used), rejectedAggregate: sum(d?.brsapiLegacy?.rejected), overBudgetPassedAggregate: sum(d?.brsapiLegacy?.overBudgetPassed), unmetered: number(d?.brsapiLegacy?.unmetered), budget: budget(d?.brsapiLegacy?.budget) }, stopped: boolean(d?.brsapiBudgetStop?.active), servedAgeMs: number(d?.brsapiBudgetStop?.servedAgeMs) },
   };
 }
@@ -179,6 +191,10 @@ function projectMetadata(body) {
   return { projectId: 'arsadata', status: choice(p.status, ['running', 'stopped', 'starting', 'stopping', 'ready', 'failed']),
     // No verified CPU/RAM response contract in the installed CLI.
     cpuLimit: null, ramLimit: null,
+    // CLI IProjectDetails declares these DETAIL fields, not running pod counts.
+    configuredScale: Number.isSafeInteger(p.scale) && p.scale > 0 ? p.scale : null,
+    configuredZeroDowntime: typeof p.zeroDowntime === 'boolean' ? p.zeroDowntime : null,
+    configuredNotActual: true,
     reviewedBackendBinding: reviewedBackendBinding(p.envs, envNamesComplete),
     envNames: envNamesComplete ? [...new Set(p.envs.map(e => e.key))].sort() : null, envNamesComplete };
 }
@@ -219,7 +235,7 @@ export async function collectControlPlane({ token, fetchImpl = fetch, timeoutMs 
     limitations: ['Environment values arrive in API memory only; names and booleans for one reviewed backend URL comparison are emitted.', 'Control-plane metadata is not proof of running process code, collector exclusion, budget or ingestion success.'] };
 }
 
-export async function collectReceipt({ token, controlPlaneToken, fetchImpl = fetch, now = () => new Date().toISOString() } = {}) {
+export async function collectReceipt({ token, controlPlaneToken, phase28Applied = false, fetchImpl = fetch, now = () => new Date().toISOString() } = {}) {
   const request = async (url, kind) => {
     if (kind === 'debug' && !token) return { status: 'missing_credential', httpStatus: null, error: null };
     try {
@@ -239,8 +255,8 @@ export async function collectReceipt({ token, controlPlaneToken, fetchImpl = fet
           return { status: 'read', httpStatus, error: null, rowCount: d.data.length };
         }
         const t = d.brsapiTransport;
-        const spacingPassed = t?.enabled === true && t.scope === 'process' && t.spacingMs === 100 && Number.isSafeInteger(t.sent) && t.sent >= 2 && Number.isFinite(t.minStartGapMs) && t.minStartGapMs >= 100;
-        return { status: 'read', httpStatus, error: null, acceptance: evaluateDebug(raw, { phase28Applied: false }).ok ? 'passed' : 'failed', spacing: spacingPassed ? 'passed' : 'failed', data: sanitizeDebug(d) };
+        const spacingPassed = observedBrsTransportPolicy(t);
+        return { status: 'read', httpStatus, error: null, acceptance: evaluateDebug(raw, { phase28Applied }).ok ? 'passed' : 'failed', spacing: spacingPassed ? 'passed' : 'failed', data: sanitizeDebug(d) };
       } catch { return { status: 'invalid_response', httpStatus, error: kind === 'storedRead' ? 'invalid_stored_read_payload' : 'invalid_debug_payload' }; }
     } catch (error) { return { status: 'connection_error', httpStatus: null, error: transportError(error) }; }
   };
@@ -251,7 +267,7 @@ export async function collectReceipt({ token, controlPlaneToken, fetchImpl = fet
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
-    const receipt = await collectReceipt({ token: process.env.RELAY_TOKEN, controlPlaneToken: process.env.LIARA_API_TOKEN });
+    const receipt = await collectReceipt({ token: process.env.RELAY_TOKEN, controlPlaneToken: process.env.LIARA_API_TOKEN, phase28Applied: process.env.PHASE28_APPLIED === 'true' });
     await writeFile('relay-health-receipt.json', JSON.stringify(receipt, null, 2) + '\n', { mode: 0o600 });
     console.log(JSON.stringify(receipt));
     if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, '```json\n' + JSON.stringify(receipt, null, 2) + '\n```\n');

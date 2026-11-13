@@ -1,0 +1,66 @@
+name: MCP runtime configuration activation
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: After any unknown write, select readback only; never repeat activation automatically
+        type: choice
+        options: [readback, activate]
+        default: readback
+        required: true
+      expected_head:
+        description: Exact reviewed published main SHA
+        required: true
+        type: string
+      expected_release:
+        description: Exact reviewed READY arsadata release (blank uses reviewed source default)
+        required: false
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: deploy-relay-arsadata
+  cancel-in-progress: false
+jobs:
+  configure:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact reviewed controller before secrets
+        env:
+          EXPECTED_HEAD: ${{ inputs.expected_head }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { execFileSync } from 'node:child_process';
+          const head = execFileSync('git', ['rev-parse', 'HEAD'], {encoding:'utf8'}).trim();
+          if (!/^[a-f0-9]{40}$/.test(process.env.EXPECTED_HEAD || '') || head !== process.env.EXPECTED_HEAD ||
+              head !== process.env.GITHUB_SHA || head !== process.env.GITHUB_WORKFLOW_SHA ||
+              process.env.GITHUB_REPOSITORY !== 'safariarash7777-source/portfolio-platform' ||
+              process.env.GITHUB_REF !== 'refs/heads/main' || process.env.GITHUB_EVENT_NAME !== 'workflow_dispatch' ||
+              process.env.GITHUB_RUN_ATTEMPT !== '1') {
+            console.log('reviewed_controller_rejected'); process.exit(1);
+          }
+          NODE
+      - name: Single configuration update and GET-only readback
+        env:
+          LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
+          MCP_FARSI_API_KEY: ${{ secrets.MCP_FARSI_API_KEY }}
+          EXPECTED_RELEASE: ${{ inputs.expected_release }}
+          ACTIVATION_MODE: ${{ inputs.mode }}
+        run: node scripts/ops/mcp-runtime-activation.mjs
+      - name: Preserve sanitized receipt only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-runtime-activation
+          path: mcp-runtime-activation-receipt.json
+          if-no-files-found: warn
+          retention-days: 14

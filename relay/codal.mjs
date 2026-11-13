@@ -1,6 +1,8 @@
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
+import { isBrsLocalDeferral } from "./brsapi-policy.mjs";
 import { notifyAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 import { createHash } from "node:crypto";
+import { loadDecisionStatement } from "./codal-statement-source.mjs";
 // ماژول کدال — دریافت خودکار گزارش‌های بنیادی از وب‌سرویس کدالِ BrsApi.
 // چرا این‌جا (رله): excel.codal.ir و codal.ir به IP خارجی پاسخ نمی‌دهند؛
 // فقط هاست داخل ایران (لیارا) می‌تواند اکسل گزارش‌ها را دانلود کند.
@@ -846,7 +848,16 @@ export function setCodalBudgetPorts(ports) {
 }
 export function codalBudgetPorts() { return budgetPorts; }
 
+// Opt-in direct official search. No fallback to the metered provider on failure.
+// Lazy construction keeps existing parser-only/offline callers independent.
+let officialAnnouncements;
+async function readOfficialAnnouncements(params) {
+  officialAnnouncements ??= import('./codal-direct.mjs').then(m => m.createOfficialAnnouncements());
+  return (await officialAnnouncements)(params);
+}
+
 async function fetchAnnouncements(symbol, category) {
+  if (process.env.CODAL_ANNOUNCEMENT_SOURCE === 'official') return readOfficialAnnouncements({ l18: symbol, category });
   // only_subsidiaries=false: گزارش شرکت‌های زیرمجموعه (مثل «بهساز مشارکت‌های ملت») قاطی نشود.
   const qs = new URLSearchParams({
     key: BRSAPI_KEY, l18: symbol, category: String(category), page: "1",
@@ -902,6 +913,7 @@ async function downloadExcelHtml(url, onBody) {
       onBody({ htmlBytes, sourceRef: url, responseUrl: res.url });
       return html;
     } catch (e) {
+      if (isBrsLocalDeferral(e)) throw e;
       lastErr = e;
       if (attempt < 3) await sleep(3000 * attempt);
     }
@@ -996,9 +1008,11 @@ async function insertReport(row) {
 
 function classify(a) {
   const title = a.title || "";
-  const code = a.code || "";
-  if (code.includes("ن-۳۰") || title.includes("گزارش فعالیت ماهانه")) return "ن-۳۰";
-  const isFs = code.includes("ن-۱۰")
+  const code = typeof a.code === "string" ? faToEnDigits(a.code).trim() : "";
+  // Explicit report codes take precedence; title fallback is only for missing codes.
+  if (code && code !== "ن-30" && code !== "ن-10") return null;
+  if (code === "ن-30" || (!code && title.includes("گزارش فعالیت ماهانه"))) return "ن-۳۰";
+  const isFs = code === "ن-10"
     || title.includes("صورت‌های مالی") || title.includes("صورتهای مالی") || title.includes("صورت های مالی");
   if (!isFs) return null;
   // فقط گزارش خود شرکت اصلی (نه پرتفوی زیرمجموعه و نه تلفیقیِ جدا از اصلی — تلفیقی همراه اصلی در همان اکسل است).
@@ -1010,7 +1024,7 @@ function metaFrom(a, kind) {
   const title = a.title || "";
   const period_end = jalaliStr(a.date_title) || jalaliStr(title);
   let period_months = 12;
-  const pm = faToEnDigits(title).match(/دوره\s*(\d{1,2})\s*ماهه/);
+  const pm = faToEnDigits(title).match(/(?:دوره\s*)?(\d{1,2})\s*ماهه/);
   if (pm) period_months = Number(pm[1]);
   else if (kind === "ن-۳۰") period_months = 1;
   return {
@@ -1039,7 +1053,14 @@ export const existingUrlsFor = existingUrls;
 /** دریافت یک صفحهٔ اطلاعیه — بدون l18، فید سراسری کل بازار را می‌دهد
  * (جدیدترین‌ها اول، ۲۰تایی). موتور v3 برای واترمارک فید و بک‌فیل نمادی
  * از همین استفاده می‌کند. */
-export async function fetchAnnouncementsPage({ l18, category, page = 1, date_start } = {}) {
+export async function fetchAnnouncementsPage({ l18, category, page = 1, date_start, purpose = "archive" } = {}) {
+  if (!["current", "archive"].includes(purpose)) throw new Error("invalid announcement purpose");
+  // Current discovery must not stop with historical backfill. Reuse the existing
+  // standard allocation; never promote it to critical or change any ceiling.
+  const allocation = purpose === "current"
+    ? { producer: "codal-list", budgetClass: "standard" }
+    : { producer: "codal-archive", budgetClass: "bulk" };
+  if (process.env.CODAL_ANNOUNCEMENT_SOURCE === 'official') return readOfficialAnnouncements({ l18, category, page, date_start });
   const qs = new URLSearchParams({
     key: BRSAPI_KEY, page: String(page),
     only_main_company: "true", only_subsidiaries: "false",
@@ -1056,13 +1077,14 @@ export async function fetchAnnouncementsPage({ l18, category, page = 1, date_sta
     if (date_start) params.date_start = String(date_start);
     json = await client.request({
       endpoint: "Codal/Announcement.php", params,
-      producer: "codal-archive", priority: "background",
-      // صفحه‌گردیِ آرشیو — تاریخی و بی‌عجله.
-      budgetClass: "bulk",
+      ...allocation, priority: "background",
       dedupeTtlMs: 300_000, timeoutMs: 25_000,
     });
   } else {
-    if (countLegacy) await countLegacy("codal-archive", "bulk");
+    if (countLegacy) {
+      if (purpose === "current") await countLegacy("codal-list", "standard");
+      else await countLegacy("codal-archive", "bulk");
+    }
     const res = await fetch(`${BRSAPI_BASE}/Codal/Announcement.php?${qs}`, {
       headers: HDRS, signal: AbortSignal.timeout(25000),
     });
@@ -1093,9 +1115,19 @@ export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejec
   let body = null;
   const html = await downloadExcelHtml(a.link_excel, kind === "ن-۳۰" ? value => { body = value; } : undefined);
   // Stage boundary only: never pass report content to diagnostics.
-  onDownloaded();
   const meta = metaFrom(a, kind);
-  if (kind === "ن-۱۰") return admitN10Html(html, meta, onRejected);
+  if (kind === "ن-۱۰") {
+    let rejection;
+    const legacy = admitN10Html(html, meta, event => { rejection ??= event; });
+    if (legacy) { onDownloaded(); return legacy; }
+    // Discovery remains the shared BRSAPI feed. The official statement pages
+    // supplement missing Excel context; they never bypass financial validation.
+    const result = await loadDecisionStatement(a, meta, { fetchImpl: fetch });
+    onDownloaded();
+    if (result.data) return result.data;
+    return notifyAdmissionRejection(onRejected, kind, rejection?.reason ?? "context_invalid");
+  }
+  onDownloaded();
   const source = body && sameQuantityResponseSource(body.sourceRef, body.responseUrl)
     ? { version: 1, sourceId: body.sourceRef, htmlSha256: createHash("sha256").update(body.htmlBytes).digest("hex"),
       htmlBytes: body.htmlBytes, symbol: meta.symbol, periodEnd: meta.period_end } : null;

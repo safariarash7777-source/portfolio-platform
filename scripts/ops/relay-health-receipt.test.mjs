@@ -10,11 +10,33 @@ import { collectControlPlane, collectReceipt, sanitizeDebug, errorCategory, tran
 const storedUrl = 'https://portfolio-platform-fawn.vercel.app/api/codal-list?symbol=' + encodeURIComponent('فولاد');
 const storedBody = { source: 'codal_feed', coverage: 'stored-announcements', data: [{ private: 'NEVER_EMIT_PRIVATE_VALUE' }] };
 const secret = 'NEVER_EMIT_PRIVATE_VALUE';
+test('MCP receipt exposes confirmed cache state without credentials or raw errors', () => {
+  const d = sanitizeDebug({ mcpfarsiQuote: { enabled: true, configured: true, requests: 1,
+    publication: 'confirmed', pendingPublication: false, lastError: secret, token: secret,
+    sourceDateRaw: '2026-11-04', sourceAtUtc: secret } });
+  assert.equal(d.mcpfarsiQuote.publication, 'confirmed');
+  assert.equal(d.mcpfarsiQuote.sourceAtUtc, null);
+  assert.equal(JSON.stringify(d).includes(secret), false);
+});
+test('enforced runtime requires explicit installed-schema evidence in passive acceptance', async () => {
+  const d = debug(); d.brsapiLegacy.enforced = true;
+  const fetchImpl = async url => new Response(url.endsWith('/debug') ? JSON.stringify(d)
+    : url.endsWith('/healthz') ? 'ok' : JSON.stringify(storedBody));
+  for (const applied of [false, true]) {
+    const r = await collectReceipt({ token: secret, phase28Applied: applied, fetchImpl });
+    assert.equal(r.debug.acceptance, applied ? 'passed' : 'failed');
+    assert.equal(r.debug.data.budget.providerAccountUsage, null);
+    assert.equal(r.debug.data.budget.legacy.budget.accountingScope, 'internal_allocation_not_provider_usage');
+  }
+});
 function debug() {
   return { now: 1793066400000, warmedUp: true, lastRefresh: 1793066300000, ageSec: 100,
     historySections: { written: ['gold', 'currency'], missing: [] },
     brsapiClient: { enabled: false }, brsapiLegacy: { enforced: false, used: { privateProducer: 12 }, budget: { persistent: true, used: 12, remaining: 88, store: { healthy: false, errors: 1, lastError: 'HTTP 404 PGRST202 ' + secret } } },
-    brsapiTransport: { enabled: true, scope: 'process', spacingMs: 100, sent: 6508, pending: 0, minStartGapMs: 109.6578 },
+    brsapiTransport: { enabled: true, scope: 'process', spacingMs: 300, sent: 6508, pending: 0, minStartGapMs: 309.6578,
+      rollingWindowMs: 300000, rollingLimit: 300, ipWindowMs: 1000, ipLimit: 20,
+      policy: 'conservative_unverified_plan', windowScope: 'process_lifetime', priorProcessWindow: 'unknown',
+      coldStartPolicy: 'full_window_defer', globalEnforced: false, clockValid: true },
     supabase: { enabled: true, ok: false, status: 500, at: 1793066300000, error: 'HTTP 500 ' + secret },
     snapshotQuality: { state: 'partial', attemptedAt: 1793066300000, families: { stocks: { state: 'retained', receivedAt: 1793000000000, retained: true, error: 'timeout ' + secret } } },
     codalEngine: { ok: false, lastRun: 1793066300000, lastError: 'timeout ' + secret, feed: { inserted: 0, complete: false, incompleteReason: secret }, backfill: { symbols: [secret], queueSize: 12 } },
@@ -105,7 +127,7 @@ test('workflow preserves existing gates and adds one receipt invocation with san
   assert.match(workflow, /for i in \$\(seq 1 12\)/);
   assert.match(workflow, /relay-gate.mjs accept/);
   assert.match(workflow, /i < 3/);
-  assert.match(workflow, /minStartGapMs < 100/);
+  assert.match(workflow, /observedBrsTransportPolicy\(t\)/);
   assert.equal((workflow.match(/node scripts\/ops\/relay-health-receipt.mjs/g) ?? []).length, 1);
   assert.match(workflow, /path: relay-health-receipt.json/);
   assert.match(workflow, /contents: read/);
@@ -292,5 +314,30 @@ test('reviewed backend binding inspects only the single URL in RAM and never emi
     const out=await collectControlPlane({token:secret,fetchImpl:async url=>{const body=controlBodies(url);if(body.project)body.project.envs=envs;return Response.json(body);}});
     assert.deepEqual(out.project.data.reviewedBackendBinding,{present,parseValid,noCredentialsQueryHash,exactReviewedBackendMatch,duplicateNameRejected,reason});
     const serialized=JSON.stringify(out);assert.equal(serialized.includes(reviewed),false);assert.equal(serialized.includes(secret),false);assert.equal(serialized.includes('user:private'),false);
+  }
+});
+
+
+test('project detail configuration is typed, preserves false and is never actual process evidence',async()=>{
+  const out=await collectControlPlane({token:secret,fetchImpl:async url=>{
+    const body=controlBodies(url);
+    if(body.project)Object.assign(body.project,{scale:1,zeroDowntime:false});
+    body.projects=[{project_id:'arsadata',scale:99,zeroDowntime:true}];
+    return Response.json(body);
+  }});
+  assert.equal(out.project.data.configuredScale,1);
+  assert.equal(out.project.data.configuredZeroDowntime,false);
+  assert.equal(out.project.data.configuredNotActual,true);
+  assert.equal(JSON.stringify(out).includes(secret),false);
+});
+
+test('unknown or malformed scale/zero-downtime stays null without coercion',async()=>{
+  for(const [scale,zeroDowntime] of [[undefined,undefined],[null,null],[0,0],[-1,1],['1','false'],[1.5,{}],[[],[]],[true,'true']]){
+    const out=await collectControlPlane({token:secret,fetchImpl:async url=>{
+      const body=controlBodies(url);if(body.project)Object.assign(body.project,{scale,zeroDowntime});return Response.json(body);
+    }});
+    assert.equal(out.project.data.configuredScale,null);
+    assert.equal(out.project.data.configuredZeroDowntime,null);
+    assert.equal(out.project.data.configuredNotActual,true);
   }
 });

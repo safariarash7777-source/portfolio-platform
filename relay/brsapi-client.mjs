@@ -1,5 +1,5 @@
 import { readProviderJson } from './capitalization-response.mjs';
-import { brsFetch } from "./brsapi-transport.mjs";
+import { brsFetch, isBrsLocalDeferral } from "./brsapi-transport.mjs";
 // brsapi-client.mjs — تنها درگاهِ تماس با BrsApi.
 //
 // ── مسئله‌ای که حل می‌کند ───────────────────────────────────────────────────
@@ -183,7 +183,7 @@ export class PersistentDailyBudget {
     hardCeiling,
     leaseSize = 50,
     lowWaterRatio = 0.4,
-    degradedCeiling = 100,
+    degradedCeiling = 0,
     now = () => Date.now(),
     onError = null,
   }) {
@@ -193,10 +193,16 @@ export class PersistentDailyBudget {
     this.hardCeiling = hardCeiling;
     this.leaseSize = Math.max(1, leaseSize);
     this.lowWaterRatio = lowWaterRatio;
-    this.degradedCeiling = Math.max(0, degradedCeiling);
+    // Persistent budgets never authorize calls outside confirmed DB leases.
+    // Keep the argument compatible, but a former env/config override cannot reopen it.
+    this.degradedCeiling = 0;
     this.now = now;
     this.onError = onError;
     this.day = "";
+    this.closing = false;
+    this.releasePromise = null;
+    this.releaseState = "open";
+    this.inFlight = new Set();
     this.#resetDay(tehranDayKey(new Date(this.now())));
   }
 
@@ -218,12 +224,13 @@ export class PersistentDailyBudget {
   }
 
   #roll() {
+    if (this.closing) return; // Shutdown is terminal, including across midnight.
     const k = tehranDayKey(new Date(this.now()));
     if (k !== this.day) this.#resetDay(k);
   }
 
   /** موجودیِ خرج‌نشدهٔ اجاره. */
-  get leaseRemaining() { return Math.max(0, this.granted - this.spent); }
+  get leaseRemaining() { return this.closing ? 0 : Math.max(0, this.granted - this.spent); }
 
   /**
    * برآوردِ مصرفِ **سراسری**: آنچه انبار می‌گوید اجاره رفته، منهای آن بخش از
@@ -233,6 +240,7 @@ export class PersistentDailyBudget {
   get used() { return Math.max(0, this.globalLeased - this.leaseRemaining); }
 
   wouldAdmit(budgetClass) {
+    if (this.closing) return false;
     this.#roll();
     if (this.leaseRemaining <= 0 && this.degradedRemaining(budgetClass) <= 0) return false;
     const u = this.used;
@@ -247,6 +255,7 @@ export class PersistentDailyBudget {
    * این دو را یکی شمردن یعنی روزی که مشکل «هماهنگی» است، «سهمیه» گزارش شود.
    */
   rejectionReason(budgetClass) {
+    if (this.closing) return "lease";
     this.#roll();
     const u = this.used;
     if (u >= this.hardCeiling || u >= classCeiling(budgetClass, this)) return "budget";
@@ -278,6 +287,7 @@ export class PersistentDailyBudget {
    * همگامِ `reserve` را اجرا می‌کند.
    */
   async ensure() {
+    if (this.closing) return;
     this.#roll();
     const lowWater = Math.ceil(this.leaseSize * this.lowWaterRatio);
     if (this.leaseRemaining > lowWater) return;
@@ -288,10 +298,13 @@ export class PersistentDailyBudget {
   }
 
   #topUp() {
+    if (this.closing) return Promise.resolve();
     if (this.pending) return this.pending;
     const day = this.day;
-    this.pending = (async () => {
+    // Defer execution so even a synchronous store failure sees the assigned promise.
+    const work = Promise.resolve().then(async () => {
       try {
+        if (this.closing) return; // A queued top-up must not start after shutdown.
         const want = Math.min(this.leaseSize, Math.max(1, this.hardCeiling - this.globalLeased));
         const r = await this.store.lease(day, want, this.hardCeiling);
         if (day !== this.day) return;          // روز وسطِ کار عوض شد؛ دور بریز.
@@ -304,19 +317,25 @@ export class PersistentDailyBudget {
         this.storeHealthy = true;
         this.lastStoreError = null;
       } catch (e) {
+        if (day !== this.day) return; // An old-day failure cannot poison a new day's lease.
         this.storeErrors += 1;
         this.storeHealthy = false;
         this.lastStoreError = String(e && e.message ? e.message : e).slice(0, 200);
         if (this.onError) { try { this.onError(e); } catch { /* لاگ نباید مسیر را بشکند */ } }
       } finally {
-        this.pending = null;
+        // A prior-day completion must not clear the new day's pending lease.
+        if (this.pending === work) this.pending = null;
+        this.inFlight.delete(work);
       }
-    })();
-    return this.pending;
+    });
+    this.pending = work;
+    this.inFlight.add(work);
+    return work;
   }
 
   /** رزروِ یک واحد. **همگام و اتمیک** — هیچ `await`ی داخلش نیست. */
   reserve(budgetClass) {
+    if (this.closing) { this.noteRejected(budgetClass); return false; }
     this.#roll();
 
     if (this.leaseRemaining > 0) {
@@ -352,38 +371,58 @@ export class PersistentDailyBudget {
   }
 
   /** پس‌دادنِ اجارهٔ خرج‌نشده روی خاموشیِ مرتب. بهترین‌کوشش. */
-  async release() {
-    const back = this.leaseRemaining;
-    if (back <= 0) return 0;
-    try {
-      const n = await this.store.release(this.day, back);
-      this.granted -= n;
-      this.globalLeased = Math.max(0, this.globalLeased - n);
-      return n;
-    } catch (e) {
-      this.storeErrors += 1;
-      this.lastStoreError = String(e && e.message ? e.message : e).slice(0, 200);
-      return 0;
-    }
+  release() {
+    if (this.releasePromise) return this.releasePromise;
+    // Reserve/ensure/top-up are now closed permanently. Already-reserved calls
+    // remain spent; only the unspent part can be returned after pending leases settle.
+    this.closing = true;
+    this.releaseState = "pending";
+    this.releasePromise = (async () => {
+      await Promise.all([...this.inFlight]);
+      const day = this.day;
+      const back = Math.max(0, this.granted - this.spent);
+      if (back <= 0) { this.releaseState = "nothing_to_release"; return 0; }
+      try {
+        const n = await this.store.release(day, back);
+        if (!Number.isInteger(n) || n < 0 || n > back) throw new Error("invalid budget release response");
+        this.granted -= n;
+        this.globalLeased = Math.max(0, this.globalLeased - n);
+        this.releaseState = "confirmed";
+        return n;
+      } catch (e) {
+        // Outcome may have committed. Never retry or spend this instance's remainder.
+        this.releaseState = "unknown";
+        this.storeHealthy = false;
+        this.storeErrors += 1;
+        this.lastStoreError = String(e && e.message ? e.message : e).slice(0, 200);
+        return 0;
+      }
+    })();
+    return this.releasePromise;
   }
 
   snapshot() {
     this.#roll();
     const u = this.used;
+    // A failed/unconfirmed database read is not an unused provider allowance.
+    const known = this.storeHealthy && this.leaseCalls > 0;
     return {
       day: this.day,
       persistent: true,
+      accountingState: known ? "confirmed_internal_estimate" : "unknown",
+      lifecycle: this.closing ? "closed" : "open",
+      releaseState: this.releaseState,
       softBudget: this.softBudget,
       hardCeiling: this.hardCeiling,
-      used: u,
-      remaining: Math.max(0, this.hardCeiling - u),
+      used: known ? u : null,
+      remaining: known ? (this.closing ? 0 : Math.max(0, this.hardCeiling - u)) : null,
       remainingByClass: Object.fromEntries(
-        BUDGET_CLASSES.map((c) => [c, Math.max(0, classCeiling(c, this) - u)]),
+        BUDGET_CLASSES.map((c) => [c, known ? (this.closing ? 0 : Math.max(0, classCeiling(c, this) - u)) : null]),
       ),
       usedByClass: { ...this.usedByClass },
       rejectedByBudget: this.rejected,
       rejectedByClass: { ...this.rejectedByClass },
-      softExhausted: u >= this.softBudget,
+      softExhausted: known ? u >= this.softBudget : null,
       lease: {
         size: this.leaseSize,
         granted: this.granted,
@@ -686,6 +725,9 @@ export class BrsApiClient {
           await this.sleep(delay);
         }
       } catch (e) {
+        // A local queue/cutover failure is not a provider network failure and
+        // must not immediately retry. Do not guess/refund an earlier reservation.
+        if (isBrsLocalDeferral(e)) throw e;
         const timedOut = e?.name === "TimeoutError" || /timeout/i.test(e?.message ?? "");
         if (timedOut) this.m.timeout += 1; else this.m.networkErr += 1;
         lastErr = e;

@@ -15,10 +15,8 @@
  * حساب می‌شود، نه آزاد. حداکثر اتلافِ هر restart = اندازهٔ یک بلوک.
  *
  * ── وقتی انبار در دسترس نیست ────────────────────────────────────────────────
- * دو رفتارِ بد ممکن است: «همه را رد کن» (یک قطعیِ لحظه‌ایِ دیتابیس رله را
- * می‌خواباند) و «همه را بپذیر» (بودجه دور زده می‌شود). هیچ‌کدام.
- * رفتارِ انتخابی: یک **مجوزِ اضطراریِ کوچک، شمرده‌شده و فقط برای `critical`** —
- * محدود و قابلِ‌مشاهده. بعد از آن رد می‌شود.
+ * بدون اجاره تأییدشده، درخواست تازه مجاز نیست؛ سهمیه نامعلوم
+ * مجوز اضطراری ایجاد نمی‌کند. اجاره قبلاً تأییدشده قابل مصرف می‌ماند.
  */
 
 /** فراخوانیِ یک تابعِ Postgres از راهِ PostgREST. */
@@ -52,19 +50,29 @@ export function makeSupabaseLeaseStore({ url, serviceKey, fetchImpl = globalThis
       const rows = await rpc("brsapi_budget_lease", {
         p_day: dayKey, p_want: want, p_hard: hardCeiling,
       });
-      const r = Array.isArray(rows) ? rows[0] : rows;
-      if (!r || typeof r.granted !== "number") {
+      const r = Array.isArray(rows) && rows.length === 1 ? rows[0]
+        : !Array.isArray(rows) ? rows : null;
+      const isCounter = (value) => Number.isInteger(value) && value >= 0 && value <= 2147483647;
+      // Missing/invalid accounting data is unknown, never a zero baseline.
+      // Do not compensate or retry: the remote lease may already be committed.
+      if (!r || !isCounter(r.granted) || !isCounter(r.leased_before)
+        || !isCounter(r.hard_ceiling) || r.hard_ceiling <= 0
+        || r.granted > want || r.hard_ceiling > hardCeiling
+        || r.leased_before + r.granted > r.hard_ceiling) {
         throw new Error("rpc brsapi_budget_lease پاسخِ بی‌شکل داد");
       }
       return {
         granted: r.granted,
-        leasedBefore: r.leased_before ?? 0,
-        hardCeiling: r.hard_ceiling ?? hardCeiling,
+        leasedBefore: r.leased_before,
+        hardCeiling: r.hard_ceiling,
       };
     },
     async release(dayKey, back) {
       const out = await rpc("brsapi_budget_release", { p_day: dayKey, p_back: back });
-      return typeof out === "number" ? out : 0;
+      if (!Number.isInteger(out) || out < 0 || out > 2147483647 || out > Math.max(0, back)) {
+        throw new Error("rpc brsapi_budget_release پاسخِ بی‌شکل داد");
+      }
+      return out;
     },
   };
 }
