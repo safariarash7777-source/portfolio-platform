@@ -1,0 +1,165 @@
+{
+  "controller": "d6ccafec6b0ea793c9cb7a90a11d4d43833a71c9",
+  "app": "e0b930927563d7f9f6d79e848917c4ba0d77ed6f",
+  "appTree": "c6c67f2a78cd2cf672cf4f489f81e7f14cb041da",
+  "baseCapsuleSha256": "54d35e1aa4b48962e48085140af0c214547bd139870ea1b9e08e644ac5c8d255",
+  "capsuleSha256": "f41acf251bd63dc8f7a938b4f4f4308073c44c3bd9085b4f6978dfacad1d7486",
+  "driverSha256": "924500227397f6a72e99766238fb828e6d00f13842d763bada5d660c54242d3a",
+  "phaseBaseSha256": "6227f16978b64de4c4a37fece9451d8d8f9b36209fb7be912ea883918e5d5536",
+  "phaseCandidateSha256": "817f95289fe3f588f8cf27f960462f697c66eb6d226d2b5f6831966f1798cd99",
+  "changedMembers": [
+    "overlay/scripts/testing/consultation-tickets/assembled-overlay.json",
+    "overlay/scripts/testing/consultation-tickets/composition-member-phase.mjs"
+  ],
+  "members": {
+    "REVIEW.fa.md": {
+      "sha256": "3e3349b057f7ceff51d9a3a5a1ac872d3f33b89379f9af50b1d10e71ff152021",
+      "bytes": 5535
+    },
+    "apply-overlay.py": {
+      "sha256": "ebde745afe38a5c6a0a4e40c04106d5a854f49f1974793f1b53356cb3ee4d647",
+      "bytes": 3859
+    },
+    "overlay/scripts/testing/consultation-tickets/assembled-auth-gateway.mjs": {
+      "sha256": "656a4b32f06048eb96bbe9fd21b08babcd7d15b44642012bc478886db207a74e",
+      "bytes": 5337
+    },
+    "overlay/scripts/testing/consultation-tickets/assembled-auth-runtime.mjs": {
+      "sha256": "469d60128fad6a71fe432fbd5f674bfa032c56b9ff6a8b0e2ef7523b3b5d1ff3",
+      "bytes": 48797
+    },
+    "overlay/scripts/testing/consultation-tickets/assembled-member-scenario.mjs": {
+      "sha256": "0d6897bea239d69505f1816b91d9610e59616640cf7a2b9aeab2a3cd10801c89",
+      "bytes": 10520
+    },
+    "overlay/scripts/testing/consultation-tickets/assembled-native-profile.mjs": {
+      "sha256": "0fd4af0ce0c2ffc06d6ffa64c6725f7ff30b412442097ab0f90682c790d465fc",
+      "bytes": 11764
+    },
+    "overlay/scripts/testing/consultation-tickets/assembled-native-source.json": {
+      "sha256": "f9bcbfd29a118e02304544124ef41ef4c43bb837eef9956b9cefad7312b74047",
+      "bytes": 9951
+    },
+    "overlay/scripts/testing/consultation-tickets/assembled-native.mjs": {
+      "sha256": "288cb64b9a1c7f0769a0cd55cbbb0560005f41b9a61143cfc9a5c3eac17041e7",
+      "bytes": 7318
+    },
+    "overlay/scripts/testing/consultation-tickets/assembled-observer-policy.mjs": {
+      "sha256": "e53d57345d73792f6531408a5f197e6e515d87a7caf91bb0cb4d1ad88f3ac251",
+      "bytes": 1490
+    },
+    "overlay/scripts/testing/consultation-tickets/assembled-overlay-gate.mjs": {
+      "sha256": "39dc9ebb4446660c6f5078d7b75ef92d2523b355ed7e375f9d7b1ed7301fa846",
+      "bytes": 4041
+    },
+    "overlay/scripts/testing/consultation-tickets/assembled-overlay.json": {
+      "sha256": "924500227397f6a72e99766238fb828e6d00f13842d763bada5d660c54242d3a",
+      "bytes": 3825
+    },
+    "overlay/scripts/testing/consultation-tickets/composition-browser-case.mjs": {
+      "sha256": "070de1c277547ce4c20abb9266eaa9cb5f882de639fede0eb1280678c03c3678",
+      "bytes": 30513
+    },
+    "overlay/scripts/testing/consultation-tickets/composition-contract.mjs": {
+      "sha256": "76c4d052b12efbccdd1b65430148941797cadf4326fc3a1da3f1859df64afcb3",
+      "bytes": 10909
+    },
+    "overlay/scripts/testing/consultation-tickets/composition-contract.test.mjs": {
+      "sha256": "6a1dbe179d7b1b9a6f8acb596e4657d2cfe7d1bbf901edd66aa550cf3a6a0e41",
+      "bytes": 13267
+    },
+    "overlay/scripts/testing/consultation-tickets/composition-member-phase.mjs": {
+      "sha256": "817f95289fe3f588f8cf27f960462f697c66eb6d226d2b5f6831966f1798cd99",
+      "bytes": 14127
+    },
+    "overlay/scripts/testing/consultation-tickets/composition-transport.mjs": {
+      "sha256": "7cebc7a24d3e128db4d75d2cb836c38a7da89d7da2ebaa200e17da9b895f6df0",
+      "bytes": 3044
+    },
+    "overlay/scripts/testing/consultation-tickets/composition-transport.test.mjs": {
+      "sha256": "fff6be9cccbdef3d954a7a37a30ea01d2808c72e2a83dd162c9ca35e820689c5",
+      "bytes": 4852
+    }
+  },
+  "sources": {
+    "lib/consultation/ticketAttemptStorageContracts.ts": {
+      "bytes": 10465,
+      "sha256": "84b3efa5cec6fd631cb18fb0f8fe75d532d38db059857bd7e9bda9fc386cce4d",
+      "gitBlob": "b00d76fb261d929df1545ec0f2046aa66191f689"
+    },
+    "lib/portfolio/cashFlowApiContract.ts": {
+      "bytes": 16327,
+      "sha256": "6b6fc6450d326f59c2519d9036dfa2b94a39156feabc466ee77687c905696ff7",
+      "gitBlob": "b5a8ffbe9e1dce9749fe802d795bcf1f906512e9"
+    },
+    "lib/portfolio/cashFlow.ts": {
+      "bytes": 9793,
+      "sha256": "765cb562b7216c6931800a7b8e48252ade09bfb6ee139e39bbf31fe383ce035b",
+      "gitBlob": "1aecadca9c8f67dc8359fd274cae8d95fc27e760"
+    },
+    "lib/portfolio/financialInput.ts": {
+      "bytes": 5987,
+      "sha256": "53cc2ce15a8ef6849dadf1933b6ea5102d7abd4161994f6539053335f6ff4ad6",
+      "gitBlob": "32bd743de3b8b3f8b35098a3bd1694d4a82dbeea"
+    },
+    "lib/format.ts": {
+      "bytes": 12112,
+      "sha256": "434790b4d1e4ddf7a5b39a2c7a0321ec81844849ca92287b2cdbf8fe40c79ac5",
+      "gitBlob": "73c303df57c41cb472013cbf678e070c3652a3c7"
+    },
+    "lib/consultation/tickets.ts": {
+      "bytes": 21287,
+      "sha256": "ec38c3a36918ca504c2b7cf8adc79521a47c9b21d8ff5bb7cf9dcb09d8ac16f1",
+      "gitBlob": "b5d5d5f11e74b07fac5944d391a5ba61ba0ae5b0"
+    },
+    "lib/consultation/contracts.ts": {
+      "bytes": 20804,
+      "sha256": "aecf9ac39b0ad2e7775d45442c0c4fcd549b7a53949f88834f8c0f1b4f14bb75",
+      "gitBlob": "72933931f016e4f0a7c52821bb6d8b42f7b2fd9b"
+    },
+    "lib/portfolio/goalsApiContract.ts": {
+      "bytes": 9367,
+      "sha256": "e255f320e514700bb2e239f0774f0d89d8edbbfbf7152aed1351e6a19816048c",
+      "gitBlob": "625c016899e41b415f0d471fe0a3cb6dbd6ff42c"
+    },
+    "lib/portfolio/goals.ts": {
+      "bytes": 860,
+      "sha256": "908207d8d04c0edc4ae0e463a9613744c44feca8e541fe9b3f52a3e703a6abcf",
+      "gitBlob": "43a1fed93bab140736233fcba06958d48d30098f"
+    },
+    "lib/consultation/ticketIntent.ts": {
+      "bytes": 4545,
+      "sha256": "935892d47546d6a73344e33b5973e57b32a4aa37ec0182e1a9c8430ea4b5b55e",
+      "gitBlob": "ac396b37d08ee323d833485c1ef143b528951296"
+    },
+    "lib/consultation/ticketStorageContracts.ts": {
+      "bytes": 10403,
+      "sha256": "229d8d9f10b64d18066bb62ade9029bb2a2146aeab7acb8f0717984534dc1e96",
+      "gitBlob": "f075ab28903e651e1d4b4ae7f69b3a1a068aba07"
+    },
+    "lib/consultation/errors.ts": {
+      "bytes": 2220,
+      "sha256": "3a09149c3d9ff86db879e2af3eace3b28dab5146630e13093cd2012ac9a52518",
+      "gitBlob": "ecccc0b1647d1ea9f5045f12cfa123fde64d6c82"
+    },
+    "scripts/testing/consultation-tickets/unit-fixture.ts": {
+      "bytes": 3174,
+      "sha256": "154c5587ad8a9a75715a8da1953284bf2c841de7e282b902c0b72b85afea23f2",
+      "gitBlob": "1c60d9760e272e69008b68724dcf521a8a67520e"
+    },
+    "scripts/testing/consultation-tickets/prepared-unit-fixture.ts": {
+      "bytes": 2042,
+      "sha256": "92028a063fff3695e20d94c0bd5dbcfa1e2fe8f138edbc48f3106fc32ee76ca5",
+      "gitBlob": "03e4c3702a8a3776f95fd85b5a6d20a75b048c38"
+    }
+  },
+  "typescript": "5.9.3",
+  "compilerSha256": "3ae902c92cc44dace175c0e69e13a4b0899f6983c6121d76b9ab8dd5795e7675",
+  "guardSha256": "4f572d05be71696339860f301d4891f6dbe0e4ab3a7f70570052ce69eb9bb028",
+  "probeSha256": "a6bc1a6c3e54ae71b853674761415b03761555a8e3e3bd33f473ecfe25158d72",
+  "provenance": "Parent metadata preserved; only phase entry pin changed. New output capsule; no original/source/workflow/controller mutation.",
+  "packagingVersion": 2,
+  "validatorFixture": "canonical-validator-fixture.json",
+  "validatorFixtureSha256": "deb5aab9f73c7ecdec81beb12bea1a51df435df985762434a262e88247d1528a",
+  "activeProductCopies": false
+}

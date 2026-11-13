@@ -1,0 +1,93 @@
+{
+  "readOnly": true,
+  "requestedIds": [
+    4048,
+    4226,
+    11653,
+    11654,
+    11692
+  ],
+  "rows": [
+    {
+      "id": 4048,
+      "symbol": "فولاد",
+      "period_end": "2026-06-21",
+      "captured_at": "2026-08-12T23:10:45.84194+00:00",
+      "published_at": null,
+      "symbol_utf8_hex": "d981d988d984d8a7d8af",
+      "matches_folad": true,
+      "matches_femeli": false
+    },
+    {
+      "id": 4226,
+      "symbol": "فملی",
+      "period_end": "2026-06-21",
+      "captured_at": "2026-08-14T02:10:45.571288+00:00",
+      "published_at": null,
+      "symbol_utf8_hex": "d981d985d984db8c",
+      "matches_folad": false,
+      "matches_femeli": true
+    },
+    {
+      "id": 11653,
+      "symbol": "فولاد",
+      "period_end": "2026-09-22",
+      "captured_at": "2026-10-25T10:15:56.894105+00:00",
+      "published_at": null,
+      "symbol_utf8_hex": "d981d988d984d8a7d8af",
+      "matches_folad": true,
+      "matches_femeli": false
+    },
+    {
+      "id": 11654,
+      "symbol": "فولاد",
+      "period_end": "2026-09-22",
+      "captured_at": "2026-10-25T10:15:58.441485+00:00",
+      "published_at": null,
+      "symbol_utf8_hex": "d981d988d984d8a7d8af",
+      "matches_folad": true,
+      "matches_femeli": false
+    },
+    {
+      "id": 11692,
+      "symbol": "فملی",
+      "period_end": "2026-09-22",
+      "captured_at": "2026-10-27T11:26:49.238312+00:00",
+      "published_at": null,
+      "symbol_utf8_hex": "d981d985d984db8c",
+      "matches_folad": false,
+      "matches_femeli": true
+    }
+  ],
+  "sqlWrites": false,
+  "retry": false,
+  "maxIdIsNotNewestCaptured": true,
+  "before": {
+    "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+    "healthy": true,
+    "restartCount": 0
+  },
+  "index": "codal_reports_pkey",
+  "literalTransport": {
+    "clientEncoding": "UTF8",
+    "serverEncoding": "UTF8",
+    "foladLiteralHex": "d981d988d984d8a7d8af",
+    "femeliLiteralHex": "d981d985d984db8c",
+    "pythonPreferredEncoding": "UTF-8"
+  },
+  "expectedUtf8Hex": {
+    "folad": "d981d988d984d8a7d8af",
+    "femeli": "d981d985d984db8c"
+  },
+  "status": "READ_ONLY_PK_METADATA_COMPLETE",
+  "after": {
+    "id": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+    "healthy": true,
+    "restartCount": 0
+  },
+  "atUtc": "2026-11-04T01:16:42.928588+00:00",
+  "elapsedSeconds": 4.25,
+  "localDeadlineSeconds": 45,
+  "payloadSha256": "ef4ebdaa523e027f9df48e4416615e42da97d2525397dee09ef4aa5f466bc8c0",
+  "observedAtUtc": "2026-11-04T01:16:42.287755+00:00"
+}
