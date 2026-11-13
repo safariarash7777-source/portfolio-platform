@@ -80,3 +80,37 @@ test('existing automatic producer accepts source-bound statement without an Exce
   assert.equal(data?.standalone.revenue,2509422184);assert.equal(completed,1);assert.equal(rejected,0);
  }finally{globalThis.fetch=previous;}
 });
+
+test('Excel server failure falls back to a validated same-report statement',async()=>{
+ const previous=globalThis.fetch;let excelCalls=0,statementCalls=0,completed=0;
+ globalThis.fetch=async target=>{
+  const u=new URL(target);
+  if(u.hostname==='excel.codal.ir'){excelCalls++;return new Response('',{status:500});}
+  assert.equal(u.hostname,'codal.ir');statementCalls++;
+  return new Response(u.searchParams.get('sheetId')==='1060'?equity:income);
+ };
+ try{
+  const data=await downloadAndParse({link:url,link_excel:'https://excel.codal.ir/service/Excel/GetAll/fixture/0',l18:'فولاد',l30:'فولاد مبارکه اصفهان',title:'صورت‌های مالی 6 ماهه منتهی به 1405/06/31 (حسابرسی نشده)'},'ن-۱۰',()=>{completed++;});
+  assert.equal(data?.standalone.revenue,2509422184);
+  assert.equal(excelCalls,3);assert.equal(statementCalls,2);assert.equal(completed,1);
+ }finally{globalThis.fetch=previous;}
+});
+
+test('local request deferral does not invoke statement fallback',async()=>{
+ const previous=globalThis.fetch;let calls=0;
+ const deferred=Object.assign(new Error('deferred'),{code:'brs_transport_queue_full'});
+ globalThis.fetch=async()=>{calls++;throw deferred;};
+ try{
+  await assert.rejects(downloadAndParse({link:url,link_excel:'https://excel.codal.ir/service/Excel/GetAll/fixture/0'},'ن-۱۰'),e=>e===deferred);
+  assert.equal(calls,1);
+ }finally{globalThis.fetch=previous;}
+});
+
+test('rejected fallback preserves Excel source failure instead of parser success',async()=>{
+ const previous=globalThis.fetch;let completed=0,rejected=0;
+ globalThis.fetch=async target=>new URL(target).hostname==='excel.codal.ir'?new Response('',{status:500}):new Response('<html></html>');
+ try{
+  await assert.rejects(downloadAndParse({link:url,link_excel:'https://excel.codal.ir/service/Excel/GetAll/fixture/0'},'ن-۱۰',()=>{completed++;},()=>{rejected++;}),/excel HTTP 500/);
+  assert.equal(completed,0);assert.equal(rejected,0);
+ }finally{globalThis.fetch=previous;}
+});
