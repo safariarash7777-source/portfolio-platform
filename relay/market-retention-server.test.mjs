@@ -34,6 +34,7 @@ async function probe(scenario) {
     globalThis.fetch=async(input,init={})=>{
       const u=new URL(input);
       if(u.hostname==='brsapi.ir') {
+        if(scenario==='client-budget-auxiliary'&&phase===0&&u.pathname.endsWith('/Symbol.php'))return reply({},400);
         const core=/Gold_Currency|AllSymbols|Index|Option/.test(u.pathname);
         if(core&&phase===1&&scenario==='malformed-sources')return reply(/Option/.test(u.pathname)?[{}]:{});
         if(core&&failed()&&(!/Option/.test(u.pathname)||scenario==='warm-all-failed'||scenario==='cold-all-failed'))failure();
@@ -59,7 +60,7 @@ async function probe(scenario) {
           const starved=scenario==='client-budget-midcycle'&&phase===1;
           const granted=starved?(partialGrant?0:1):1;
           if(starved)partialGrant=true;
-          const before=starved?1000-granted:leased;leased=before+granted;
+          const before=starved?1000-granted:scenario==='client-budget-auxiliary'&&phase===1?Math.max(900,leased):leased;leased=before+granted;
           return reply([{granted,leased_before:before,hard_ceiling:1000}]);
         }
         return reply({code:'PGRST202'},404);
@@ -107,7 +108,7 @@ async function probe(scenario) {
       }
     }
     if(!scenario.startsWith('cold')&&scenario!=='hydrated-partial') {
-      phase=1;now+=scenario.startsWith('daily-')||scenario==='client-budget-midcycle'?5*3600000:31*60000;await refresh();
+      phase=1;now+=scenario==='client-budget-auxiliary'?12*3600000:scenario.startsWith('daily-')||scenario==='client-budget-midcycle'?5*3600000:31*60000;await refresh();
     }
     const second=await get('/market.json');const writesAfterSecond=latest.length;
     if(scenario==='partial-recovery'||scenario==='daily-recovery'){phase=2;now+=60000;await refresh();}
@@ -299,6 +300,18 @@ test('actual relay CLIENT_ENABLED=1: ordinary source timeout remains a partial u
   assert.equal(r.writesAfterSecond,2);
   assert.equal(r.second.body.options[0].price,300);
   assert.deepEqual(r.second.body.stocks,r.first.body.stocks);
+});
+
+test('complete core snapshot persists when optional enrichment exhausts its budget',async()=>{
+  const r=await probe('client-budget-auxiliary');
+  assert.equal(r.blockedHosts,0);
+  assert.equal(r.second.body.snapshotQuality.state,'complete');
+  assert.equal(r.debug.brsapiBudgetStop.active,true);
+  assert.ok(r.debug.brsapiBudgetStop.producers['fund-meta']>0);
+  assert.equal(r.writesAfterSecond,2);
+  assert.equal(r.latest[1].fetchedAt,r.second.body.fetchedAt);
+  assert.equal(r.latest[1].options[0].price,300);
+  assert.equal(r.history.length,4,'budget stop still prevents follow-on history writes');
 });
 
 

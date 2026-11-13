@@ -1325,7 +1325,14 @@ function refresh() {
       if (result.canServe) cache = { body, at: attemptedAt, receivedAt: result.payload.fetchedAt };
       status.lastRefresh = result.payload.fetchedAt;
       // Unknown baseline permits a complete replacement, but never a partial one.
-      if (!result.successes || budgetStop.active) return;
+      if (!result.successes) return;
+      if (budgetStop.active) {
+        // Optional enrichment can exhaust its allocation after every core
+        // family succeeded. Persist that complete snapshot without making any
+        // more provider/history requests; a partial stopped cycle stays closed.
+        if (result.complete) await pushToSupabase(body);
+        return;
+      }
       if (baselineResolved || result.complete) await pushToSupabase(body);
       const freshBody = JSON.stringify(result.fresh);
       await pushHistory(freshBody);
