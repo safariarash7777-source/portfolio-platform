@@ -29,6 +29,7 @@ import { readStoredReportCounts } from "./codal-coverage.mjs";
 import { isBrsLocalDeferral } from "./brsapi-transport.mjs";
 import { admissionCounts, admissionEvent, readAdmissionDiagnostics, recordAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 import { supportsDecisionUrl } from "./codal-statement-source.mjs";
+import { readStoredAnnouncements, validStoredCursor } from "./codal-stored-feed.mjs";
 
 const { BRSAPI_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = codalEnv;
 
@@ -87,6 +88,7 @@ export const engineStatus = {
   // codal_feed has no publish_time/raw column; only date_publish can be stored here.
   feedTable: { attempted: 0, inserted: 0, duplicates: 0, lastError: null, publishTimeStored: false },
   backfill: { cursor: 0, queueSize: 0, symbols: [], inserted: 0, parseFailed: 0, skippedCovered: 0 },
+  storedRecovery: { scanned: 0, downloaded: 0, inserted: 0, parseFailed: 0, blocked: 0, skippedKnown: 0, metadataSkipped: 0, reachedEnd: false },
   ledgerSize: 0,
   failureDiagnostics: readFailureDiagnostics(),
   admissionDiagnostics: readAdmissionDiagnostics(),
@@ -109,6 +111,8 @@ async function loadState() {
     throw new Error("state load invalid schema");
   }
   const payload = rows[0]?.payload ?? {};
+  payload.storedFeedCursor ??= null;
+  if(!validStoredCursor(payload.storedFeedCursor))throw new Error('stored feed cursor invalid');
   if (payload.watermark != null && (!Number.isFinite(payload.watermark.key) ||
       !Array.isArray(payload.watermark.links) || !payload.watermark.links.every(l => typeof l === "string"))) {
     throw new Error("state watermark invalid schema");
@@ -462,6 +466,43 @@ async function backfillSome() {
 }
 
 /* ── اجرای یک چرخهٔ کامل موتور ─────────────────────────────────────────────── */
+async function recoverStoredReports() {
+  const st=engineStatus.storedRecovery;
+  Object.assign(st,{scanned:0,downloaded:0,inserted:0,parseFailed:0,blocked:0,skippedKnown:0,metadataSkipped:0,reachedEnd:false});
+  const knownBySymbol=new Map();
+  // Share the existing backfill download allocation. Only two stored pages are
+  // read per cycle; an empty page, not a short server-capped page, ends the scan.
+  for(let page=0;page<2;page++){
+    const rows=await readStoredAnnouncements(state.storedFeedCursor,{baseUrl:SUPABASE_URL,headers:SB_HDRS()});
+    if(!rows.length){state.storedFeedCursor=null;st.reachedEnd=true;break;}
+    for(const row of rows){
+      const a=row.announcement,kind=a && classifyAnnouncement(a);
+      if(a && kind && st.downloaded>=BACKFILL_MAX_DL)return;
+      st.scanned++;
+      if(!a || !kind){st.metadataSkipped++;state.storedFeedCursor=row.id;continue;}
+      if(!knownBySymbol.has(a.l18))knownBySymbol.set(a.l18,await existingUrlsFor(a.l18));
+      const known=knownBySymbol.get(a.l18);
+      if(known.has(a.link)){st.skippedKnown++;state.storedFeedCursor=row.id;continue;}
+      if(isBlocked(a.link,kind,a)){st.blocked++;state.storedFeedCursor=row.id;continue;}
+      let stage='download',rejection=null;st.downloaded++;
+      try {
+        const data=await downloadAndParse(a,kind,()=>{stage='admission';},event=>{rejection??=admissionEvent(event,kind);});
+        if(data){
+          stage='persistence';st.inserted+=await insertParsedReport(a,kind,data);
+          known.add(a.link);delete state.fails[a.link];
+        } else {
+          st.parseFailed++;recordFailureDiagnostic('admission','rejected');
+          recordAdmissionRejection(state.admissionDiagnostics,kind,rejection);recordFail(a.link,kind,a);
+        }
+      } catch(error) {
+        if(isBrsLocalDeferral(error))throw error;
+        st.parseFailed++;recordFailureDiagnostic(stage,'exception');recordFail(a.link,kind,a);
+      }
+      state.storedFeedCursor=row.id;
+    }
+  }
+}
+
 export async function runEngineCycle() {
   engineStatus.ok = false;
   engineStatus.lastError = null;
@@ -476,6 +517,8 @@ export async function runEngineCycle() {
   state.failureDiagnostics.lastCycle = failureCounts();
   state.admissionDiagnostics.lastCycle = admissionCounts();
   const watermarkBefore = state.watermark;
+  const storedCursorBefore = state.storedFeedCursor;
+  Object.assign(engineStatus.backfill, { inserted: 0, parseFailed: 0, symbols: [], skippedCovered: 0 });
   let feedDeferred = false;
   try {
     await pollGlobalFeed();
@@ -488,7 +531,8 @@ export async function runEngineCycle() {
     console.error("codal-engine feed error:", e?.message ?? e);
   }
   try {
-    if (!feedDeferred) await backfillSome();
+    await recoverStoredReports();
+    if (!feedDeferred && !engineStatus.storedRecovery.downloaded) await backfillSome();
   } catch (e) {
     engineStatus.lastError = [engineStatus.lastError, `backfill: ${e?.message ?? e}`].filter(Boolean).join("; ");
     console.error("codal-engine backfill error:", e?.message ?? e);
@@ -497,12 +541,13 @@ export async function runEngineCycle() {
   if (!engineStatus.lastError && !engineStatus.feed.complete) {
     engineStatus.lastError = `feed incomplete: ${engineStatus.feed.incompleteReason}`;
   }
-  if (!engineStatus.lastError && (engineStatus.feed.parseFailed || engineStatus.backfill.parseFailed)) {
+  if (!engineStatus.lastError && (engineStatus.feed.parseFailed || engineStatus.backfill.parseFailed || engineStatus.storedRecovery.parseFailed)) {
     engineStatus.lastError = "report parsing/insertion failed";
   }
   try { await saveState(); }
   catch (e) {
     state.watermark = watermarkBefore;
+    state.storedFeedCursor = storedCursorBefore;
     engineStatus.feed.watermark = state.watermark?.key ?? null;
     engineStatus.lastError = [engineStatus.lastError, `state save: ${e?.message ?? e}`].filter(Boolean).join("; ");
   }
