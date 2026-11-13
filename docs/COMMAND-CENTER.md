@@ -1,5 +1,13 @@
 # Arash Digital Platform — Command Center
 
+## اجرای ۱۴ نوامبر تهران / ۱۳ نوامبر۲۰:۵۲UTC — خواندن بنیادی؛ مالک root
+
+تشخیص تازه: public bundle نسخهٔ اصلی `dpl_7pDvhQcwjJLb6ULtC5weZYfdp6hD` رویmain52d6f11 به`https://62.60.191.24/liara-preview` نگاشت شده است. همان anon عمومی در RAM، بدون چاپ/ذخیره کلید، روی همان query گزارش‌های آواپزشک HTTP200 داد:ن۱۰ صفرردیف/۰٫۶۸۸s؛ن۳۰ پنج‌ردیف/۱٫۰۱۵s وserial گزارش بازیابی‌شده موجود. مقایسه با timeoutهای Vercel نشان می‌دهد خطای خواندن صفحه را نمی‌توان به نبود داده یا کندی SQL این نمونه نسبت داد؛ علت ریشه‌ای شبکه هنوز قطعی نیست.
+
+PR433، head `bebee15e4278182d87cd4f7190640003fa8b746b`، candidate بازیابی GET محدود به همان مقصد است: اولین انتظار headersسه‌ثانیه، تنهایکretry برایdeadlineخودی یاUND_ERR_CONNECT_TIMEOUT، سقفکل همان۸ثانیه برایهرنوعگزارش وbody. HTTP/TLS/body retryنمی‌شوند؛ خطایTLSهمزمان باtimerنیز تکرار نمی‌شود.۳۷آزمونreader/binding/transport، شش آزمونtransport رویheadنهایی،tsc وlint موفق. CIنهایی43505138692 درحال اجرا؛ هنوز merge یاProduction نیست.
+
+Previewاول dpl_5GqUQoC3sCXKDR8PcsBBwqNWnFfL روی01b3c49 بهعلتbindingپیش‌فرضقدیمی دوHTTP402 داشت؛ این آزمون، رفعtimeoutProduction را ثابت نکرد. سپس فقطشاخه `codex/fundamental-read-reconnect-20261114` درpreview دوenv اختصاصیFUNDAMENTAL_READ_URL/ANON_KEY باجفتعمومیفعلی تنظیمشد وmetadataبازخوانی شد (IDsY2n5cWc1vNa0U3NY/6AjIldE2G5FFXNRa). تنظیمauth/write یاProduction تغییرنکرد. Previewجدید `dpl_4uv2Q3WHRuA545cKLePCpKw2ZB6M` رویbebee15 درحالbuildاست؛ اقدامبعدroot بررسیreportserialدرصفحه، سپسگیتCIوانتشارمشروط بهنتیجهواقعی. عملیاتخرید/تغییرسقفBRSAPI انجامنشد.
+
 ## نتیجهٔ زنده ۱۳ نوامبر، ۲۰:۳۷ UTC — یک گزارش بازیابی شد؛ timeout خواندن صفحه باز است
 
 نسخه `308d29a` / deployment `7775651399`: مشاهدهٔ اولیه health43501720099 در وقفهٔ محافظتی شروع مجدد، sent=0 و spacing نامشهود بود؛ failure آن شاهد نقض فاصله نیست. مشاهدهٔ بعدی health43502603199/job132151989920 موفق، زمان رسید۲۰:۳۴:۰۱UTC: storedRecovery تعداد۱۱۰ ردیف بررسی،۶ دانلود،۱ درج،۵ رد scope_unsupported،۱۳ مسدود و۲ قبلاً موجود؛ مکان‌نمای ذخیره‌شده۲۹۲۷۰ درSQL۲۰:۳۴:۵۳ تأیید شد. فید تازه timeout داشت؛ پس کل چرخه کدال سالم اعلام نمی‌شود. حداقل فاصله۳۲۱٫۸۰۴ms، سقف۳۰۰در۵دقیقه، دامنه process وglobalEnforced=false؛ مصرف واقعی حساب ارائه‌دهنده ادعا نمی‌شود.
