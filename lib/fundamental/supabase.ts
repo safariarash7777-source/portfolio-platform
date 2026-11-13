@@ -20,6 +20,7 @@ import { fiscalChainKey } from "../core/quarterly";
 import { isMillionRialUnit } from "./units";
 import { approvedCodalUrl } from "../desk/workspace-model";
 import { bindSelectedMonthlyQuantity } from "./monthly-quantity-binding";
+import { fetchFundamentalRows } from "./read-transport";
 import type { MonthlyQuantityCaptureReceipt } from "../core/monthly-quantity";
 export { isMillionRialUnit } from "./units";
 
@@ -102,14 +103,8 @@ async function fetchRows(symbol: string, e: { url: string; anon: string }): Prom
   try {
     const parts = await Promise.all(
       fetchQueries(symbol).map(async ({ kind, qs }) => {
-        const res = await fetch(`${e.url}/rest/v1/codal_reports?${qs}`, {
-          method: "GET",
-          redirect: "error",
-          credentials: "omit",
-          headers: { apikey: e.anon, Authorization: `Bearer ${e.anon}` },
-          signal: AbortSignal.timeout(8000),
-          cache: "no-store",
-        });
+        const res = await fetchFundamentalRows(`${e.url}/rest/v1/codal_reports?${qs}`,
+          { apikey: e.anon, Authorization: `Bearer ${e.anon}` });
         if (!res.ok) {
           console.warn("fundamental_read_failed", { phase: "headers", status: res.status, kind });
           return null;
