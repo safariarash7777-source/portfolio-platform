@@ -2,6 +2,13 @@ name: Folad primary sources
 
 on:
   workflow_dispatch:
+    inputs:
+      profile:
+        description: Reviewed fixed public documents; no arbitrary source URL
+        type: choice
+        options: [folad, rejected-n10-20261114]
+        default: folad
+        required: true
 
 permissions:
   contents: read
@@ -25,6 +32,7 @@ jobs:
       - name: Retrieve public primary documents
         env:
           RELAY_TOKEN: ${{ secrets.RELAY_TOKEN }}
+          CAPTURE_PROFILE: ${{ inputs.profile }}
         run: node scripts/ops/folad-primary-sources.mjs
       - name: Preserve public documents and sanitized receipt
         if: always()

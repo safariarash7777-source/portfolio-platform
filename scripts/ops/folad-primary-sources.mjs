@@ -7,14 +7,23 @@ export const TARGETS = Object.freeze([
   ['N10', 'https://excel.codal.ir/service/Excel/GetAll/yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d/0'],
   ['N30', 'https://excel.codal.ir/service/Excel/GetAll/UF9BctCE5jV6HYNuyA8yYA%3d%3d/0'],
 ].map(Object.freeze));
+export const SOURCE_SETS = Object.freeze({
+  folad: TARGETS,
+  'rejected-n10-20261114': Object.freeze([
+    ['N10-VESOOGH', 'https://excel.codal.ir/service/Excel/GetAll/OOObOOOdrhD0zS1afEs6uF1lQQQaQQQyaA%3d%3d/0'],
+    ['N10-QESABET', 'https://excel.codal.ir/service/Excel/GetAll/NP5pO9KRGeydNngIiOEYNA%3d%3d/0'],
+  ].map(Object.freeze)),
+});
 const MAX_BYTES = 8 * 1024 * 1024;
 
-export async function capture({ token, fetchImpl = fetch, outputDir = 'folad-primary-sources' } = {}) {
+export async function capture({ token, fetchImpl = fetch, outputDir = 'folad-primary-sources', profile = 'folad' } = {}) {
+  if (!Object.hasOwn(SOURCE_SETS, profile)) throw new Error('unknown_source_profile');
   await mkdir(outputDir, { recursive: true });
-  const receipt = { schemaVersion: 1, purpose: 'primary-document-retrieval',
+  const receipt = { schemaVersion: 1, profile, purpose: 'primary-document-retrieval',
     limitation: 'Retrieved documents require separate financial and source validation.', documents: [] };
-  for (const [reportKind, sourceUrl] of TARGETS) {
-    const entry = { reportKind, sourceUrl, startedAt: new Date().toISOString(), httpStatus: null, status: 'unknown' };
+  for (const [documentId, sourceUrl] of SOURCE_SETS[profile]) {
+    const reportKind = documentId.split('-')[0];
+    const entry = { documentId, reportKind, sourceUrl, startedAt: new Date().toISOString(), httpStatus: null, status: 'unknown' };
     receipt.documents.push(entry);
     let body;
     try {
@@ -43,7 +52,7 @@ export async function capture({ token, fetchImpl = fetch, outputDir = 'folad-pri
       if (entry.status === 'body_limit') continue;
       if (!bytes) { entry.status = 'body_empty'; continue; }
       const data = Buffer.concat(chunks);
-      const filename = `${reportKind}.html`;
+      const filename = `${documentId}.html`;
       await writeFile(resolve(outputDir, filename), data, { flag: 'wx' });
       Object.assign(entry, { status: 'retrieved', filename, bytes,
         sha256: createHash('sha256').update(data).digest('hex') });
@@ -60,7 +69,7 @@ export async function capture({ token, fetchImpl = fetch, outputDir = 'folad-pri
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   try {
-    const receipt = await capture({ token: process.env.RELAY_TOKEN });
+    const receipt = await capture({ token: process.env.RELAY_TOKEN, profile: process.env.CAPTURE_PROFILE || 'folad' });
     console.log(JSON.stringify(receipt));
     if (receipt.documents.some(row => row.status !== 'retrieved')) process.exitCode = 1;
   } catch { console.error('primary_source_capture_failed'); process.exitCode = 1; }
