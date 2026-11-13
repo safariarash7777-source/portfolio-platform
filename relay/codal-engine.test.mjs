@@ -41,6 +41,19 @@ t("classify: مجمع/آگهی رد می‌شود", () => {
   assert.equal(classifyAnnouncement({ title: "آگهی دعوت به مجمع عمومی عادی سالیانه" }), null);
 });
 
+t("classify: explicit unsupported code never falls back to a monthly title", () => {
+  for (const code of ["ن-۳۱", "ن-31", "ن-۳۰۰", "unknown"]) {
+    assert.equal(classifyAnnouncement({ code, title: "گزارش فعالیت ماهانه" }), null);
+  }
+});
+t("classify: supported exact codes tolerate Persian and ASCII digits", () => {
+  for (const code of ["ن-۳۰", "ن-30"]) assert.equal(classifyAnnouncement({code}), "ن-۳۰");
+  for (const code of ["ن-۱۰", "ن-10"]) {
+    assert.equal(classifyAnnouncement({code, title: "گزارش فعالیت ماهانه"}), "ن-۱۰");
+    assert.equal(classifyAnnouncement({code, title: "پورتفوی"}), null);
+  }
+});
+
 // M4 — دستهٔ فید عمومی کدال (codal_feed.category)
 t("feedCategory: ن-۳۰ → ماهانه", () => {
   assert.equal(feedCategory({ code: "ن-۳۰", title: "گزارش فعالیت ماهانه" }), "ماهانه");
