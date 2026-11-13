@@ -119,6 +119,11 @@ async function loadState() {
     throw new Error("state cursor/ledger invalid schema");
   }
   payload.decisionStatementV1Attempts ??= {};
+  payload.interimStatementV1Attempts ??= {};
+  if (typeof payload.interimStatementV1Attempts !== 'object' || Array.isArray(payload.interimStatementV1Attempts) ||
+      Object.entries(payload.interimStatementV1Attempts).some(([url,n]) => url.length>4096 || n!==1)) {
+    throw new Error('interim statement retry ledger invalid schema');
+  }
   if (typeof payload.decisionStatementV1Attempts !== 'object' || Array.isArray(payload.decisionStatementV1Attempts) ||
       Object.entries(payload.decisionStatementV1Attempts).some(([url,n]) => url.length>4096 || n!==1)) {
     throw new Error('statement retry ledger invalid schema');
@@ -144,6 +149,8 @@ async function saveState() {
     state.fails = Object.fromEntries(entries.slice(entries.length - LEDGER_CAP));
   }
   const statementAttempts = Object.entries(state.decisionStatementV1Attempts);
+  const interimAttempts = Object.entries(state.interimStatementV1Attempts);
+  if (interimAttempts.length > LEDGER_CAP) state.interimStatementV1Attempts = Object.fromEntries(interimAttempts.slice(-LEDGER_CAP));
   if (statementAttempts.length > LEDGER_CAP) state.decisionStatementV1Attempts = Object.fromEntries(statementAttempts.slice(-LEDGER_CAP));
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/ir_market_snapshots?on_conflict=key`, {
@@ -174,15 +181,18 @@ export function sentKey(a) {
   );
 }
 
-function recordFail(url, kind) {
+const interimEligible = (url, kind, announcement) => kind === 'ن-۱۰' && supportsDecisionUrl(url) && /تلفیقی/.test(String(announcement?.title || ''));
+function recordFail(url, kind, announcement) {
   state.fails[url] = (state.fails[url] || 0) + 1;
   if (kind === 'ن-۱۰' && supportsDecisionUrl(url)) state.decisionStatementV1Attempts[url] = 1;
+  if (interimEligible(url,kind,announcement)) state.interimStatementV1Attempts[url] = 1;
   return state.fails[url];
 }
 // One bounded attempt for previously blocked official N10 reports now supported
 // by the new adapter. Preserve old failure counts and all existing cycle limits.
-const isBlocked = (url, kind) => (state.fails[url] || 0) >= MAX_FAILS &&
-  !(kind === 'ن-۱۰' && supportsDecisionUrl(url) && !state.decisionStatementV1Attempts[url]);
+const isBlocked = (url, kind, announcement) => (state.fails[url] || 0) >= MAX_FAILS &&
+  !(kind === 'ن-۱۰' && supportsDecisionUrl(url) && !state.decisionStatementV1Attempts[url]) &&
+  !(interimEligible(url,kind,announcement) && !state.interimStatementV1Attempts[url]);
 
 /* ── مسیر ۱: فید سراسری ────────────────────────────────────────────────────── */
 /** دستهٔ اطلاعیه برای فیلتر صفحهٔ /codal (M4) — فقط از کد/عنوان رسمی خود اطلاعیه. */
@@ -308,7 +318,7 @@ async function pollGlobalFeed() {
     // dedup با ردیف‌های موجودِ همان نماد
     const known = await existingUrlsFor(a.l18);
     if (known.has(a.link)) { delete state.fails[a.link]; continue; }
-    if (isBlocked(a.link, kind)) { st.complete = false; st.incompleteReason = "blocked_report"; continue; }
+    if (isBlocked(a.link, kind, a)) { st.complete = false; st.incompleteReason = "blocked_report"; continue; }
     if (dl >= FEED_MAX_DL) { st.complete = false; st.incompleteReason = "download_limit"; break; }
     dl++;
     st.downloaded = dl;
@@ -325,7 +335,7 @@ async function pollGlobalFeed() {
         recordFailureDiagnostic("admission", "rejected");
         recordAdmissionRejection(state.admissionDiagnostics, kind, rejection);
         st.parseFailed++;
-        recordFail(a.link, kind);
+        recordFail(a.link, kind, a);
         st.complete = false; st.incompleteReason = "report_failure";
       }
     } catch (e) {
@@ -335,7 +345,7 @@ async function pollGlobalFeed() {
       }
       recordFailureDiagnostic(stage, "exception");
       st.parseFailed++;
-      recordFail(a.link, kind);
+      recordFail(a.link, kind, a);
       st.complete = false; st.incompleteReason = "report_failure";
       console.error(`codal-engine report failure: ${stage}/exception`);
     }
@@ -412,7 +422,7 @@ async function backfillSome() {
       for (const a of [...fs, ...monthly]) {
         const kind = classifyAnnouncement(a);
         if (!kind || !a.link || !a.link_excel) continue;
-        if (known.has(a.link) || isBlocked(a.link, kind)) continue;
+        if (known.has(a.link) || isBlocked(a.link, kind, a)) continue;
         if (dl >= BACKFILL_MAX_DL) break;
         dl++;
         let stage = "download";
@@ -428,13 +438,13 @@ async function backfillSome() {
             recordFailureDiagnostic("admission", "rejected");
             recordAdmissionRejection(state.admissionDiagnostics, kind, rejection);
             st.parseFailed++;
-            recordFail(a.link, kind);
+            recordFail(a.link, kind, a);
           }
         } catch (e) {
           if (isBrsLocalDeferral(e)) throw e;
           recordFailureDiagnostic(stage, "exception");
           st.parseFailed++;
-          recordFail(a.link, kind);
+          recordFail(a.link, kind, a);
         }
       }
       console.log(`codal-engine backfill ${sym}: inserted=${st.inserted} parseFailed=${st.parseFailed}`);

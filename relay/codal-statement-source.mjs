@@ -113,13 +113,13 @@ function sourceText(source, limit) {
   if (!bytes.equals(Buffer.from(text, 'utf8'))) fail('source_encoding');
   return text;
 }
-function reportSerial(url, decision) {
+function reportSerial(url, decision, interim = false) {
   if (typeof url !== 'string' || url.length>4096 || url.trim() !== url) fail('source_identity');
   const u = new URL(url);
   if (u.protocol !== 'https:' || u.username || u.password || u.hash || u.port ||
-      u.hostname !== (decision ? 'codal.ir' : 'excel.codal.ir')) fail('source_identity');
+      !(decision ? (u.hostname === 'codal.ir' || interim && u.hostname === 'www.codal.ir') : u.hostname === 'excel.codal.ir')) fail('source_identity');
   if (decision) {
-    if (u.pathname !== '/Reports/Decision.aspx') fail('source_identity');
+    if (u.pathname !== (interim ? '/Reports/InterimStatement.aspx' : '/Reports/Decision.aspx')) fail('source_identity');
     const pairs = u.search.slice(1).split('&').map(p => p.split('='));
     const serials = pairs.filter(p => p[0] === 'LetterSerial');
     if (serials.length !== 1 || serials[0].length !== 2) fail('source_identity');
@@ -147,16 +147,17 @@ const number = value => {
  return Number(signed);
 };
 
-function document(source,meta,announcement,alias) {
- const serial=reportSerial(source.url,true);
+function document(source,meta,announcement,alias,interim=false) {
+ const serial=reportSerial(source.url,true,interim);
  if(serial!==reportSerial(announcement.link,true))fail('source_identity');
  const html=sourceText(source,MAX_DECISION);
  const root=literalDatasource(html);
- // Mixed consolidated workbooks need separately proven sheet scope. They are
- // deliberately excluded from this standalone industrial route.
- if(root.isConsolidated!==false || !Number.isSafeInteger(root.tracingNo) || root.tracingNo<=0 ||
+ // The legacy route additionally proves the selected standalone sheet against
+ // its separately advertised consolidated counterpart; the default stays closed.
+ const mixed=interim && root.isConsolidated===true && /^FinancialStatement-Consolidated-Listed-Product-V\d+$/.test(root.title_En??'');
+ if((root.isConsolidated!==false && !mixed) || !Number.isSafeInteger(root.tracingNo) || root.tracingNo<=0 ||
     root.type!==6 || typeof root.isAudited!=='boolean' || root.periodExtraDay!==0 ||
-    ![3,6,9,12].includes(root.period) || !/FinancialStatement-Listed-Product/.test(root.title_En??''))fail('scope_unsupported');
+    ![3,6,9,12].includes(root.period) || (!mixed && !/FinancialStatement-Listed-Product/.test(root.title_En??'')))fail('scope_unsupported');
  if(root.period!==meta.period_months || day(root.periodEndToDate)!==meta.period_end || root.isAudited!==meta.audited ||
     day(root.yearEndToDate)<meta.period_end)fail('period_mismatch');
  const visible=html.replace(/<!--[\s\S]*?-->/g,'').replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
@@ -168,7 +169,7 @@ function document(source,meta,announcement,alias) {
     norm(text(element(visible,'p','ctl00_pPriceNote')))!==norm('کلیه مبالغ درج شده به میلیون ریال می باشد'))fail('header_conflict');
  const refs=[...visible.matchAll(/<input\b[^>]*>/gi)].filter(m=>attributes(m[0]).some(a=>a.name==='id'&&a.value==='ctl00_cphBody_ucDynamicFinancialStatement_hdfLetterRef'));
  if(refs.length!==1 || attr(refs[0][0],'value')!==serial)fail('source_identity');
- const select=element(visible,'select','ddlTable');
+ const select=element(visible,'select',interim?'ctl00_ddlTable':'ddlTable');
  const options=[...select.matchAll(/<option\b[^>]*>/gi)].filter(m=>attributes(m[0]).some(a=>a.name==='selected'));
  if(options.length!==1 || !Array.isArray(root.sheets) || root.sheets.length!==1)fail('sheet_ambiguous');
  const sheet=root.sheets[0];
@@ -181,6 +182,21 @@ function document(source,meta,announcement,alias) {
  if(table.sheetCode!==sheet.code || !Number.isSafeInteger(table.code)||!Number.isSafeInteger(table.metaTableId)||
     /تلفیقی/.test(norm(table.title_Fa)) || !Array.isArray(table.cells) || table.cells.length>20000)fail('table_identity');
  const title=alias==='IncomeStatement'?'صورت سود و زیان':'صورت تغییرات در حقوق مالکانه';
+ if(interim){
+  const form=element(visible,'form','aspnetForm');
+  const opening=form.slice(0,form.indexOf('>')+1);
+  const action=new URL(attr(opening,'action'),source.url);
+  if(attr(opening,'method')?.toLowerCase()!=='post' || reportSerial(action.href,true,true)!==serial ||
+     action.origin!==new URL(source.url).origin || source.requestedSheetCode!==sheet.code)fail('source_identity');
+  const choices=[...select.matchAll(/<option\b([^>]*)>([\s\S]*?)<\/option\s*>/gi)];
+  const selected=choices.filter(m=>attributes('<option '+m[1]+'>').some(a=>a.name==='selected'));
+  if(selected.length!==1 || norm(text(selected[0][2]))!==norm(title))fail('scope_unsupported');
+  if(mixed){
+   const own=choices.filter(m=>norm(text(m[2]))===norm(title));
+   const group=choices.filter(m=>norm(text(m[2]))===norm(title+' تلفیقی'));
+   if(own.length!==1||group.length!==1||attr('<option '+group[0][1]+'>','value')===String(sheet.code))fail('scope_unsupported');
+  }
+ }
  for(const owner of [sheet,table])if(norm(owner.title_Fa)!==norm(title)||
     (owner.isConsolidated!==undefined&&owner.isConsolidated!==false))fail('scope_unsupported');
  if(table.description && (!norm(table.description).includes('میلیونریال')||/هزار|میلیارد|تومان|دلار|یورو/.test(norm(table.description))))fail('header_conflict');
@@ -197,11 +213,11 @@ function document(source,meta,announcement,alias) {
 
 /** Source-bound current cumulative industrial statement. Prior columns are
  * intentionally absent until their own duration is proven. No zero filling. */
-export function admitDecisionStatement(income,equity,meta,announcement){
+function admitStatement(income,equity,meta,announcement,interim=false){
  try{
-  const inc=document(income,meta,announcement,'IncomeStatement');
-  const eq=document(equity,meta,announcement,'ChangesInPropertyRights');
-  if(inc.root.tracingNo!==eq.root.tracingNo || inc.root.yearEndToDate!==eq.root.yearEndToDate)fail('source_identity');
+  const inc=document(income,meta,announcement,'IncomeStatement',interim);
+  const eq=document(equity,meta,announcement,'ChangesInPropertyRights',interim);
+  if(inc.root.tracingNo!==eq.root.tracingNo || inc.root.yearEndToDate!==eq.root.yearEndToDate || inc.root.isConsolidated!==eq.root.isConsolidated)fail('source_identity');
   const cell=(doc,address,group)=>{
    const c=doc.cells.get(address);
    if(!c||!c.isVisible||c.cellGroupName!==group||c.colSpan!==1||c.rowSpan!==1)fail('cell_unobserved');
@@ -241,27 +257,36 @@ export function admitDecisionStatement(income,equity,meta,announcement){
  }catch(error){return {data:null,reason:['scope_unsupported','period_mismatch','header_conflict','source_identity','source_hash_mismatch','arithmetic_mismatch','capital_unverified','value_unobserved'].includes(error.message)?error.message:'source_context_invalid'};}
 }
 
+export const admitDecisionStatement=(income,equity,meta,announcement)=>admitStatement(income,equity,meta,announcement);
+/** Pure admission only. A separately reviewed loader must bind the POST sheet
+ * selection and source capture before this route may receive live documents. */
+export const admitInterimStatement=(income,equity,meta,announcement)=>admitStatement(income,equity,meta,announcement,true);
+
 // Serial requests to the official publisher, never the BRSAPI key endpoint.
 // The existing engine still owns discovery, per-cycle caps and persistence.
 let requestTail=Promise.resolve();
 let nextRequest=0;
-async function captureDecision(url,fetchImpl){
+async function captureDecision(url,fetchImpl,request={}){
  const operation=async()=>{
   await sleep(Math.max(0,nextRequest-Date.now()));
   nextRequest=Date.now()+2100;
-  let response=await fetchImpl(url,{redirect:'manual',signal:AbortSignal.timeout(15000)});
+  let response=await fetchImpl(url,{...request,redirect:'manual',signal:AbortSignal.timeout(15000)});
   if([301,302,307,308].includes(response.status)){
    const location=response.headers.get('location');
    if(!location)throw Error('codal_statement_redirect_unsupported');
    const redirect=new URL(location,url);
    const original=new URL(url);
-   // Legacy InterimStatement forms require a separate adapter. Never submit a
-   // form or follow a new endpoint implicitly in this route.
+   if(request.method==='POST')throw Error('codal_statement_redirect_unsupported');
+   const legacy=redirect.pathname==='/Reports/InterimStatement.aspx' && original.pathname==='/Reports/Decision.aspx';
+   const sameReport=legacy
+    ? reportSerial(redirect.href,true,true)===reportSerial(original.href,true)
+    : redirect.search===original.search;
    if(!['codal.ir','www.codal.ir'].includes(redirect.hostname)||redirect.protocol!=='https:'||
-      redirect.pathname!==original.pathname||redirect.search!==original.search||redirect.username||redirect.password)throw Error('codal_statement_redirect_unsupported');
+      (!legacy && redirect.pathname!==original.pathname)||!sameReport||redirect.username||redirect.password||redirect.port||redirect.hash)throw Error('codal_statement_redirect_unsupported');
    await response.body?.cancel();
    await sleep(2100);nextRequest=Date.now()+2100;
    response=await fetchImpl(redirect.href,{redirect:'error',signal:AbortSignal.timeout(15000)});
+   url=redirect.href;
   }
   if(!response.ok)throw Error(`codal_statement_http_${response.status}`);
   if(!response.body)throw Error('codal_statement_empty');
@@ -273,6 +298,53 @@ async function captureDecision(url,fetchImpl){
  const pending=requestTail.then(operation,operation);requestTail=pending.catch(()=>{});return pending;
 }
 
+// Only the publisher's advertised read-only sheet selector may be posted. No
+// script, event target, authentication material or arbitrary form is replayed.
+function legacySelection(source,title,announcement){
+ const html=sourceText(source,MAX_DECISION).replace(/<!--[\s\S]*?-->/g,'');
+ if(reportSerial(source.url,true,true)!==reportSerial(announcement.link,true))fail('source_identity');
+ const form=element(html,'form','aspnetForm');
+ const opening=form.slice(0,form.indexOf('>')+1);
+ if(attr(opening,'method').toLowerCase()!=='post')fail('source_identity');
+ const action=new URL(attr(opening,'action').replace(/&amp;/g,'&'),source.url);
+ if(action.origin!==new URL(source.url).origin||reportSerial(action.href,true,true)!==reportSerial(source.url,true,true))fail('source_identity');
+ const select=element(form,'select','ctl00_ddlTable');
+ if(attr(select.slice(0,select.indexOf('>')+1),'name')!=='ctl00$ddlTable')fail('source_identity');
+ const options=[...select.matchAll(/<option\b([^>]*)>([\s\S]*?)(?=<option\b|<\/select>|$)/gi)]
+  .filter(m=>norm(text(m[2]))===norm(title));
+ if(options.length!==1)fail('sheet_ambiguous');
+ const code=attr('<option '+options[0][1]+'>','value');
+ if(!/^\d{1,6}$/.test(code))fail('sheet_ambiguous');
+ const fields=new URLSearchParams();
+ for(const match of form.matchAll(/<input\b[^>]*>/gi)){
+  const input=match[0];
+  if(!attributes(input).some(a=>a.name==='type'&&a.value?.toLowerCase()==='hidden'))continue;
+  if(attr(input,'type').toLowerCase()!=='hidden')fail('form_invalid');
+  const name=attr(input,'name');
+  if(!/^(?:__VIEWSTATE|__VIEWSTATEGENERATOR|__VIEWSTATEENCRYPTED|__EVENTVALIDATION|ctl00\$hdf(?:ThumbPrint|Version)|ctl00\$cphBody\$txb[A-Za-z0-9]+Old|ctl00\$cphBody\$ucDynamicFinancialStatement\$hdfLetterRef)$/.test(name)||fields.has(name))fail('form_invalid');
+  const values=attributes(input).filter(a=>a.name==='value');
+  if(values.length>1)fail('form_invalid');
+  const value=(values.length?attr(input,'value'):'').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
+  fields.set(name,value);
+ }
+ for(const name of ['__VIEWSTATE','__EVENTVALIDATION'])if(!fields.has(name))fail('form_invalid');
+ fields.set('ctl00$ddlTable',code);fields.set('ctl00$btnNextPage','');
+ const body=fields.toString();if(Buffer.byteLength(body)>512*1024)fail('form_bound');
+ return {url:action.href,code:Number(code),request:{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body}};
+}
+
+async function loadInterimStatement(landing,meta,announcement,fetchImpl){
+ let choice;
+ try{choice=legacySelection(landing,'صورت سود و زیان',announcement);}catch{return {data:null,reason:'source_context_invalid'};}
+ const income=await captureDecision(choice.url,fetchImpl,choice.request);income.requestedSheetCode=choice.code;
+ try{
+  document(income,meta,announcement,'IncomeStatement',true);
+  choice=legacySelection(income,'صورت تغییرات در حقوق مالکانه',announcement);
+ }catch{return {data:null,reason:'source_context_invalid'};}
+ const equity=await captureDecision(choice.url,fetchImpl,choice.request);equity.requestedSheetCode=choice.code;
+ return admitInterimStatement(income,equity,meta,announcement);
+}
+
 export async function loadDecisionStatement(announcement,meta,{fetchImpl=globalThis.fetch}={}){
  let url;
  try{
@@ -282,6 +354,7 @@ export async function loadDecisionStatement(announcement,meta,{fetchImpl=globalT
  }catch{return {data:null,reason:'source_identity'};}
  const bound={...announcement,link:url};
  const income=await captureDecision(url,fetchImpl);
+ if(new URL(income.url).pathname==='/Reports/InterimStatement.aspx')return loadInterimStatement(income,meta,bound,fetchImpl);
  let statement;
  try{statement=document(income,meta,bound,'IncomeStatement');}
  catch{return {data:null,reason:'source_context_invalid'};}
