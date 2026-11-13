@@ -1,0 +1,27 @@
+{
+  "atUtc": "2026-11-13T20:31:41.048035+00:00",
+  "httpStatus": 200,
+  "irFetchedAt": 1794601867755,
+  "stocks": 789,
+  "funds": 345,
+  "diag": {
+    "at": 1794601896725,
+    "source": "supabase",
+    "supabaseConfigured": true,
+    "relayUrlConfigured": false,
+    "reached": true,
+    "status": 200,
+    "ok": true,
+    "fromCache": false,
+    "ageSec": 30,
+    "counts": {
+      "gold": 9,
+      "currency": 28,
+      "funds": 345,
+      "stocks": 789,
+      "crypto": 19
+    },
+    "error": null,
+    "ms": 1242
+  }
+}

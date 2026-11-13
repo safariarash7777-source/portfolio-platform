@@ -1,5 +1,15 @@
 # Arash Digital Platform — Command Center
 
+## نتیجهٔ زنده ۱۳ نوامبر، ۲۰:۳۷ UTC — یک گزارش بازیابی شد؛ timeout خواندن صفحه باز است
+
+نسخه `308d29a` / deployment `7775651399`: مشاهدهٔ اولیه health43501720099 در وقفهٔ محافظتی شروع مجدد، sent=0 و spacing نامشهود بود؛ failure آن شاهد نقض فاصله نیست. مشاهدهٔ بعدی health43502603199/job132151989920 موفق، زمان رسید۲۰:۳۴:۰۱UTC: storedRecovery تعداد۱۱۰ ردیف بررسی،۶ دانلود،۱ درج،۵ رد scope_unsupported،۱۳ مسدود و۲ قبلاً موجود؛ مکان‌نمای ذخیره‌شده۲۹۲۷۰ درSQL۲۰:۳۴:۵۳ تأیید شد. فید تازه timeout داشت؛ پس کل چرخه کدال سالم اعلام نمی‌شود. حداقل فاصله۳۲۱٫۸۰۴ms، سقف۳۰۰در۵دقیقه، دامنه process وglobalEnforced=false؛ مصرف واقعی حساب ارائه‌دهنده ادعا نمی‌شود.
+
+SQL مستقل درج گزارش ماهانه «آواپزشک»، دوره۱۴۰۵/۰۶/۳۱، capture۲۰:۳۳:۴۹٫۲۸۸UTC، serial `re2UzOKrlhuUaf82A5cfDA` وparser pv2 را تأیید کرد. دریافت بازار۲۰:۳۱:۰۷٫۷۵۵ وstorage200۲۰:۳۱:۰۸٫۶۴۰؛ سایت اصلی۲۰:۳۱:۴۱ همان `ir.fetchedAt=1794601867755` و۷۸۹سهم/۳۴۵صندوق را ازSupabase بدونcache برگرداند. این یک چرخه پس از انتشار است؛ دو چرخهٔ طبیعی کدال هنوز تأیید نشده‌اند.
+
+**مانع مشاهده در سایت / مالک root:** صفحه آواپزشک دو بار HTTP200 ولی پیام صریح خطای خواندن بنیادی داشت؛ شناسه گزارش تازه در HTML نبود. لاگ Vercel production `dpl_7pDvhQcwjJLb6ULtC5weZYfdp6hD` در۲۰:۳۵:۳۲ و۲۰:۳۶:۲۵، requestهای `lnlvb-1794602123826-40780f0fe067` و `wkhw8-1794602177304-fb019e2e1563`، `fundamental_read_failed / request-or-body / TimeoutError` ثبت کرد. بنابراین پذیرش source→DB موفق ولی source→page هنوز ناموفق است. EXPLAIN ANALYZE با نقشanon روی همانSQL ن۳۰ و نماد،۵ ردیف/۰٫۳۱۴ms، idx_codal_reports_symbol؛ شاهدی برای کندی SQL این نمونه نیست. اقدام بعد: تطبیق مقصد خواننده Production و تنظیمات build/runtime و اتصال ازVercel؛ از افزایش کور timeout یا نسبت‌دادن خرابی بهBRSAPI خودداری شود.
+
+فهرست env از ابزارVercel ناقص/truncated بود؛ متغیرهای FUNDAMENTAL_READ مشاهده‌شده فقط preview شاخهmedia بودند، نه اثبات پیکربندیProduction. هیچ env، Auth، DB schema یا کلیدی در این بررسی تغییر نکرد. قالب‌های N10 ردشده، NAV ناقص/قدیمی و سایر مسیرهای برنامه همچنان باز هستند.
+
 ## انتشار ۱۳ نوامبر، ۲۰:۲۵ UTC — بازیابی ذخیره‌شده روی لیارا؛ مالک root
 
 PR432 پس از موفقیت پنج گیت CI `43500416886` با head `308d29a2dc0fc25187bc7fd2e66d47a3247c1f06` در main `52d6f111e0336e3d4599f3f45c23be483f601c32` ادغام شد. workflow انتشار `43501297716` / job `132147468234` موفق؛ پایان انتشار `20:25:42.189 UTC`، image `apps/6a5351feb95bf1e50c1ee34f:1xyatt9vnfr6`، deployment `7775651399`. نسخه قبلی `259cce4` و image `v5pfxawi7rkz` محفوظ است؛ migration یا تغییر سقف مصرف انجام نشد.
