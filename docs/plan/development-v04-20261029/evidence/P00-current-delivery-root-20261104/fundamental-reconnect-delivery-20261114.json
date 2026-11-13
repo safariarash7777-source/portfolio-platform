@@ -1,0 +1,18 @@
+{
+  "source": "bebee15e4278182d87cd4f7190640003fa8b746b",
+  "main": "26bcf016c2e4e79d6a12e29ff8a366b27a522559",
+  "ci": 43505138692,
+  "productionDeployment": "dpl_EicAHb8uNtKSx7aHfetgCsMA6weA",
+  "previewDeployment": "dpl_4uv2Q3WHRuA545cKLePCpKw2ZB6M",
+  "verifiedSymbols": [
+    "آواپزشک",
+    "فولاد",
+    "فملی"
+  ],
+  "recoveredSourceSerial": "re2UzOKrlhuUaf82A5cfDA",
+  "htmlGregorianPeriod": "2026-09-22",
+  "allCompanyCoverageAccepted": false,
+  "twoCodalCyclesAccepted": false,
+  "productionEnvironmentChanged": false,
+  "relayRedeployed": false
+}
