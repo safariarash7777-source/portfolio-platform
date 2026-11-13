@@ -375,6 +375,25 @@ test("metadata-only report cannot release a blocked ledger or advance watermark"
   assert.equal(f.calls.excel.length, 0);
 });
 
+test('legacy mixed statements receive one persisted retry without reopening other failures', async()=>{
+  for (const mixed of [true,false]) {
+    const a={...financial(1),title:mixed?'صورت‌های مالی تلفیقی':'صورت‌های مالی',link:'https://codal.ir/Reports/Decision.aspx?LetterSerial=fixture'};
+    const options={pages:[[a,boundary],[]],excelHtml:'<table></table>',officialBody:'<html></html>'};
+    const f=await fixture({...options,initialState:{watermark,backfillCursor:0,fails:{[a.link]:4},decisionStatementV1Attempts:{[a.link]:1}}});
+    await f.engine.runEngineCycle();
+    assert.equal(f.calls.excel.length,mixed?1:0);
+    assert.equal(f.persisted.fails[a.link],mixed?5:4);
+    assert.equal(f.persisted.interimStatementV1Attempts[a.link],mixed?1:undefined);
+    assert.deepEqual(f.persisted.watermark,watermark);
+    const restarted=await fixture({...options,initialState:f.persisted});
+    await restarted.engine.runEngineCycle();assert.equal(restarted.calls.excel.length,0);
+  }
+});
+test('invalid legacy retry ledger stops before any source request',async()=>{
+  const f=await fixture({pages:[[]],initialState:{watermark,fails:{},interimStatementV1Attempts:{bad:2}}});
+  await f.engine.runEngineCycle();
+  assert.equal(f.engine.engineStatus.ok,false);assert.equal(f.calls.pages.length,0);assert.equal(f.calls.saves.length,0);
+});
 test('new statement adapter grants one bounded retry to an old official N10 failure and persists its use', async()=>{
   const a={...financial(1),link:'https://codal.ir/Reports/Decision.aspx?LetterSerial=fixture'};
   const options={pages:[[a,boundary],[]],excelHtml:'<table></table>',officialBody:'<html></html>'};

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
-import {admitInterimStatement,admitDecisionStatement} from './codal-statement-source.mjs';
+import {admitInterimStatement,admitDecisionStatement,loadDecisionStatement} from './codal-statement-source.mjs';
 const income=readFileSync(new URL('./fixtures/n10-interim/industrial-income.html',import.meta.url),'utf8');
 const equity=readFileSync(new URL('./fixtures/n10-interim/industrial-equity.html',import.meta.url),'utf8');
 const url='https://www.codal.ir/Reports/InterimStatement.aspx?LetterSerial=f7CWBx0JQQQaQQQdM0pmYwVNwKjQ%3d%3d';
@@ -10,6 +10,32 @@ const announcement={link:url.replace('www.codal.ir/Reports/InterimStatement','co
 const meta={symbol:'فملی',company_name:'ملی صنایع مس ایران',period_end:'1404-12-29',period_months:12,audited:true};
 function capture(html,requestedSheetCode){const htmlBytes=Buffer.from(html);return {htmlBytes,url,requestedSheetCode,sha256:createHash('sha256').update(htmlBytes).digest('hex')};}
 const parse=(i=income,e=equity,m=meta)=>admitInterimStatement(capture(i,1),capture(e,1060),m,announcement);
+test('automatic legacy loader binds form selection and uses returned form state',async()=>{
+ const calls=[];
+ const result=await loadDecisionStatement(announcement,meta,{fetchImpl:async(target,options)=>{
+  calls.push({target,options});
+  if(calls.length===1)return new Response(null,{status:302,headers:{location:url}});
+  if(calls.length===2)return new Response(income);
+  assert.equal(target,url);
+  assert.equal(options.method,'POST');
+  const form=new URLSearchParams(options.body);
+  assert.equal(form.get('ctl00$ddlTable'),calls.length===3?'1':'1060');
+  assert.equal(form.get('ctl00$btnNextPage'),'');
+  assert.ok(form.has('__VIEWSTATE'));
+  assert.equal(options.headers.authorization,undefined);
+  return new Response(calls.length===3?income:equity);
+ }});
+ assert.equal(calls.length,4);assert.equal(result.reason,null);
+ assert.equal(result.data.capital,1050000000);
+});
+test('legacy loader rejects foreign form before any POST',async()=>{
+ let count=0;
+ const result=await loadDecisionStatement(announcement,meta,{fetchImpl:async()=>{
+  count++;
+  return count===1?new Response(null,{status:302,headers:{location:url}}):new Response(income.replace('action="./InterimStatement.aspx','action="https://untrusted.invalid/InterimStatement.aspx'));
+ }});
+ assert.equal(count,2);assert.equal(result.data,null);assert.equal(result.reason,'source_context_invalid');
+});
 function editRoot(html,edit){
  const m=/var datasource\s*=\s*([\s\S]*?);\s*<\/script>/i.exec(html);assert.ok(m);
  const root=JSON.parse(m[1]);edit(root);

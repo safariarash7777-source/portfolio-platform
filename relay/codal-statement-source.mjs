@@ -266,23 +266,24 @@ export const admitInterimStatement=(income,equity,meta,announcement)=>admitState
 // The existing engine still owns discovery, per-cycle caps and persistence.
 let requestTail=Promise.resolve();
 let nextRequest=0;
-async function captureDecision(url,fetchImpl){
+async function captureDecision(url,fetchImpl,request={}){
  const operation=async()=>{
   await sleep(Math.max(0,nextRequest-Date.now()));
   nextRequest=Date.now()+2100;
-  let response=await fetchImpl(url,{redirect:'manual',signal:AbortSignal.timeout(15000)});
+  let response=await fetchImpl(url,{...request,redirect:'manual',signal:AbortSignal.timeout(15000)});
   if([301,302,307,308].includes(response.status)){
    const location=response.headers.get('location');
    if(!location)throw Error('codal_statement_redirect_unsupported');
    const redirect=new URL(location,url);
    const original=new URL(url);
-   // Legacy InterimStatement forms require a separate adapter. Never submit a
-   // form or follow a new endpoint implicitly in this route.
+   if(request.method==='POST')throw Error('codal_statement_redirect_unsupported');
+   const legacy=redirect.pathname==='/Reports/InterimStatement.aspx' && original.pathname==='/Reports/Decision.aspx';
    if(!['codal.ir','www.codal.ir'].includes(redirect.hostname)||redirect.protocol!=='https:'||
-      redirect.pathname!==original.pathname||redirect.search!==original.search||redirect.username||redirect.password)throw Error('codal_statement_redirect_unsupported');
+      (!legacy && redirect.pathname!==original.pathname)||redirect.search!==original.search||redirect.username||redirect.password||redirect.port||redirect.hash)throw Error('codal_statement_redirect_unsupported');
    await response.body?.cancel();
    await sleep(2100);nextRequest=Date.now()+2100;
    response=await fetchImpl(redirect.href,{redirect:'error',signal:AbortSignal.timeout(15000)});
+   url=redirect.href;
   }
   if(!response.ok)throw Error(`codal_statement_http_${response.status}`);
   if(!response.body)throw Error('codal_statement_empty');
@@ -294,6 +295,53 @@ async function captureDecision(url,fetchImpl){
  const pending=requestTail.then(operation,operation);requestTail=pending.catch(()=>{});return pending;
 }
 
+// Only the publisher's advertised read-only sheet selector may be posted. No
+// script, event target, authentication material or arbitrary form is replayed.
+function legacySelection(source,title,announcement){
+ const html=sourceText(source,MAX_DECISION).replace(/<!--[\s\S]*?-->/g,'');
+ if(reportSerial(source.url,true,true)!==reportSerial(announcement.link,true))fail('source_identity');
+ const form=element(html,'form','aspnetForm');
+ const opening=form.slice(0,form.indexOf('>')+1);
+ if(attr(opening,'method').toLowerCase()!=='post')fail('source_identity');
+ const action=new URL(attr(opening,'action').replace(/&amp;/g,'&'),source.url);
+ if(action.origin!==new URL(source.url).origin||reportSerial(action.href,true,true)!==reportSerial(source.url,true,true))fail('source_identity');
+ const select=element(form,'select','ctl00_ddlTable');
+ if(attr(select.slice(0,select.indexOf('>')+1),'name')!=='ctl00$ddlTable')fail('source_identity');
+ const options=[...select.matchAll(/<option\b([^>]*)>([\s\S]*?)(?=<option\b|<\/select>|$)/gi)]
+  .filter(m=>norm(text(m[2]))===norm(title));
+ if(options.length!==1)fail('sheet_ambiguous');
+ const code=attr('<option '+options[0][1]+'>','value');
+ if(!/^\d{1,6}$/.test(code))fail('sheet_ambiguous');
+ const fields=new URLSearchParams();
+ for(const match of form.matchAll(/<input\b[^>]*>/gi)){
+  const input=match[0];
+  if(!attributes(input).some(a=>a.name==='type'&&a.value?.toLowerCase()==='hidden'))continue;
+  if(attr(input,'type').toLowerCase()!=='hidden')fail('form_invalid');
+  const name=attr(input,'name');
+  if(!/^(?:__VIEWSTATE|__VIEWSTATEGENERATOR|__VIEWSTATEENCRYPTED|__EVENTVALIDATION|ctl00\$hdf(?:ThumbPrint|Version)|ctl00\$cphBody\$txb[A-Za-z0-9]+Old|ctl00\$cphBody\$ucDynamicFinancialStatement\$hdfLetterRef)$/.test(name)||fields.has(name))fail('form_invalid');
+  const values=attributes(input).filter(a=>a.name==='value');
+  if(values.length>1)fail('form_invalid');
+  const value=(values.length?attr(input,'value'):'').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
+  fields.set(name,value);
+ }
+ for(const name of ['__VIEWSTATE','__EVENTVALIDATION'])if(!fields.has(name))fail('form_invalid');
+ fields.set('ctl00$ddlTable',code);fields.set('ctl00$btnNextPage','');
+ const body=fields.toString();if(Buffer.byteLength(body)>512*1024)fail('form_bound');
+ return {url:action.href,code:Number(code),request:{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded'},body}};
+}
+
+async function loadInterimStatement(landing,meta,announcement,fetchImpl){
+ let choice;
+ try{choice=legacySelection(landing,'صورت سود و زیان',announcement);}catch{return {data:null,reason:'source_context_invalid'};}
+ const income=await captureDecision(choice.url,fetchImpl,choice.request);income.requestedSheetCode=choice.code;
+ try{
+  document(income,meta,announcement,'IncomeStatement',true);
+  choice=legacySelection(income,'صورت تغییرات در حقوق مالکانه',announcement);
+ }catch{return {data:null,reason:'source_context_invalid'};}
+ const equity=await captureDecision(choice.url,fetchImpl,choice.request);equity.requestedSheetCode=choice.code;
+ return admitInterimStatement(income,equity,meta,announcement);
+}
+
 export async function loadDecisionStatement(announcement,meta,{fetchImpl=globalThis.fetch}={}){
  let url;
  try{
@@ -303,6 +351,7 @@ export async function loadDecisionStatement(announcement,meta,{fetchImpl=globalT
  }catch{return {data:null,reason:'source_identity'};}
  const bound={...announcement,link:url};
  const income=await captureDecision(url,fetchImpl);
+ if(new URL(income.url).pathname==='/Reports/InterimStatement.aspx')return loadInterimStatement(income,meta,bound,fetchImpl);
  let statement;
  try{statement=document(income,meta,bound,'IncomeStatement');}
  catch{return {data:null,reason:'source_context_invalid'};}
