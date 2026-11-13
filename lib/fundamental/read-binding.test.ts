@@ -8,6 +8,7 @@ import { basename, dirname, join, resolve } from "node:path";
 import { runInNewContext } from "node:vm";
 import { webcrypto } from "node:crypto";
 import ts from "typescript";
+import { fetchFundamentalRows } from "./read-transport";
 import { readFundamentalsFromSupabase, type CodalRow } from "./supabase";
 
 const require = createRequire(import.meta.url);
@@ -45,6 +46,12 @@ test("compiled default reader uses the mapped public binding when runtime legacy
       module: readerModule, exports: readerModule.exports, URLSearchParams, TextEncoder, AbortSignal, crypto: webcrypto,
       process: { env: { NEXT_PUBLIC_SUPABASE_URL: "https://unmapped-runtime.invalid", NEXT_PUBLIC_SUPABASE_ANON_KEY: "synthetic-runtime-anon" } },
       require: (specifier: string) => {
+        if (specifier === "./read-transport") return {
+          fetchFundamentalRows: (url: string, headers: Record<string,string>) => fetchFundamentalRows(url, headers, async (_, init) => {
+            calls.push({ url, key: (init!.headers as Record<string,string>).apikey });
+            return Response.json([]);
+          }),
+        };
         assert(["../core/quarterly", "./units", "../desk/workspace-model", "./monthly-quantity-binding", "./read-config.server"].includes(specifier));
         return {};
       },
