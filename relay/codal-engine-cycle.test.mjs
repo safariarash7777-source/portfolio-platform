@@ -30,7 +30,7 @@ const mockIncomeHtml = industrial({ period: "1404/12/29", months: 12, prior: fal
 
 async function fixture(options = {}) {
   let persisted = structuredClone(options.initialState ?? { watermark, backfillCursor: 0, fails: {} });
-  const calls = { pages: [], coverageReads: [], feedWrites: [], reportWrites: [], saves: [], excel: [], existingFilters: [], confirmations: [], archiveSaves: [] };
+  const calls = { pages: [], coverageReads: [], feedWrites: [], reportWrites: [], saves: [], excel: [], existingFilters: [], confirmations: [], archiveSaves: [], storedReads: [] };
   const reports = new Map((options.initialReports ?? []).map(r => [r.source_url, r]));
   let rejectFeed = !!options.rejectFeed;
   let rejectSave = !!options.rejectSave;
@@ -47,7 +47,7 @@ async function fixture(options = {}) {
   globalThis.fetch = async (input, init = {}) => {
     const url = new URL(input);
     if (url.hostname === 'codal.ir' && options.officialBody !== undefined) return new Response(options.officialBody);
-    if (url.hostname === "excel.invalid") {
+    if (["excel.invalid", "excel.codal.ir"].includes(url.hostname)) {
       calls.excel.push(url.pathname);
       if (options.excelErrorCode) throw Object.assign(new Error(options.excelErrorCode), { code: options.excelErrorCode });
       if (options.excelError) throw new Error(options.excelError);
@@ -59,6 +59,11 @@ async function fixture(options = {}) {
       calls.feedWrites.push({ rows, prefer: init.headers.Prefer });
       if (rejectFeed) return response({ error: "mock failure" }, 503);
       return response(options.feedBody ?? rows);
+    }
+    if (url.pathname.endsWith("/codal_feed") && !init.method) {
+      calls.storedReads.push(url.searchParams.get("id"));
+      const before = BigInt(url.searchParams.get("id")?.slice(3) ?? "9223372036854775807");
+      return response((options.storedRows ?? []).filter(r => BigInt(r.id) < before).slice(0, options.storedPageSize ?? 100));
     }
     if (url.pathname.endsWith("/codal_reports") && init.method === "POST") {
       const rows = JSON.parse(init.body);
@@ -769,4 +774,65 @@ test("observed equity title with در retains engine write identity and request 
       assert.equal(f.persisted.admissionDiagnostics.lastCycle["ن-۱۰"].capital_unverified, 1);
     }
   });
+});
+
+const stored = id => ({ id, symbol: "نمونه", company_name: "شرکت نمونه", title: "صورت‌های مالی سال مالی منتهی به 1404/12/29", report_code: "ن-۱۰",
+  link: `https://codal.ir/Reports/Decision.aspx?LetterSerial=serial${id}`,
+  link_excel: `https://excel.codal.ir/service/Excel/GetAll/serial${id}/0` });
+
+test('stored recovery admits reports even when provider search is locally deferred', async () => {
+  const f = await fixture({ announcementErrorCode: 'brs_transport_queue_full', storedRows: [stored(9)] });
+  await f.engine.runEngineCycle();
+  assert.equal(f.calls.pages.length, 1);
+  assert.equal(f.calls.reportWrites.length, 1);
+  assert.equal(f.engine.engineStatus.storedRecovery.inserted, 1);
+  assert.equal(f.engine.engineStatus.storedRecovery.reachedEnd, true);
+  assert.equal(f.persisted.storedFeedCursor, null);
+});
+
+test('stored recovery keeps six-download bound and resumes without rediscovery', async () => {
+  const f = await fixture({ storedRows: Array.from({length: 8}, (_, i) => stored(10-i)) });
+  await f.engine.runEngineCycle();
+  assert.equal(f.calls.excel.length, 6);
+  assert.equal(f.persisted.storedFeedCursor, '5');
+  await f.engine.runEngineCycle();
+  assert.equal(f.calls.excel.length, 8);
+  assert.equal(f.calls.pages.length, 2);
+  assert.equal(f.engine.engineStatus.storedRecovery.reachedEnd, true);
+});
+
+test('stored recovery save failure restores scan position for the next attempt', async () => {
+  const f = await fixture({ storedRows: [stored(9),stored(8),stored(7)], storedPageSize: 1, rejectSave: true });
+  await f.engine.runEngineCycle();
+  f.allowSave();
+  await f.engine.runEngineCycle();
+  assert.equal(f.calls.storedReads[2], null);
+  assert.equal(f.engine.engineStatus.storedRecovery.skippedKnown, 2);
+  assert.equal(f.calls.excel.length, 2);
+});
+
+test('invalid saved recovery cursor stops before any provider request', async () => {
+  const f = await fixture({ initialState: { fails: {}, storedFeedCursor: 'NaN' } });
+  await f.engine.runEngineCycle();
+  assert.equal(f.calls.pages.length, 0);
+  assert.equal(f.calls.storedReads.length, 0);
+  assert.match(f.engine.engineStatus.lastError, /cursor invalid/);
+});
+
+test('stored recovery skips confirmed and blocked rows without retrying downloads', async () => {
+  const known=stored(9), blocked=stored(8);
+  const f=await fixture({storedRows:[known,blocked], initialReports:[{source_url:known.link+"#pv2",symbol:known.symbol,data:{valid:true}}],
+    initialState:{watermark,fails:{[blocked.link]:3},decisionStatementV1Attempts:{[blocked.link]:1}}});
+  await f.engine.runEngineCycle();
+  assert.equal(f.engine.engineStatus.storedRecovery.skippedKnown,1);
+  assert.equal(f.engine.engineStatus.storedRecovery.blocked,1);
+  assert.equal(f.calls.excel.length,0);
+});
+
+test('stored report local deferral preserves cursor and does not charge a parse failure', async () => {
+  const f=await fixture({storedRows:[stored(9)],excelErrorCode:'brs_transport_aborted'});
+  await f.engine.runEngineCycle();
+  assert.equal(f.persisted.storedFeedCursor,null);
+  assert.deepEqual(f.persisted.fails,{});
+  assert.equal(f.engine.engineStatus.storedRecovery.parseFailed,0);
 });
