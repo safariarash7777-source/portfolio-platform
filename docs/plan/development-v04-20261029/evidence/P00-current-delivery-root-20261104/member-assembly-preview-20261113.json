@@ -1,0 +1,35 @@
+{
+  "atUtc": "2026-11-13T19:11:27.221301+00:00",
+  "deployment": "dpl_7GT14uxwtEFsBwqLYxexxBZBg3Wv",
+  "source": "72c5cb303ec840cd5d2f2b5bcdc4ab8824fc8c07",
+  "scope": "unauthenticated_navigation_only",
+  "reads": [
+    {
+      "path": "/login",
+      "httpStatus": 200,
+      "seconds": 1.031,
+      "redirectPath": null,
+      "platformProtection": false,
+      "appAuthRequired": false,
+      "loginForm": true
+    },
+    {
+      "path": "/dashboard/consultation",
+      "httpStatus": 307,
+      "seconds": 0.703,
+      "redirectPath": "/login",
+      "platformProtection": false,
+      "appAuthRequired": false,
+      "loginForm": false
+    },
+    {
+      "path": "/api/consultation",
+      "httpStatus": 401,
+      "seconds": 1.047,
+      "redirectPath": null,
+      "platformProtection": false,
+      "appAuthRequired": true,
+      "loginForm": false
+    }
+  ]
+}

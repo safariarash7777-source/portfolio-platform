@@ -466,5 +466,11 @@
   "start-a-owned-r5-receipt.json": "592ea95f2309d967221307e985f8fb1068ce2bd600ff3f198dc26040cd7a68e3",
   "start-a-owned-r5-reconstruction-proof.json": "b3dadd860d46132e7dd9ecad1c7d937d29e5c0cf1e59cb320e08bcee7e522e75",
   "start-a-owned-r5-root-source-review.json": "3a5f2d96eaef08a3c6f4e85b32f8138fd8ff98a199aba92d6ad9559c5ed0ccfb",
-  "windows-harness-crlf-root-review.json": "01c5901332ef3228f327e35e94f81cae90cac07854feb125fb927fb4c80938b9"
+  "windows-harness-crlf-root-review.json": "01c5901332ef3228f327e35e94f81cae90cac07854feb125fb927fb4c80938b9",
+  "codal-kind-deployment-20261113.json": "ad07a3dec40320cceca77780553f663e823402dfe66c530f7ec8b9294b5b0b4e",
+  "codal-kind-runtime-first-20261113.json": "c9e5bce7065ca125b2be053fc7eef6a44f7dcad6246166d58bb1fd1cc3f735a0",
+  "codal-kind-runtime-warm-20261113.json": "602e0fbb25d23252229bd72d3b2b51cda1eb8904dbb7148a4c56f47498080db3",
+  "codal-kind-runtime-adjacent-20261113.json": "f2a3f789b7d3a9f0c961fe1bde4aac5725859f7840cb57cb3110bb811c0ded00",
+  "codal-kind-site-market-20261113.json": "33758b0a9147af23059281ae4fadcd6e831abb5ab56b08626b71de3dc4e83ffb",
+  "member-assembly-preview-20261113.json": "f1e4104012ba84d918e73db6f715896b37d571fbea26633267b784743be8787c"
 }
