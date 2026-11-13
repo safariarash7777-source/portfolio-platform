@@ -1,0 +1,48 @@
+{
+  "atUtc": "2026-11-13T19:48:41.555785+00:00",
+  "status": 200,
+  "fetchedAt": 1794599228881,
+  "irFetchedAt": 1794599165197,
+  "irKeys": [
+    "gold",
+    "currency",
+    "funds",
+    "stocks",
+    "crypto",
+    "commodities",
+    "commodityFetchedAt",
+    "commodityState",
+    "options",
+    "indices",
+    "fetchedAt",
+    "snapshotQuality",
+    "ok",
+    "inputRows"
+  ],
+  "counts": {
+    "stocks": 789,
+    "funds": 345,
+    "gold": 9,
+    "currency": 28
+  },
+  "diag": {
+    "at": 1794599317466,
+    "source": "supabase",
+    "supabaseConfigured": true,
+    "relayUrlConfigured": false,
+    "reached": true,
+    "status": 200,
+    "ok": true,
+    "fromCache": false,
+    "ageSec": 154,
+    "counts": {
+      "gold": 9,
+      "currency": 28,
+      "funds": 345,
+      "stocks": 789,
+      "crypto": 19
+    },
+    "error": null,
+    "ms": 1444
+  }
+}
