@@ -233,3 +233,100 @@ Offline checks: `pwsh -NoProfile -File ./offline-tests.ps1`. Fixture mode is res
 The three reviewed checkpoints `20261017T122931Z`, `20261023T123955Z` and `20261023T154032Z` now preserve their exact dump bytes as gzip; the redundant raw representations were removed only after full decode/hash and real tmpfs `pg_restore --list` checks. Historical receipts remain unchanged. See [current evidence and capacity](../../../docs/plan/development-v04-20261029/evidence/P15-three-promotions-root-20261104.json) and COMMAND-CENTER; this is not a fresh database backup or restore.
 
 LegacyV1 and `pg_restore` do not read gzip automatically. Before using the old raw path, a separately authorized operator must verify the checkpoint's prepared/tool/gzip pins, use its fixed `materialize` command from `RESTORE-RAW-PATH-20261104.json`, and independently verify the recreated raw byte count/hash and retained gzip. Only helper SHA256 `496e287c429ef1cb29b0cd9570e0392e0f3bd5ce0b45d2a2779999b7441d556d` is reviewed for this route. Pin the prepared receipt externally; the helper's materialize branch does not do that external comparison itself. Reserve at least 10 GiB + exact raw bytes + 32 MiB before materializing. A marker, an old failed read-only call or a presence-only readback grants no write authority and proves no recovery. On an unknown result inspect the same intent; never replay or remove its partial file. Actual raw-missing materialization and database restore have not been performed by this compaction delivery.
+
+## Corrected core/private V3: attempt-bound source, no native delivery
+
+`CorrectedCorePrivateV3` preserves the corrected SQL checkpoint
+`20261103T222239Z`. The provider lives beside this wrapper; the existing caller,
+adapter and attempt engine live in [attempt-control](attempt-control/).
+Its `v3/` directory is the byte-pinned reviewed provider snapshot and `frozen/`
+retains the exact Oct30/R2 sources. These are executable source snapshots, not
+private controller state or backup archives. The three retained runner receipts
+are sanitized historical failure metadata; they issue no authority.
+
+**ACTUAL: NO NATIVE V3 Capture/Verify, provisioning, authorization issuance or
+installation has been performed by this source delivery.** Expected schema is
+23 present remote roles, one explicit absent role and two pinned memory roles:
+26 records / 25 streams. Actual native archive counts remain `null`. Capturing
+or verifying the Nov3 dump would preserve that historical checkpoint; it would
+not create a current database backup. Storage binaries, rollback, fresh sustained
+capacity and current migration compatibility remain separate unverified gates.
+
+Use the same `attempt-control/native-caller.ps1` and its existing actions only
+after root separately reviews the source pins, provisions the exact Nov3
+controller namespace and issues an attempt authorization. The V3 branch requires
+explicit `Profile=CorrectedCorePrivateV3`, `ReviewedProfileSha256` matching the
+sibling policy, a specific `AttemptId` and the exact reviewed authorization hash.
+There is no inferred latest attempt, automatic authority issuance or fallback
+to Oct30 permissions. The old default R2 branch and its entropy/path namespace
+remain unchanged. Direct native V3 wrapper execution is rejected unless the
+same authenticated controller attempt holds both locks and owns the signed
+start event. No standalone V3 command grants permission to capture.
+
+The lifecycle remains authorization, signed capture start, bound capture,
+signed verify start and external verified event. An unknown outcome or partial
+archive requires authoritative `Readback`; it never permits automatic replay,
+deletion or a replacement attempt. Native Verify preserves archive inventory.
+Headers, manifest and DPAPI entropy bind the new attempt's authorization/nonce;
+successful verification means backup-only and does not unlock legacy Apply or
+the separate consultation-next migration consumer.
+
+Keep all runtime keys, signed authority, attempts and archives outside Git in
+the existing private per-checkpoint locations. `.gitattributes` lists exact
+additional raw-byte paths; do not normalize pinned JSON, Python or snapshots.
+The source-only packet was checked offline with mocked I/O/provider boundaries;
+those results do not establish a working native controller or product delivery.
+Current operational status and acceptance remain in
+[COMMAND-CENTER](../../../docs/COMMAND-CENTER.md); the original checkpoint failure
+is retained in [the existing evidence](../../../docs/plan/development-v04-20261029/evidence/P15-fresh-backup-not-accepted-root-20261104.json).
+
+### Versioned V3 source/mock regression harnesses
+
+The maintained tests are in `attempt-control/tests/`. Each requires an explicit
+`-CanonicalRoot` pointing to this `cashflow-checkpoint` directory and a fresh
+PowerShell 7 process; no user-specific output directory is used. Example, from
+this directory (repeat for `test_v3_attempt_branch.ps1` and
+`test_attempt_lifecycle.ps1`):
+
+```powershell
+pwsh -NoProfile -File ./attempt-control/tests/test_attempt_contract.ps1 -CanonicalRoot .
+```
+
+The three suites require 22, 76 and 14 checks respectively. They print one JSON
+receipt to stdout and do not write receipts, keys, authority or archives. The
+baseline source is byte-pinned under `tests/baseline/`; production and R2 sources
+are not modified. Tests extract named function definitions, replace I/O/provider
+boundaries and reject unexpected commands. Unsafe static operations become a
+throwing sentinel. A deliberate file-read canary must be blocked before I/O;
+any unexpected boundary attempt fails the whole suite even if a negative test
+catches its exception. Receipts require `externalCalls=0`,
+`unexpectedBoundaryAttempts=0` and `sentinelProbeDenied=1`.
+
+These are source/mock regressions, including the actual attempt dispatch's lost
+Capture/Verify response and no-second-call cases. They do not execute native
+initialization, SSH, crypto, key/authority access or archive Capture/Verify.
+Windows offline execution passed. Linux execution is pending actual CI; absence
+of PowerShell or a skipped step is a failure of coverage, never a pass. A separate
+CI registration patch must run all three suites and validate their receipts;
+ordinary green CI without that step does not establish V3 harness coverage.
+
+The root-resume correction validates raw JSON with `JsonDocument` before any
+PowerShell projection: the root must be an object (not a singleton array), keys
+must be unique even after escaping/case folding, status must be the exact string,
+and counters must be safe nonnegative JSON integers with the expected values.
+Boundary flags must be JSON `false`, never a coerced string or number.
+
+All three suites set terminating error handling before root validation. An
+explicit filesystem directory with all 63 reviewed source hashes is required,
+including for the historical baseline-only suite. The canonical pin index is
+itself hash-pinned and has one exact `-text` attribute; engine/R2 bytes are not
+changed. Blank/missing/file/wrong-source roots cannot yield a PASS receipt.
+
+`test_receipt_guard.ps1` covers 117 pure positive/negative receipt cases.
+`test_harness_preflight.ps1` checks 15 invalid-root cases across three fresh
+processes per input, with the caller explicitly using `Continue`; it requires a
+nonzero exit and empty stdout. These are additional test guards, not extra
+native acceptance checks. The original three suite counts remain 22/76/14.
+Their instrumentation is not a universal sandbox for arbitrary code or all I/O.
+Linux coverage still requires the actual registered CI step; none is inferred
+from Windows results or source review.
