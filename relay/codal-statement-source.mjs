@@ -113,13 +113,13 @@ function sourceText(source, limit) {
   if (!bytes.equals(Buffer.from(text, 'utf8'))) fail('source_encoding');
   return text;
 }
-function reportSerial(url, decision) {
+function reportSerial(url, decision, interim = false) {
   if (typeof url !== 'string' || url.length>4096 || url.trim() !== url) fail('source_identity');
   const u = new URL(url);
   if (u.protocol !== 'https:' || u.username || u.password || u.hash || u.port ||
-      u.hostname !== (decision ? 'codal.ir' : 'excel.codal.ir')) fail('source_identity');
+      !(decision ? (u.hostname === 'codal.ir' || interim && u.hostname === 'www.codal.ir') : u.hostname === 'excel.codal.ir')) fail('source_identity');
   if (decision) {
-    if (u.pathname !== '/Reports/Decision.aspx') fail('source_identity');
+    if (u.pathname !== (interim ? '/Reports/InterimStatement.aspx' : '/Reports/Decision.aspx')) fail('source_identity');
     const pairs = u.search.slice(1).split('&').map(p => p.split('='));
     const serials = pairs.filter(p => p[0] === 'LetterSerial');
     if (serials.length !== 1 || serials[0].length !== 2) fail('source_identity');
@@ -147,16 +147,17 @@ const number = value => {
  return Number(signed);
 };
 
-function document(source,meta,announcement,alias) {
- const serial=reportSerial(source.url,true);
+function document(source,meta,announcement,alias,interim=false) {
+ const serial=reportSerial(source.url,true,interim);
  if(serial!==reportSerial(announcement.link,true))fail('source_identity');
  const html=sourceText(source,MAX_DECISION);
  const root=literalDatasource(html);
- // Mixed consolidated workbooks need separately proven sheet scope. They are
- // deliberately excluded from this standalone industrial route.
- if(root.isConsolidated!==false || !Number.isSafeInteger(root.tracingNo) || root.tracingNo<=0 ||
+ // The legacy route additionally proves the selected standalone sheet against
+ // its separately advertised consolidated counterpart; the default stays closed.
+ const mixed=interim && root.isConsolidated===true && /^FinancialStatement-Consolidated-Listed-Product-V\d+$/.test(root.title_En??'');
+ if((root.isConsolidated!==false && !mixed) || !Number.isSafeInteger(root.tracingNo) || root.tracingNo<=0 ||
     root.type!==6 || typeof root.isAudited!=='boolean' || root.periodExtraDay!==0 ||
-    ![3,6,9,12].includes(root.period) || !/FinancialStatement-Listed-Product/.test(root.title_En??''))fail('scope_unsupported');
+    ![3,6,9,12].includes(root.period) || (!mixed && !/FinancialStatement-Listed-Product/.test(root.title_En??'')))fail('scope_unsupported');
  if(root.period!==meta.period_months || day(root.periodEndToDate)!==meta.period_end || root.isAudited!==meta.audited ||
     day(root.yearEndToDate)<meta.period_end)fail('period_mismatch');
  const visible=html.replace(/<!--[\s\S]*?-->/g,'').replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
@@ -168,7 +169,7 @@ function document(source,meta,announcement,alias) {
     norm(text(element(visible,'p','ctl00_pPriceNote')))!==norm('کلیه مبالغ درج شده به میلیون ریال می باشد'))fail('header_conflict');
  const refs=[...visible.matchAll(/<input\b[^>]*>/gi)].filter(m=>attributes(m[0]).some(a=>a.name==='id'&&a.value==='ctl00_cphBody_ucDynamicFinancialStatement_hdfLetterRef'));
  if(refs.length!==1 || attr(refs[0][0],'value')!==serial)fail('source_identity');
- const select=element(visible,'select','ddlTable');
+ const select=element(visible,'select',interim?'ctl00_ddlTable':'ddlTable');
  const options=[...select.matchAll(/<option\b[^>]*>/gi)].filter(m=>attributes(m[0]).some(a=>a.name==='selected'));
  if(options.length!==1 || !Array.isArray(root.sheets) || root.sheets.length!==1)fail('sheet_ambiguous');
  const sheet=root.sheets[0];
@@ -181,6 +182,21 @@ function document(source,meta,announcement,alias) {
  if(table.sheetCode!==sheet.code || !Number.isSafeInteger(table.code)||!Number.isSafeInteger(table.metaTableId)||
     /تلفیقی/.test(norm(table.title_Fa)) || !Array.isArray(table.cells) || table.cells.length>20000)fail('table_identity');
  const title=alias==='IncomeStatement'?'صورت سود و زیان':'صورت تغییرات در حقوق مالکانه';
+ if(interim){
+  const form=element(visible,'form','aspnetForm');
+  const opening=form.slice(0,form.indexOf('>')+1);
+  const action=new URL(attr(opening,'action'),source.url);
+  if(attr(opening,'method')?.toLowerCase()!=='post' || reportSerial(action.href,true,true)!==serial ||
+     action.origin!==new URL(source.url).origin || source.requestedSheetCode!==sheet.code)fail('source_identity');
+  const choices=[...select.matchAll(/<option\b([^>]*)>([\s\S]*?)<\/option\s*>/gi)];
+  const selected=choices.filter(m=>attributes('<option '+m[1]+'>').some(a=>a.name==='selected'));
+  if(selected.length!==1 || norm(text(selected[0][2]))!==norm(title))fail('scope_unsupported');
+  if(mixed){
+   const own=choices.filter(m=>norm(text(m[2]))===norm(title));
+   const group=choices.filter(m=>norm(text(m[2]))===norm(title+' تلفیقی'));
+   if(own.length!==1||group.length!==1||attr('<option '+group[0][1]+'>','value')===String(sheet.code))fail('scope_unsupported');
+  }
+ }
  for(const owner of [sheet,table])if(norm(owner.title_Fa)!==norm(title)||
     (owner.isConsolidated!==undefined&&owner.isConsolidated!==false))fail('scope_unsupported');
  if(table.description && (!norm(table.description).includes('میلیونریال')||/هزار|میلیارد|تومان|دلار|یورو/.test(norm(table.description))))fail('header_conflict');
@@ -197,11 +213,11 @@ function document(source,meta,announcement,alias) {
 
 /** Source-bound current cumulative industrial statement. Prior columns are
  * intentionally absent until their own duration is proven. No zero filling. */
-export function admitDecisionStatement(income,equity,meta,announcement){
+function admitStatement(income,equity,meta,announcement,interim=false){
  try{
-  const inc=document(income,meta,announcement,'IncomeStatement');
-  const eq=document(equity,meta,announcement,'ChangesInPropertyRights');
-  if(inc.root.tracingNo!==eq.root.tracingNo || inc.root.yearEndToDate!==eq.root.yearEndToDate)fail('source_identity');
+  const inc=document(income,meta,announcement,'IncomeStatement',interim);
+  const eq=document(equity,meta,announcement,'ChangesInPropertyRights',interim);
+  if(inc.root.tracingNo!==eq.root.tracingNo || inc.root.yearEndToDate!==eq.root.yearEndToDate || inc.root.isConsolidated!==eq.root.isConsolidated)fail('source_identity');
   const cell=(doc,address,group)=>{
    const c=doc.cells.get(address);
    if(!c||!c.isVisible||c.cellGroupName!==group||c.colSpan!==1||c.rowSpan!==1)fail('cell_unobserved');
@@ -240,6 +256,11 @@ export function admitDecisionStatement(income,equity,meta,announcement){
     priorAccepted:false,epsAccepted:false}},reason:null};
  }catch(error){return {data:null,reason:['scope_unsupported','period_mismatch','header_conflict','source_identity','source_hash_mismatch','arithmetic_mismatch','capital_unverified','value_unobserved'].includes(error.message)?error.message:'source_context_invalid'};}
 }
+
+export const admitDecisionStatement=(income,equity,meta,announcement)=>admitStatement(income,equity,meta,announcement);
+/** Pure admission only. A separately reviewed loader must bind the POST sheet
+ * selection and source capture before this route may receive live documents. */
+export const admitInterimStatement=(income,equity,meta,announcement)=>admitStatement(income,equity,meta,announcement,true);
 
 // Serial requests to the official publisher, never the BRSAPI key endpoint.
 // The existing engine still owns discovery, per-cycle caps and persistence.
