@@ -15,6 +15,8 @@ import PriceNavChart, { type PriceNavPoint } from "@/components/symbol/PriceNavC
 import FundAnalysisPanel from "@/components/fund/FundAnalysisPanel";
 import AccountBridge from "@/components/account/AccountBridge";
 import SymbolTabs from "@/components/symbol/SymbolTabs";
+import CompanyReportSources from "@/components/symbol/CompanyReportSources";
+import { companyPreviewView } from "@/lib/company-view";
 import SymbolLiveDetail from "@/components/symbol/SymbolLiveDetail";
 import CodalReportsTab, { type StoredReport } from "@/components/symbol/CodalReportsTab";
 import SymbolFundamentalCard from "@/components/symbol/SymbolFundamentalCard";
@@ -118,6 +120,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
   const all: IrStockRow[] = [...(ir?.stocks ?? []), ...(ir?.funds ?? [])];
   const quote = all.find((r) => r.id === sym) ?? null;
   const isFund = (ir?.funds ?? []).some((r) => r.id === sym);
+  const previewView = companyPreviewView(sp.view, process.env.VERCEL_ENV, isFund);
   const now = Date.now();
   const quoteFamily = isFund ? "funds" : "stocks";
   // Same market quality rules, applied to this symbol's clock and family receipt.
@@ -154,6 +157,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
   // T3: فصل‌سازی ن-۱۰ با تفاضل زنجیره‌ای + P/E دوازده‌ماهه
   const quarterInputs: QuarterInput[] = (fundamentals?.n10Periods ?? []).map((p) => ({
     id: p.id,
+    ...(previewView ? { record: p.record ?? null } : {}),
     period_end: p.data.period_end,
     period_months: p.data.period_months,
     audited: p.data.audited,
@@ -332,9 +336,11 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
       {fundamentals?.n30 && fundamentals.n30.data.length > 0 ? (
         <section>
           <MonthlySalesCharts
+            previewControls={previewView !== null}
             reports={fundamentals.n30.data}
             sourceTitle={fundamentals.n30.source.title}
             sourceUrl={fundamentals.n30.source.source_url}
+            sourceRecords={previewView ? fundamentals.n30.source.records : undefined}
           />
         </section>
       ) : null}
@@ -342,6 +348,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
       {/* T3 — تحلیل فصلی ن-۱۰: فقط وقتی حداقل یک فصل مشتق شده (قانون ۲) */}
       {hasQuarterMetrics ? (
         <QuarterlyCharts
+          previewControls={previewView !== null}
           quarters={quarters}
           ttm={ttm}
           peSeries={peSeries}
@@ -544,6 +551,8 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
 
           {/* T6 — هاب نماد با تب‌ها: نمای کلی · بنیادی · گزارش‌ها · مجامع */}
           <SymbolTabs
+            previewView={previewView}
+            companySources={previewView ? <CompanyReportSources fundamentals={fundamentals} readFailed={fundamentalRead.state === "error"} /> : undefined}
             overview={
               <div className="space-y-6">
                 {/* M6: قیمت در برابر NAV — فقط برای صندوق‌ها */}

@@ -134,6 +134,9 @@ export interface ReportSource {
   scope?: ReportScope;
 }
 
+/** Metadata of one selected immutable row; never a bundle-level substitute. */
+export type ReportRecord = NonNullable<ReportSource["records"]>[number];
+
 /** بستهٔ دادهٔ بنیادی یک نماد که به صفحهٔ نماد تزریق می‌شود. */
 export interface SymbolFundamentals {
   symbol: string;
@@ -148,7 +151,7 @@ export interface SymbolFundamentals {
    * برای کارت انتخاب کرده (حسابرسی ← اصلاحیه ← زمانِ انتشار ← id). انتخابِ
    * دوباره در پایین‌دست ممنوع است؛ دو قاعده یعنی دو پاسخ در یک صفحه.
    */
-  n10Periods?: Array<{ id: number; data: CodalN10Data; scope?: ReportScope }>;
+  n10Periods?: Array<{ id: number; data: CodalN10Data; scope?: ReportScope; record?: ReportRecord | null }>;
   /** Legacy summary; the reader now quarantines ambiguous/unknown period scopes. */
   n10PeriodsScope?: "company" | "consolidated_ambiguous";
 }

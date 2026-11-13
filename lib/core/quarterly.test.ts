@@ -3,6 +3,7 @@
 // تفاضل منفی (تعدیل)، EPS TTM فقط با ۴ فصل کامل و متوالی.
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import type { ReportRecord } from "../fundamental/types";
 import {
   deriveQuarters,
   dedupePeriods,
@@ -160,4 +161,152 @@ test("سال مالی جاری ناقص: فصل‌های آینده حذف، ف�
   const labels = qs.map((q) => q.label);
   assert.ok(labels.includes("Q1 1404"));
   assert.ok(!labels.includes("Q4 1404")); // فصل بدون گزارش در انتها حذف
+});
+
+function withRecord(input: QuarterInput, overrides: Partial<ReportRecord> = {}): QuarterInput {
+  return { ...input, record: {
+    id: input.id, financialPeriodEnd: input.period_end, storedPeriodEnd: null,
+    sourceUrl: `https://codal.ir/Reports/Decision.aspx?LetterSerial=${input.id}`,
+    publishedAt: "1405/01/01 10:00:00", publishedDateRaw: "۱۴۰۵/۰۱/۰۱", publishedTimeRaw: "۱۰:۰۰:۰۰",
+    publishedAtUtc: null, publicationUtcConfidence: "unknown",
+    capturedAtRaw: "2026-10-25T13:45:56.894105+03:30", capturedAt: "2026-10-25T10:15:56.894Z",
+    parserVersion: null, parserVersionSource: null, amendment: false, ...overrides,
+  } };
+}
+
+function withoutProvenance<T extends { provenance?: unknown }>(values: T[]) {
+  return values.map(value => { const copy = { ...value }; delete copy.provenance; return copy; });
+}
+const legacyInputs = (inputs: QuarterInput[]) => inputs.map(input => { const copy = { ...input }; delete copy.record; return copy; });
+
+test("quarter provenance follows the actual direct/difference inputs and preserves financial results and source precision", () => {
+  const inputs = fullYear(1403, 1000).map(input => withRecord(input));
+  const before = structuredClone(inputs), quarters = deriveQuarters(inputs);
+  assert.deepEqual(inputs, before);
+  assert.deepEqual(withoutProvenance(quarters), deriveQuarters(legacyInputs(inputs)));
+  assert.equal(quarters[0].provenance?.amounts.operation, "reported");
+  assert.deepEqual(quarters[0].provenance?.amounts.contributors.map(c => [c.role, c.report.id]), [["current", inputs[0].id]]);
+  assert.equal(quarters[1].provenance?.amounts.operation, "difference");
+  assert.deepEqual(quarters[1].provenance?.amounts.contributors.map(c => [c.role, c.report.id]), [["current", inputs[1].id], ["previous", inputs[0].id]]);
+  assert.equal(quarters[1].provenance?.capital?.id, inputs[1].id);
+  const source = quarters[1].provenance!.amounts.contributors[0].report;
+  assert.equal(source.binding, "matched");assert.equal(source.unit, "میلیون ریال");assert.equal(source.periodMonths, 6);
+  assert.deepEqual(source.record, inputs[1].record);
+  assert.equal(source.record?.capturedAtRaw, "2026-10-25T13:45:56.894105+03:30");
+  assert.equal(source.record?.publishedAtUtc, null);
+});
+
+test("legacy callers retain their exact quarterly and TTM output shape without provenance", () => {
+  const quarters = deriveQuarters(fullYear(1403, 1000));
+  assert.ok(quarters.every(q => !Object.hasOwn(q, "provenance")));
+  const ttm = ttmSeries(quarters);assert.equal(ttm.length, 1);
+  assert.ok(ttm.every(t => !Object.hasOwn(t, "provenance")));
+});
+
+test("unknown, wrong-period and mismatched row metadata never become financial null or a neighboring source", () => {
+  const base = fullYear(1403, 1000);
+  const cases: Array<[Partial<ReportRecord> | null, string]> = [
+    [null, "missing_record"], [{ id: base[3].id }, "identity_mismatch"],
+    [{ financialPeriodEnd: null }, "period_mismatch"], [{ financialPeriodEnd: base[3].period_end }, "period_mismatch"],
+  ];
+  for (const [metadata, binding] of cases) {
+    const inputs = base.map(input => withRecord(input));
+    inputs[0] = metadata === null ? { ...inputs[0], record: null } : withRecord(base[0], metadata);
+    const quarters = deriveQuarters(inputs);
+    assert.deepEqual(withoutProvenance(quarters), deriveQuarters(base));
+    const source = quarters[1].provenance!.amounts.contributors[1].report;
+    assert.equal(source.binding, binding);assert.equal(source.record, null);assert.equal(source.id, base[0].id);
+    assert.equal(quarters[1].provenance!.amounts.contributors[0].report.binding, "matched");
+  }
+});
+
+test("invalid and ambiguous database identities fail closed only for metadata", () => {
+  for (const id of [0, -1, NaN, Number.MAX_SAFE_INTEGER + 1]) {
+    const input = withRecord(rep({ id })), q = deriveQuarters([input])[0];
+    assert.equal(q.revenue, 100);assert.equal(q.provenance?.amounts.contributors[0].report.binding, "invalid_identity");
+    assert.equal(q.provenance?.amounts.contributors[0].report.id, null);
+    assert.equal(q.provenance?.amounts.contributors[0].report.record, null);
+  }
+  const inputs = fullYear(1403, 1000).map(input => withRecord(input));
+  inputs[1] = withRecord({ ...inputs[1], id: inputs[0].id });
+  const quarters = deriveQuarters(inputs);
+  assert.deepEqual(withoutProvenance(quarters), deriveQuarters(legacyInputs(inputs)));
+  assert.ok(quarters[1].provenance!.amounts.contributors.every(c => c.report.binding === "ambiguous_identity" && c.report.record === null));
+});
+
+test("metadata follows the winning input object, never a discarded newer URL/clock or same-period report", () => {
+  const older = withRecord(rep({ audited: true, revenue: 200 }));
+  const newer = withRecord(rep({ audited: false, revenue: 999 }), { capturedAtRaw: "2099-01-01T00:00:00Z" });
+  const q = deriveQuarters([newer, older])[0];
+  assert.equal(q.revenue, 200);assert.equal(q.provenance?.amounts.contributors[0].report.record?.id, older.id);
+  assert.notEqual(q.provenance?.amounts.contributors[0].report.record?.capturedAtRaw, newer.record?.capturedAtRaw);
+});
+
+test("missing/incompatible links keep unavailable provenance; rejected differences retain the two checked reports", () => {
+  const complete = fullYear(1403, 1000).map(input => withRecord(input));
+  for (const inputs of [complete.filter(r => r.period_months !== 6), complete.map(r => r.period_months === 6 ? { ...r, scope: "unknown" as const } : r)]) {
+    const quarters = deriveQuarters(inputs);
+    assert.deepEqual(withoutProvenance(quarters), deriveQuarters(legacyInputs(inputs)));
+    assert.equal(quarters[2].provenance?.amounts.operation, "unavailable");
+    assert.deepEqual(quarters[2].provenance?.amounts.contributors, []);
+    assert.equal(quarters[2].provenance?.capital?.id, complete[2].id);
+    assert.equal(ttmSeries(quarters).length, 0);
+  }
+  const rejected = [complete[0], withRecord({ ...complete[1], revenue: 1 })];
+  const q = deriveQuarters(rejected)[1];
+  assert.equal(q.adjusted, true);assert.equal(q.netProfit, null);
+  assert.equal(q.provenance?.amounts.operation, "rejected_difference");
+  assert.deepEqual(q.provenance?.amounts.contributors.map(c => c.report.id), [rejected[1].id, rejected[0].id]);
+});
+
+test("TTM retains all four actual quarter calculations, repeated difference contributors, and only final capital", () => {
+  const inputs = [...fullYear(1403, 1000), ...fullYear(1404, 1200)].map(input => withRecord(input));
+  const quarters = deriveQuarters(inputs), ttm = ttmSeries(quarters);
+  assert.deepEqual(withoutProvenance(ttm), ttmSeries(deriveQuarters(legacyInputs(inputs))));
+  const first = ttm[0].provenance!, crossYear = ttm[1].provenance!;
+  assert.equal(first.netProfit.length, 4);
+  assert.deepEqual(first.netProfit.map(q => q.amounts?.contributors.map(c => c.report.id)), [
+    [inputs[0].id], [inputs[1].id, inputs[0].id], [inputs[2].id, inputs[1].id], [inputs[3].id, inputs[2].id],
+  ]);
+  assert.equal(first.capital?.id, inputs[3].id);
+  assert.deepEqual(crossYear.netProfit.map(q => q.periodEnd), quarters.slice(1, 5).map(q => q.periodEnd));
+  assert.equal(crossYear.capital?.id, inputs[4].id);
+  assert.ok(!Object.hasOwn(first, "capturedAt"));assert.ok(!Object.hasOwn(first, "price"));
+});
+
+test("TTM preserves legacy/missing contributor slots as unknown without borrowing another quarter's metadata", () => {
+  const inputs = fullYear(1403, 1000).map(input => withRecord(input));
+  const quarters = deriveQuarters(inputs);delete quarters[1].provenance;
+  quarters[3].provenance!.capital = null;
+  const point = ttmSeries(quarters)[0];
+  assert.equal(point.provenance?.netProfit.length, 4);assert.equal(point.provenance?.netProfit[1].amounts, null);
+  assert.equal(point.provenance?.capital, null);assert.ok(point.epsTtm > 0);
+});
+
+test("noncalendar fiscal chains keep their own period identities; invalid periods do not gain admission through metadata", () => {
+  const ends = ["1403-09-30", "1403-12-29", "1404-03-31", "1404-06-31"];
+  const inputs = fullYear(1403, 1000).map((input, index) => withRecord({ ...input, period_end: ends[index] }));
+  const quarters = deriveQuarters(inputs), point = ttmSeries(quarters)[0];
+  assert.deepEqual(point.provenance?.netProfit.map(q => q.periodEnd), ends);
+  assert.equal(point.provenance?.capital?.record?.financialPeriodEnd, ends[3]);
+  const invalid = withRecord(rep({ period_end: "unknown" }));
+  assert.deepEqual(deriveQuarters([invalid]), []);
+  const missing = withRecord(rep({ period_months: 0 }));
+  assert.deepEqual(deriveQuarters([missing]), []);
+});
+
+test("matched metadata cannot certify nonfinite values, invent margins on zero revenue, or create missing capital", () => {
+  for (const patch of [{ revenue: 0 }, { net_profit: NaN }, { gross_profit: Infinity }, { capital: 0 }]) {
+    const inputs = fullYear(1403, 1000).map(input => withRecord({ ...input, ...patch }));
+    const quarters = deriveQuarters(inputs);
+    assert.deepEqual(withoutProvenance(quarters), deriveQuarters(legacyInputs(inputs)));
+    assert.deepEqual(withoutProvenance(ttmSeries(quarters)), ttmSeries(deriveQuarters(legacyInputs(inputs))));
+    assert.equal(quarters[0].provenance?.amounts.contributors[0].report.binding, "matched");
+    if (patch.revenue === 0) assert.equal(quarters[0].netMargin, null);
+    if (patch.capital === 0) assert.equal(quarters[0].provenance?.capital, null);
+  }
+  const inputs = fullYear(1403, 1000).map(input => withRecord(input));delete inputs[0].record;
+  const point = ttmSeries(deriveQuarters(inputs))[0];
+  assert.equal(point.provenance?.netProfit[0].amounts?.contributors[0].report.binding, "missing_record");
+  assert.ok(point.epsTtm > 0);
 });

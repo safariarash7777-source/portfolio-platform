@@ -24,7 +24,7 @@ import assert from "node:assert/strict";
 import { getFundamentalsFromSupabase as getReader, type CodalRow } from "./supabase";
 const fixtureEnvironment = Object.freeze({ NEXT_PUBLIC_SUPABASE_URL: "https://fixture.invalid", NEXT_PUBLIC_SUPABASE_ANON_KEY: "fixture-anon" });
 const getFundamentalsFromSupabase = (symbol: string) => getReader(symbol, { environment: fixtureEnvironment });
-import { deriveQuarters, type QuarterInput } from "@/lib/core/quarterly";
+import { deriveQuarters, ttmSeries, type QuarterInput } from "@/lib/core/quarterly";
 
 const annual = (id: number, date: string, time: string, revenue: number, netProfit: number, consolidated = false): CodalRow => ({
   id,
@@ -239,4 +239,48 @@ test("شپنا ۳ماههٔ ۱۴۰۳ (واقعی): Q1 از اصلاحیه، نه
   assert.deepEqual((f?.n10Periods ?? []).map((p) => p.id), [9064]);
   const q = deriveQuarters(toQuarterInputs(f?.n10Periods)).find((x) => x.fy === 1403 && x.q === 1);
   assert.equal(q?.netProfit, 33_450_171);
+});
+
+test("each selected period carries its own immutable record into quarters and TTM, not the main bundle record", async () => {
+  // Synthetic offline rows exercise the actual reader projection and selection.
+  const ends = ["1403-03-31", "1403-06-31", "1403-09-30", "1403-12-29"];
+  const rows = ends.map((end, index) => ({
+    ...mk(9700 + index, "تستمنشأ", end, (index + 1) * 3, { revenue: (index + 1) * 100, netProfit: (index + 1) * 20 }),
+    captured_at: `2026-10-${21 + index}T13:45:56.894105+03:30`,
+  }));
+  rows[0].title += " (اصلاحیه)";
+  DATASET = [...rows, mk(9999, "تستمنشأ", ends[0], 3, { revenue: 999, netProfit: 999 })];
+  const f = await getFundamentalsFromSupabase("تستمنشأ");
+  assert.ok(f?.n10);assert.equal(f.n10.source.records?.length, 1);
+  assert.equal(f.n10.source.records?.[0].id, 9703);
+  assert.equal(f.n10Periods?.length, 4);
+  for (const period of f.n10Periods!) {
+    assert.equal(period.record?.id, period.id);
+    assert.equal(period.record?.financialPeriodEnd, period.data.period_end);
+    assert.equal(period.record?.sourceUrl, `https://codal.ir/Reports/Decision.aspx?LetterSerial=${period.id}`);
+    assert.equal(period.record?.capturedAtRaw, rows.find(row => row.id === period.id)?.captured_at);
+  }
+  const inputs = f.n10Periods!.map(p => ({ ...toQuarterInputs([p])[0], record: p.record }));
+  const quarters = deriveQuarters(inputs), ttm = ttmSeries(quarters);
+  assert.deepEqual(quarters[0].provenance?.amounts.contributors.map(c => c.report.id), [9700]);
+  assert.equal(quarters[0].netProfit, 20);
+  assert.equal(quarters[0].provenance?.amounts.contributors[0].report.record?.amendment, true);
+  assert.equal(quarters[0].provenance?.amounts.contributors[0].report.record?.capturedAtRaw, "2026-10-21T13:45:56.894105+03:30");
+  assert.equal(ttm.length, 1);
+  assert.deepEqual(ttm[0].provenance?.netProfit.map(q => q.amounts?.contributors.map(c => c.report.id)), [[9700], [9701, 9700], [9702, 9701], [9703, 9702]]);
+  assert.equal(ttm[0].provenance?.capital?.id, 9703);
+});
+
+test("per-period unknown clocks and unsafe URL stay null; stored period is not substituted for financial period", async () => {
+  const row = mk(9800, "تستساعتمنشأ", "1404-03-31", 3, { revenue: 100, netProfit: 20 });
+  DATASET = [{ ...row, period_end: null, captured_at: "invalid", source_url: "javascript:alert(1)", raw: null }];
+  const f = await getFundamentalsFromSupabase("تستساعتمنشأ"), period = f?.n10Periods?.[0];
+  assert.ok(period);
+  assert.equal(period.record?.id, 9800);assert.equal(period.record?.financialPeriodEnd, "1404-03-31");
+  assert.equal(period.record?.storedPeriodEnd, null);assert.equal(period.record?.sourceUrl, null);
+  assert.equal(period.record?.capturedAtRaw, null);assert.equal(period.record?.capturedAt, null);
+  assert.equal(period.record?.publishedAt, null);assert.equal(period.record?.publishedAtUtc, null);
+  const q = deriveQuarters([{ ...toQuarterInputs([period])[0], record: period.record }])[0];
+  assert.equal(q.netProfit, 20);assert.equal(q.provenance?.amounts.contributors[0].report.binding, "matched");
+  assert.equal(q.provenance?.amounts.contributors[0].report.record?.sourceUrl, null);
 });
