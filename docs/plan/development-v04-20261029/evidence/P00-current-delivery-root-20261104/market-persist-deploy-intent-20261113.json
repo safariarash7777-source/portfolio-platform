@@ -1,0 +1,18 @@
+{
+  "atUtc": "2026-11-13T19:56:26.576076+00:00",
+  "main": "0b9035f6e7aff866cf1845ac876dfc087ad112d2",
+  "source": "259cce4fbdd634e57713aa4088e07cc3c0ce624d",
+  "ci": 43495849076,
+  "priorDeployment": 7774615403,
+  "priorImage": "apps/6a5351feb95bf1e50c1ee34f:zoxlm1hkomvu",
+  "request": {
+    "ref": "main",
+    "inputs": {
+      "sha": "259cce4fbdd634e57713aa4088e07cc3c0ce624d",
+      "record_only": "false",
+      "image": "",
+      "allow_older": "false"
+    }
+  },
+  "automaticRetry": false
+}
