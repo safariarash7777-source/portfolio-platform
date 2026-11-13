@@ -1,0 +1,102 @@
+{
+  "observedAt": "2026-10-29T16:15:41.288533+00:00",
+  "status": "PASS_OWNED_PG_REHEARSAL",
+  "image": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+  "server": "PostgreSQL 17.11 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit",
+  "passed": 14,
+  "failed": 0,
+  "results": [
+    {
+      "profile": "explicit",
+      "name": "atomic apply preserves all preexisting catalog/history/financial fingerprints; default-off blocks direct RPC and admin-profile gate write",
+      "status": "PASS"
+    },
+    {
+      "profile": "explicit",
+      "name": "rollback before new history restores kernel/constraint and preserves existing doing history",
+      "status": "PASS"
+    },
+    {
+      "profile": "explicit",
+      "name": "lost response after actual commit reconciled by read-only catalog/history/financial checks; one DDL request and no replay",
+      "status": "PASS"
+    },
+    {
+      "profile": "explicit",
+      "name": "partial/not_done append with balances unchanged; gate off retains readable history and blocks incompatible rollback",
+      "status": "PASS"
+    },
+    {
+      "profile": "explicit",
+      "name": "member B and unrelated advisor cannot read member A; private notes absent for member",
+      "status": "PASS"
+    },
+    {
+      "profile": "explicit",
+      "name": "second financial basis blocks approval of the prior draft basis",
+      "status": "PASS"
+    },
+    {
+      "profile": "explicit",
+      "name": "revoke blocks advisor while member keeps both new history entries",
+      "status": "PASS",
+      "faultIntent": {
+        "operation": "apply",
+        "payloadSha256": "c53de46a216a57b90afaff760c0474cb5d95911f56ff022832fd1536affae8a8",
+        "beforeSha256": "2a180a4295819485a813a649c4e6cf51bb06815b86decc489b80b243f10ebaf6"
+      }
+    },
+    {
+      "profile": "legacy",
+      "name": "atomic apply preserves all preexisting catalog/history/financial fingerprints; default-off blocks direct RPC and admin-profile gate write",
+      "status": "PASS"
+    },
+    {
+      "profile": "legacy",
+      "name": "rollback before new history restores kernel/constraint and preserves existing doing history",
+      "status": "PASS"
+    },
+    {
+      "profile": "legacy",
+      "name": "lost response after actual commit reconciled by read-only catalog/history/financial checks; one DDL request and no replay",
+      "status": "PASS"
+    },
+    {
+      "profile": "legacy",
+      "name": "partial/not_done append with balances unchanged; gate off retains readable history and blocks incompatible rollback",
+      "status": "PASS"
+    },
+    {
+      "profile": "legacy",
+      "name": "member B and unrelated advisor cannot read member A; private notes absent for member",
+      "status": "PASS"
+    },
+    {
+      "profile": "legacy",
+      "name": "second financial basis blocks approval of the prior draft basis",
+      "status": "PASS"
+    },
+    {
+      "profile": "legacy",
+      "name": "revoke blocks advisor while member keeps both new history entries",
+      "status": "PASS",
+      "faultIntent": {
+        "operation": "apply",
+        "payloadSha256": "c53de46a216a57b90afaff760c0474cb5d95911f56ff022832fd1536affae8a8",
+        "beforeSha256": "1c1f001c6d78b078a0da76cdfc920b3512c62906f396188e8b46f025af33732d"
+      }
+    }
+  ],
+  "network": "none",
+  "ports": [],
+  "hostMounts": false,
+  "realAccounts": 0,
+  "transport": "SQL_CLAIMS_NOT_NATIVE_AUTH_API",
+  "primaryInstallation": false,
+  "nativeOnlineAcceptance": false,
+  "applyPayloadSha256": "c53de46a216a57b90afaff760c0474cb5d95911f56ff022832fd1536affae8a8",
+  "ownedContainerRemoved": true,
+  "adapterOsTransport": "Pure payload/query rehearsal; Docker/backup runner separately unit-tested",
+  "firstFailurePreserved": "outputs/start-a-v04-20261029/adapter-rehearsal-attempt1.log",
+  "firstFailureCause": "Synthetic harness used request hash for recommendation contentHash; fixed to authoritative session readback. Product unchanged."
+}

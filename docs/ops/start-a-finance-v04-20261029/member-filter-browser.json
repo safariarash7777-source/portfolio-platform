@@ -1,0 +1,49 @@
+{
+  "sha": "a302b78b67ae1fe90d6028b8f1a0dacd9263910b",
+  "runId": "consultation-next-d142985d",
+  "checkedAt": "2026-10-29T17:42:35.618Z",
+  "environment": "owned loopback native Auth/API/legacy SQL lab",
+  "steps": [
+    "native synthetic member B login",
+    "filter revoked",
+    "search Legacy",
+    "select visible authorized legacy dossier",
+    "expand old doing history"
+  ],
+  "viewports": [
+    {
+      "dir": "rtl",
+      "legacyHistoryVisible": true,
+      "privateCanaryVisible": false,
+      "relationStatus": "revoked",
+      "requestedWidth": 390,
+      "scrollWidth": 375,
+      "search": "Legacy",
+      "selectedDossierVisible": true,
+      "selectedRowVisible": true,
+      "width": 375,
+      "writerButtonsVisible": false
+    },
+    {
+      "dir": "rtl",
+      "legacyHistoryVisible": true,
+      "privateCanaryVisible": false,
+      "relationStatus": "revoked",
+      "requestedWidth": 320,
+      "scrollWidth": 305,
+      "search": "Legacy",
+      "selectedDossierVisible": true,
+      "selectedRowVisible": true,
+      "width": 305,
+      "writerButtonsVisible": false
+    }
+  ],
+  "screenshots": [
+    "member-filter-proof-390.png",
+    "member-filter-proof-320.png"
+  ],
+  "databaseWritesByBrowser": 0,
+  "primaryInstallation": false,
+  "onlineAcceptance": false,
+  "fullPageCaptureNote": "Full-page browser capture had compositing artifacts; viewport captures are the visual evidence."
+}

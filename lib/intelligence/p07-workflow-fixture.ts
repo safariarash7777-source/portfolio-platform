@@ -2,6 +2,8 @@
 import { emptyWorkbook, parseWorkbook, type ResearchWorkbook } from './research-workbook';
 import { listWorkbooks, openWorkbook, saveWorkbook, decideWorkbook, StoreError, type WorkbookStore, type StoredVersion, type StoredReview } from './workbook-store';
 import { publicationCommand, type PublicationRow } from './publication';
+import { listWorkbookSaveIntents, prepareWorkbookSave, readWorkbookSaveIntent, savePreparedWorkbook, type StoredWorkbookIntent, type WorkbookIntentStore } from './workbook-intent-store';
+import { hashIntentRequest, parseWorkbookSaveIntent } from './workbook-save-intent';
 
 export const P07_FIXTURE_COHORT = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 export type P07Transport = (path: string, init?: RequestInit) => Promise<{ status: number; body: Record<string, unknown> }>;
@@ -15,10 +17,12 @@ export function p07FixtureWorkbook(): ResearchWorkbook {
       downside: { assumptions: 'فرض نمونه', mechanism: 'مسیر اثر نمونه', invalidation: 'شرط ابطال نمونه' } },
     portfolioImpact: 'اثر ساختگی؛ هیچ محاسبه یا اقدام مالی ندارد.', reviewOn: '2026-10-10' };
 }
-export function createP07WorkflowFixture() {
+export function createP07WorkflowFixture(options: { durable?: boolean } = {}) {
   const versions: StoredVersion[] = [], reviews: StoredReview[] = [], publications: PublicationRow[] = [];
   const commands = new Map<string, { body: string; receipt: string }>();
   let sequence = 1, tick = 0, failure: number | null = null;
+  let actorId: string | null = P07_FIXTURE_COHORT, role = 'admin';
+  const intents: StoredWorkbookIntent[] = [];
   const id = () => `cccccccc-cccc-4ccc-8ccc-${String(sequence++).padStart(12, '0')}`;
   const clock = () => new Date(Date.UTC(2026, 9, 2, 10, 0, tick++)).toISOString();
   const store: WorkbookStore = {
@@ -28,7 +32,7 @@ export function createP07WorkflowFixture() {
     insertVersion: async row => {
       const last = versions.filter(v => v.workbookId === row.workbookId).at(-1);
       if (row.version !== (last?.version ?? 0) + 1) throw new StoreError('conflict');
-      const saved = { ...row, body: parseWorkbook(JSON.stringify(row.body)), id: id(), createdAt: clock(), createdBy: P07_FIXTURE_COHORT };
+      const saved = { ...row, body: parseWorkbook(JSON.stringify(row.body)), id: id(), createdAt: clock(), createdBy: actorId ?? '' };
       versions.push(saved); return saved;
     },
     insertReview: async row => {
@@ -36,7 +40,18 @@ export function createP07WorkflowFixture() {
       const saved = { ...row, id: id(), reviewedAt: clock() }; reviews.push(saved); return saved;
     },
   };
-  const gateway = { privatePreparationWritable: true, getUser: async () => ({ id: P07_FIXTURE_COHORT }), getRole: async () => 'admin', createStore: () => store, newId: id };
+  const journal: WorkbookIntentStore = {
+    get: async intentId => intents.find(row => row.intentId === intentId && row.createdBy === actorId) ?? null,
+    recent: async (limit, offset) => intents.filter(row => row.createdBy === actorId).slice().reverse().slice(offset, offset + limit).map(({ requestBody: _body, ...row }) => { void _body; return row; }),
+    insert: async ({ intentId, requestBody }) => {
+      if (intents.some(row => row.intentId === intentId)) throw new StoreError('conflict');
+      const request = parseWorkbookSaveIntent(requestBody);
+      const row: StoredWorkbookIntent = { intentId, requestBody, workbookId: request.workbookId, baseVersion: request.baseVersion, targetVersion: request.targetVersion,
+        title: request.workbook.title.trim(), requestHash: await hashIntentRequest(requestBody), createdBy: actorId ?? '', createdAt: clock() };
+      intents.push(row); return row;
+    },
+  };
+  const gateway = { privatePreparationWritable: true, getUser: async () => actorId ? ({ id: actorId }) : null, getRole: async () => role, createStore: () => store, createIntentStore: () => journal, newId: id };
   function approved(versionId: string) {
     const version = versions.find(row => row.id === versionId);
     if (!version || versions.filter(row => row.workbookId === version.workbookId).at(-1)?.id !== version.id) return false;
@@ -53,10 +68,20 @@ export function createP07WorkflowFixture() {
     try { if (write) payload = JSON.parse(String(init?.body)) as Record<string, unknown>; }
     catch { return { status: 400, body: { error: 'ورودی نمونه معتبر نیست.' } }; }
     if (url.pathname === '/api/admin/intelligence/workbooks') {
-      if (!write) return url.searchParams.get('id')
-        ? openWorkbook(gateway, url.searchParams.get('id')!, url.searchParams.has('version') ? Number(url.searchParams.get('version')) : null)
-        : listWorkbooks(gateway);
-      return payload.action === 'save' ? saveWorkbook(gateway, payload) : payload.action === 'decide' ? decideWorkbook(gateway, payload)
+      if (!write) {
+        if (url.searchParams.has('intent')) return readWorkbookSaveIntent(gateway, url.searchParams.get('intent'));
+        if (url.searchParams.has('intents')) return listWorkbookSaveIntents(gateway, Number(url.searchParams.get('offset') ?? 0));
+        if (url.searchParams.get('id')) return openWorkbook(gateway, url.searchParams.get('id')!, url.searchParams.has('version') ? Number(url.searchParams.get('version')) : null);
+        const result = await listWorkbooks(gateway);
+        if (options.durable && result.status === 200) {
+          const journal = await listWorkbookSaveIntents(gateway);
+          Object.assign(result.body, { durableRecoveryAvailable: journal.status === 200, saveIntents: journal.body.items, intentNextOffset: journal.body.nextOffset });
+        }
+        return result;
+      }
+      if (payload.action === 'prepare_save') return prepareWorkbookSave(gateway, payload.intentId, payload.requestBody);
+      const intentId = new Headers(init?.headers).get('x-workbook-save-intent');
+      return payload.action === 'save' ? intentId ? savePreparedWorkbook(gateway, intentId, String(init?.body)) : saveWorkbook(gateway, payload) : payload.action === 'decide' ? decideWorkbook(gateway, payload)
         : { status: 400, body: { error: 'فرمان نمونه معتبر نیست.' } };
     }
     if (url.pathname.includes('course-needs')) return { status: 200, body: { state: 'available', data: { submittedCount: 0, interests: [], questions: [] } } };
@@ -90,5 +115,6 @@ export function createP07WorkflowFixture() {
       commands.set(key, { body, receipt }); return { status: 201, body: { receipt, contractVersion: 'publication.v1' } };
     } catch (error) { return { status: 422, body: { error: error instanceof Error ? error.message : 'فرمان نمونه نامعتبر است.' } }; }
   };
-  return { transport, failNext: (status: 409 | 503) => { failure = status; }, snapshot: () => structuredClone({ versions, reviews, publications }) };
+  return { transport, failNext: (status: 409 | 503) => { failure = status; }, setIdentity: (id: string | null, nextRole = 'admin') => { actorId = id; role = nextRole; },
+    intentSnapshot: () => structuredClone(intents), snapshot: () => structuredClone({ versions, reviews, publications }) };
 }

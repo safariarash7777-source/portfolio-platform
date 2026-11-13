@@ -1,0 +1,37 @@
+{
+  "kernel": "6.18.54.1-microsoft-standard-WSL2",
+  "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with",
+  "python": "3.12.16 (main, Oct 26 2026, 22:48:28) [GCC 15.2.0]",
+  "archiveSha256": "a80c17f474a7a1aaa4109967f0f1347f763b867c1a6356f880abfd142ba5e827",
+  "adapterSha256": "3c1bc5a835e4e8fee0aaab54048d32a2deaaf987ceb382614bf12724106b2095",
+  "verifierExit": 0,
+  "verifierResult": {
+    "baselineInExecutablePayload": false,
+    "installationExecuted": false,
+    "pr314ExecutableFiles": [
+      "sql/consultation_replies.sql",
+      "sql/consultation_roster.sql"
+    ],
+    "pr314PayloadSha256": "b8db9fce44f7a32cded5e3a4b8426080dbcd65c4038226dda2743ab5547f9121",
+    "startAMigrationExecuted": false,
+    "status": "VERIFIED_TRANSFER_ONLY"
+  },
+  "unitExit": 0,
+  "unitSummary": "...............\n----------------------------------------------------------------------\nRan 15 tests in 0.192s\n\nOK\n",
+  "network": "none",
+  "databaseTransport": "MOCKED_IN_UNIT",
+  "realFcntl": true,
+  "sqlRehearsal": "SEPARATE",
+  "nativeOnlineAcceptance": false,
+  "observedAt": "2026-10-29T16:06:10.733826+00:00",
+  "image": "sha256:5789aa194f757888f41fa3d48e14b6feaa1b57c0af0b56fcb1372d6474d3bff0",
+  "imageSource": "docker.io/library/python:3.12-alpine",
+  "imageUncompressedBytes": 74093534,
+  "containerExit": 0,
+  "containerName": "start-a-linux-c9f9190e66",
+  "hostMounts": false,
+  "ports": false,
+  "sharedSocket": false,
+  "command": "docker run --rm -i --network none --read-only --cap-drop ALL --tmpfs /work --tmpfs /tmp PINNED_IMAGE python -c STDIN_TAR_BOOTSTRAP",
+  "ownedContainerRemoved": true
+}

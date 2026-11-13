@@ -1,0 +1,417 @@
+{
+  "contract": "start-a-local-native-acceptance.v1",
+  "sourceSha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+  "runId": "consultation-next-13fd82c5",
+  "checkedAt": "2026-10-29T17:12:38.517268+00:00",
+  "environment": {
+    "nativeAuth": "GoTrue",
+    "nativeDataApi": "PostgREST14.17",
+    "database": "PostgreSQL17.11",
+    "webRuntime": "real Next15.5.28/Node24, loopback-only host with sanitized env",
+    "realMemberAccountsUsed": 0,
+    "nativeSyntheticUsersCreated": 4
+  },
+  "baseline": {
+    "status": "PASS_NATIVE_API",
+    "package": "start-a-native-20261029",
+    "scenarios": 24,
+    "postAttempts": 24,
+    "sessionVersions": 2,
+    "publishedVersions": 1,
+    "replyVersions": 2,
+    "feedbackEvents": 5,
+    "relationshipRevoked": true,
+    "financialLedgerWrites": 0,
+    "browser": "NOT_RUN",
+    "retirement": "PENDING_SEPARATE_HELPER",
+    "checkedAt": "2026-10-29T16:38:48.353Z",
+    "sha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+    "environment": "disposable-local-native"
+  },
+  "extensionContinuation": {
+    "status": "PASS_LOCAL_NATIVE_CONTINUATION_WITH_RECORDED_ROLLBACK_LIMIT",
+    "sha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+    "runId": "consultation-next-13fd82c5",
+    "checkedAt": "2026-10-29T16:45:06.173Z",
+    "priorScenariosPassed": 4,
+    "continuationScenarios": 3,
+    "totalExtendedScenarios": 7,
+    "passes": [
+      {
+        "scenario": "prior rollback left compatible kernel, disabled gate and exact native history; read-only verification, no DDL replay",
+        "status": "PASS_WITH_SQLSTATE_NOT_CAPTURED_LIMIT"
+      },
+      {
+        "scenario": "second financial version through native API blocks approval of v1 financial basis",
+        "status": "PASS"
+      },
+      {
+        "scenario": "native revoke blocks advisor; member retains exact partial/not_done history and no private note",
+        "status": "PASS"
+      }
+    ],
+    "priorRollbackSqlState": "NOT_CAPTURED_IN_FIRST_NATIVE_ATTEMPT",
+    "rollbackPostState": "COMPATIBLE_KERNEL_AND_EXACT_HISTORY_VERIFIED_READ_ONLY",
+    "rollbackDdlReplayed": false,
+    "rollbackPt409VerifiedSeparately": "adapter-sql-receipt.json, both real PG17 permission profiles",
+    "nativeAuth": "fresh isolated GoTrue users and PostgREST; real Next routes",
+    "financialVersionsCreated": 2,
+    "feedbackBalanceMutation": false,
+    "discardedFeedbackPostReplayed": false,
+    "operationalGateActivation": false,
+    "primaryInstallation": false,
+    "nativeOnlineAcceptance": false,
+    "browser": "NOT_RUN",
+    "cleanup": "PENDING_OWNER_ONLY"
+  },
+  "exactRevokeAndFullPoststate": {
+    "status": "PASS_READONLY_NATIVE_REVOKE_AND_FULL_ADAPTER_POSTSTATE",
+    "sha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+    "runId": "consultation-next-13fd82c5",
+    "checkedAt": "2026-10-29T16:55:45.492Z",
+    "ownerIdentity": "same synthetic owner verified through native GoTrue getUser",
+    "ownerGet": {
+      "status": 403,
+      "code": "FORBIDDEN"
+    },
+    "memberGet": {
+      "status": 200,
+      "revoked": true
+    },
+    "checks": {
+      "kernelBodies": true,
+      "kernelClosed": true,
+      "twoTablesForced": true,
+      "immutableHistory": true,
+      "directTablesClosed": true,
+      "feedbackConstraint": true,
+      "wrappersRestricted": true,
+      "privateSchemaClosed": true,
+      "privateFunctionsClosed": true
+    },
+    "actions": [
+      {
+        "id": "bd6da9c0-78f6-4698-bc20-f5f7c94b2470",
+        "sessionId": "2bb17d35-4ff8-40f2-a957-745de51e16b7",
+        "actionKey": "5c9c0850-b813-4a1a-a289-b60adcd7caf8",
+        "version": 1,
+        "status": "partial",
+        "actorId": "6ba90358-cac3-4848-b785-e7f181e2e4c6",
+        "textSha256": "ac6a9edf14940a64388aa8ed701d2ee57a9a5eed44a3f6c5ccf7d9e4fd41fcd9"
+      },
+      {
+        "id": "9f77738d-1d1a-46da-bf8d-7060c6696a5f",
+        "sessionId": "2bb17d35-4ff8-40f2-a957-745de51e16b7",
+        "actionKey": "5c9c0850-b813-4a1a-a289-b60adcd7caf8",
+        "version": 2,
+        "status": "not_done",
+        "actorId": "6ba90358-cac3-4848-b785-e7f181e2e4c6",
+        "textSha256": "eae60c849a08a216ee34474a89bd0db45920d48789839e69f0d44efca1978265"
+      }
+    ],
+    "historyAndFinancialFingerprint": {
+      "consultation_events": {
+        "count": 7,
+        "sha256": "790e41b378c4fdd2bcf488d80cbc5161379b565ffa3f60c3dedff3b6ef09281b"
+      },
+      "consultation_actions": {
+        "count": 7,
+        "sha256": "0ae768c9624e8204581de0e499c061d0aefaa9d55dd2c2841d34c7c36d03248a"
+      },
+      "consultation_advisors": {
+        "count": 2,
+        "sha256": "f08c8f47645b76beb0cd66ba853ca5a1814338d49b069da0baf367ad65b7d427"
+      },
+      "consultation_sessions": {
+        "count": 4,
+        "sha256": "3db0f1bb18bf60483b1c648370b39b001badc35cfa12024bffa67dcfecda0b0d"
+      },
+      "member_goals_versions": {
+        "count": 2,
+        "sha256": "c5b3665f68dcd30b277fba104d3d10c2ac88b7b0803ee8b827bc6497607b9edd"
+      },
+      "member_holding_versions": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "consultation_revocations": {
+        "count": 2,
+        "sha256": "8d780885b3a6e45259c27dc33ba86a9490011201f86eb768f0fcd90fb2a0bcb6"
+      },
+      "member_cash_flow_entries": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "member_holding_positions": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "consultation_publications": {
+        "count": 2,
+        "sha256": "2fec6ef2083070c71b8407daf179b9a5a423e756383e2712b754e61b37c1ece6"
+      },
+      "member_cash_flow_versions": {
+        "count": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "consultation_private_notes": {
+        "count": 4,
+        "sha256": "f311d53185fc93542eac17ffcd6d9c62461b460498f2779e20eaa159378f13da"
+      },
+      "consultation_relationships": {
+        "count": 2,
+        "sha256": "30efbbf83f7c036f1647cc3b11e5e4237c87fea46566cfaf46919fc829913641"
+      },
+      "consultation_reply_receipts": {
+        "count": 2,
+        "sha256": "4bc8f400708506c5c17455c431ba00781e5f1de0a7e0b929b46ecdb477c91258"
+      },
+      "consultation_reply_versions": {
+        "count": 2,
+        "sha256": "44041c81b095cbfd2f7c6693b67dcf1648235584cea7380a778ee03f1a569f75"
+      },
+      "consultation_command_receipts": {
+        "count": 22,
+        "sha256": "abe5e1be7b2eaa495aea53d574f2d47dce585835030663ba37d4badbe9642602"
+      }
+    },
+    "gateEnabled": false,
+    "strictRolloutDefaultOff": false,
+    "strictDefaultOffNote": "False is expected after synthetic activation: enabled is false, while reader_sha and reviewed_at audit metadata are preserved. They were not cleared to force a passing default-off assertion.",
+    "originalNativeRollbackSqlState": "UNOBSERVED",
+    "rollbackDdlReplayed": false,
+    "posts": 0,
+    "ddlRequests": 0,
+    "primaryInstallation": false,
+    "nativeOnlineAcceptance": false
+  },
+  "populatedFinancialScenario": {
+    "status": "PASS_NATIVE_POPULATED_FINANCIAL_LEDGER_PRESERVATION",
+    "sha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+    "runId": "consultation-next-13fd82c5",
+    "checkedAt": "2026-10-29T17:01:30.587Z",
+    "relationshipId": "f3c5b7b9-cf59-40bf-9d73-d5d1963d2aa0",
+    "memberId": "6ba90358-cac3-4848-b785-e7f181e2e4c6",
+    "syntheticFinancialWrites": 2,
+    "holdingRows": 1,
+    "cashFlowEntryRows": 2,
+    "before": {
+      "holdingVersion": {
+        "id": "dbde918a-bbe6-451f-b67a-651e46b30d8a",
+        "version": 1
+      },
+      "cashVersion": {
+        "id": "c2ad91bb-0085-4b7d-ac47-4a82a2a5b341",
+        "version": 1
+      },
+      "holdingsDtoSha256": "f8e69d707f4f2df6094b62b8044ae5017fedec72a9b4c77e73f9830dda477c97",
+      "cashDtoSha256": "e4165be6b3df45f005344e3d1eba3e64aaba24d8342dda8bc4c73316684e0d93",
+      "financialFingerprint": {
+        "member_goals_versions": {
+          "count": 2,
+          "sha256": "59cf46f743d736558a5e69577d018782a23ce86cb100d9b80a09401e4ca8b340"
+        },
+        "member_holding_versions": {
+          "count": 1,
+          "sha256": "27a3bfe69f81f08b3166d342c77ae2a72774ac952bd358ea6ea83651ba8b82a3"
+        },
+        "member_cash_flow_entries": {
+          "count": 2,
+          "sha256": "081e5b8eb63c705dfa265a36e3bf9d9cb2fccf679bb047ddb24bd13f14e85a1e"
+        },
+        "member_holding_positions": {
+          "count": 1,
+          "sha256": "e82a887d87f18bb45c2bb5d846a9127c959f24c9df462186421fdf2697cb13af"
+        },
+        "member_cash_flow_versions": {
+          "count": 1,
+          "sha256": "7233f5c81cd1768ff8e58f700985c956a721d226b914a1e82ac424f521095744"
+        }
+      }
+    },
+    "cases": [
+      {
+        "status": "partial",
+        "receiptId": "02f9f013-2519-4dc1-8917-29119ac8ac33",
+        "feedbackVersion": 1,
+        "holdingVersion": {
+          "id": "dbde918a-bbe6-451f-b67a-651e46b30d8a",
+          "version": 1
+        },
+        "cashVersion": {
+          "id": "c2ad91bb-0085-4b7d-ac47-4a82a2a5b341",
+          "version": 1
+        },
+        "declaredValueToman": 1000000,
+        "openingToman": 500000,
+        "actualNetToman": 80000,
+        "actualClosingToman": 580000,
+        "plannedNetToman": null,
+        "holdingsDtoSha256": "f8e69d707f4f2df6094b62b8044ae5017fedec72a9b4c77e73f9830dda477c97",
+        "cashDtoSha256": "e4165be6b3df45f005344e3d1eba3e64aaba24d8342dda8bc4c73316684e0d93",
+        "financialFingerprint": {
+          "member_goals_versions": {
+            "count": 2,
+            "sha256": "59cf46f743d736558a5e69577d018782a23ce86cb100d9b80a09401e4ca8b340"
+          },
+          "member_holding_versions": {
+            "count": 1,
+            "sha256": "27a3bfe69f81f08b3166d342c77ae2a72774ac952bd358ea6ea83651ba8b82a3"
+          },
+          "member_cash_flow_entries": {
+            "count": 2,
+            "sha256": "081e5b8eb63c705dfa265a36e3bf9d9cb2fccf679bb047ddb24bd13f14e85a1e"
+          },
+          "member_holding_positions": {
+            "count": 1,
+            "sha256": "e82a887d87f18bb45c2bb5d846a9127c959f24c9df462186421fdf2697cb13af"
+          },
+          "member_cash_flow_versions": {
+            "count": 1,
+            "sha256": "7233f5c81cd1768ff8e58f700985c956a721d226b914a1e82ac424f521095744"
+          }
+        },
+        "exactFinancialReadbackUnchanged": true
+      },
+      {
+        "status": "not_done",
+        "receiptId": "bcc0004f-e082-48e1-9f0a-6d5c302cd8d9",
+        "feedbackVersion": 2,
+        "holdingVersion": {
+          "id": "dbde918a-bbe6-451f-b67a-651e46b30d8a",
+          "version": 1
+        },
+        "cashVersion": {
+          "id": "c2ad91bb-0085-4b7d-ac47-4a82a2a5b341",
+          "version": 1
+        },
+        "declaredValueToman": 1000000,
+        "openingToman": 500000,
+        "actualNetToman": 80000,
+        "actualClosingToman": 580000,
+        "plannedNetToman": null,
+        "holdingsDtoSha256": "f8e69d707f4f2df6094b62b8044ae5017fedec72a9b4c77e73f9830dda477c97",
+        "cashDtoSha256": "e4165be6b3df45f005344e3d1eba3e64aaba24d8342dda8bc4c73316684e0d93",
+        "financialFingerprint": {
+          "member_goals_versions": {
+            "count": 2,
+            "sha256": "59cf46f743d736558a5e69577d018782a23ce86cb100d9b80a09401e4ca8b340"
+          },
+          "member_holding_versions": {
+            "count": 1,
+            "sha256": "27a3bfe69f81f08b3166d342c77ae2a72774ac952bd358ea6ea83651ba8b82a3"
+          },
+          "member_cash_flow_entries": {
+            "count": 2,
+            "sha256": "081e5b8eb63c705dfa265a36e3bf9d9cb2fccf679bb047ddb24bd13f14e85a1e"
+          },
+          "member_holding_positions": {
+            "count": 1,
+            "sha256": "e82a887d87f18bb45c2bb5d846a9127c959f24c9df462186421fdf2697cb13af"
+          },
+          "member_cash_flow_versions": {
+            "count": 1,
+            "sha256": "7233f5c81cd1768ff8e58f700985c956a721d226b914a1e82ac424f521095744"
+          }
+        },
+        "exactFinancialReadbackUnchanged": true
+      }
+    ],
+    "continuation": "Known private filename rejection; readback matched exact original intent/receipt and complete financial snapshot, then only closed gate and revoked relationship",
+    "financialPostReplayed": false,
+    "feedbackPostReplayed": false,
+    "gateEnabledOnlyInSyntheticDatabase": true,
+    "gateClosedAtEnd": true,
+    "relationshipRevokedAtEnd": true,
+    "ownerAfterRevoke": {
+      "status": 403,
+      "code": "FORBIDDEN"
+    },
+    "primaryInstallation": false,
+    "nativeOnlineAcceptance": false
+  },
+  "browser": {
+    "sha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+    "environment": "owned local native Auth/API/DB",
+    "screenshots": [
+      "native-history-390.png",
+      "native-history-320.png"
+    ],
+    "viewports": [
+      {
+        "requestedWidth": 390,
+        "dir": "rtl",
+        "notDoneVisible": true,
+        "partialVisible": true,
+        "privateCanaryVisible": false,
+        "scrollWidth": 375,
+        "width": 375,
+        "writeButtonsVisible": false
+      },
+      {
+        "requestedWidth": 320,
+        "dir": "rtl",
+        "notDoneVisible": true,
+        "partialVisible": true,
+        "privateCanaryVisible": false,
+        "scrollWidth": 305,
+        "width": 305,
+        "writeButtonsVisible": false
+      }
+    ],
+    "story": "Member B reads exact partial/not_done history after revoke; private note and writer buttons absent",
+    "databaseWritesByBrowser": 0,
+    "nativeOnlineAcceptance": false,
+    "primaryInstallation": false,
+    "checkedAt": "2026-10-29T16:56:37.455Z"
+  },
+  "finalStateAndCleanup": {
+    "sha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+    "runId": "consultation-next-13fd82c5",
+    "capturedAt": "2026-10-29T17:04:06.674701+00:00",
+    "counts": {
+      "users": 4,
+      "feedback": 9,
+      "sessions": 5,
+      "positions": 1,
+      "gateEnabled": false,
+      "goalsVersions": 2,
+      "cashflowEntries": 2,
+      "cashflowVersions": 1,
+      "holdingsVersions": 1,
+      "activeRelationships": 0
+    },
+    "privateDumpSha256": "5ac519a3ecd7d137f3b099d8f8a764b1ee58db6536cece9d0784babb24c5ed29",
+    "privateDumpBytes": 328376,
+    "dumpContainsOnlyOwnedSyntheticAccounts": true,
+    "privateDumpPublished": false,
+    "cleanup": "REMOVED_OWNED_CONTAINERS_NETWORKS_AND_VERIFIED_HOST_PROCESS",
+    "privateEvidenceRetained": true
+  },
+  "preservedFirstFailures": [
+    {
+      "file": "native-extension.log",
+      "sha256": "42acb53fecfb807def6c92ca7cb4fd33e0e86992f4161f5fdefa46274e54b443",
+      "reason": "Rollback SQLSTATE assertion could not match non-verbose psql error; prior result kept. No rollback or prior POST replay. SQLSTATE remains UNOBSERVED."
+    },
+    {
+      "file": "native-nonzero.log",
+      "sha256": "6859a5a6286a878d029bd4d7e562d439e9f716dbded55a095d47f45929458fc3",
+      "reason": "Private filename policy rejected underscore in not_done after successful POST and financial readback. Finish matched exact intent/receipt and full DTO/fingerprint, no financial or feedback POST replay."
+    }
+  ],
+  "ci": {
+    "sourceSha": "0d63a8b64e4975a3c9dab3f1f579f91302602b01",
+    "runId": 40911872278,
+    "allFiveJobs": "SUCCESS",
+    "verification": "independently reported by existing coordinator; connector remained unavailable in this chat"
+  },
+  "build": "PASS on same application source SHA",
+  "readerOnOldSqlNative": "NOT_RUN_IN_THIS_LAB; missing-capability fallback unit-tested, real deployed-reader proof remains mandatory before source operation",
+  "originalNativeRollbackSqlState": "UNOBSERVED",
+  "primaryInstallation": false,
+  "operationalGateActivation": false,
+  "nativeOnlineAcceptance": false,
+  "arashHumanAcceptance": false,
+  "commercialEntitlement": "OPEN_D024_NOT_CONNECTED_AT_CONSULTATION_BOUNDARY"
+}
