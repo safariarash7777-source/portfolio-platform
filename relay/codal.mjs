@@ -1113,7 +1113,19 @@ function sameQuantityResponseSource(sourceRef, responseUrl) {
 /** دانلود اکسل اطلاعیه و نرمال‌سازی — null یعنی پارس ناموفق (درج نکنید). */
 export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejected) {
   let body = null;
-  const html = await downloadExcelHtml(a.link_excel, kind === "ن-۳۰" ? value => { body = value; } : undefined);
+  let html;
+  try {
+    html = await downloadExcelHtml(a.link_excel, kind === "ن-۳۰" ? value => { body = value; } : undefined);
+  } catch (excelError) {
+    // A failed Excel endpoint must not hide a valid same-report publisher
+    // statement. Local quota deferrals still stop immediately; unsupported or
+    // rejected fallback content retains the original download failure stage.
+    if (kind !== "ن-۱۰" || isBrsLocalDeferral(excelError)) throw excelError;
+    const result = await loadDecisionStatement(a, metaFrom(a, kind), { fetchImpl: fetch });
+    if (!result.data) throw excelError;
+    onDownloaded();
+    return result.data;
+  }
   // Stage boundary only: never pass report content to diagnostics.
   const meta = metaFrom(a, kind);
   if (kind === "ن-۱۰") {
