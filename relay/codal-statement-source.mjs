@@ -278,8 +278,11 @@ async function captureDecision(url,fetchImpl,request={}){
    const original=new URL(url);
    if(request.method==='POST')throw Error('codal_statement_redirect_unsupported');
    const legacy=redirect.pathname==='/Reports/InterimStatement.aspx' && original.pathname==='/Reports/Decision.aspx';
+   const sameReport=legacy
+    ? reportSerial(redirect.href,true,true)===reportSerial(original.href,true)
+    : redirect.search===original.search;
    if(!['codal.ir','www.codal.ir'].includes(redirect.hostname)||redirect.protocol!=='https:'||
-      (!legacy && redirect.pathname!==original.pathname)||redirect.search!==original.search||redirect.username||redirect.password||redirect.port||redirect.hash)throw Error('codal_statement_redirect_unsupported');
+      (!legacy && redirect.pathname!==original.pathname)||!sameReport||redirect.username||redirect.password||redirect.port||redirect.hash)throw Error('codal_statement_redirect_unsupported');
    await response.body?.cancel();
    await sleep(2100);nextRequest=Date.now()+2100;
    response=await fetchImpl(redirect.href,{redirect:'error',signal:AbortSignal.timeout(15000)});

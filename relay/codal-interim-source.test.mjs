@@ -12,7 +12,7 @@ function capture(html,requestedSheetCode){const htmlBytes=Buffer.from(html);retu
 const parse=(i=income,e=equity,m=meta)=>admitInterimStatement(capture(i,1),capture(e,1060),m,announcement);
 test('automatic legacy loader binds form selection and uses returned form state',async()=>{
  const calls=[];
- const result=await loadDecisionStatement(announcement,meta,{fetchImpl:async(target,options)=>{
+ const result=await loadDecisionStatement({...announcement,link:announcement.link+'&rt=0&let=6&ct=0&ft=-1'},meta,{fetchImpl:async(target,options)=>{
   calls.push({target,options});
   if(calls.length===1)return new Response(null,{status:302,headers:{location:url}});
   if(calls.length===2)return new Response(income);
