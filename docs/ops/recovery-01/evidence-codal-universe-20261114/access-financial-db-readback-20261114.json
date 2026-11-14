@@ -1,0 +1,20 @@
+{
+  "atUtc": "2026-11-14T13:56:47.757066+00:00",
+  "rows": [
+    {
+      "symbol": "نی ریز",
+      "report_kind": "ن-۳۰",
+      "period_end": "2025-03-20",
+      "captured_at": "2026-11-14T13:53:38.009166+00:00",
+      "source_url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=Av1ZkiXEdNQbtPEIiyoQmQ%3d%3d&rt=0&let=58&ct=0&ft=-1#pv2"
+    },
+    {
+      "symbol": "نی ریز",
+      "report_kind": "ن-۳۰",
+      "period_end": "2025-02-18",
+      "captured_at": "2026-11-14T13:53:37.775433+00:00",
+      "source_url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=Z98zk3BqqQQQaQQQJi1iNQQQaQQQfMvwrg%3d%3d&rt=0&let=58&ct=0&ft=-1#pv2"
+    }
+  ],
+  "credentialsEmitted": false
+}

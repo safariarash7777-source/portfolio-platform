@@ -1,0 +1,30 @@
+✔ actual relay: healthy → partial timeout → recovery preserves failed rows and advances options independently (222.7594ms)
+✔ actual relay: all sources fail in a warm cycle; served metadata reports error and no snapshot/history write (195.9593ms)
+✔ actual relay: cold all-source failure yields 503 and leaves persisted snapshots untouched (175.5641ms)
+✔ actual relay: explicit successful empty arrays clear old data rather than pretending failure (196.8517ms)
+✔ actual relay: cold partial cycle keeps the successful options independently and marks other families unavailable (181.8744ms)
+✔ actual relay: restart hydrates stored rows before a partial source failure, preserving their prior receipt/source clock (182.8624ms)
+✔ actual relay: one missing currency field retains only currency while gold and stocks advance (209.0051ms)
+✔ actual relay: unknown-baseline blocks partial latest replacement (201.4285ms)
+✔ actual relay: malformed-baseline blocks partial latest replacement (187.8782ms)
+✔ actual relay: next natural cycle retries baseline and fills unknown families without replacing current healthy options (194.9932ms)
+✔ actual relay: malformed nonempty option and core responses cannot clear warm data (204.6253ms)
+✔ actual relay: retained rows do not become EOD stock/FX/index/breadth records after close (214.3303ms)
+✔ actual relay: recovered sources do reach the existing EOD writers after close (199.5637ms)
+✔ actual relay: fresh transport cannot relabel yesterday USD as today or attest an absent source unit (414.0832ms)
+✔ actual relay: boolean source USD price cannot become a synthetic daily observation (195.1062ms)
+✔ actual relay: valid stocks cannot disguise an unusable nonempty fund family (195.881ms)
+✔ actual relay CLIENT_ENABLED=1: mid-cycle budget rejection blocks partial latest/history/EOD writes despite successful families (2217.8306ms)
+✔ actual relay CLIENT_ENABLED=1: ordinary source timeout remains a partial update without a budget stop (3367.9069ms)
+✔ complete core snapshot persists when optional enrichment exhausts its budget (2445.938ms)
+✔ restart NAV actual server: nav-restart-partial retains only truly received NAV through partial fresh rotation (204.7848ms)
+✔ restart NAV actual server: nav-restart-legacy retains only truly received NAV through partial fresh rotation (216.221ms)
+✔ actual relay: two HTTP failures cannot permanently suppress the next valid NAV (220.6199ms)
+ℹ tests 22
+ℹ suites 0
+ℹ pass 22
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12159.7873

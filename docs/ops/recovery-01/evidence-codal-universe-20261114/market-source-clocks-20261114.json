@@ -1,0 +1,180 @@
+{
+  "atUtc": "2026-11-14T13:39:51.557170+00:00",
+  "receivedAt": 1794663517631,
+  "availability": {
+    "state": "stale",
+    "reason": "old-price-time",
+    "receivedAt": 1794663517631,
+    "validAt": null,
+    "families": {
+      "gold": {
+        "rows": 9,
+        "rejectedRows": 0,
+        "unknownTimeRows": 0,
+        "staleRows": 2,
+        "validAt": 1794515400000,
+        "receivedAt": 1794663517631,
+        "retained": false,
+        "sourceState": "received",
+        "state": "stale"
+      },
+      "currency": {
+        "rows": 28,
+        "rejectedRows": 0,
+        "unknownTimeRows": 0,
+        "staleRows": 0,
+        "validAt": 1794663240000,
+        "receivedAt": 1794663517631,
+        "retained": false,
+        "sourceState": "received",
+        "state": "ready"
+      },
+      "funds": {
+        "rows": 346,
+        "rejectedRows": 0,
+        "unknownTimeRows": 346,
+        "staleRows": 0,
+        "validAt": null,
+        "receivedAt": 1794663517631,
+        "retained": false,
+        "sourceState": "received",
+        "state": "unknown-time"
+      },
+      "stocks": {
+        "rows": 787,
+        "rejectedRows": 0,
+        "unknownTimeRows": 787,
+        "staleRows": 0,
+        "validAt": null,
+        "receivedAt": 1794663517631,
+        "retained": false,
+        "sourceState": "received",
+        "state": "unknown-time"
+      },
+      "crypto": {
+        "rows": 19,
+        "rejectedRows": 0,
+        "unknownTimeRows": 0,
+        "staleRows": 0,
+        "validAt": 1794663240000,
+        "receivedAt": 1794663517631,
+        "retained": false,
+        "sourceState": "received",
+        "state": "ready"
+      },
+      "options": {
+        "rows": 1323,
+        "rejectedRows": 0,
+        "unknownTimeRows": 1323,
+        "staleRows": 0,
+        "validAt": null,
+        "receivedAt": 1794663517631,
+        "retained": false,
+        "sourceState": "received",
+        "state": "unknown-time"
+      },
+      "indices": {
+        "rows": 1,
+        "rejectedRows": 0,
+        "unknownTimeRows": 0,
+        "staleRows": 0,
+        "validAt": 1794663498000,
+        "receivedAt": 1794663517631,
+        "retained": false,
+        "sourceState": "received",
+        "state": "ready"
+      }
+    },
+    "snapshotState": "complete",
+    "sourceAt": 1794663517631,
+    "readAt": 1794663590554
+  },
+  "families": {
+    "stocks": {
+      "count": 787,
+      "samples": [
+        {
+          "id": "فولاد",
+          "price": 509,
+          "nav": null,
+          "navDate": null,
+          "navTime": null
+        },
+        {
+          "id": "وتجارت",
+          "price": 94,
+          "nav": null,
+          "navDate": null,
+          "navTime": null
+        },
+        {
+          "id": "وبملت",
+          "price": 148,
+          "nav": null,
+          "navDate": null,
+          "navTime": null
+        }
+      ]
+    },
+    "funds": {
+      "count": 346,
+      "samples": [
+        {
+          "id": "اهرم",
+          "price": 8811,
+          "nav": 9869,
+          "navDate": "1405-08-23",
+          "navTime": "16:22:01"
+        },
+        {
+          "id": "عیار",
+          "price": 66855,
+          "nav": 67181,
+          "navDate": "1405-08-23",
+          "navTime": "16:22:14"
+        },
+        {
+          "id": "پاسارگاد",
+          "price": 1821,
+          "nav": 1842,
+          "navDate": "1405-08-23",
+          "navTime": "16:22:36"
+        }
+      ]
+    },
+    "gold": {
+      "count": 9,
+      "samples": [
+        {
+          "id": "IR_GOLD_18K",
+          "price": 24907600
+        },
+        {
+          "id": "IR_GOLD_24K",
+          "price": 33209900
+        },
+        {
+          "id": "IR_GOLD_MELTED",
+          "price": 107547000
+        }
+      ]
+    },
+    "currency": {
+      "count": 28,
+      "samples": [
+        {
+          "id": "USDT_IRT",
+          "price": 271665
+        },
+        {
+          "id": "USD",
+          "price": 269900
+        },
+        {
+          "id": "EUR",
+          "price": 298230
+        }
+      ]
+    }
+  }
+}

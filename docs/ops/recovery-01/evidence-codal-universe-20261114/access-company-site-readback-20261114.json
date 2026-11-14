@@ -1,0 +1,21 @@
+{
+  "atUtc": "2026-11-14T13:57:12.738625+00:00",
+  "checks": [
+    {
+      "symbol": "نی ریز",
+      "periodEnd": "2025-03-20",
+      "url": "https://portfolio-platform-fawn.vercel.app/symbol/%D9%86%DB%8C%20%D8%B1%DB%8C%D8%B2",
+      "http": 200,
+      "sourceSerialPresent": true,
+      "reportReadError": false
+    },
+    {
+      "symbol": "نی ریز",
+      "periodEnd": "2025-02-18",
+      "url": "https://portfolio-platform-fawn.vercel.app/symbol/%D9%86%DB%8C%20%D8%B1%DB%8C%D8%B2",
+      "http": 200,
+      "sourceSerialPresent": true,
+      "reportReadError": false
+    }
+  ]
+}

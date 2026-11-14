@@ -1,0 +1,180 @@
+✔ jdateKey: جلالی اسلش‌دار → عدد قابل مقایسه (1.2332ms)
+✔ jdateKey: ارقام فارسی و خط‌تیره (0.2462ms)
+✔ jdateKey: نامعتبر → null (0.1349ms)
+✔ مرزهای آرشیو: مقایسهٔ عددی درست کار می‌کند (0.2747ms)
+✔ سقف بودجهٔ روزانه صریح و مثبت است (0.1389ms)
+codal-archive: symbols=[] pages=0 dl=0 inserted=0 failed=0 budget=198/200 coverage n30=null n10=null
+codal-engine feed error: brs_transport_queue_full
+codal-engine feed error: brs_transport_aborted
+codal_feed push: codal_feed HTTP 503: {"error":"mock failure"}
+codal-engine feed error: codal_feed HTTP 503: {"error":"mock failure"}
+codal_feed push: codal_feed insert invalid schema
+codal-engine feed error: codal_feed insert invalid schema
+codal-engine state save: state save HTTP 503
+codal-engine report failure: persistence/exception
+codal-engine backfill error: market snapshot HTTP 503
+codal-engine feed error: announcement invalid schema
+✔ archive cannot reset progress or spend on failed or malformed state reads (54.8767ms)
+✔ archive retries a failed read and preserves the recovered exhausted budget and cursor (9.8187ms)
+✔ unsupported explicit monthly code preserves feed metadata without parsing as N30 (6.3663ms)
+✔ scheduled global discovery explicitly uses the standard current-feed allocation (5.2534ms)
+✔ invalid statement retry ledger is never cached as valid state on a later cycle (3.5313ms)
+✔ local announcement deferral keeps watermark and failure ledger and does not retry (5.2786ms)
+✔ local report deferral is not a parse failure or a blocked report (7.7177ms)
+✔ 503 feed write keeps the watermark and retries the same announcement (8.8965ms)
+✔ 140 fresh rows cannot acknowledge a gap after the six-page cap (11.4327ms)
+✔ publication date is independent of financial period and no time column is invented (8.9647ms)
+✔ absent publication date stays null instead of using date_title (8.9018ms)
+✔ ignore-duplicates counts returned rows rather than submitted rows (12.6262ms)
+✔ invalid feed insert response fails without advancing watermark (12.0837ms)
+✔ invalid announcement schema rejects while a legitimate empty page is accepted (4.9023ms)
+✔ same-time known link cannot hide a new link later in the group (5.593ms)
+✔ unorderable or unsorted announcements fail without acknowledging them (11.4786ms)
+✔ order failure stores only the verified prefix and keeps the resume watermark (7.1735ms)
+✔ state save failure rolls back the in-memory acknowledgement for retry (8.2586ms)
+✔ parsed-report insert returns its actual insert count and keeps raw publication provenance (4.1919ms)
+✔ report download cap keeps retryable work behind the watermark (39.5689ms)
+✔ parse or report-write failures remain unhealthy and unacknowledged (11.9196ms)
+✔ invalid persisted state stops before provider or writes (2.4751ms)
+✔ market snapshot failure is not reported as a healthy empty queue (4.3261ms)
+✔ invalid announcement schema leaves the cycle unhealthy without retrying schema errors (3.8095ms)
+✔ stored report overrides an old blocked ledger without downloading again (4.4059ms)
+✔ metadata-only report cannot release a blocked ledger or advance watermark (4.4707ms)
+✔ legacy mixed statements receive one persisted retry without reopening other failures (32.7853ms)
+✔ invalid legacy retry ledger stops before any source request (3.0134ms)
+✔ new statement adapter grants one bounded retry to an old official N10 failure and persists its use (2094.4689ms)
+codal-archive: symbols=[نمونه] pages=3 dl=1 inserted=0 failed=0 budget=4/200 coverage n30=0 n10=0
+codal-engine report failure: persistence/exception
+codal-engine report failure: persistence/exception
+codal-engine report failure: persistence/exception
+✔ archive duplicate response counts zero actual inserts (1811.4564ms)
+▶ null collision is never acknowledged for fails 0/1/2
+  ✔ engine, fails=0 (9.7328ms)
+  ✔ engine, fails=1 (8.3853ms)
+  ✔ engine, fails=2 (6.2105ms)
+codal-archive: symbols=[نمونه] pages=2 dl=1 inserted=0 failed=1 budget=3/200 coverage n30=0 n10=0
+  ✔ archive, fails=0 (1831.0908ms)
+codal-archive: symbols=[نمونه] pages=2 dl=1 inserted=0 failed=1 budget=3/200 coverage n30=0 n10=0
+  ✔ archive, fails=1 (1817.2455ms)
+codal-archive: symbols=[نمونه] pages=2 dl=1 inserted=0 failed=1 budget=3/200 coverage n30=0 n10=0
+  ✔ archive, fails=2 (1824.1648ms)
+✔ null collision is never acknowledged for fails 0/1/2 (5498.4107ms)
+▶ valid collision acknowledges persistence with inserted zero for fails 0/1/2
+  ✔ engine, fails=0 (10.0146ms)
+  ✔ engine, fails=1 (10.1772ms)
+  ✔ engine, fails=2 (7.4419ms)
+codal-archive: symbols=[نمونه] pages=3 dl=1 inserted=0 failed=0 budget=4/200 coverage n30=0 n10=0
+  ✔ archive, fails=0 (1822.7338ms)
+codal-archive: symbols=[نمونه] pages=3 dl=1 inserted=0 failed=0 budget=4/200 coverage n30=0 n10=0
+  ✔ archive, fails=1 (1820.3732ms)
+codal-archive: symbols=[نمونه] pages=3 dl=1 inserted=0 failed=0 budget=4/200 coverage n30=0 n10=0
+codal-engine backfill الف: inserted=0 parseFailed=0
+  ✔ archive, fails=2 (1823.8241ms)
+✔ valid collision acknowledges persistence with inserted zero for fails 0/1/2 (5496.0709ms)
+▶ N10 admission rejection keeps inserted zero, watermark and ledger
+  ✔ unknown unit (9.6273ms)
+  ✔ unknown scope (6.239ms)
+  ✔ consolidated (5.8958ms)
+  ✔ blank operating (6.9645ms)
+  ✔ missing capital (6.9044ms)
+  ✔ bank current EPS zero pv2 blocker (6.9143ms)
+✔ N10 admission rejection keeps inserted zero, watermark and ledger (43.6683ms)
+codal-engine backfill ب: inserted=0 parseFailed=0
+codal-engine backfill الف: inserted=0 parseFailed=0
+✔ old stored row counts cannot exclude companies from current reconciliation (3022.0684ms)
+codal-engine backfill ب: inserted=0 parseFailed=0
+✔ zero trading value issuers remain in bounded reconciliation without historical count reads (3019.7968ms)
+▶ content-free diagnostics distinguish report failure stages in feed and backfill without changing attempts
+  ✔ feed: download/exception (9016.0352ms)
+  ✔ feed: admission/rejected (5.073ms)
+  ✔ feed: persistence/exception (6.373ms)
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+  ✔ backfill: download/exception (10531.8114ms)
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+  ✔ backfill: admission/rejected (1509.091ms)
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+  ✔ backfill: persistence/exception (1512.2625ms)
+✔ content-free diagnostics distinguish report failure stages in feed and backfill without changing attempts (22581.8911ms)
+✔ diagnostics survive persisted restart; legacy state upgrades and successful cycles reset only lastCycle (11.3679ms)
+✔ untrusted diagnostic fields are discarded and counters saturate without blocking collection (8.7585ms)
+▶ reason diagnostics preserve retry/block, requests, ledger, state writes and watermark in feed and backfill
+  ✔ feed: ن-۱۰/scope_unknown (13.0656ms)
+  ✔ feed: ن-۱۰/unit_unverified (13.2535ms)
+  ✔ feed: ن-۳۰/short_rows (12.5265ms)
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+codal-engine backfill نمونه: inserted=0 parseFailed=0
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+  ✔ backfill: ن-۱۰/scope_unknown (38.3784ms)
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+codal-engine backfill نمونه: inserted=0 parseFailed=0
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+  ✔ backfill: ن-۱۰/unit_unverified (45.6233ms)
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+codal-engine backfill نمونه: inserted=0 parseFailed=1
+codal-engine backfill نمونه: inserted=0 parseFailed=0
+codal-engine feed error: brs_transport_queue_full
+codal-engine state save: state save HTTP 503
+codal-engine backfill error: brs_transport_aborted
+  ✔ backfill: ن-۳۰/short_rows (16.1232ms)
+✔ reason diagnostics preserve retry/block, requests, ledger, state writes and watermark in feed and backfill (140.2842ms)
+✔ reason diagnostics whitelist persisted enums and safe bounded counters; legacy and unknown versions reset (11.8245ms)
+▶ observed equity title with در retains engine write identity and request limits
+  ✔ qualified local capital proof (8.4263ms)
+  ✔ unknown capital scope stays rejected (5.9843ms)
+✔ observed equity title with در retains engine write identity and request limits (14.7977ms)
+✔ stored recovery admits reports even when provider search is locally deferred (6.4107ms)
+✔ stored recovery keeps six-download bound and resumes without rediscovery (19.2456ms)
+✔ stored recovery save failure restores scan position for the next attempt (8.9693ms)
+✔ invalid saved recovery cursor stops before any provider request (2.4864ms)
+✔ stored recovery skips confirmed and blocked rows without retrying downloads (3.9419ms)
+✔ stored report local deferral preserves cursor and does not charge a parse failure (4.0233ms)
+codal-engine backfill نمونه: inserted=6 parseFailed=0
+✔ audited mixed adapter receives one persisted retry with old counts intact (22.3864ms)
+✔ malformed audited attempt ledger stops before any source traffic (2.5396ms)
+codal-engine backfill الف: inserted=0 parseFailed=0
+✔ stored recovery does not starve issuer reconciliation and both share the existing download cap (1531.1993ms)
+codal-engine backfill ب: inserted=0 parseFailed=0
+codal-engine backfill پ: inserted=0 parseFailed=0
+codal-engine backfill الف: inserted=0 parseFailed=0
+codal-engine backfill الف: inserted=0 parseFailed=0
+✔ stable reconciliation advances across cycles without resetting its durable cursor (6033.1852ms)
+codal-engine backfill ب: inserted=0 parseFailed=0
+codal-engine backfill ت: inserted=0 parseFailed=0
+codal-engine backfill ث: inserted=0 parseFailed=0
+codal-engine backfill ج: inserted=0 parseFailed=0
+codal-engine backfill حس: inserted=0 parseFailed=0
+codal-engine backfill پ: inserted=0 parseFailed=0
+codal-engine backfill چ: inserted=0 parseFailed=0
+✔ overnight reconciliation inspects eight issuers without raising the existing download allocation (12068.6674ms)
+codal-archive: symbols=[نمونه] pages=2 dl=14 inserted=14 failed=0 budget=16/200 coverage n30=null n10=null
+codal-archive: symbols=[نمونه] pages=2 dl=2 inserted=2 failed=0 budget=20/200 coverage n30=null n10=null
+✔ archive retains a partially downloaded page and resumes its unprocessed reports (15001.6768ms)
+codal-archive: symbols=[نمونه] pages=2 dl=1 inserted=0 failed=1 budget=3/200 coverage n30=0 n10=0
+codal-engine feed error: codal_source_challenge
+codal-engine feed error: codal_source_challenge
+codal-archive: codal_source_challenge
+codal-archive: symbols=[] pages=0 dl=0 inserted=0 failed=0 budget=0/200 coverage n30=null n10=null
+✔ archive rejection does not advance its page or claim a successful cycle (1815.4412ms)
+✔ publisher challenge stops the cycle without poisoning report failures and persists across engine/archive (8.8543ms)
+✔ N30 producer hashes actual response bytes and carries their receipt into the existing insert payload (50.9998ms)
+✔ a UTF8 BOM is retained in the byte hash while decoded table values match the original text behavior (20.8782ms)
+✔ a redirected, absent or different response reference cannot create a new quantity witness (49.3513ms)
+✔ announcement claims cannot replace the response bytes or the source document's monthly period (22.1183ms)
+✔ quantity proof requires the existing official download route while legacy parsing still preserves money (72.4873ms)
+✔ a failed body read follows the existing retry path and cannot create a partial capture (3022.0879ms)
+✔ copied, directly parsed or modified data cannot mint a capture receipt (80.0149ms)
+✔ an intact parsed object cannot donate its receipt to another announcement, period, symbol or kind (83.5936ms)
+✔ N10 keeps the original text decoder, admission path and payload without monthly capture metadata (26.2144ms)
+✔ publisher challenge persists a bounded hold, survives restart and allows later scheduled access (1.578ms)
+✔ actual Excel producer neither retries CAPTCHA nor falls back to another report route (34.3497ms)
+ℹ tests 103
+ℹ suites 0
+ℹ pass 103
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 80723.7495
