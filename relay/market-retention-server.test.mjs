@@ -21,7 +21,7 @@ async function probe(scenario) {
     const start=Date.parse('2026-10-06T06:00:00Z'); let now=start,phase=0;
     const RealDate=Date;
     globalThis.Date=class extends RealDate {constructor(...a){super(...(a.length?a:[now]));}static now(){return now;}};
-    const latest=[],history=[],daily=[]; let blockedHosts=0,initialReads=0,leased=0,partialGrant=false;
+    const latest=[],history=[],daily=[]; let blockedHosts=0,initialReads=0,leased=0,partialGrant=false,navReads=0;
     const stock={l18:'isolated-stock',l30:'Synthetic',cs_id:1,pl:1000,pc:1000,tval:1000,tvol:10,date:'1405-07-14',time:'09:30:00'};
     const fund={...stock,l18:'isolated-fund',cs_id:68};
     const option={l18:'isolated-option',type:'call',pl:2000,date:'1405-07-14',time:'09:31:00'};
@@ -46,6 +46,11 @@ async function probe(scenario) {
             ...(scenario==='daily-coerced-fx-price'?{price:true,time:'14:00:00'}:{}),
           }));
           return reply(phase===1&&scenario==='authoritative-empty'?{gold:[],currency:[],cryptocurrency:[]}:phase===1&&scenario==='missing-currency'?{gold:gc.gold,cryptocurrency:gc.cryptocurrency}:{...gc,currency});
+        }
+        if(/Nav/.test(u.pathname)&&scenario==='nav-http-recovery') {
+          if(!u.searchParams.has('l18'))return reply({});
+          navReads++;
+          return phase<2?reply({error:'temporary provider failure'},503):reply({predtran:1000,psubtran:1010,date:'1405-07-14',time:'09:30:00'});
         }
         if(/Nav/.test(u.pathname)&&scenario.startsWith('nav-restart'))return reply(u.searchParams.has('l18')?{predtran:0}:[{l18:fund.l18,predtran:1200,psubtran:1210,date:'1405-07-14',time:'09:30:00'},{l18:'unavailable-fund',predtran:0}]);
         if(/AllSymbols/.test(u.pathname)&&scenario.startsWith('nav-restart'))return reply([stock,fund,{...fund,l18:'isolated-second-fund'}]);
@@ -98,6 +103,15 @@ async function probe(scenario) {
       if((await get('/debug')).body.sources.brsapi_nav?.updated===1)break;
       await new Promise(r=>setTimeout(r,5));if(i===99)throw Error('offline NAV round did not complete');
     }
+    const drainNav=async()=>{
+      for(let i=0;i<200;i++) {
+        const d=(await get('/debug')).body;
+        if(navReads>=phase+1 && (phase<2?d.sources.brsapi_nav?.failed===1:d.sources.brsapi_nav?.updated===1))return;
+        await new Promise(r=>setTimeout(r,5));
+      }
+      throw Error('NAV eligibility did not recover');
+    };
+    if(scenario==='nav-http-recovery')await drainNav();
     const first=await get('/market.json');
     if(scenario.startsWith('client-')) {
       for(let i=0;i<500;i++) {
@@ -108,12 +122,14 @@ async function probe(scenario) {
       }
     }
     if(!scenario.startsWith('cold')&&scenario!=='hydrated-partial') {
-      phase=1;now+=scenario==='client-budget-auxiliary'?12*3600000:scenario.startsWith('daily-')||scenario==='client-budget-midcycle'?5*3600000:31*60000;await refresh();
+      phase=1;now+=scenario==='nav-http-recovery'?61*60000:scenario==='client-budget-auxiliary'?12*3600000:scenario.startsWith('daily-')||scenario==='client-budget-midcycle'?5*3600000:31*60000;await refresh();
     }
+    if(scenario==='nav-http-recovery')await drainNav();
     const second=await get('/market.json');const writesAfterSecond=latest.length;
     if(scenario==='partial-recovery'||scenario==='daily-recovery'){phase=2;now+=60000;await refresh();}
+    if(scenario==='nav-http-recovery'){phase=2;now+=61*60000;await refresh();await drainNav();}
     const third=await get('/market.json'); const debug=(await get('/debug')).body;
-    console.log('RESULT:'+JSON.stringify({start,now,first,second,third,latest,history,daily,writesAfterSecond,debug,blockedHosts,initialReads}));
+    console.log('RESULT:'+JSON.stringify({start,now,first,second,third,latest,history,daily,writesAfterSecond,debug,blockedHosts,initialReads,navReads}));
     server.close(()=>process.exit(0));`;
   return new Promise((resolve,reject)=>{
     const child=spawn(process.execPath,['--input-type=module','--eval',program],{
@@ -327,4 +343,13 @@ for(const scenario of ['nav-restart-partial','nav-restart-legacy'])test(`restart
   assert.equal(r.second.body.funds.find(f=>f.id==='isolated-fund').navReceivedAt,r.start);
   assert.equal(r.latest.at(-1).funds.find(f=>f.id==='isolated-second-fund').navReceivedAt,row.navReceivedAt);
   assert.equal(r.second.body.snapshotQuality.families.funds.receivedAt,r.now);
+});
+
+
+test('actual relay: two HTTP failures cannot permanently suppress the next valid NAV', async()=>{
+  const r=await probe('nav-http-recovery');
+  assert.equal(r.navReads,3);
+  assert.equal(r.blockedHosts,0);
+  assert.equal(r.debug.sources.brsapi_nav.updated,1);
+  assert.equal(r.debug.navBlacklist.size,0);
 });

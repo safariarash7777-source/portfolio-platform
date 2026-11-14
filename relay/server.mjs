@@ -606,7 +606,7 @@ async function refreshNavs(funds, attempted = new Set()) {
           const res = await fetch(`${base}&l18=${encodeURIComponent(f.id)}`, {
             headers: HDRS, signal: AbortSignal.timeout(15000),
           });
-          if (!res.ok) { failed++; recordNavResult(f.id, false); continue; }
+          if (!res.ok) { failed++; continue; } // HTTP failure is not proof this symbol lacks NAV.
           j = await res.json();
         }
         const d = Array.isArray(j) ? j[0] : j;
@@ -678,7 +678,7 @@ async function refreshNavCompletion(funds, attempted = new Set()) {
         } else {
           await countLegacy("nav-completion", "bulk");
           const res = await fetch(`${base}&l18=${encodeURIComponent(f.id)}`, { headers: HDRS, signal: AbortSignal.timeout(15000) });
-          if (!res.ok) { navCompletionState.failed++; recordNavResult(f.id, false); continue; }
+          if (!res.ok) { navCompletionState.failed++; continue; } // Preserve eligibility after service/auth/rate errors.
           j = await res.json();
         }
         const d = Array.isArray(j) ? j[0] : j;
