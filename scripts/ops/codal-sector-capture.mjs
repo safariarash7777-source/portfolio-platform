@@ -51,15 +51,22 @@ export async function collect(targets, allowed, fetchImpl=fetch, delay=ms=>new P
   return {schemaVersion:1,documents};
 }
 export function command(){
-  const code=`(${collect.toString()})(${JSON.stringify(TARGETS)},${sameReport.toString()}).then(p=>console.log('SECTOR_CAPTURE='+require('node:zlib').deflateRawSync(Buffer.from(JSON.stringify(p))).toString('base64'))).catch(()=>{console.log('sector_capture_failed');process.exitCode=1})`;
+  const code=`(${collect.toString()})(${JSON.stringify(TARGETS)},${sameReport.toString()}).then(p=>{const text=require('node:zlib').deflateRawSync(Buffer.from(JSON.stringify(p))).toString('base64');const parts=text.match(/.{1,2000}/g);for(let i=0;i<parts.length;i++)console.log('SECTOR_PART='+i+'/'+parts.length+':'+parts[i]);console.log('SECTOR_DONE='+parts.length)}).catch(()=>{console.log('sector_capture_failed');process.exitCode=1})`;
   const cmd=encodeURIComponent(`node -e eval(require(/node:zlib/.source).inflateRawSync(Buffer.from(/${deflateRawSync(code).toString('base64url')}/.source,/base64url/.source)).toString())`);
   if(cmd.length>6000)throw Error('command_limit');return cmd;
 }
 export function parse(raw,exitCode){
   if(exitCode!==0||typeof raw!=='string'||Buffer.byteLength(raw)>4*1024*1024)throw Error('capture_failed');
-  const lines=raw.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g,'').split(/[\r\n]+/).map(x=>x.trim()).filter(x=>x.startsWith('SECTOR_CAPTURE='));
-  if(lines.length!==1||!/^SECTOR_CAPTURE=[A-Za-z0-9+/]+={0,2}$/.test(lines[0]))throw Error('capture_failed');
-  const packet=JSON.parse(inflateRawSync(Buffer.from(lines[0].slice(15),'base64'),{maxOutputLength:15*1024*1024}).toString('utf8'));
+  const lines=raw.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g,'').split(/[\r\n]+/).map(x=>x.trim());
+  const chunks=lines.filter(x=>x.startsWith('SECTOR_PART=')),done=lines.filter(x=>x.startsWith('SECTOR_DONE='));
+  const old=lines.filter(x=>x.startsWith('SECTOR_CAPTURE='));let encoded;
+  if(chunks.length||done.length){
+    if(old.length||done.length!==1||done[0]!==`SECTOR_DONE=${chunks.length}`||chunks.length>1500)throw Error('capture_failed');
+    encoded=chunks.map((line,i)=>{const prefix=`SECTOR_PART=${i}/${chunks.length}:`;if(!line.startsWith(prefix)||! /^[A-Za-z0-9+/]+={0,2}$/.test(line.slice(prefix.length)))throw Error('capture_failed');return line.slice(prefix.length);}).join('');
+  }else{
+    if(old.length!==1||!/^SECTOR_CAPTURE=[A-Za-z0-9+/]+={0,2}$/.test(old[0]))throw Error('capture_failed');encoded=old[0].slice(15);
+  }
+  const packet=JSON.parse(inflateRawSync(Buffer.from(encoded,'base64'),{maxOutputLength:15*1024*1024}).toString('utf8'));
   if(packet.schemaVersion!==1||!Array.isArray(packet.documents)||packet.documents.length!==TARGETS.length)throw Error('capture_failed');
   return packet.documents.map((d,i)=>{
     const expected=TARGETS[i];
@@ -74,16 +81,29 @@ export function parse(raw,exitCode){
     return {...result,httpStatus:d.status==='http_error'&&Number.isInteger(d.httpStatus)?d.httpStatus:null};
   });
 }
+export function failureReceipt(raw,exitCode){
+  const bounded=typeof raw==='string'&&Buffer.byteLength(raw)<=4*1024*1024?raw:'';
+  return {status:'capture_failed',exitCode:Number.isInteger(exitCode)?exitCode:null,bytes:typeof raw==='string'?Buffer.byteLength(raw):null,
+    partMarkers:(bounded.match(/SECTOR_PART=/g)||[]).length,doneMarkers:(bounded.match(/SECTOR_DONE=/g)||[]).length,
+    legacyMarkers:(bounded.match(/SECTOR_CAPTURE=/g)||[]).length,
+    signals:{syntax:/SyntaxError/.test(bounded),notFound:/not found|Cannot find module/.test(bounded),authentication:/Unauthorized|unauthorized|invalid.*token/i.test(bounded),transport:/ETIMEDOUT|ECONNRESET|timeout|timed out/i.test(bounded),remoteFailure:/^sector_capture_failed\s*$/m.test(bounded)}};
+}
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
+  let privateRaw,exitCode;
   try{
     if(process.argv[2]==='command'&&process.argv.length===3)console.log(command());
     else if(process.argv[2]==='parse'&&process.argv.length===5){
-      const docs=parse(await readFile(process.argv[3],'utf8'),Number(process.argv[4]));
+      privateRaw=await readFile(process.argv[3],'utf8');exitCode=Number(process.argv[4]);
+      const docs=parse(privateRaw,exitCode);
       await mkdir('sector-primary-sources',{recursive:true});
       const receipt=[];
       for(const {bytes,...d} of docs){if(bytes){d.filename=d.id+'.html';await writeFile('sector-primary-sources/'+d.filename,bytes,{flag:'wx'});d.bytes=bytes.length;}receipt.push(d);}
       await writeFile('sector-primary-sources/receipt.json',JSON.stringify(receipt,null,2));
       console.log(JSON.stringify(receipt));if(receipt.some(d=>d.status!=='retrieved'))process.exitCode=1;
     }else throw Error('mode');
-  }catch{console.error('sector_capture_failed');process.exitCode=1;}
+  }catch{
+    const receipt=failureReceipt(privateRaw,exitCode);
+    if(process.argv[2]==='parse'){await mkdir('sector-primary-sources',{recursive:true});await writeFile('sector-primary-sources/failure.json',JSON.stringify(receipt,null,2));}
+    console.error(JSON.stringify(receipt));process.exitCode=1;
+  }
 }
