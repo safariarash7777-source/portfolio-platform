@@ -9,6 +9,13 @@ export const TARGETS = Object.freeze([
 ].map(Object.freeze));
 export const SOURCE_SETS = Object.freeze({
   folad: TARGETS,
+  'company-families-20261114': Object.freeze([
+    ['N10-23022', 'https://excel.codal.ir/service/Excel/GetAll/GaX5WVcrooFnBEWMQQQaQQQ2ja8g%3d%3d/0'],
+    ['N10-22271', 'https://excel.codal.ir/service/Excel/GetAll/qQ7fKiLEAxkBOevIPSiQFw%3d%3d/0'],
+    ['N10-29700', 'https://excel.codal.ir/service/Excel/GetAll/HnQQQaQQQBLakgis593HbgHAuolw%3d%3d/0'],
+    ['N10-29399', 'https://excel.codal.ir/service/Excel/GetAll/XWpcCloAeodXnF946XztEQ%3d%3d/0'],
+    ['N10-29245', 'https://excel.codal.ir/service/Excel/GetAll/HYQQQaQQQcEzJdrkARLoU7MAsyKA%3d%3d/0'],
+  ].map(Object.freeze)),
   'rejected-n10-20261114': Object.freeze([
     ['N10-VESOOGH', 'https://excel.codal.ir/service/Excel/GetAll/OOObOOOdrhD0zS1afEs6uF1lQQQaQQQyaA%3d%3d/0'],
     ['N10-QESABET', 'https://excel.codal.ir/service/Excel/GetAll/NP5pO9KRGeydNngIiOEYNA%3d%3d/0'],

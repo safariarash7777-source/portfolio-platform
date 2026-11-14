@@ -198,13 +198,14 @@ export async function runArchiveCycle() {
               break;
             }
             let sawOlderThanBoundary = false;
+            let pageComplete = true;
             for (const a of items) {
               const k = jdateKey(a?.date_send);
               if (k !== null && k < boundary) { sawOlderThanBoundary = true; continue; }
               const kind = classifyAnnouncement(a);
               if (!kind || !a.link || !a.link_excel) continue;
               if (known.has(a.link) || isBlocked(a.link)) continue;
-              if (st.downloaded >= DL_PER_CYCLE || budgetLeft() <= 2) break;
+              if (st.downloaded >= DL_PER_CYCLE || budgetLeft() <= 2) { pageComplete = false; break; }
               st.downloaded++;
               spend(); // دانلود اکسل هم از سهمیهٔ سرویس کدال حساب می‌شود (محافظه‌کارانه)
               try {
@@ -215,10 +216,12 @@ export async function runArchiveCycle() {
                   delete state.fails?.[a.link];
                 } else {
                   st.parseFailed++;
+                  pageComplete = false;
                   recordFail(a.link);
                 }
               } catch (e) {
                 st.parseFailed++;
+                pageComplete = false;
                 recordFail(a.link);
                 if (e?.name === "ReportPersistenceError") {
                   st.persistenceUnconfirmed++;
@@ -227,6 +230,9 @@ export async function runArchiveCycle() {
               }
               await new Promise((r) => setTimeout(r, 800));
             }
+            // Retain an incomplete page. Known source identities avoid duplicate
+            // downloads next cycle; unsupported rows still use the bounded ledger.
+            if (!pageComplete) break;
             if (sawOlderThanBoundary) { ps[doneKey] = true; break; } // به مرز رسیدیم
             ps[pageKey]++;
           }
@@ -243,7 +249,7 @@ export async function runArchiveCycle() {
   archiveStatus.cursor = state.cursor;
   archiveStatus.usedToday = state.budget.used;
   archiveStatus.budgetDate = state.budget.date;
-  archiveStatus.ok = st.persistenceUnconfirmed === 0;
+  archiveStatus.ok = !archiveStatus.lastError && st.parseFailed === 0 && st.persistenceUnconfirmed === 0;
   archiveStatus.lastRun = Date.now();
   await refreshCoverage();
   await saveState();

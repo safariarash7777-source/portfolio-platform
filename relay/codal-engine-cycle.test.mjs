@@ -891,3 +891,29 @@ test('overnight reconciliation inspects eight issuers without raising the existi
     assert.equal(f.persisted.backfillCursor,8);
   } finally { Date.now=originalNow;process.env.RELAY_BACKGROUND_WINDOW_ENABLED='0'; }
 });
+
+test('archive retains a partially downloaded page and resumes its unprocessed reports',async()=>{
+ const items=Array.from({length:16},(_,i)=>financial(200+i));
+ const f=await fixture({marketBody:[{payload:{stocks:[{id:'نمونه',value:0}]}}]});
+ codal.setCodalBudgetPorts({client:{request:async job=>({announcement:job.params.category==='1' && job.params.page==='1'?items:[]})}});
+ const archive=await import(`./codal-archive.mjs?mock=${++scenario}`);
+ await archive.runArchiveCycle();
+ assert.equal(f.calls.excel.length,14);
+ assert.equal(f.calls.archiveSaves.at(-1).perSymbol['نمونه'].p1,1);
+ assert.equal(f.calls.archiveSaves.at(-1).perSymbol['نمونه'].done1,false);
+ await archive.runArchiveCycle();
+ assert.equal(f.calls.excel.length,16);
+ assert.equal(f.calls.reportWrites.length,16);
+ assert.equal(f.calls.archiveSaves.at(-1).perSymbol['نمونه'].done1,true);
+});
+test('archive rejection does not advance its page or claim a successful cycle',async()=>{
+ const a=financial(300);
+ const f=await fixture({marketBody:[{payload:{stocks:[{id:'نمونه',value:0}]}}],excelHtml:industrial({period:'1404/12/29',months:12,prior:false,unit:''})});
+ codal.setCodalBudgetPorts({client:{request:async job=>({announcement:job.params.category==='1' && job.params.page==='1'?[a]:[]})}});
+ const archive=await import(`./codal-archive.mjs?mock=${++scenario}`);
+ await archive.runArchiveCycle();
+ assert.equal(archive.archiveStatus.ok,false);
+ assert.equal(archive.archiveStatus.lastCycle.parseFailed,1);
+ assert.equal(f.calls.archiveSaves.at(-1).perSymbol['نمونه'].p1,1);
+ assert.equal(f.calls.reportWrites.length,0);
+});
