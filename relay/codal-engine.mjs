@@ -9,9 +9,8 @@
 //   می‌خوانیم و «هر گزارش جدیدِ هر نمادی» را بلافاصله می‌گیریم.
 //   هزینه: ~۶ درخواست در چرخه ≈ ۵۰ در روز.
 //
-//   مسیر ۲ — بک‌فیل اولویت‌دار: تاریخچهٔ گزارش‌های نمادهای مهم (به‌ترتیب ارزش
-//   معاملات از اسنپ‌شات بازار) با l18 نمادبه‌نماد تکمیل می‌شود؛ هر چرخه فقط
-//   چند نماد؛ نمادهای دارای پوشش کافی رد می‌شوند.
+//   مسیر ۲ — تطبیق چرخشی همه شرکت‌های اسنپ‌شات؛ تعداد ردیف قدیمی معیار
+//   تازگی نیست. ترتیب مستقل از ارزش معاملات و سقف هر چرخه ثابت می‌ماند.
 //
 // وضعیت موتور (واترمارک، مکان‌نمای بک‌فیل، دفتر خطاها) در Supabase ذخیره
 // می‌شود (ir_market_snapshots key='codal_engine_state') تا با ری‌استارت یا
@@ -25,7 +24,7 @@ import {
   classifyAnnouncement, fetchAnnouncementsPage, downloadAndParse,
   insertParsedReport, existingUrlsFor, faToEn, codalEnv,
 } from "./codal.mjs";
-import { readStoredReportCounts } from "./codal-coverage.mjs";
+import { companyUniverse } from "./codal-coverage.mjs";
 import { isBrsLocalDeferral } from "./brsapi-transport.mjs";
 import { admissionCounts, admissionEvent, readAdmissionDiagnostics, recordAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 import { supportsDecisionUrl } from "./codal-statement-source.mjs";
@@ -38,8 +37,6 @@ const FEED_MAX_PAGES = Number(process.env.CODAL_FEED_PAGES || 6);      // سقف
 const FEED_MAX_DL = Number(process.env.CODAL_FEED_DL || 10);           // سقف دانلود اکسل فید در هر چرخه
 const BACKFILL_PER_CYCLE = Number(process.env.CODAL_BACKFILL_SYMBOLS || 2); // نماد بک‌فیل در هر چرخه
 const BACKFILL_MAX_DL = Number(process.env.CODAL_BACKFILL_DL || 6);    // سقف دانلود هر نماد بک‌فیل
-const BACKFILL_TOP = Number(process.env.CODAL_BACKFILL_TOP || 200);    // چند نماد برتر بازار در صف بک‌فیل
-const COVERED_MIN_ROWS = Number(process.env.CODAL_COVERED_MIN || 8);   // این‌قدر ردیف یعنی «پوشش کافی» در بک‌فیل
 const MAX_FAILS = 3;                                                    // بعد از این تعداد شکست، اطلاعیه بلاک می‌شود
 const LEDGER_CAP = 600;                                                 // سقف دفتر خطا (قدیمی‌ها حذف می‌شوند)
 
@@ -87,7 +84,7 @@ export const engineStatus = {
   feed: { pages: 0, seen: 0, matched: 0, downloaded: 0, inserted: 0, parseFailed: 0, watermark: null, complete: false, incompleteReason: null },
   // codal_feed has no publish_time/raw column; only date_publish can be stored here.
   feedTable: { attempted: 0, inserted: 0, duplicates: 0, lastError: null, publishTimeStored: false },
-  backfill: { cursor: 0, queueSize: 0, symbols: [], inserted: 0, parseFailed: 0, skippedCovered: 0 },
+  backfill: { cursor: 0, queueSize: 0, symbols: [], inserted: 0, downloaded: 0, parseFailed: 0, skippedCovered: 0, coverageBasis: "snapshot-universe-not-freshness" },
   storedRecovery: { scanned: 0, downloaded: 0, inserted: 0, parseFailed: 0, blocked: 0, skippedKnown: 0, metadataSkipped: 0, reachedEnd: false },
   ledgerSize: 0,
   failureDiagnostics: readFailureDiagnostics(),
@@ -375,8 +372,8 @@ async function pollGlobalFeed() {
 }
 
 /* ── مسیر ۲: بک‌فیل اولویت‌دار ──────────────────────────────────────────────── */
-async function topSymbolsByValue() {
-  // پرمعامله‌ترین سهم‌ها از اسنپ‌شات بازار (صندوق‌ها گزارش کدال ن-۱۰ ندارند)
+async function allCompanySymbols() {
+  // All ordinary issuers present in the stock snapshot, including zero turnover.
   const qs = new URLSearchParams({ select: "payload", key: "eq.latest", limit: "1" });
   const res = await fetch(`${SUPABASE_URL}/rest/v1/ir_market_snapshots?${qs}`, {
     headers: SB_HDRS(), signal: AbortSignal.timeout(20000),
@@ -387,42 +384,28 @@ async function topSymbolsByValue() {
     throw new Error("market snapshot invalid schema");
   }
   const stocks = rows[0]?.payload?.stocks ?? [];
-  // نمادهای مشتق حذف: حق تقدم (پسوند ح) و عرضه/بلوکی (پسوند رقم، مثل ونوین4)
-  // — گزارش کدال زیر نماد اصلی منتشر می‌شود نه مشتق.
-  const isDerivative = (id) => /[0-9۰-۹]$/.test(id) || /ح$/.test(id);
-  return stocks
-    .map((s) => ({ ...s, id: String(s?.id || "").trim() }))
-    .filter((s) => s.id && (s.value || 0) > 0 && !isDerivative(s.id))
-    .sort((x, y) => (y.value || 0) - (x.value || 0))
-    .slice(0, BACKFILL_TOP)
-    .map((s) => s.id);
-}
-
-async function coveredCounts(symbols) {
-  // Count through the server's row cap before spending any backfill quota.
-  return readStoredReportCounts(symbols, {
-    baseUrl: SUPABASE_URL, headers: SB_HDRS(),
-  });
+  return companyUniverse(stocks);
 }
 
 async function backfillSome() {
   const st = engineStatus.backfill;
-  st.inserted = 0; st.parseFailed = 0; st.skippedCovered = 0; st.symbols = [];
+  st.inserted = 0; st.downloaded = 0; st.parseFailed = 0; st.skippedCovered = 0; st.symbols = [];
 
-  const queue = await topSymbolsByValue();
+  const queue = await allCompanySymbols();
   st.queueSize = queue.length;
   if (!queue.length) return;
 
-  const counts = await coveredCounts(queue);
+  // Stored row count cannot prove current coverage. Reconcile each issuer in a
+  // stable rotation; known report identities prevent repeat downloads.
+  let remainingDownloads = Math.max(0, BACKFILL_PER_CYCLE * BACKFILL_MAX_DL - engineStatus.storedRecovery.downloaded);
   let processedSymbols = 0;
   let guard = 0;
-  while (processedSymbols < BACKFILL_PER_CYCLE && guard < queue.length) {
+  while (processedSymbols < BACKFILL_PER_CYCLE && guard < queue.length && remainingDownloads > 0) {
     guard++;
     const cursorBefore = state.backfillCursor;
     const sym = queue[state.backfillCursor % queue.length];
     state.backfillCursor++;
     st.cursor = state.backfillCursor;
-    if ((counts.get(sym) || 0) >= COVERED_MIN_ROWS) { st.skippedCovered++; continue; }
 
     processedSymbols++;
     st.symbols.push(sym);
@@ -437,8 +420,8 @@ async function backfillSome() {
         const kind = classifyAnnouncement(a);
         if (!kind || !a.link || !a.link_excel) continue;
         if (known.has(a.link) || isBlocked(a.link, kind, a)) continue;
-        if (dl >= BACKFILL_MAX_DL) break;
-        dl++;
+        if (dl >= BACKFILL_MAX_DL || remainingDownloads <= 0) break;
+        dl++; remainingDownloads--; st.downloaded++;
         let stage = "download";
         let rejection = null;
         try {
@@ -528,7 +511,7 @@ export async function runEngineCycle() {
   state.admissionDiagnostics.lastCycle = admissionCounts();
   const watermarkBefore = state.watermark;
   const storedCursorBefore = state.storedFeedCursor;
-  Object.assign(engineStatus.backfill, { inserted: 0, parseFailed: 0, symbols: [], skippedCovered: 0 });
+  Object.assign(engineStatus.backfill, { inserted: 0, downloaded: 0, parseFailed: 0, symbols: [], skippedCovered: 0 });
   let feedDeferred = false;
   try {
     await pollGlobalFeed();
@@ -542,7 +525,7 @@ export async function runEngineCycle() {
   }
   try {
     await recoverStoredReports();
-    if (!feedDeferred && !engineStatus.storedRecovery.downloaded) await backfillSome();
+    if (!feedDeferred) await backfillSome();
   } catch (e) {
     engineStatus.lastError = [engineStatus.lastError, `backfill: ${e?.message ?? e}`].filter(Boolean).join("; ");
     console.error("codal-engine backfill error:", e?.message ?? e);

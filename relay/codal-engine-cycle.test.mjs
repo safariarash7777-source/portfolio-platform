@@ -535,35 +535,35 @@ test("N10 admission rejection keeps inserted zero, watermark and ledger", async 
   }
 });
 
-test("prospective N10 rejection preserves full paginated coverage without scheduling redundant backfill", async () => {
+test("old stored row counts cannot exclude companies from current reconciliation", async () => {
   const a = financial(1);
   const coverageRows = Array.from({ length: 1008 }, (_, n) => ({ id: 1008 - n, symbol: n < 1000 ? "الف" : "ب" }));
   const f = await fixture({ pages: [[a, boundary], []],
     excelHtml: industrial({ period: "1404/12/29", months: 12, prior: false, unit: "" }),
     marketBody: [{ payload: { stocks: [{ id: "الف", value: 2 }, { id: "ب", value: 1 }] } }],
-    coverageRows,
+    coverageRows, backfillPages: [],
   });
   await f.engine.runEngineCycle();
   assert.equal(f.engine.engineStatus.feed.parseFailed, 1);
   assert.equal(f.calls.reportWrites.length, 0);
   assert.deepEqual(f.persisted.watermark, watermark);
   assert.equal(f.persisted.fails[a.link], 1);
-  assert.deepEqual(f.calls.coverageReads, [null, "lt.509", "lt.9", "lt.1"]);
-  assert.equal(f.engine.engineStatus.backfill.skippedCovered, 2);
-  assert.deepEqual(f.engine.engineStatus.backfill.symbols, []);
-  assert.deepEqual(f.calls.pages, [1, 2]);
+  assert.deepEqual(f.calls.coverageReads, []);
+  assert.equal(f.engine.engineStatus.backfill.skippedCovered, 0);
+  assert.deepEqual(f.engine.engineStatus.backfill.symbols, ["الف", "ب"]);
+  assert.deepEqual(f.calls.pages, [1, 2, 1, 1, 1, 1]);
 });
 
-test("a failed later coverage page stops backfill requests rather than using partial counts", async () => {
-  const coverageRows = Array.from({ length: 508 }, (_, n) => ({ id: 508 - n, symbol: n < 500 ? "الف" : "ب" }));
-  const f = await fixture({ pages: [[]], failCoverageAfter: 2, coverageRows,
-    marketBody: [{ payload: { stocks: [{ id: "الف", value: 2 }, { id: "ب", value: 1 }] } }],
+test("zero trading value issuers remain in bounded reconciliation without historical count reads", async () => {
+  const f = await fixture({ pages: [[]], failCoverageAfter: 1, backfillPages: [],
+    marketBody: [{ payload: { stocks: [{ id: "الف", value: 0 }, { id: "ب", value: null }] } }],
   });
   await f.engine.runEngineCycle();
-  assert.equal(f.engine.engineStatus.ok, false);
-  assert.match(f.engine.engineStatus.lastError, /covered reports HTTP 503/);
-  assert.deepEqual(f.engine.engineStatus.backfill.symbols, []);
-  assert.deepEqual(f.calls.pages, [1]);
+  assert.equal(f.engine.engineStatus.ok, true);
+  assert.deepEqual(f.calls.coverageReads, []);
+  assert.deepEqual(f.engine.engineStatus.backfill.symbols, ["الف", "ب"]);
+  assert.equal(f.engine.engineStatus.backfill.queueSize, 2);
+  assert.deepEqual(f.calls.pages, [1, 1, 1, 1, 1]);
 });
 
 const zeroFailureCounts = () => ({ download: { exception: 0 }, admission: { rejected: 0, exception: 0 }, persistence: { exception: 0 } });
@@ -852,4 +852,25 @@ test('audited mixed adapter receives one persisted retry with old counts intact'
 test('malformed audited attempt ledger stops before any source traffic',async()=>{
  const f=await fixture({pages:[[]],initialState:{watermark,fails:{},auditedStatementV1Attempts:{bad:2}}});
  await f.engine.runEngineCycle();assert.equal(f.engine.engineStatus.ok,false);assert.equal(f.calls.pages.length,0);
+});
+
+test('stored recovery does not starve issuer reconciliation and both share the existing download cap', async () => {
+  const f = await fixture({ pages:[[]], storedRows:Array.from({length:8},(_,i)=>stored(30-i)),
+    backfillPages:Array.from({length:10},(_,i)=>financial(100+i)),
+    marketBody:[{payload:{stocks:[{id:'نمونه',value:0}]}}] });
+  await f.engine.runEngineCycle();
+  assert.equal(f.engine.engineStatus.storedRecovery.downloaded,6);
+  assert.deepEqual(f.engine.engineStatus.backfill.symbols,['نمونه']);
+  assert.equal(f.calls.excel.length,12);
+  assert.equal(f.engine.engineStatus.backfill.queueSize,1);
+});
+
+test('stable reconciliation advances across cycles without resetting its durable cursor', async () => {
+  const f=await fixture({pages:[[]],backfillPages:[],marketBody:[{payload:{stocks:[{id:'پ',value:10},{id:'ب',value:0},{id:'الف',value:1}]}}]});
+  await f.engine.runEngineCycle();
+  assert.deepEqual(f.engine.engineStatus.backfill.symbols,['الف','ب']);
+  assert.equal(f.persisted.backfillCursor,2);
+  await f.engine.runEngineCycle();
+  assert.deepEqual(f.engine.engineStatus.backfill.symbols,['پ','الف']);
+  assert.equal(f.persisted.backfillCursor,4);
 });

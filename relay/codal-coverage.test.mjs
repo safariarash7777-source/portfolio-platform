@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readStoredReportCounts } from "./codal-coverage.mjs";
+import { readStoredReportCounts, companyUniverse } from "./codal-coverage.mjs";
 
 const response = (body, status = 200) => new Response(JSON.stringify(body), { status });
 const ports = read => ({ baseUrl: "https://storage.invalid", headers: {}, fetch: read });
@@ -56,4 +56,13 @@ test("bounded read fails closed if a complete result is not reached", async () =
 
 test("empty universe makes no requests", async () => {
   assert.equal((await readStoredReportCounts([], ports(() => assert.fail("unexpected read")))).size, 0);
+});
+
+test("company universe includes illiquid issuers beyond old top 200 with stable deduplicated order", () => {
+  const stocks = Array.from({length: 250}, (_, n) => ({id: `شرکت${String.fromCharCode(0x621+n)}` + "س", value: n}));
+  stocks.push({id: "متوقف",value:0}, {id:"متوقف",value:99}, {id:"حقح"}, {id:"بلوک٤"}, {id:"بلوک۴"}, {id:"بلوک4"});
+  const result=companyUniverse(stocks);
+  assert.equal(result.length,251);
+  assert.ok(result.includes("متوقف"));
+  assert.deepEqual(result,companyUniverse(stocks.reverse().map(s=>({...s,value:0}))));
 });
