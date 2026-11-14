@@ -1,0 +1,4693 @@
+{
+  "atUtc": "2026-11-14T08:17:56.228682+00:00",
+  "universeSource": "current market stocks; not issuer registry",
+  "universeCount": 780,
+  "storedRowsRead": 12571,
+  "withMonthly": 357,
+  "withFinancial": 459,
+  "withNeither": 224,
+  "currentCoverage": "not inferred from stored row counts",
+  "companies": {
+    "آ س پ": {
+      "monthly": 0,
+      "financial": 12,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "آباد": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "آبادا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "آردینه": {
+      "monthly": 12,
+      "financial": 12,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "آرمان": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "آریا": {
+      "monthly": 0,
+      "financial": 11,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "آسیا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "آلومینا": {
+      "monthly": 27,
+      "financial": 6,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "آواپارس": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "آواک": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "آپ": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-07-22"
+    },
+    "آکو": {
+      "monthly": 14,
+      "financial": 6,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "اتکاسا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "اتکام": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "اتکای": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "احیا": {
+      "monthly": 39,
+      "financial": 7,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "اخابر": {
+      "monthly": 0,
+      "financial": 27,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "اخشان": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "اردستان": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "ارفع": {
+      "monthly": 49,
+      "financial": 5,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "استقلال": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "اسیاتک": {
+      "monthly": 0,
+      "financial": 17,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "اعتلا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "افرا": {
+      "monthly": 0,
+      "financial": 12,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "افق": {
+      "monthly": 40,
+      "financial": 1,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "البرز": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "الکتروماد": {
+      "monthly": 15,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "امید": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "امین": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "انتخاب": {
+      "monthly": 26,
+      "financial": 7,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "انرژی": {
+      "monthly": 0,
+      "financial": 25,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "اوان": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "اپال": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "اپرداز": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "باران": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "بازرگام": {
+      "monthly": 0,
+      "financial": 24,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "بالاس": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "بالبر": {
+      "monthly": 13,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "بانیان": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "بایکا": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "بترانس": {
+      "monthly": 43,
+      "financial": 6,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "بتهران": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "بتک": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "بتیس": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "بجهرم": {
+      "monthly": 38,
+      "financial": 5,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "بخاور": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "برکت": {
+      "monthly": 0,
+      "financial": 5,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "بزاگرس": {
+      "monthly": 2,
+      "financial": 0,
+      "latestMonthly": "2026-06-21",
+      "latestFinancial": null
+    },
+    "بزندگی": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "بساما": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "بسویچ": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "بشهاب": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "بفجر": {
+      "monthly": 17,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "بموتو": {
+      "monthly": 1,
+      "financial": 1,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "بمولد": {
+      "monthly": 2,
+      "financial": 1,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "بمپنا": {
+      "monthly": 49,
+      "financial": 5,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "بمیلا": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "بنو": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "بنیرو": {
+      "monthly": 13,
+      "financial": 0,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": null
+    },
+    "بهامرز": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "بهپاک": {
+      "monthly": 36,
+      "financial": 12,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "بهیر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "بورس": {
+      "monthly": 0,
+      "financial": 25,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "بوعلی": {
+      "monthly": 14,
+      "financial": 10,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "بپاس": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "بپردیس": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "بپویا": {
+      "monthly": 13,
+      "financial": 1,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-03-20"
+    },
+    "بپیوند": {
+      "monthly": 2,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "بکاب": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": null
+    },
+    "بکابل": {
+      "monthly": 37,
+      "financial": 0,
+      "latestMonthly": "2026-06-21",
+      "latestFinancial": null
+    },
+    "بکام": {
+      "monthly": 13,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "بکهنوج": {
+      "monthly": 0,
+      "financial": 2,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "بگیلان": {
+      "monthly": 16,
+      "financial": 1,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "بیوتیک": {
+      "monthly": 16,
+      "financial": 10,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "تابا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "تادیکو": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2025-11-21"
+    },
+    "تاصیکو": {
+      "monthly": 0,
+      "financial": 5,
+      "latestMonthly": null,
+      "latestFinancial": "2026-05-21"
+    },
+    "تاپکیش": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "تاپیکو": {
+      "monthly": 0,
+      "financial": 5,
+      "latestMonthly": null,
+      "latestFinancial": "2026-05-21"
+    },
+    "تایرا": {
+      "monthly": 43,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "تبرک": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "تجلی": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "تخاور": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "تشتاد": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "تفارس": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "تفیرو": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "تلیسه": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "تماوند": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "تمحرکه": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "تملت": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "تنوین": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "توریل": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "توسن": {
+      "monthly": 0,
+      "financial": 24,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "تپسی": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "تپمپی": {
+      "monthly": 0,
+      "financial": 2,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "تپولا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "تپکو": {
+      "monthly": 18,
+      "financial": 14,
+      "latestMonthly": "2026-06-21",
+      "latestFinancial": "2026-06-21"
+    },
+    "تکاردان": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "تکشا": {
+      "monthly": 14,
+      "financial": 1,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "تکمبا": {
+      "monthly": 1,
+      "financial": 1,
+      "latestMonthly": "2026-03-20",
+      "latestFinancial": "2026-06-21"
+    },
+    "تکنار": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "تکنو": {
+      "monthly": 23,
+      "financial": 1,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-03-20"
+    },
+    "تکیمیا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "تیپیکو": {
+      "monthly": 0,
+      "financial": 8,
+      "latestMonthly": null,
+      "latestFinancial": "2026-05-21"
+    },
+    "ثاخت": {
+      "monthly": 0,
+      "financial": 25,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ثاصفا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ثالوند": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ثامان": {
+      "monthly": 0,
+      "financial": 18,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "ثامید": {
+      "monthly": 0,
+      "financial": 7,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ثباغ": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ثبهساز": {
+      "monthly": 0,
+      "financial": 10,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ثتران": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ثتوسا": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ثجنوب": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ثجوان": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ثرود": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ثزاگرس": {
+      "monthly": 0,
+      "financial": 26,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ثشاهد": {
+      "monthly": 0,
+      "financial": 2,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ثشرق": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ثعتما": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ثعمرا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ثغرب": {
+      "monthly": 0,
+      "financial": 11,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ثفارس": {
+      "monthly": 0,
+      "financial": 11,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ثقزوی": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ثمسکن": {
+      "monthly": 0,
+      "financial": 7,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ثنام": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ثنظام": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ثنوسا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ثپردیس": {
+      "monthly": 0,
+      "financial": 5,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ثپهران": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "جم": {
+      "monthly": 44,
+      "financial": 6,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "جم پیلن": {
+      "monthly": 14,
+      "financial": 4,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "جهرم": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "جوین": {
+      "monthly": 14,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "حآسا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "حآفرین": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "حبندر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "حتاید": {
+      "monthly": 0,
+      "financial": 20,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "حتوکا": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "حخزر": {
+      "monthly": 0,
+      "financial": 11,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "حرهشا": {
+      "monthly": 0,
+      "financial": 3,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "حریل": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "حسیر": {
+      "monthly": 0,
+      "financial": 17,
+      "latestMonthly": null,
+      "latestFinancial": "2026-09-22"
+    },
+    "حسینا": {
+      "monthly": 0,
+      "financial": 20,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "حشکوه": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "حفارس": {
+      "monthly": 0,
+      "financial": 5,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "حفاری": {
+      "monthly": 0,
+      "financial": 7,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "حپارسا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "حپترو": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "حپرتو": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "حکشتی": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "حگردش": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "حگهر": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "حیات": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "خاذین": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "خاور": {
+      "monthly": 40,
+      "financial": 20,
+      "latestMonthly": "2026-06-21",
+      "latestFinancial": "2026-06-21"
+    },
+    "خبازرس": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "خبرنا": {
+      "monthly": 12,
+      "financial": 5,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "خبنیان": {
+      "monthly": 1,
+      "financial": 1,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-03-20"
+    },
+    "خبهمن": {
+      "monthly": 0,
+      "financial": 5,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "ختراک": {
+      "monthly": 26,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "ختور": {
+      "monthly": 0,
+      "financial": 7,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ختوقا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "خدیزل": {
+      "monthly": 13,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "خراسان": {
+      "monthly": 24,
+      "financial": 6,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "خریخت": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "خرینگ": {
+      "monthly": 3,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "خزامیا": {
+      "monthly": 54,
+      "financial": 11,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "خزر": {
+      "monthly": 27,
+      "financial": 6,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "خساپا": {
+      "monthly": 33,
+      "financial": 12,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "خشرق": {
+      "monthly": 26,
+      "financial": 0,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": null
+    },
+    "خصدرا": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "خعمرا": {
+      "monthly": 2,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "خفناور": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "خفنر": {
+      "monthly": 13,
+      "financial": 6,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "خفولا": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "خلنت": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "خلیبل": {
+      "monthly": 2,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "خمحرکه": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "خمهر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "خموتور": {
+      "monthly": 13,
+      "financial": 0,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": null
+    },
+    "خنصیر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "خنور": {
+      "monthly": 15,
+      "financial": 1,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "خودرو": {
+      "monthly": 45,
+      "financial": 26,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "خودکفا": {
+      "monthly": 0,
+      "financial": 2,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "خوساز": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "خپارس": {
+      "monthly": 13,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "خپویش": {
+      "monthly": 25,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "خچرخش": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "خکار": {
+      "monthly": 26,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "خکرمان": {
+      "monthly": 0,
+      "financial": 2,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "خکمک": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "خگستر": {
+      "monthly": 0,
+      "financial": 8,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "خگلپا": {
+      "monthly": 4,
+      "financial": 3,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "خیمن": {
+      "monthly": 18,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "دابور": {
+      "monthly": 29,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "داتام": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "داترا": {
+      "monthly": 36,
+      "financial": 11,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "داراب": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "دارو": {
+      "monthly": 29,
+      "financial": 11,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "داروند": {
+      "monthly": 17,
+      "financial": 5,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "داسوه": {
+      "monthly": 15,
+      "financial": 9,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "دالبر": {
+      "monthly": 45,
+      "financial": 20,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "دامین": {
+      "monthly": 36,
+      "financial": 0,
+      "latestMonthly": "2026-06-21",
+      "latestFinancial": null
+    },
+    "داوه": {
+      "monthly": 13,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "دبالک": {
+      "monthly": 28,
+      "financial": 1,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "دتماد": {
+      "monthly": 44,
+      "financial": 7,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-09-22"
+    },
+    "دتوزیع": {
+      "monthly": 0,
+      "financial": 19,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "دتولید": {
+      "monthly": 1,
+      "financial": 7,
+      "latestMonthly": "2026-06-21",
+      "latestFinancial": "2026-06-21"
+    },
+    "دجابر": {
+      "monthly": 27,
+      "financial": 7,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "دحاوی": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ددام": {
+      "monthly": 12,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "ددانا": {
+      "monthly": 53,
+      "financial": 17,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "درازک": {
+      "monthly": 43,
+      "financial": 12,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "درازی": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "درهآور": {
+      "monthly": 12,
+      "financial": 5,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "دروز": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "درپاد": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "دزاگرس": {
+      "monthly": 40,
+      "financial": 14,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "دزهراوی": {
+      "monthly": 33,
+      "financial": 25,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "دسانکو": {
+      "monthly": 1,
+      "financial": 7,
+      "latestMonthly": "2026-06-21",
+      "latestFinancial": "2026-06-21"
+    },
+    "دسبحا": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "دسبحان": {
+      "monthly": 43,
+      "financial": 12,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "دسینا": {
+      "monthly": 15,
+      "financial": 10,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "دشیری": {
+      "monthly": 2,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "دشیمی": {
+      "monthly": 23,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "دعبید": {
+      "monthly": 32,
+      "financial": 18,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "دفارا": {
+      "monthly": 27,
+      "financial": 14,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "دفرا": {
+      "monthly": 32,
+      "financial": 5,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-03-20"
+    },
+    "دقاضی": {
+      "monthly": 37,
+      "financial": 13,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "دلر": {
+      "monthly": 53,
+      "financial": 14,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "دلقما": {
+      "monthly": 46,
+      "financial": 24,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "دماوند": {
+      "monthly": 27,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "دهدشت": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "دپارس": {
+      "monthly": 45,
+      "financial": 15,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "دکوثر": {
+      "monthly": 44,
+      "financial": 15,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "دکپسول": {
+      "monthly": 0,
+      "financial": 9,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "دکیمی": {
+      "monthly": 36,
+      "financial": 1,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "دی": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2025-09-22"
+    },
+    "دیران": {
+      "monthly": 15,
+      "financial": 7,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "ذرت": {
+      "monthly": 19,
+      "financial": 11,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "ذوب": {
+      "monthly": 43,
+      "financial": 13,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "رافزا": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "رانفور": {
+      "monthly": 0,
+      "financial": 5,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "رانیز": {
+      "monthly": 17,
+      "financial": 12,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "رتاپ": {
+      "monthly": 0,
+      "financial": 7,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "رتکو": {
+      "monthly": 0,
+      "financial": 2,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "رفاه": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "رمپنا": {
+      "monthly": 0,
+      "financial": 13,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "رنیک": {
+      "monthly": 0,
+      "financial": 5,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "رهیاب": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "رکیش": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ریشمک": {
+      "monthly": 0,
+      "financial": 12,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "زاگرس": {
+      "monthly": 37,
+      "financial": 9,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "زبینا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "زدشت": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "زشریف": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "زشک": {
+      "monthly": 28,
+      "financial": 5,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "زشگزا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "زفارس": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "زفجر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "زفکا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "زقیام": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "زماهان": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "زملارد": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "زمگسا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "زنجان": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "زنگان": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "زهلال": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "زپارس": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "زکشت": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "زگلدشت": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "سآبیک": {
+      "monthly": 4,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "ساذری": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ساراب": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "ساربیل": {
+      "monthly": 0,
+      "financial": 2,
+      "latestMonthly": null,
+      "latestFinancial": "2026-09-22"
+    },
+    "ساروج": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ساروم": {
+      "monthly": 38,
+      "financial": 14,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سامان": {
+      "monthly": 0,
+      "financial": 21,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ساوه": {
+      "monthly": 38,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "ساینا": {
+      "monthly": 29,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "سباقر": {
+      "monthly": 41,
+      "financial": 10,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سبجنو": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "سبزوا": {
+      "monthly": 30,
+      "financial": 2,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سبهان": {
+      "monthly": 26,
+      "financial": 1,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "ستران": {
+      "monthly": 42,
+      "financial": 23,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سجام": {
+      "monthly": 22,
+      "financial": 7,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سخاش": {
+      "monthly": 34,
+      "financial": 20,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سخزر": {
+      "monthly": 37,
+      "financial": 25,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سخواف": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "سخوز": {
+      "monthly": 26,
+      "financial": 6,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سدبیر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "سدشت": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "سدور": {
+      "monthly": 2,
+      "financial": 1,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سرود": {
+      "monthly": 27,
+      "financial": 11,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سرچشمه": {
+      "monthly": 0,
+      "financial": 2,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "سشرق": {
+      "monthly": 47,
+      "financial": 27,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سشمال": {
+      "monthly": 13,
+      "financial": 1,
+      "latestMonthly": "2026-09-21",
+      "latestFinancial": "2026-06-21"
+    },
+    "سصفها": {
+      "monthly": 14,
+      "financial": 6,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سصوفی": {
+      "monthly": 41,
+      "financial": 8,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سغدیر": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "سغرب": {
+      "monthly": 13,
+      "financial": 0,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": null
+    },
+    "سفار": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "سفارس": {
+      "monthly": 0,
+      "financial": 4,
+      "latestMonthly": null,
+      "latestFinancial": "2026-05-21"
+    },
+    "سفاسی": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "سفانو": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "سقاین": {
+      "monthly": 37,
+      "financial": 19,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سلیم": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "سمازن": {
+      "monthly": 30,
+      "financial": 13,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سمایه": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "سمتاز": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "سمهریز": {
+      "monthly": 13,
+      "financial": 11,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سمگا": {
+      "monthly": 0,
+      "financial": 8,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "سنوین": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "سنیر": {
+      "monthly": 13,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "سهرمز": {
+      "monthly": 11,
+      "financial": 1,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سهگمت": {
+      "monthly": 13,
+      "financial": 13,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-07-22"
+    },
+    "سپ": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "سپاآذر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "سپاها": {
+      "monthly": 47,
+      "financial": 20,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سپید": {
+      "monthly": 53,
+      "financial": 18,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سپیدار": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "سکارون": {
+      "monthly": 2,
+      "financial": 1,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سکرد": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "سکرما": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "سیتا": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-05-21"
+    },
+    "سیدکو": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "سیستم": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "سیسکو": {
+      "monthly": 21,
+      "financial": 13,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "سیلام": {
+      "monthly": 28,
+      "financial": 1,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-07-22"
+    },
+    "سیمرغ": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "سیمکات": {
+      "monthly": 1,
+      "financial": 1,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-09-22"
+    },
+    "شاراک": {
+      "monthly": 30,
+      "financial": 11,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شاروم": {
+      "monthly": 24,
+      "financial": 2,
+      "latestMonthly": "2026-06-21",
+      "latestFinancial": "2026-06-21"
+    },
+    "شارپیلن": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "شاملا": {
+      "monthly": 38,
+      "financial": 2,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شاوان": {
+      "monthly": 40,
+      "financial": 18,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شبریز": {
+      "monthly": 35,
+      "financial": 13,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شبصیر": {
+      "monthly": 41,
+      "financial": 11,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شبندر": {
+      "monthly": 24,
+      "financial": 16,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شبهرن": {
+      "monthly": 47,
+      "financial": 12,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شتبریز": {
+      "monthly": 11,
+      "financial": 2,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-03-20"
+    },
+    "شتران": {
+      "monthly": 42,
+      "financial": 16,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شتوکا": {
+      "monthly": 32,
+      "financial": 6,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شجم": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "شخارک": {
+      "monthly": 9,
+      "financial": 1,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شدوص": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "شراز": {
+      "monthly": 39,
+      "financial": 28,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-09-22"
+    },
+    "شرانل": {
+      "monthly": 54,
+      "financial": 12,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شرنگی": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "شساخت": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "شستا": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "شستان": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "شسپا": {
+      "monthly": 42,
+      "financial": 11,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شسینا": {
+      "monthly": 12,
+      "financial": 0,
+      "latestMonthly": "2026-06-21",
+      "latestFinancial": null
+    },
+    "شصدف": {
+      "monthly": 51,
+      "financial": 22,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شصفها": {
+      "monthly": 3,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "شغدیر": {
+      "monthly": 10,
+      "financial": 12,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شفا": {
+      "monthly": 0,
+      "financial": 2,
+      "latestMonthly": null,
+      "latestFinancial": "2025-12-21"
+    },
+    "شفارا": {
+      "monthly": 38,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "شفارس": {
+      "monthly": 15,
+      "financial": 0,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": null
+    },
+    "شفام": {
+      "monthly": 13,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "شفن": {
+      "monthly": 50,
+      "financial": 7,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شلرد": {
+      "monthly": 38,
+      "financial": 23,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شلعاب": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "شلیا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "شمس": {
+      "monthly": 4,
+      "financial": 21,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-07-22"
+    },
+    "شملی": {
+      "monthly": 29,
+      "financial": 9,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شمواد": {
+      "monthly": 35,
+      "financial": 11,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-03-20"
+    },
+    "شنفت": {
+      "monthly": 17,
+      "financial": 9,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شهر": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "شوینده": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "شپارس": {
+      "monthly": 7,
+      "financial": 13,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شپاس": {
+      "monthly": 26,
+      "financial": 0,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": null
+    },
+    "شپاکسا": {
+      "monthly": 37,
+      "financial": 23,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شپترو": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": null
+    },
+    "شپدیس": {
+      "monthly": 54,
+      "financial": 15,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شپلی": {
+      "monthly": 9,
+      "financial": 8,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شپنا": {
+      "monthly": 37,
+      "financial": 20,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شکام": {
+      "monthly": 31,
+      "financial": 11,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شکبیر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "شکربن": {
+      "monthly": 27,
+      "financial": 11,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شکیمیا": {
+      "monthly": 7,
+      "financial": 10,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شگامرن": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "شگستر": {
+      "monthly": 14,
+      "financial": 11,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شگل": {
+      "monthly": 29,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "شگویا": {
+      "monthly": 52,
+      "financial": 12,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شیراز": {
+      "monthly": 46,
+      "financial": 11,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شیران": {
+      "monthly": 42,
+      "financial": 12,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "شیفته": {
+      "monthly": 13,
+      "financial": 8,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "صبا": {
+      "monthly": 0,
+      "financial": 7,
+      "latestMonthly": null,
+      "latestFinancial": "2026-05-21"
+    },
+    "عالیس": {
+      "monthly": 43,
+      "financial": 32,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غاذر": {
+      "monthly": 33,
+      "financial": 11,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غالبر": {
+      "monthly": 16,
+      "financial": 12,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غانیزان": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "غبشهر": {
+      "monthly": 39,
+      "financial": 1,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غبهار": {
+      "monthly": 13,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "غبهنوش": {
+      "monthly": 29,
+      "financial": 7,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غدام": {
+      "monthly": 1,
+      "financial": 1,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غدانه": {
+      "monthly": 47,
+      "financial": 14,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غدشت": {
+      "monthly": 0,
+      "financial": 3,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "غدیس": {
+      "monthly": 36,
+      "financial": 3,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غزر": {
+      "monthly": 36,
+      "financial": 12,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غزنجان": {
+      "monthly": 20,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "غسالم": {
+      "monthly": 34,
+      "financial": 3,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غشاذر": {
+      "monthly": 15,
+      "financial": 5,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غشان": {
+      "monthly": 31,
+      "financial": 6,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غشصفا": {
+      "monthly": 13,
+      "financial": 1,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غشهد": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "غشهداب": {
+      "monthly": 25,
+      "financial": 6,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غشوکو": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "غصینو": {
+      "monthly": 38,
+      "financial": 11,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غفارس": {
+      "monthly": 3,
+      "financial": 1,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غمارگ": {
+      "monthly": 2,
+      "financial": 0,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": null
+    },
+    "غمایه": {
+      "monthly": 15,
+      "financial": 5,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غمهرا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "غمینو": {
+      "monthly": 32,
+      "financial": 21,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غناب": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "غنوش": {
+      "monthly": 32,
+      "financial": 12,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غنیلی": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "غویتا": {
+      "monthly": 23,
+      "financial": 10,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غپآذر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "غپاک": {
+      "monthly": 18,
+      "financial": 2,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-03-20"
+    },
+    "غپونه": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "غپینو": {
+      "monthly": 47,
+      "financial": 18,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غچین": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "غکورش": {
+      "monthly": 58,
+      "financial": 12,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غگرجی": {
+      "monthly": 1,
+      "financial": 1,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-03-20"
+    },
+    "غگز": {
+      "monthly": 35,
+      "financial": 11,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غگل": {
+      "monthly": 34,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "غگلستا": {
+      "monthly": 15,
+      "financial": 6,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غگلپا": {
+      "monthly": 15,
+      "financial": 1,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "غگیلا": {
+      "monthly": 13,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "فاذر": {
+      "monthly": 0,
+      "financial": 14,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "فاراک": {
+      "monthly": 0,
+      "financial": 31,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "فارس": {
+      "monthly": 0,
+      "financial": 7,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "فاسمین": {
+      "monthly": 14,
+      "financial": 10,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-03-20"
+    },
+    "فافزا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "فافق": {
+      "monthly": 0,
+      "financial": 3,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "فالوم": {
+      "monthly": 2,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "فاما": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "فاهواز": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "فایرا": {
+      "monthly": 47,
+      "financial": 22,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فباهنر": {
+      "monthly": 44,
+      "financial": 25,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فبستم": {
+      "monthly": 3,
+      "financial": 2,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-09-22"
+    },
+    "فبیرا": {
+      "monthly": 1,
+      "financial": 1,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-09-22"
+    },
+    "فتوسا": {
+      "monthly": 8,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "فجام": {
+      "monthly": 2,
+      "financial": 11,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فجر": {
+      "monthly": 34,
+      "financial": 12,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فجهان": {
+      "monthly": 50,
+      "financial": 11,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فجوش": {
+      "monthly": 1,
+      "financial": 1,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2025-09-22"
+    },
+    "فخاس": {
+      "monthly": 56,
+      "financial": 21,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فخوز": {
+      "monthly": 15,
+      "financial": 11,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-09-22"
+    },
+    "فرآور": {
+      "monthly": 20,
+      "financial": 12,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فرابورس": {
+      "monthly": 0,
+      "financial": 19,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "فرود": {
+      "monthly": 20,
+      "financial": 10,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فروس": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "فروسیل": {
+      "monthly": 28,
+      "financial": 6,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فروژ": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "فروی": {
+      "monthly": 5,
+      "financial": 9,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فزر": {
+      "monthly": 38,
+      "financial": 27,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فزرین": {
+      "monthly": 46,
+      "financial": 4,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فسا": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "فسازان": {
+      "monthly": 54,
+      "financial": 28,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-03-20"
+    },
+    "فساپ": {
+      "monthly": 7,
+      "financial": 7,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-09-22"
+    },
+    "فسبزوار": {
+      "monthly": 45,
+      "financial": 16,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فسدید": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "فسرب": {
+      "monthly": 48,
+      "financial": 1,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-03-20"
+    },
+    "فسوژ": {
+      "monthly": 9,
+      "financial": 5,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فسپا": {
+      "monthly": 35,
+      "financial": 10,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فصبا": {
+      "monthly": 50,
+      "financial": 12,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فطلوع": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "فغدیر": {
+      "monthly": 14,
+      "financial": 6,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فلات": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "فلامی": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "فلوله": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "فماک": {
+      "monthly": 4,
+      "financial": 6,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فمراد": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "فملی": {
+      "monthly": 65,
+      "financial": 16,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فن آوا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "فن افزار": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "فنر": {
+      "monthly": 29,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "فنفت": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "فنقره": {
+      "monthly": 5,
+      "financial": 3,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فنوال": {
+      "monthly": 26,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "فنورد": {
+      "monthly": 58,
+      "financial": 14,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فهامون": {
+      "monthly": 13,
+      "financial": 7,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فولاد": {
+      "monthly": 51,
+      "financial": 28,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فولاژ": {
+      "monthly": 25,
+      "financial": 10,
+      "latestMonthly": "2026-07-21",
+      "latestFinancial": "2026-03-20"
+    },
+    "فولای": {
+      "monthly": 14,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "فوکا": {
+      "monthly": 26,
+      "financial": 5,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "فپردیس": {
+      "monthly": 3,
+      "financial": 2,
+      "latestMonthly": "2024-07-21",
+      "latestFinancial": "2026-06-21"
+    },
+    "فپنتا": {
+      "monthly": 48,
+      "financial": 7,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-07-22"
+    },
+    "فکمند": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "فکور": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "فگستر": {
+      "monthly": 36,
+      "financial": 5,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "قاسم": {
+      "monthly": 0,
+      "financial": 16,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "قثابت": {
+      "monthly": 13,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "قجام": {
+      "monthly": 1,
+      "financial": 3,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "قرن": {
+      "monthly": 38,
+      "financial": 12,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "قزوین": {
+      "monthly": 2,
+      "financial": 0,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": null
+    },
+    "قشرین": {
+      "monthly": 1,
+      "financial": 6,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "قشهد": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "قشکر": {
+      "monthly": 2,
+      "financial": 1,
+      "latestMonthly": "2026-06-21",
+      "latestFinancial": "2026-03-20"
+    },
+    "قشیر": {
+      "monthly": 2,
+      "financial": 5,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "قصفها": {
+      "monthly": 14,
+      "financial": 6,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "قلرست": {
+      "monthly": 30,
+      "financial": 8,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-07-22"
+    },
+    "قمرو": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-07-22"
+    },
+    "قنقش": {
+      "monthly": 2,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "قنیشا": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "قهکمت": {
+      "monthly": 15,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "قچار": {
+      "monthly": 39,
+      "financial": 22,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "قیستو": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "لابسا": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "لازما": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "لبن": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "لبوتان": {
+      "monthly": 14,
+      "financial": 0,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": null
+    },
+    "لخانه": {
+      "monthly": 14,
+      "financial": 1,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-03-20"
+    },
+    "لخزر": {
+      "monthly": 29,
+      "financial": 1,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "لسرما": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "لطیف": {
+      "monthly": 4,
+      "financial": 12,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "لوتوس": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-07-22"
+    },
+    "لپارس": {
+      "monthly": 13,
+      "financial": 0,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": null
+    },
+    "لپیام": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "لکما": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ما": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "مادیرا": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "مارون": {
+      "monthly": 28,
+      "financial": 10,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "مایکت": {
+      "monthly": 0,
+      "financial": 3,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "مبین": {
+      "monthly": 33,
+      "financial": 9,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "محتشم": {
+      "monthly": 33,
+      "financial": 6,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-09-22"
+    },
+    "مداران": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "مدیریت": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "مرقام": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "معیار": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "معین": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "مفاخر": {
+      "monthly": 0,
+      "financial": 2,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ملت": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ممسنی": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "منجیل": {
+      "monthly": 10,
+      "financial": 11,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "مهر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "مهرمام": {
+      "monthly": 0,
+      "financial": 9,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "مهرگان": {
+      "monthly": 0,
+      "financial": 4,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "میآذر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "میدکو": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "میهن": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ناما": {
+      "monthly": 38,
+      "financial": 13,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "نان": {
+      "monthly": 28,
+      "financial": 12,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "نبابک": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "نتوس": {
+      "monthly": 2,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "نخریس": {
+      "monthly": 35,
+      "financial": 13,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "نطرین": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "نماد": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2025-09-22"
+    },
+    "نمرینو": {
+      "monthly": 1,
+      "financial": 1,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-09-22"
+    },
+    "نوری": {
+      "monthly": 53,
+      "financial": 21,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "نوین": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "نیان": {
+      "monthly": 38,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "نیرو": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "نیروترانسفو": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "نیشکر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "هانیکو": {
+      "monthly": 26,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "های وب": {
+      "monthly": 0,
+      "financial": 11,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "هجرت": {
+      "monthly": 0,
+      "financial": 11,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "هرمز": {
+      "monthly": 32,
+      "financial": 22,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "همراه": {
+      "monthly": 0,
+      "financial": 24,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وآذر": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "وآرین": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وآفر": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وآفری": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وآوا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "واتی": {
+      "monthly": 0,
+      "financial": 4,
+      "latestMonthly": null,
+      "latestFinancial": "2025-12-21"
+    },
+    "واحصا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "واحیا": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وارس": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "واعتبار": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "والبر": {
+      "monthly": 0,
+      "financial": 5,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "والماس": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وامید": {
+      "monthly": 0,
+      "financial": 2,
+      "latestMonthly": null,
+      "latestFinancial": "2026-01-20"
+    },
+    "وامیر": {
+      "monthly": 0,
+      "financial": 3,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "وامین": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "وایرا": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "وایران": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وبانک": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "وبرق": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وبشهر": {
+      "monthly": 0,
+      "financial": 5,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "وبصادر": {
+      "monthly": 0,
+      "financial": 23,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وبملت": {
+      "monthly": 0,
+      "financial": 18,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وبهمن": {
+      "monthly": 0,
+      "financial": 5,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وبوعلی": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وبیمه": {
+      "monthly": 0,
+      "financial": 3,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "وتجارت": {
+      "monthly": 0,
+      "financial": 11,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وتعاون": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وتوس": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وتوسم": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وتوسکا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وتوشه": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "وتوصا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وتوکا": {
+      "monthly": 0,
+      "financial": 5,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "وثخوز": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وثنو": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وجامی": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وحافظ": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وحکمت": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وخارزم": {
+      "monthly": 0,
+      "financial": 7,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وخاور": {
+      "monthly": 0,
+      "financial": 24,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "ودانا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ودی": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ورازی": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ورنا": {
+      "monthly": 0,
+      "financial": 3,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "وساخت": {
+      "monthly": 0,
+      "financial": 2,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "وسالت": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وساپا": {
+      "monthly": 0,
+      "financial": 5,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "وسبحان": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وسدید": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "وسرمایه": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وسرمد": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وسنا": {
+      "monthly": 0,
+      "financial": 2,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "وسپه": {
+      "monthly": 0,
+      "financial": 8,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وسپهر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وسکاب": {
+      "monthly": 0,
+      "financial": 7,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وسین": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وسینا": {
+      "monthly": 0,
+      "financial": 23,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وشمال": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "وصنا": {
+      "monthly": 0,
+      "financial": 2,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وصندوق": {
+      "monthly": 0,
+      "financial": 7,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "وطوبی": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وغدیر": {
+      "monthly": 0,
+      "financial": 3,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وفتخار": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وفردا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وفیروزه": {
+      "monthly": 0,
+      "financial": 3,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ولاعتماد": {
+      "monthly": 0,
+      "financial": 7,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ولانا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ولبهمن": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ولتجار": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ولراز": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ولساپا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ولشرق": {
+      "monthly": 0,
+      "financial": 7,
+      "latestMonthly": null,
+      "latestFinancial": "2026-09-22"
+    },
+    "ولصنم": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ولغدر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ولقمان": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ولملت": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ولنوین": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ولپارس": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-07-22"
+    },
+    "ولکار": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ولیز": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ومدیر": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ومشان": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "ومعادن": {
+      "monthly": 0,
+      "financial": 2,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "ومعلم": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وملت": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وملی": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ومهان": {
+      "monthly": 0,
+      "financial": 5,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "ومپنا": {
+      "monthly": 0,
+      "financial": 4,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "ونفت": {
+      "monthly": 0,
+      "financial": 5,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "ونوین": {
+      "monthly": 0,
+      "financial": 12,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "ونیرو": {
+      "monthly": 0,
+      "financial": 3,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "ونیکی": {
+      "monthly": 0,
+      "financial": 4,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وهامون": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وهنر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وهور": {
+      "monthly": 0,
+      "financial": 3,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وپارس": {
+      "monthly": 0,
+      "financial": 21,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وپایا": {
+      "monthly": 0,
+      "financial": 3,
+      "latestMonthly": null,
+      "latestFinancial": "2026-02-19"
+    },
+    "وپترو": {
+      "monthly": 0,
+      "financial": 2,
+      "latestMonthly": null,
+      "latestFinancial": "2026-05-21"
+    },
+    "وپخش": {
+      "monthly": 0,
+      "financial": 4,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "وپسا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وپست": {
+      "monthly": 0,
+      "financial": 12,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وپویا": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-08-22"
+    },
+    "وکادو": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "وکبهمن": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وکغدیر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "وگستر": {
+      "monthly": 0,
+      "financial": 7,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "ویسا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "پاآذر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "پارتا": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "پارس": {
+      "monthly": 27,
+      "financial": 0,
+      "latestMonthly": "2026-06-21",
+      "latestFinancial": null
+    },
+    "پارسان": {
+      "monthly": 0,
+      "financial": 4,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "پارسیان": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "پاریز": {
+      "monthly": 0,
+      "financial": 8,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "پاسا": {
+      "monthly": 46,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "پاکشو": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-03-20"
+    },
+    "پتایر": {
+      "monthly": 27,
+      "financial": 1,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-03-20"
+    },
+    "پترول": {
+      "monthly": 0,
+      "financial": 4,
+      "latestMonthly": null,
+      "latestFinancial": "2026-05-21"
+    },
+    "پتوسعه": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "پخش": {
+      "monthly": 0,
+      "financial": 25,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "پدرخش": {
+      "monthly": 13,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "پرآذر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "پرداخت": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "پردیس": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "پرسپولیس": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "پسهند": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "پشاهن": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "پلاست": {
+      "monthly": 1,
+      "financial": 5,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "پلاسک": {
+      "monthly": 2,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "پکرمان": {
+      "monthly": 37,
+      "financial": 6,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "پکویر": {
+      "monthly": 10,
+      "financial": 13,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "پی پاد": {
+      "monthly": 0,
+      "financial": 7,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "پیزد": {
+      "monthly": 26,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "چافست": {
+      "monthly": 39,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "چاپ": {
+      "monthly": 8,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "چخزر": {
+      "monthly": 11,
+      "financial": 5,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-09-22"
+    },
+    "چدن": {
+      "monthly": 45,
+      "financial": 19,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "چفیبر": {
+      "monthly": 8,
+      "financial": 9,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "چنوپا": {
+      "monthly": 7,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "چکارن": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": null
+    },
+    "چکاوه": {
+      "monthly": 15,
+      "financial": 1,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "چکاپا": {
+      "monthly": 17,
+      "financial": 2,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-05-21"
+    },
+    "کاذر": {
+      "monthly": 14,
+      "financial": 6,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کارام": {
+      "monthly": 4,
+      "financial": 4,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کاریز": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "کازرو": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "کاسپین": {
+      "monthly": 27,
+      "financial": 5,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کالا": {
+      "monthly": 0,
+      "financial": 26,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "کاما": {
+      "monthly": 46,
+      "financial": 17,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کانسار": {
+      "monthly": 3,
+      "financial": 9,
+      "latestMonthly": "2026-06-21",
+      "latestFinancial": "2026-06-21"
+    },
+    "کاوه": {
+      "monthly": 48,
+      "financial": 24,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کایتا": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "کایزد": {
+      "monthly": 1,
+      "financial": 5,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کباده": {
+      "monthly": 13,
+      "financial": 0,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": null
+    },
+    "کبافق": {
+      "monthly": 9,
+      "financial": 1,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-03-20"
+    },
+    "کترام": {
+      "monthly": 2,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "کتوسعه": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "کتوکا": {
+      "monthly": 33,
+      "financial": 5,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-03-20"
+    },
+    "کحافظ": {
+      "monthly": 39,
+      "financial": 6,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کخاک": {
+      "monthly": 37,
+      "financial": 6,
+      "latestMonthly": "2026-06-21",
+      "latestFinancial": "2026-06-21"
+    },
+    "کدما": {
+      "monthly": 12,
+      "financial": 1,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-07-22"
+    },
+    "کربن": {
+      "monthly": 41,
+      "financial": 11,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کرماشا": {
+      "monthly": 56,
+      "financial": 23,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کرمان": {
+      "monthly": 0,
+      "financial": 4,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "کرومیت": {
+      "monthly": 9,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "کروی": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2025-03-20"
+    },
+    "کزغال": {
+      "monthly": 39,
+      "financial": 26,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کساوه": {
+      "monthly": 16,
+      "financial": 12,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کساپا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "کسرا": {
+      "monthly": 26,
+      "financial": 12,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کسرام": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "کسعدی": {
+      "monthly": 1,
+      "financial": 12,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کشرق": {
+      "monthly": 2,
+      "financial": 2,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": "2026-03-20"
+    },
+    "کصدف": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "کطبس": {
+      "monthly": 28,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "کفرآور": {
+      "monthly": 1,
+      "financial": 1,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-08-22"
+    },
+    "کفرا": {
+      "monthly": 19,
+      "financial": 12,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کقزوی": {
+      "monthly": 1,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "کلر": {
+      "monthly": 27,
+      "financial": 0,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": null
+    },
+    "کلوند": {
+      "monthly": 36,
+      "financial": 7,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-03-20"
+    },
+    "کمآذر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "کماسه": {
+      "monthly": 51,
+      "financial": 10,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کمرجان": {
+      "monthly": 14,
+      "financial": 1,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کمنگنز": {
+      "monthly": 25,
+      "financial": 6,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کمینا": {
+      "monthly": 2,
+      "financial": 1,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-03-20"
+    },
+    "کنور": {
+      "monthly": 13,
+      "financial": 6,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کهرام": {
+      "monthly": 4,
+      "financial": 0,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": null
+    },
+    "کهمدا": {
+      "monthly": 34,
+      "financial": 20,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کوثر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "کورز": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "کولان": {
+      "monthly": 12,
+      "financial": 0,
+      "latestMonthly": "2026-08-22",
+      "latestFinancial": null
+    },
+    "کوچین": {
+      "monthly": 41,
+      "financial": 12,
+      "latestMonthly": "2026-10-02",
+      "latestFinancial": "2026-07-01"
+    },
+    "کویر": {
+      "monthly": 30,
+      "financial": 12,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کپاآذر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "کپارس": {
+      "monthly": 27,
+      "financial": 12,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-07-22"
+    },
+    "کپرسپولیس": {
+      "monthly": 12,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "کپرور": {
+      "monthly": 26,
+      "financial": 6,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کپشیر": {
+      "monthly": 31,
+      "financial": 7,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کچاد": {
+      "monthly": 53,
+      "financial": 21,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کگاز": {
+      "monthly": 0,
+      "financial": 2,
+      "latestMonthly": null,
+      "latestFinancial": "2026-09-22"
+    },
+    "کگل": {
+      "monthly": 62,
+      "financial": 25,
+      "latestMonthly": "2026-10-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کگهر": {
+      "monthly": 32,
+      "financial": 16,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کی بی سی": {
+      "monthly": 0,
+      "financial": 17,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "کیا": {
+      "monthly": 2,
+      "financial": 0,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": null
+    },
+    "کیانا": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "کیسون": {
+      "monthly": 0,
+      "financial": 12,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "کیمازی": {
+      "monthly": 1,
+      "financial": 7,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کیمیا": {
+      "monthly": 31,
+      "financial": 20,
+      "latestMonthly": "2026-07-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "کیمیاتک": {
+      "monthly": 20,
+      "financial": 11,
+      "latestMonthly": "2026-09-22",
+      "latestFinancial": "2026-06-21"
+    },
+    "گدنا": {
+      "monthly": 0,
+      "financial": 6,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "گشان": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "گنگین": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "گوهران": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "گپارس": {
+      "monthly": 0,
+      "financial": 1,
+      "latestMonthly": null,
+      "latestFinancial": "2026-06-21"
+    },
+    "گکوثر": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    },
+    "گکیش": {
+      "monthly": 0,
+      "financial": 0,
+      "latestMonthly": null,
+      "latestFinancial": null
+    }
+  },
+  "credentialsEmitted": false
+}

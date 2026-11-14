@@ -1,0 +1,561 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-11-14T09:19:44.457Z",
+  "completedAt": "2026-11-14T09:19:46.961Z",
+  "sampleCount": 1,
+  "mode": "passive",
+  "health": {
+    "status": "ok",
+    "httpStatus": 200,
+    "error": null
+  },
+  "debug": {
+    "status": "read",
+    "httpStatus": 200,
+    "error": null,
+    "acceptance": "passed",
+    "spacing": "passed",
+    "data": {
+      "relayAt": "2026-11-14T09:19:45.563Z",
+      "warmedUp": true,
+      "ageSec": 187,
+      "lastRefresh": "2026-11-14T09:16:38.411Z",
+      "lastAttempt": "2026-11-14T09:16:38.411Z",
+      "error": null,
+      "counts": {
+        "gold": 9,
+        "currency": 28,
+        "crypto": 19,
+        "stocks": 789,
+        "funds": 345,
+        "options": 1365,
+        "indices": null
+      },
+      "snapshot": {
+        "state": "complete",
+        "attemptedAt": "2026-11-14T09:16:38.411Z",
+        "families": {
+          "gold": {
+            "state": "received",
+            "receivedAt": "2026-11-14T09:16:38.411Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          },
+          "currency": {
+            "state": "received",
+            "receivedAt": "2026-11-14T09:16:38.411Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          },
+          "crypto": {
+            "state": "received",
+            "receivedAt": "2026-11-14T09:16:38.411Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          },
+          "stocks": {
+            "state": "received",
+            "receivedAt": "2026-11-14T09:16:38.411Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          },
+          "funds": {
+            "state": "received",
+            "receivedAt": "2026-11-14T09:16:38.411Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          },
+          "options": {
+            "state": "received",
+            "receivedAt": "2026-11-14T09:16:38.411Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          },
+          "indices": {
+            "state": "received",
+            "receivedAt": "2026-11-14T09:16:38.411Z",
+            "retained": false,
+            "error": null,
+            "sourceAt": null
+          }
+        }
+      },
+      "baseline": {
+        "state": "loaded",
+        "error": null
+      },
+      "sources": {
+        "brsapi_gold_currency": {
+          "ok": true,
+          "gold": 9,
+          "currency": 28,
+          "stocks": null,
+          "funds": null,
+          "cached": null,
+          "updated": null,
+          "failed": null,
+          "error": null
+        },
+        "brsapi_stocks": {
+          "ok": true,
+          "gold": null,
+          "currency": null,
+          "stocks": 789,
+          "funds": 345,
+          "cached": null,
+          "updated": null,
+          "failed": null,
+          "error": null
+        },
+        "brsapi_index": {
+          "ok": true,
+          "gold": null,
+          "currency": null,
+          "stocks": null,
+          "funds": null,
+          "cached": null,
+          "updated": null,
+          "failed": null,
+          "error": null
+        },
+        "brsapi_nav": {
+          "ok": true,
+          "gold": null,
+          "currency": null,
+          "stocks": null,
+          "funds": null,
+          "cached": 149,
+          "updated": 149,
+          "failed": 1,
+          "error": null
+        },
+        "brsapi_fund_meta": {
+          "ok": true,
+          "gold": null,
+          "currency": null,
+          "stocks": null,
+          "funds": null,
+          "cached": 49,
+          "updated": 49,
+          "failed": 1,
+          "error": null
+        }
+      },
+      "storage": {
+        "enabled": true,
+        "ok": true,
+        "httpStatus": 200,
+        "at": "2026-11-14T09:16:39.360Z",
+        "error": null
+      },
+      "codal": {
+        "ok": false,
+        "lastRun": "2026-11-14T09:12:56.650Z",
+        "lastDate": null,
+        "rows": null,
+        "error": "other",
+        "skipped": null,
+        "lastAttemptStartedAt": "2026-11-14T09:12:56.650Z",
+        "failureDiagnostics": {
+          "version": 1,
+          "totals": {
+            "download": {
+              "exception": 305
+            },
+            "admission": {
+              "rejected": 3106,
+              "exception": 0
+            },
+            "persistence": {
+              "exception": 0
+            }
+          },
+          "lastCycle": {
+            "download": {
+              "exception": 0
+            },
+            "admission": {
+              "rejected": 17,
+              "exception": 0
+            },
+            "persistence": {
+              "exception": 0
+            }
+          }
+        },
+        "admissionDiagnostics": {
+          "version": 1,
+          "totals": {
+            "ن-۱۰": {
+              "context_invalid": 111,
+              "geometry_ambiguous": 0,
+              "scope_unknown": 747,
+              "scope_unsupported": 1809,
+              "statement_ambiguous": 0,
+              "unit_unverified": 0,
+              "values_unobserved": 0,
+              "period_unverified": 0,
+              "arithmetic_mismatch": 0,
+              "capital_unverified": 0,
+              "normalized_identity_mismatch": 0,
+              "eps_unverified": 0,
+              "internal_exception": 0,
+              "unspecified": 0
+            },
+            "ن-۳۰": {
+              "unsupported_layout": 362,
+              "short_rows": 22,
+              "missing_sales": 0,
+              "zero_sales_only": 4,
+              "arithmetic_mismatch": 0,
+              "mixed_rows": 0,
+              "no_product_rows": 0,
+              "unspecified": 0
+            }
+          },
+          "lastCycle": {
+            "ن-۱۰": {
+              "context_invalid": 0,
+              "geometry_ambiguous": 0,
+              "scope_unknown": 8,
+              "scope_unsupported": 8,
+              "statement_ambiguous": 0,
+              "unit_unverified": 0,
+              "values_unobserved": 0,
+              "period_unverified": 0,
+              "arithmetic_mismatch": 0,
+              "capital_unverified": 0,
+              "normalized_identity_mismatch": 0,
+              "eps_unverified": 0,
+              "internal_exception": 0,
+              "unspecified": 0
+            },
+            "ن-۳۰": {
+              "unsupported_layout": 1,
+              "short_rows": 0,
+              "missing_sales": 0,
+              "zero_sales_only": 0,
+              "arithmetic_mismatch": 0,
+              "mixed_rows": 0,
+              "no_product_rows": 0,
+              "unspecified": 0
+            }
+          }
+        },
+        "archive": {
+          "ok": true,
+          "lastAttemptFinishedAt": "2026-11-14T09:19:12.757Z",
+          "error": null,
+          "budgetDate": "2026-11-14",
+          "dailyCap": 200,
+          "usedToday": 196,
+          "cursor": 233,
+          "queueSize": 781,
+          "doneSymbols": 15,
+          "lastCycle": {
+            "pages": 7,
+            "downloaded": 14,
+            "inserted": 4,
+            "parseFailed": 10,
+            "persistenceUnconfirmed": 0
+          },
+          "coverage": {
+            "n30Symbols": 391,
+            "n10Symbols": 505,
+            "universeSize": 781,
+            "storedRows": 12582,
+            "universeMonthly": 357,
+            "universeFinancial": 459,
+            "withoutReports": 225,
+            "basis": "stored-presence-not-freshness",
+            "error": null,
+            "lastChecked": "2026-11-14T09:19:13.793Z"
+          }
+        },
+        "feed": {
+          "pages": 2,
+          "seen": 23,
+          "matched": 6,
+          "downloaded": 5,
+          "inserted": 0,
+          "parseFailed": 5,
+          "complete": false,
+          "incompleteReason": "other",
+          "incompleteReasonCode": "report_failure"
+        },
+        "feedTable": {
+          "attempted": 22,
+          "inserted": 7,
+          "duplicates": 15,
+          "error": null,
+          "httpStatus": null,
+          "sqlCode": null
+        },
+        "backfill": {
+          "queueSize": 781,
+          "inserted": 0,
+          "downloaded": 6,
+          "parseFailed": 6,
+          "skippedCovered": 0,
+          "cursor": 1414,
+          "symbolLimit": 2,
+          "workWindow": "regular"
+        },
+        "storedRecovery": {
+          "scanned": 45,
+          "downloaded": 6,
+          "inserted": 0,
+          "parseFailed": 6,
+          "blocked": 0,
+          "skippedKnown": 1,
+          "metadataSkipped": 38,
+          "reachedEnd": false
+        }
+      },
+      "history": {
+        "eodHistory": {
+          "ok": null,
+          "lastRun": null,
+          "lastDate": null,
+          "rows": 0,
+          "error": null,
+          "skipped": null
+        },
+        "indexHistory": {
+          "ok": null,
+          "lastRun": null,
+          "lastDate": null,
+          "rows": null,
+          "error": null,
+          "skipped": null
+        },
+        "marketBreadth": {
+          "ok": null,
+          "lastRun": null,
+          "lastDate": null,
+          "rows": null,
+          "error": null,
+          "skipped": null
+        },
+        "historyPrune": {
+          "ok": null,
+          "lastRun": "2026-11-14T09:11:30.678Z",
+          "lastDate": null,
+          "rows": null,
+          "error": null,
+          "skipped": null
+        }
+      },
+      "commodity": {
+        "enabled": true,
+        "rows": 14,
+        "reqToday": 2,
+        "dailyCap": 300,
+        "remaining": 298,
+        "lastFetchAt": "2026-11-14T09:16:38.409Z",
+        "counterScope": "process",
+        "dayKey": "2026-11-14",
+        "error": null
+      },
+      "ime": {
+        "certificate": {
+          "rows": 11,
+          "reqToday": 1,
+          "lastFetchAt": "2026-11-14T09:11:36.505Z",
+          "error": null,
+          "eod": {
+            "dayCalendar": "gregorian",
+            "dayTimezone": "Asia/Tehran",
+            "lastPushDay": null,
+            "pushed": 0,
+            "skippedSourceDate": null,
+            "table": "unknown",
+            "skip": null,
+            "error": null
+          }
+        },
+        "physical": {
+          "dayCalendar": "gregorian",
+          "dayTimezone": "Asia/Tehran",
+          "lastAttemptDay": null,
+          "lastRunDay": null,
+          "cycleDay": null,
+          "inserted": 0,
+          "maxProviderRequestsPerDay": 2,
+          "maxStorageAttemptsPerTarget": 3,
+          "table": "unknown",
+          "error": null,
+          "retryScope": "process-memory-tehran-day",
+          "targetCount": 0,
+          "targetsTruncated": false,
+          "targets": []
+        }
+      },
+      "mcpfarsiQuote": {
+        "enabled": false,
+        "configured": true,
+        "requests": 0,
+        "pendingPublication": false,
+        "publication": "none",
+        "error": null,
+        "sourceDateRaw": null,
+        "sourceAtUtc": null
+      },
+      "transport": {
+        "enabled": true,
+        "scope": "process",
+        "spacingMs": 300,
+        "pending": 0,
+        "sent": 393,
+        "minStartGapMs": 332.52332400000887,
+        "rollingWindowMs": 300000,
+        "rollingLimit": 300,
+        "ipWindowMs": 1000,
+        "ipLimit": 20,
+        "policy": "conservative_unverified_plan",
+        "windowScope": "process_lifetime",
+        "priorProcessWindow": "unknown",
+        "coldStartPolicy": "full_window_defer",
+        "globalEnforced": false,
+        "clockValid": true
+      },
+      "budget": {
+        "providerAccountUsage": null,
+        "providerResetAt": null,
+        "liaraCost": null,
+        "clientEnabled": false,
+        "client": {
+          "accountingScope": "internal_allocation_not_provider_usage",
+          "accountingState": null,
+          "available": null,
+          "persistent": null,
+          "day": null,
+          "softBudget": null,
+          "hardCeiling": null,
+          "used": null,
+          "remaining": null,
+          "rejectedByBudget": null,
+          "softExhausted": null,
+          "store": {
+            "healthy": null,
+            "errors": null,
+            "error": null,
+            "httpStatus": null,
+            "sqlCode": null
+          }
+        },
+        "legacy": {
+          "enforced": true,
+          "usedAggregate": 416,
+          "rejectedAggregate": 0,
+          "overBudgetPassedAggregate": 0,
+          "unmetered": 0,
+          "budget": {
+            "accountingScope": "internal_allocation_not_provider_usage",
+            "accountingState": "confirmed_internal_estimate",
+            "available": null,
+            "persistent": true,
+            "day": "2026-11-14",
+            "softBudget": 6000,
+            "hardCeiling": 9000,
+            "used": 5099,
+            "remaining": 3901,
+            "rejectedByBudget": 0,
+            "softExhausted": false,
+            "store": {
+              "healthy": true,
+              "errors": 0,
+              "error": null,
+              "httpStatus": null,
+              "sqlCode": null
+            }
+          }
+        },
+        "stopped": false,
+        "servedAgeMs": 187152
+      }
+    }
+  },
+  "backend": {
+    "status": "reachable",
+    "httpStatus": 401,
+    "httpOk": false,
+    "error": null
+  },
+  "storedRead": {
+    "status": "read",
+    "httpStatus": 200,
+    "error": null,
+    "rowCount": 21
+  },
+  "controlPlane": {
+    "project": {
+      "status": "read",
+      "httpStatus": 200,
+      "data": {
+        "projectId": "arsadata",
+        "status": null,
+        "cpuLimit": null,
+        "ramLimit": null,
+        "configuredScale": 1,
+        "configuredZeroDowntime": false,
+        "configuredNotActual": true,
+        "reviewedBackendBinding": {
+          "present": true,
+          "parseValid": true,
+          "noCredentialsQueryHash": true,
+          "exactReviewedBackendMatch": true,
+          "duplicateNameRejected": false,
+          "reason": "exact_match"
+        },
+        "envNames": [
+          "BRSAPI_COMMODITY_ENABLED",
+          "BRSAPI_KEY",
+          "CODAL_ENABLED",
+          "CODAL_PER_CYCLE",
+          "CODAL_SYMBOLS",
+          "MCPFARSI_QUOTE_ENABLED",
+          "MCP_FARSI_API_KEY",
+          "NODE_ENV",
+          "PORT",
+          "RELAY_TOKEN",
+          "SUPABASE_SERVICE_ROLE_KEY",
+          "SUPABASE_URL"
+        ],
+        "envNamesComplete": true
+      }
+    },
+    "releases": {
+      "status": "read",
+      "httpStatus": 200,
+      "data": {
+        "currentReleaseId": "6af824543c15d029ae15943c",
+        "match": "exact",
+        "release": {
+          "id": "6af824543c15d029ae15943c",
+          "state": "READY",
+          "createdAt": "2026-11-14T09:05:24.176Z",
+          "finishedAt": "2026-11-14T09:06:01.908Z",
+          "commit": null,
+          "branch": null
+        }
+      }
+    },
+    "identity": "matched_control_plane_metadata",
+    "limitations": [
+      "Environment values arrive in API memory only; names and booleans for one reviewed backend URL comparison are emitted.",
+      "Control-plane metadata is not proof of running process code, collector exclusion, budget or ingestion success."
+    ]
+  },
+  "limitations": [
+    "No source quote clocks are exposed by this debug contract; receipt time is not source time.",
+    "Process counters are not provider account usage or Liara billing.",
+    "Backend root HTTP 401 is an expected authentication challenge; HTTP 2xx or 401 alone do not prove database health. A successful stored Codal read proves that bounded public read only, may be cached, and does not prove all database services, deployed identity or fresh/complete reports."
+  ]
+}
