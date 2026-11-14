@@ -29,3 +29,11 @@ export async function readStoredReportCounts(symbols, { baseUrl, headers, fetch:
   }
   throw new Error("covered reports page limit reached");
 }
+
+// Trading value is not eligibility: halted/illiquid issuers still publish reports.
+// Stable ordering prevents daily value/rank changes from starving small issuers.
+export function companyUniverse(stocks) {
+  if (!Array.isArray(stocks)) throw new Error("company universe invalid schema");
+  return [...new Set(stocks.map(s => String(s?.id ?? "").trim())
+    .filter(id => id && !/[0-9۰-۹٠-٩]$/.test(id) && !/ح$/.test(id)))].sort();
+}
