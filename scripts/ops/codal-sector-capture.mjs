@@ -56,34 +56,38 @@ export function command(){
   if(cmd.length>6000)throw Error('command_limit');return cmd;
 }
 export function parse(raw,exitCode){
-  if(exitCode!==0||typeof raw!=='string'||Buffer.byteLength(raw)>4*1024*1024)throw Error('capture_failed');
-  const lines=raw.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g,'').split(/[\r\n]+/).map(x=>x.trim());
+  if(exitCode!==0||typeof raw!=='string'||Buffer.byteLength(raw)>4*1024*1024)throw Error('capture_transport');
+  // The CLI may prefix the first remote stdout line with a terminal status.
+  // Extract only complete protocol records ending at the line boundary.
+  const lines=raw.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g,'').split(/[\r\n]+/).map(x=>x.trim()).map(line=>
+    /(?:^|[^A-Za-z0-9_])(SECTOR_(?:PART=\d+\/\d+:[A-Za-z0-9+/]+={0,2}|DONE=\d+|CAPTURE=[A-Za-z0-9+/]+={0,2}))$/.exec(line)?.[1]??line);
   const chunks=lines.filter(x=>x.startsWith('SECTOR_PART=')),done=lines.filter(x=>x.startsWith('SECTOR_DONE='));
   const old=lines.filter(x=>x.startsWith('SECTOR_CAPTURE='));let encoded;
   if(chunks.length||done.length){
-    if(old.length||done.length!==1||done[0]!==`SECTOR_DONE=${chunks.length}`||chunks.length>1500)throw Error('capture_failed');
-    encoded=chunks.map((line,i)=>{const prefix=`SECTOR_PART=${i}/${chunks.length}:`;if(!line.startsWith(prefix)||! /^[A-Za-z0-9+/]+={0,2}$/.test(line.slice(prefix.length)))throw Error('capture_failed');return line.slice(prefix.length);}).join('');
+    if(old.length||done.length!==1||done[0]!==`SECTOR_DONE=${chunks.length}`||chunks.length>1500)throw Error('capture_envelope');
+    encoded=chunks.map((line,i)=>{const prefix=`SECTOR_PART=${i}/${chunks.length}:`;if(!line.startsWith(prefix)||! /^[A-Za-z0-9+/]+={0,2}$/.test(line.slice(prefix.length)))throw Error('capture_order');return line.slice(prefix.length);}).join('');
   }else{
-    if(old.length!==1||!/^SECTOR_CAPTURE=[A-Za-z0-9+/]+={0,2}$/.test(old[0]))throw Error('capture_failed');encoded=old[0].slice(15);
+    if(old.length!==1||!/^SECTOR_CAPTURE=[A-Za-z0-9+/]+={0,2}$/.test(old[0]))throw Error('capture_envelope');encoded=old[0].slice(15);
   }
-  const packet=JSON.parse(inflateRawSync(Buffer.from(encoded,'base64'),{maxOutputLength:15*1024*1024}).toString('utf8'));
-  if(packet.schemaVersion!==1||!Array.isArray(packet.documents)||packet.documents.length!==TARGETS.length)throw Error('capture_failed');
+  let packet;
+  try{packet=JSON.parse(inflateRawSync(Buffer.from(encoded,'base64'),{maxOutputLength:15*1024*1024}).toString('utf8'));}catch{throw Error('capture_decode');}
+  if(packet.schemaVersion!==1||!Array.isArray(packet.documents)||packet.documents.length!==TARGETS.length)throw Error('capture_schema');
   return packet.documents.map((d,i)=>{
     const expected=TARGETS[i];
-    if(d.id!==expected.id||d.sourceUrl!==expected.url||!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(d.capturedAt))throw Error('capture_failed');
+    if(d.id!==expected.id||d.sourceUrl!==expected.url||!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(d.capturedAt))throw Error('capture_identity');
     const result={id:expected.id,sourceUrl:expected.url,capturedAt:d.capturedAt,status:d.status};
     if(d.status==='retrieved'){
-      if(!sameReport(d.responseUrl,expected.url)||typeof d.body!=='string'||! /^[A-Za-z0-9+/]+={0,2}$/.test(d.body))throw Error('capture_failed');
-      const bytes=Buffer.from(d.body,'base64');if(!bytes.length||bytes.length>2*1024*1024)throw Error('capture_failed');
+      if(!sameReport(d.responseUrl,expected.url)||typeof d.body!=='string'||! /^[A-Za-z0-9+/]+={0,2}$/.test(d.body))throw Error('capture_source');
+      const bytes=Buffer.from(d.body,'base64');if(!bytes.length||bytes.length>2*1024*1024)throw Error('capture_body');
       return {...result,responseUrl:d.responseUrl,sha256:createHash('sha256').update(bytes).digest('hex'),bytes};
     }
-    if(!['http_error','identity','body_limit','body_missing','timeout','transport_failed'].includes(d.status))throw Error('capture_failed');
+    if(!['http_error','identity','body_limit','body_missing','timeout','transport_failed'].includes(d.status))throw Error('capture_status');
     return {...result,httpStatus:d.status==='http_error'&&Number.isInteger(d.httpStatus)?d.httpStatus:null};
   });
 }
-export function failureReceipt(raw,exitCode){
+export function failureReceipt(raw,exitCode,error){
   const bounded=typeof raw==='string'&&Buffer.byteLength(raw)<=4*1024*1024?raw:'';
-  return {status:'capture_failed',exitCode:Number.isInteger(exitCode)?exitCode:null,bytes:typeof raw==='string'?Buffer.byteLength(raw):null,
+  return {status:'capture_failed',stage:['capture_transport','capture_envelope','capture_order','capture_decode','capture_schema','capture_identity','capture_source','capture_body','capture_status'].includes(error?.message)?error.message:'local_io_or_unknown',exitCode:Number.isInteger(exitCode)?exitCode:null,bytes:typeof raw==='string'?Buffer.byteLength(raw):null,
     partMarkers:(bounded.match(/SECTOR_PART=/g)||[]).length,doneMarkers:(bounded.match(/SECTOR_DONE=/g)||[]).length,
     legacyMarkers:(bounded.match(/SECTOR_CAPTURE=/g)||[]).length,
     signals:{syntax:/SyntaxError/.test(bounded),notFound:/not found|Cannot find module/.test(bounded),authentication:/Unauthorized|unauthorized|invalid.*token/i.test(bounded),transport:/ETIMEDOUT|ECONNRESET|timeout|timed out/i.test(bounded),remoteFailure:/^sector_capture_failed\s*$/m.test(bounded)}};
@@ -101,8 +105,8 @@ if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
       await writeFile('sector-primary-sources/receipt.json',JSON.stringify(receipt,null,2));
       console.log(JSON.stringify(receipt));if(receipt.some(d=>d.status!=='retrieved'))process.exitCode=1;
     }else throw Error('mode');
-  }catch{
-    const receipt=failureReceipt(privateRaw,exitCode);
+  }catch(error){
+    const receipt=failureReceipt(privateRaw,exitCode,error);
     if(process.argv[2]==='parse'){await mkdir('sector-primary-sources',{recursive:true});await writeFile('sector-primary-sources/failure.json',JSON.stringify(receipt,null,2));}
     console.error(JSON.stringify(receipt));process.exitCode=1;
   }
