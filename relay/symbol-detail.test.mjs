@@ -1,3 +1,4 @@
+process.env.RELAY_BACKGROUND_WINDOW_ENABLED = "0"; // deterministic existing fixtures; window boundaries tested separately
 // تستِ بودجه‌آگاهیِ چرخش و کرانِ کش — بدونِ شبکه.
 // اجرا:  node relay/symbol-detail.test.mjs
 import assert from "node:assert/strict";
@@ -97,11 +98,11 @@ const many = count => Object.fromEntries(Array.from({ length: count }, (_, i) =>
   return [symbol, entry(symbol, NOW - 3600000 + i)];
 }));
 
-async function offline({ reads = snapshot(many(120)), source = 'fail', cap }, run) {
+async function offline({ reads = snapshot(many(120)), source = 'fail', cap, now = NOW }, run) {
   const realFetch = globalThis.fetch, RealDate = Date;
   const previousCap = process.env.SYMBOL_DETAIL_DAILY_CAP;
   if (cap !== undefined) process.env.SYMBOL_DETAIL_DAILY_CAP = String(cap);
-  globalThis.Date = class extends RealDate { constructor(...args) { super(...(args.length ? args : [NOW])); } static now() { return NOW; } };
+  globalThis.Date = class extends RealDate { constructor(...args) { super(...(args.length ? args : [now])); } static now() { return now; } };
   let readCount = 0, calls = 0;
   const posts = [];
   globalThis.fetch = async (url, init = {}) => {
@@ -231,6 +232,21 @@ await check('concurrent rotations share one read-refresh-publish cycle', async (
     assert.equal(first, second); await Promise.all([first, second]);
     assert.equal(h.reads, 2); assert.equal(h.posts.length, 1); assert.equal(h.calls, 1);
   });
+});
+
+await check('overnight background skip does not block direct symbol reads', async () => {
+  process.env.RELAY_BACKGROUND_WINDOW_ENABLED='1';
+  try {
+    await offline({reads:[],source:'success',now:Date.parse('2026-10-14T20:10:00+03:30')},async h=>{
+      await h.api.refreshSymbolDetailsRotation(h.options);
+      const calls=h.calls,reads=h.reads;
+      await h.api.refreshSymbolDetailsRotation(h.options);
+      assert.equal(h.calls,calls);assert.equal(h.reads,reads);
+      await h.api.getSymbolDetail('another',h.options);
+      assert.equal(h.calls,calls+1);
+      assert.equal(h.api.symbolRotationStatus().backgroundWorkWindow,'overnight');
+    });
+  } finally { process.env.RELAY_BACKGROUND_WINDOW_ENABLED='0'; }
 });
 
 console.log(`\n${pass} passed, ${fail} failed`);

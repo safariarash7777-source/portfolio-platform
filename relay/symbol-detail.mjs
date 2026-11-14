@@ -1,3 +1,4 @@
+import { backgroundRotationDue, backgroundWorkWindow } from "./background-work-window.mjs";
 import { readProviderJson } from './capitalization-response.mjs';
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
 // symbol-detail.mjs — T5-1: دیتای جامع نماد (Tsetmc/Symbol.php) با کش ۳دقیقه‌ای per-symbol
@@ -208,6 +209,7 @@ export function symbolRotationStatus() {
     budgetRemaining: Math.max(0, DAILY_CAP - usedToday),
     cursor: rotationCursor,
     lastRunAt: lastRotationAt || null,
+    backgroundWorkWindow: process.env.RELAY_BACKGROUND_WINDOW_ENABLED === "0" ? "disabled" : backgroundWorkWindow().offPeak ? "overnight" : "regular",
     lastPushed: lastRotationPushed,
     lastError: lastRotationError,
   };
@@ -217,6 +219,7 @@ export function symbolRotationStatus() {
 // و کل کش موجود را یک‌جا در Supabase آپسرت می‌کند. symbols: آرایهٔ l18 مرتب به ارزش.
 export function refreshSymbolDetailsRotation(options) {
   if (rotationInflight) return rotationInflight;
+  if (process.env.RELAY_BACKGROUND_WINDOW_ENABLED !== "0" && !backgroundRotationDue(lastRotationAt)) return Promise.resolve();
   rotationInflight = rotateSymbolDetails(options).finally(() => { rotationInflight = null; });
   return rotationInflight;
 }

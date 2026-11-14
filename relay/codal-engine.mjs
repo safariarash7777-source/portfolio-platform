@@ -24,6 +24,7 @@ import {
   classifyAnnouncement, fetchAnnouncementsPage, downloadAndParse,
   insertParsedReport, existingUrlsFor, faToEn, codalEnv,
 } from "./codal.mjs";
+import { backgroundWorkWindow } from "./background-work-window.mjs";
 import { companyUniverse } from "./codal-coverage.mjs";
 import { isBrsLocalDeferral } from "./brsapi-transport.mjs";
 import { admissionCounts, admissionEvent, readAdmissionDiagnostics, recordAdmissionRejection } from "./codal-admission-diagnostics.mjs";
@@ -398,9 +399,13 @@ async function backfillSome() {
   // Stored row count cannot prove current coverage. Reconcile each issuer in a
   // stable rotation; known report identities prevent repeat downloads.
   let remainingDownloads = Math.max(0, BACKFILL_PER_CYCLE * BACKFILL_MAX_DL - engineStatus.storedRecovery.downloaded);
+  const window = process.env.RELAY_BACKGROUND_WINDOW_ENABLED === "0" ? { issuerMultiplier: 1, offPeak: false } : backgroundWorkWindow();
+  const symbolLimit = BACKFILL_PER_CYCLE * window.issuerMultiplier;
+  st.workWindow = window.offPeak ? "overnight" : "regular";
+  st.symbolLimit = symbolLimit;
   let processedSymbols = 0;
   let guard = 0;
-  while (processedSymbols < BACKFILL_PER_CYCLE && guard < queue.length && remainingDownloads > 0) {
+  while (processedSymbols < symbolLimit && guard < queue.length && remainingDownloads > 0) {
     guard++;
     const cursorBefore = state.backfillCursor;
     const sym = queue[state.backfillCursor % queue.length];
