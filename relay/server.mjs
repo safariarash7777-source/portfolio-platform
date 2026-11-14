@@ -34,6 +34,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { codalTest, codalRawExcel, codalDebugDump, CODAL_INTERVAL_MS, fetchAnnouncementsPage } from "./codal.mjs";
 import { runEngineCycle, engineStatus } from "./codal-engine.mjs";
+import { createCompanyWorkScheduler } from "./company-work-scheduler.mjs";
 import { runArchiveCycle, archiveStatus } from "./codal-archive.mjs";
 import { fetchOptions, optionsStatus } from "./options.mjs";
 import { runCandleBackfill, candleStatus } from "./candle-backfill.mjs";
@@ -1600,16 +1601,18 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   // کدال — CODAL_ENABLED=1 برای فعال‌سازی موتور v3 (فید سراسری + بک‌فیل اولویت‌دار).
   // مسیر legacy نمادبه‌نماد در پاک‌سازی C3 حذف شد (موتور v3 از ۱۶ تیر سالم، ۱۶۵ گزارش).
   if (process.env.CODAL_ENABLED === "1") {
-    const job = runEngineCycle;
+    const scheduler = createCompanyWorkScheduler({ job: runEngineCycle, regularIntervalMs: CODAL_INTERVAL_MS,
+      overnightEnabled: process.env.RELAY_BACKGROUND_WINDOW_ENABLED !== "0" });
+    engineStatus.schedule = scheduler.state;
     const name = "codal engine v3";
     console.log(`${name} armed: first run in 90s`);
     setTimeout(() => {
       console.log(`${name} starting`);
-      job().catch((e) => console.error(`${name} error:`, e?.message ?? e));
+      scheduler.run({ initial: true }).catch((e) => console.error(`${name} error:`, e?.message ?? e));
     }, 90 * 1000).unref();
     setInterval(() => {
-      job().catch((e) => console.error(`${name} error:`, e?.message ?? e));
-    }, CODAL_INTERVAL_MS).unref();
+      scheduler.run().catch((e) => console.error(`${name} error:`, e?.message ?? e));
+    }, 60 * 1000).unref();
 
     // T4 — بک‌فیل آرشیو کدال (صفحه‌گردی تا ۱۴۰۲/۱۴۰۱، سقف صریح ۲۰۰ درخواست/روز).
     // با فاصله از چرخهٔ موتور اجرا می‌شود تا هم‌زمان فشار نیاورند.

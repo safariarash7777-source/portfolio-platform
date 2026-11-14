@@ -71,6 +71,9 @@ function codalDetails(engine, archive) {
   return {
     // Attempt clocks are not successful ingestion receipts.
     lastAttemptStartedAt: clock(engine?.lastRun),
+    schedule: { running: boolean(engine?.schedule?.running), started: boolean(engine?.schedule?.started),
+      lastStartedAt: clock(engine?.schedule?.lastStartedAt), lastCompletedAt: clock(engine?.schedule?.lastCompletedAt),
+      ...integerCounts(engine?.schedule, ['regularIntervalMs', 'overnightIntervalMs']) },
     failureDiagnostics: diagnostics(engine?.failureDiagnostics, { download: ['exception'], admission: ['rejected', 'exception'], persistence: ['exception'] }),
     admissionDiagnostics: diagnostics(engine?.admissionDiagnostics, ADMISSION_REASONS),
     archive: {

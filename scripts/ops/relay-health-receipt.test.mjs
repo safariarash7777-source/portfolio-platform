@@ -10,6 +10,14 @@ import { collectControlPlane, collectReceipt, sanitizeDebug, errorCategory, tran
 const storedUrl = 'https://portfolio-platform-fawn.vercel.app/api/codal-list?symbol=' + encodeURIComponent('فولاد');
 const storedBody = { source: 'codal_feed', coverage: 'stored-announcements', data: [{ private: 'NEVER_EMIT_PRIVATE_VALUE' }] };
 const secret = 'NEVER_EMIT_PRIVATE_VALUE';
+
+test('company scheduler receipt keeps attempt clocks separate and missing state unknown',()=>{
+ const schedule={running:true,started:true,lastStartedAt:1794654656941,lastCompletedAt:null,regularIntervalMs:10800000,overnightIntervalMs:900000,private:secret};
+ const result=sanitizeDebug({codalEngine:{schedule}}).codal.schedule;
+ assert.equal(result.running,true);assert.equal(result.lastStartedAt,'2026-11-14T11:10:56.941Z');
+ assert.equal(result.lastCompletedAt,null);assert.equal(result.overnightIntervalMs,900000);
+ assert.equal(sanitizeDebug({}).codal.schedule.started,null);assert.ok(!JSON.stringify(result).includes(secret));
+});
 test('MCP receipt exposes confirmed cache state without credentials or raw errors', () => {
   const d = sanitizeDebug({ mcpfarsiQuote: { enabled: true, configured: true, requests: 1,
     publication: 'confirmed', pendingPublication: false, lastError: secret, token: secret,
