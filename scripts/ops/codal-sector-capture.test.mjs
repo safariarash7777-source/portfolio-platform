@@ -57,6 +57,7 @@ test('exact embedded remote command emits bounded chunks that round-trip without
   await vm.runInNewContext(source,context);
   assert.equal(context.process.exitCode,0);assert.ok(lines.every(line=>line.length<2050));
   assert.equal(parse(lines.join('\n'),0).length,5);
+  assert.equal(parse('✔ connected > '+lines.join('\r\n'),0).length,5);
   assert.throws(()=>parse(lines.slice(0,-1).join('\n'),0));
   assert.throws(()=>parse([lines[0],...lines].join('\n'),0));
   assert.throws(()=>parse(lines.map(x=>x.replace('SECTOR_PART=0/','SECTOR_PART=9/')).join('\n'),0));
@@ -65,4 +66,6 @@ test('failure receipt preserves bounded diagnostic classes without reflecting pr
   const receipt=failureReceipt('private-key-here\nSyntaxError: unexpected token\nSECTOR_PART=0/2:abc\n',1);
   assert.equal(receipt.signals.syntax,true);assert.equal(receipt.partMarkers,1);assert.equal(receipt.exitCode,1);
   assert.doesNotMatch(JSON.stringify(receipt),/private-key|unexpected token|abc/);
+  assert.equal(failureReceipt('',0,new Error('capture_decode')).stage,'capture_decode');
+  assert.equal(failureReceipt('',0,new Error('secret text')).stage,'local_io_or_unknown');
 });
