@@ -1,0 +1,41 @@
+name: Capture fixed public Codal sector statements
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: codal-sector-capture
+  cancel-in-progress: false
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read five fixed public documents inside existing relay
+        env:
+          LIARA_API_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
+          LIARA_CLI: '@liara/cli@9.5.1'
+          APP: arsadata
+        run: |
+          set +e
+          CMD="$(node scripts/ops/codal-sector-capture.mjs command)"
+          test -n "$CMD" || exit 1
+          export CMD
+          RAW="$RUNNER_TEMP/sector-private-capture.log"
+          timeout 300 bash scripts/deploy/liara-shell-probe.sh > "$RAW" 2>&1
+          RC=$?
+          node scripts/ops/codal-sector-capture.mjs parse "$RAW" "$RC"
+      - name: Preserve validated public source bytes only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sector-primary-sources
+          path: sector-primary-sources/
+          if-no-files-found: error
+          retention-days: 14
