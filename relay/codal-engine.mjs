@@ -26,7 +26,9 @@ import {
 } from "./codal.mjs";
 import { backgroundWorkWindow } from "./background-work-window.mjs";
 import { companyUniverse } from "./codal-coverage.mjs";
-import { isBrsLocalDeferral } from "./brsapi-transport.mjs";
+import { isBrsLocalDeferral as isBrsDeferred } from "./brsapi-transport.mjs";
+import { codalAccess, isCodalSourceDeferred } from './codal-source-access.mjs';
+const isBrsLocalDeferral = error => isBrsDeferred(error) || isCodalSourceDeferred(error);
 import { admissionCounts, admissionEvent, readAdmissionDiagnostics, recordAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 import { supportsDecisionUrl } from "./codal-statement-source.mjs";
 import { readStoredAnnouncements, validStoredCursor } from "./codal-stored-feed.mjs";
@@ -135,6 +137,7 @@ async function loadState() {
       Object.entries(payload.decisionStatementV1Attempts).some(([url,n]) => url.length>4096 || n!==1)) {
     throw new Error('statement retry ledger invalid schema');
   }
+  codalAccess.restore(payload.sourceHoldUntil);
   state = payload;
   state.watermark ??= null;
   state.backfillCursor ??= 0;
@@ -150,6 +153,7 @@ async function loadState() {
 
 async function saveState() {
   if (!state) return;
+  state.sourceHoldUntil = codalAccess.snapshot();
   // دفتر خطا را جمع‌وجور نگه می‌داریم
   const entries = Object.entries(state.fails);
   if (entries.length > LEDGER_CAP) {
@@ -519,6 +523,7 @@ export async function runEngineCycle() {
   Object.assign(engineStatus.backfill, { inserted: 0, downloaded: 0, parseFailed: 0, symbols: [], skippedCovered: 0 });
   let feedDeferred = false;
   try {
+    codalAccess.check();
     await pollGlobalFeed();
   } catch (e) {
     engineStatus.feed.complete = false;

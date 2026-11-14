@@ -20,6 +20,7 @@ import {
   insertParsedReport, existingUrlsFor, faToEn, codalEnv,
 } from "./codal.mjs";
 import { companyUniverse, readStoredReportInventory, summarizeReportInventory } from "./codal-coverage.mjs";
+import { codalAccess, isCodalSourceDeferred } from './codal-source-access.mjs';
 
 const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = codalEnv;
 
@@ -82,12 +83,14 @@ async function loadState() {
         || !counter(p.p3) || p.p3 < 1 || typeof p.done1 !== 'boolean' || typeof p.done3 !== 'boolean')) {
       throw new Error('archive state invalid payload');
     }
+    codalAccess.restore(candidate.sourceHoldUntil);
     state = candidate;
   return state;
 }
 
 async function saveState() {
   if (!state) return;
+  state.sourceHoldUntil = codalAccess.snapshot();
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/ir_market_snapshots?on_conflict=key`, {
       method: "POST",
@@ -176,6 +179,7 @@ export async function runArchiveCycle() {
   }
 
   try {
+    codalAccess.check();
     if (budgetLeft() <= 2) {
       archiveStatus.lastError = `بودجهٔ روزانه (${ARCHIVE_DAILY_CAP}) مصرف شده — تا فردا صبر می‌کنیم`;
     } else {
@@ -239,6 +243,7 @@ export async function runArchiveCycle() {
                   recordFail(a.link);
                 }
               } catch (e) {
+                if (isCodalSourceDeferred(e)) throw e;
                 st.parseFailed++;
                 pageComplete = false;
                 recordFail(a.link);

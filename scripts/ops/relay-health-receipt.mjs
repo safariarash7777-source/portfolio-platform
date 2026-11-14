@@ -29,6 +29,7 @@ export function transportError(error) {
 export function errorCategory(value) {
   if (value == null || value === '') return null;
   const text = typeof value === 'string' ? value.slice(0, 1000) : '';
+  if (/codal_source_challenge/.test(text)) return 'source_access_challenge';
   if (/timeout|timed out|aborted/i.test(text)) return 'timeout';
   if (/certificate|cert_|tls/i.test(text)) return 'tls';
   if (/\b(401|403)\b|unauthor|forbidden/i.test(text)) return 'authorization';

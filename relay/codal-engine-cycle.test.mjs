@@ -153,7 +153,7 @@ test('archive retries a failed read and preserves the recovered exhausted budget
   const f = await fixture({ archiveStateBody: [{ payload }] });
   await archive.runArchiveCycle();
   assert.equal(f.budgetJobs.length, 0);
-  assert.deepEqual(f.calls.archiveSaves[0], payload);
+  assert.deepEqual(f.calls.archiveSaves[0], { ...payload, sourceHoldUntil: 0 });
   assert.equal(archive.archiveStatus.cursor, 234);
   assert.equal(archive.archiveStatus.usedToday, 198);
 });
@@ -947,4 +947,25 @@ test('archive rejection does not advance its page or claim a successful cycle',a
  assert.equal(archive.archiveStatus.lastCycle.parseFailed,1);
  assert.equal(f.calls.archiveSaves.at(-1).perSymbol['نمونه'].p1,1);
  assert.equal(f.calls.reportWrites.length,0);
+});
+
+test('publisher challenge stops the cycle without poisoning report failures and persists across engine/archive', async () => {
+ const a=financial(2);
+ const f=await fixture({pages:[[a,boundary],[]],excelHtml:'<h1>تأیید کاربر</h1><img id="captchaImage"><input id="captchaCode">کد امنیتی'});
+ await f.engine.runEngineCycle();
+ assert.equal(f.calls.excel.length,1);
+ assert.equal(f.engine.engineStatus.ok,false);
+ assert.match(f.engine.engineStatus.lastError,/codal_source_challenge/);
+ assert.deepEqual(f.persisted.fails,{});
+ assert.deepEqual(f.persisted.watermark,watermark);
+ assert.ok(f.persisted.sourceHoldUntil>Date.now());
+ const resumed=await fixture({initialState:f.persisted,pages:[[a,boundary],[]]});
+ await resumed.engine.runEngineCycle();
+ assert.equal(resumed.budgetJobs.length,0);
+ assert.equal(resumed.calls.excel.length,0);
+ const archive=await import(`./codal-archive.mjs?mock=${++scenario}`);
+ await archive.runArchiveCycle();
+ assert.equal(resumed.budgetJobs.length,0);
+ assert.equal(archive.archiveStatus.lastError,'codal_source_challenge');
+ assert.equal(resumed.calls.archiveSaves.at(-1).sourceHoldUntil,f.persisted.sourceHoldUntil);
 });
