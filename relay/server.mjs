@@ -3,6 +3,7 @@ import { readProviderJson } from './capitalization-response.mjs';
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
 import { brsTransportMetrics, waitForBrsReadiness } from "./brsapi-transport.mjs";
 import { createNavRefreshSequence } from "./nav-refresh-sequence.mjs";
+import { selectNavRefreshTargets } from "./nav-refresh-targets.mjs";
 import { writeDailyFx } from "./daily-fx.mjs";
 import { retainMarketFamilies, retainCommoditySnapshot, mergeStoredBaseline, sourceErrorCategory, validStoredSnapshot, NAV_STALE_MS } from "./market-retention.mjs";
 // ─────────────────────────────────────────────────────────────────────────────
@@ -581,10 +582,9 @@ async function refreshNavs(funds, attempted = new Set()) {
 
   // ۲) تک‌نمادی برای پرمعامله‌ترین‌ها
   // C1 — قبل از صف‌کردن: زیرنماد، حق تقدم و بلک‌لیست دائمی NAV حذف می‌شوند.
-  const top = funds
-    .filter((f) => !isSubTicker(f.id) && !isRightsIssue(f.id) && !isNavBlacklisted(f.id))
-    .sort((a, b) => (b.value || 0) - (a.value || 0))
-    .slice(0, NAV_TOP);
+  const top = selectNavRefreshTargets(funds
+    .filter((f) => !isSubTicker(f.id) && !isRightsIssue(f.id) && !isNavBlacklisted(f.id)),
+    navCache, { now: Date.now(), limit: NAV_TOP });
   let updated = 0;
   let failed = 0;
   const queue = [...top];
@@ -1334,10 +1334,11 @@ function refresh() {
       // Unknown baseline permits a complete replacement, but never a partial one.
       if (!result.successes) return;
       if (budgetStop.active) {
-        // Optional enrichment can exhaust its allocation after every core
-        // family succeeded. Persist that complete snapshot without making any
-        // more provider/history requests; a partial stopped cycle stays closed.
-        if (result.complete) await pushToSupabase(body);
+        // Already received families remain publishable when another allocation
+        // stops. Retention keeps failed-family rows and their original clocks;
+        // an unknown baseline still forbids a partial replacement. This sends
+        // no additional provider/history requests and does not change budgets.
+        if (baselineResolved || result.complete) await pushToSupabase(body);
         return;
       }
       if (baselineResolved || result.complete) await pushToSupabase(body);
