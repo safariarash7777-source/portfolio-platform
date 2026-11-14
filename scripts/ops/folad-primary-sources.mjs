@@ -10,6 +10,8 @@ export const TARGETS = Object.freeze([
 export const SOURCE_SETS = Object.freeze({
   folad: TARGETS,
   'company-families-20261114': Object.freeze([
+    ['N10-23022', 'https://excel.codal.ir/service/Excel/GetAll/GaX5WVcrooFnBEWMQQQaQQQ2ja8g%3d%3d/0'],
+    ['N10-22271', 'https://excel.codal.ir/service/Excel/GetAll/qQ7fKiLEAxkBOevIPSiQFw%3d%3d/0'],
     ['N10-29700', 'https://excel.codal.ir/service/Excel/GetAll/HnQQQaQQQBLakgis593HbgHAuolw%3d%3d/0'],
     ['N10-29399', 'https://excel.codal.ir/service/Excel/GetAll/XWpcCloAeodXnF946XztEQ%3d%3d/0'],
     ['N10-29245', 'https://excel.codal.ir/service/Excel/GetAll/HYQQQaQQQcEzJdrkARLoU7MAsyKA%3d%3d/0'],

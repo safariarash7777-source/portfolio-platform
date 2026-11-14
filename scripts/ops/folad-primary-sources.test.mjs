@@ -73,11 +73,11 @@ test('missing credentials make no calls; transport errors are sanitized without 
   assert.doesNotMatch(JSON.stringify(failed), /private|secret/);
 });
 
-test('company family profile stays bounded to the three reviewed public report identities',async t=>{
+test('company family profile stays bounded to the five reviewed public report identities',async t=>{
  const outputDir=await fixture(t),seen=[];
  const receipt=await capture({outputDir,profile:'company-families-20261114',token:'fixture',fetchImpl:async url=>{seen.push(url.searchParams.get('url'));return new Response('<html>public report</html>');}});
- assert.equal(seen.length,3);
+ assert.equal(seen.length,5);
  assert.deepEqual(seen,SOURCE_SETS['company-families-20261114'].map(x=>x[1]));
- assert.deepEqual(receipt.documents.map(x=>x.documentId),['N10-29700','N10-29399','N10-29245']);
+ assert.deepEqual(receipt.documents.map(x=>x.documentId),['N10-23022','N10-22271','N10-29700','N10-29399','N10-29245']);
  assert.ok(receipt.documents.every(x=>x.status==='retrieved'&&x.reportKind==='N10'));
 });
