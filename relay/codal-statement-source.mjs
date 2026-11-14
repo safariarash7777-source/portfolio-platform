@@ -117,7 +117,7 @@ function reportSerial(url, decision, interim = false) {
   if (typeof url !== 'string' || url.length>4096 || url.trim() !== url) fail('source_identity');
   const u = new URL(url);
   if (u.protocol !== 'https:' || u.username || u.password || u.hash || u.port ||
-      !(decision ? (u.hostname === 'codal.ir' || interim && u.hostname === 'www.codal.ir') : u.hostname === 'excel.codal.ir')) fail('source_identity');
+      !(decision ? ['codal.ir', 'www.codal.ir'].includes(u.hostname) : u.hostname === 'excel.codal.ir')) fail('source_identity');
   if (decision) {
     if (u.pathname !== (interim ? '/Reports/InterimStatement.aspx' : '/Reports/Decision.aspx')) fail('source_identity');
     const pairs = u.search.slice(1).split('&').map(p => p.split('='));
@@ -152,9 +152,9 @@ function document(source,meta,announcement,alias,interim=false) {
  if(serial!==reportSerial(announcement.link,true))fail('source_identity');
  const html=sourceText(source,MAX_DECISION);
  const root=literalDatasource(html);
- // The legacy route additionally proves the selected standalone sheet against
- // its separately advertised consolidated counterpart; the default stays closed.
- const mixed=interim && root.isConsolidated===true && /^FinancialStatement-Consolidated-Listed-Product-V\d+$/.test(root.title_En??'');
+ // Combined workbooks require proof that the selected standalone sheet has a
+ // separately advertised consolidated counterpart. Group figures stay rejected.
+ const mixed=root.isConsolidated===true && /^FinancialStatement-Consolidated-Listed-Product-V\d+$/.test(root.title_En??'');
  if((root.isConsolidated!==false && !mixed) || !Number.isSafeInteger(root.tracingNo) || root.tracingNo<=0 ||
     root.type!==6 || typeof root.isAudited!=='boolean' || root.periodExtraDay!==0 ||
     ![3,6,9,12].includes(root.period) || (!mixed && !/FinancialStatement-Listed-Product/.test(root.title_En??'')))fail('scope_unsupported');
@@ -191,11 +191,13 @@ function document(source,meta,announcement,alias,interim=false) {
   const choices=[...select.matchAll(/<option\b([^>]*)>([\s\S]*?)<\/option\s*>/gi)];
   const selected=choices.filter(m=>attributes('<option '+m[1]+'>').some(a=>a.name==='selected'));
   if(selected.length!==1 || norm(text(selected[0][2]))!==norm(title))fail('scope_unsupported');
-  if(mixed){
-   const own=choices.filter(m=>norm(text(m[2]))===norm(title));
-   const group=choices.filter(m=>norm(text(m[2]))===norm(title+' تلفیقی'));
-   if(own.length!==1||group.length!==1||attr('<option '+group[0][1]+'>','value')===String(sheet.code))fail('scope_unsupported');
-  }
+ }
+ if(mixed){
+  const choices=[...select.matchAll(/<option\b([^>]*)>([\s\S]*?)(?=<option\b|<\/select>|$)/gi)];
+  const own=choices.filter(m=>norm(text(m[2]))===norm(title));
+  const group=choices.filter(m=>norm(text(m[2]))===norm(title+' تلفیقی'));
+  if(own.length!==1||group.length!==1||attr('<option '+own[0][1]+'>','value')!==String(sheet.code)||
+     attr('<option '+group[0][1]+'>','value')===String(sheet.code))fail('scope_unsupported');
  }
  for(const owner of [sheet,table])if(norm(owner.title_Fa)!==norm(title)||
     (owner.isConsolidated!==undefined&&owner.isConsolidated!==false))fail('scope_unsupported');
@@ -353,8 +355,23 @@ export async function loadDecisionStatement(announcement,meta,{fetchImpl=globalT
   url=u.href;reportSerial(url,true);
  }catch{return {data:null,reason:'source_identity'};}
  const bound={...announcement,link:url};
- const income=await captureDecision(url,fetchImpl);
+ let income=await captureDecision(url,fetchImpl);
  if(new URL(income.url).pathname==='/Reports/InterimStatement.aspx')return loadInterimStatement(income,meta,bound,fetchImpl);
+ // Audited workbooks may open the auditor opinion. Follow only the exact
+ // standalone income option advertised by this same official report.
+ let incomeTarget=null;
+ try{
+  const landing=sourceText(income,MAX_DECISION);
+  const select=element(landing,'select','ddlTable');
+  const choices=[...select.matchAll(/<option\b([^>]*)>([\s\S]*?)(?=<option\b|<\/select>|$)/gi)]
+   .filter(m=>norm(text(m[2]))===norm('صورت سود و زیان'));
+  if(choices.length!==1)return {data:null,reason:'source_context_invalid'};
+  const code=attr('<option '+choices[0][1]+'>','value');
+  if(!/^\d{1,6}$/.test(code))return {data:null,reason:'source_context_invalid'};
+  const selected=attributes('<option '+choices[0][1]+'>').some(a=>a.name==='selected');
+  if(!selected){const target=new URL(income.url);target.searchParams.set('sheetId',code);incomeTarget=target.href;}
+ }catch{return {data:null,reason:'source_context_invalid'};}
+ if(incomeTarget)income=await captureDecision(incomeTarget,fetchImpl);
  let statement;
  try{statement=document(income,meta,bound,'IncomeStatement');}
  catch{return {data:null,reason:'source_context_invalid'};}

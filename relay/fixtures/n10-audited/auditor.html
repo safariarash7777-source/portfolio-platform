@@ -1,0 +1,936 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="ctl00_Head1"><title>
+	 صورت‌های مالی  تلفیقی 12 ماهه منتهی به  1405/04/31 (حسابرسی شده)
+</title><link href="../css/Main.css" rel="stylesheet" type="text/css"><link href="../css/fepsProductV1.css" rel="stylesheet" type="text/css"><link rel="shortcut icon" href="../assets/favicon/favicon.ico?v=RyQ5xz7ege">
+    <!--[if lt IE 7]>
+	<link href="../css/IE6_new_style.css" type="text/css" rel="stylesheet" />
+	<![endif]-->
+
+    <script language="javascript" type="text/javascript" src="../js/PKI.js"></script>
+
+    <script language="javascript" type="text/javascript" src="../js/Common.js"></script>
+
+    <script language="javascript" type="text/javascript" src="../js/jquery-1.8.3.min.js"></script>
+
+    <script language="javascript" type="text/javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+            var priceNote = document.getElementById("ctl00_pPriceNote");
+            var divPriceNote = document.getElementById("ctl00_divPriceNote");
+            if (priceNote.style.display === "none") {
+                divPriceNote.style.display = "none";
+            }
+        });
+        function btnCancelClick() {
+            window.close();
+        }
+
+        function btnNextClick() {
+            if (document.getElementById("ctl00_ddlTable").selectedIndex < document.getElementById("ctl00_ddlTable").length - 1)
+                document.getElementById("ctl00_ddlTable").selectedIndex += 1;
+            else
+                document.getElementById("ctl00_ddlTable").selectedIndex = 0;
+        }
+
+        function btnPrevClick() {
+            if (document.getElementById("ctl00_ddlTable").selectedIndex > 0)
+                document.getElementById("ctl00_ddlTable").selectedIndex -= 1;
+            else
+                document.getElementById("ctl00_ddlTable").selectedIndex = document.getElementById("ctl00_ddlTable").length - 1;
+        }
+
+        //function CalcPer(txbNewValue, txbOldValue, txbChangePer) {
+        //    Change = '--';
+        //    a = parseInt(DeformatCurrency(document.getElementById(txbNewValue).value));
+        //    b = parseInt(DeformatCurrency(document.getElementById(txbOldValue).value));
+        //    if (a * b > 0) {
+        //        Change = (a - b) * 100.0 / b;
+        //        Change = Math.round(Change);
+        //    }
+        //    formatPosNeg(txbChangePer, Change);
+        //}
+
+
+        function getDocWidth() {
+            var D = document;
+            return Math.max(
+                D.body.scrollWidth, D.documentElement.scrollWidth,
+                D.body.offsetWidth, D.documentElement.offsetWidth,
+                D.body.clientWidth, D.documentElement.clientWidth
+            );
+        }
+
+        function getDocHeight() {
+            var D = document;
+            return Math.max(
+                D.body.scrollHeight, D.documentElement.scrollHeight,
+                D.body.offsetHeight, D.documentElement.offsetHeight,
+                D.body.clientHeight, D.documentElement.clientHeight
+            );
+        }
+
+
+    </script>
+
+    
+<meta http-equiv="Cache - Control" content="no - cache, no - store, must - revalidate">
+<meta http-equiv="Pragma" content="no - cache">
+<meta http-equiv="Expires" content="0"></head>
+<body>
+    <form name="aspnetForm" method="post" action="" onsubmit="javascript:return WebForm_OnSubmit();" id="aspnetForm">
+<div>
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="">
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="">
+<input type="hidden" name="__LASTFOCUS" id="__LASTFOCUS" value="">
+
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+var theForm = document.forms['aspnetForm'];
+if (!theForm) {
+    theForm = document.aspnetForm;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+//<![CDATA[
+function WebForm_OnSubmit() {
+if (typeof(ValidatorOnSubmit) == "function" && ValidatorOnSubmit() == false) return false;
+return true;
+}
+//]]>
+</script>
+
+<div>
+
+	
+	
+	
+</div>
+    <div id="divLoadingBg" style="display: none; z-index: 1000000; position: fixed; width: 100%;
+        top: 0px; bottom: 0px; height: expression(getDocHeight()); background-image: url('../Images/progressbg.png');">
+        <div id="divLoading" style="position: fixed; width: 140px; top: 300px; left: 45%;
+            padding: 5px; background-color: White; font-size: 9px;">
+            <img src="../Images/InProgress1.gif" border="0" alt="">
+            &nbsp;
+            <span id="ctl00_lblLoadingMessage" style="font-size:X-Small;">لطفاً چند لحظه صبر کنید...</span>
+        </div>
+    </div>
+    <div class="html_format_header">
+        <div class="clear" style="height: 12px;">
+        </div>
+        <div class="html_format_header_icon">
+            <img src='../imgs/header_icon.png' alt="icon">
+        </div>
+        <h1 id="ctl00_h1MasterTitle">اطلاعات و صورت‌های مالی تلفیقی</h1>
+        <div class="ddlReportWrapper">
+            <select name="ctl00$ddlTable" onchange="changeSheet(this.value);" id="ddlTable" class="label" style="width: 300px; color: red;">
+	<option selected="selected" value="19">نظر حسابرس
+	<option value="13">صورت سود و زیان تلفیقی
+	<option value="1097">صورت سود و زیان جامع تلفیقی
+	<option value="14">صورت وضعیت مالی تلفیقی
+	<option value="1099">صورت تغییرات در حقوق مالکانه تلفیقی
+	<option value="15">صورت جریان های نقدی تلفیقی
+	<option value="1">صورت سود و زیان
+	<option value="1058">صورت سود و زیان جامع
+	<option value="0">صورت وضعیت مالی
+	<option value="1060">صورت تغییرات در حقوق مالکانه
+	<option value="9">صورت جریان های نقدی
+	<option value="20">خلاصه اطلاعات گزارش تفسیری - صفحه 1
+	<option value="21">خلاصه اطلاعات گزارش تفسیری - صفحه 2
+	<option value="22">خلاصه اطلاعات گزارش تفسیری - صفحه 3
+	<option value="23">خلاصه اطلاعات گزارش تفسیری - صفحه 4
+	<option value="24">خلاصه اطلاعات گزارش تفسیری - صفحه 5
+	<option value="25">خلاصه اطلاعات گزارش تفسيري - صفحه 6
+	<option value="30">اعضاي هيئت مديره
+	<option value="51">شرکت های فرعی
+	<option value="52">شرکت های وابسته
+
+</select>
+            
+            
+        <div title="صفحه بعدی" class="next_report" style="float: left;" onclick="btnNextClick();"></div><div title="صفحه قبلی" class="prev_report" style="float: left;" onclick="btnPrevClick();"></div></div>
+        <a id="ctl00_hlChangeLanguage" class="eng" href="Decision.aspx?LetterSerial=NP5pO9KRGeydNngIiOEYNA%3d%3d&rt=0&let=6&ct=0&ft=-1&lng=en-us" style="font-family:Tahoma;">EN</a>
+        <div class="clear" style="height: 10px;">
+        </div>
+    </div>
+    <input name="ctl00$hdfThumbPrint" type="hidden" id="ctl00_hdfThumbPrint">
+    <div class="clear" style="height: 15px;">
+    </div>
+    <div class="symbol_and_name">
+        <div class="rows">
+            <div class="text_holder">
+                <div id="ctl00_divCompanyCaption" class="lable">شرکت:</div>
+                <div class="varios">
+                    <span id="ctl00_txbCompanyName" class="label" style="color:#C04000;">کارخانه هاي توليدي و صنعتي ثابت خراسان</span>
+                    
+                    <span id="ctl00_CustomValidator1" style="color:Red;font-weight:bold;display:none;visibility:hidden;">تاریخ نامعتبر</span>
+                    
+                    
+                </div>
+            </div>
+            <div class="text_holder">
+                <div id="ctl00_divListedCapitalCaption" class="lable">سرمایه ثبت شده:</div>
+                <div class="varios">
+                    <span id="ctl00_lblListedCapital" class="label" style="color:#C04000;">6,462,809</span>
+                </div>
+            </div>
+        </div>
+        <div class="rows">
+            <div class="text_holder">
+                <div id="ctl00_divSymbolCaption" class="lable">نماد:</div>
+                <div class="varios">
+                    <span id="ctl00_lblDisplaySymbol" class="label" style="color:#C04000;"></span>
+                    <span id="ctl00_txbSymbol" class="label" style="color:#C04000;">قثابت</span>
+                    
+                </div>
+            </div>
+            <div class="text_holder">
+                <div id="ctl00_divUnauthorizedCapital" class="lable">سرمایه ثبت نشده:</div>
+                <div class="varios">
+                    <span id="ctl00_txbUnauthorizedCapital" class="label" style="color:#C04000;">0</span>
+                </div>
+            </div>
+        </div>
+        <div class="rows">
+            <div class="text_holder">
+                <div id="ctl00_divIsicCaption" class="lable">کد صنعت (ISIC):</div>
+                <div class="varios">
+                    <span id="ctl00_lblISIC" class="label" style="color:#C04000;">384208</span>
+                </div>
+            </div>
+            <div class="text_holder">
+                <div style="margin: 5px 4px; display:inline-flex">
+                    <span id="ctl00_lblReportName" class="label">اطلاعات و صورت‌های مالی تلفیقی</span>&nbsp
+                    <span id="ctl00_lblPeriod" class="label" style="color:#C04000;display:inline;">12 ماهه</span>  
+                    <span id="ctl00_lblEndTo" class="label" style="display:inline;">منتهی به</span>
+                    <span id="ctl00_lblInDate" class="label" style="display:none;">در تاریخ </span>  
+                    <span id="ctl00_lblPeriodEndToDate" class="label" style="color:#C04000;display:inline;"><bdo dir="ltr">1405/04/31</bdo></span>
+                    <span id="ctl00_lblIsAudited" class="label" style="display:inline;">(حسابرسی شده)</span>
+                </div>
+            </div>
+        </div>  
+         <div class="text_holder">
+            <div id="ctl00_divYearEndToDateCaption" class="lable">سال مالی منتهی به:</div>
+            <div class="varios">
+                <span id="ctl00_lblYearEndToDate" class="label" style="color:#C04000;"><bdo dir="ltr">1405/04/31</bdo></span>
+            </div>
+        </div>      
+        <div class="text_holder">
+            <div id="ctl00_divCompanyStateCaption" class="lable">وضعیت ناشر:</div>
+            <div class="varios">
+                <span id="ctl00_lblCompanyState" class="label" style="color:#C04000;">پذيرفته شده در بورس تهران</span>
+            </div>
+        </div>
+        <div style="clear: both;">
+        </div>
+    </div>
+    
+<style type="text/css">
+    .label
+    {
+        font-size: 8pt;
+        font-family: tahoma;
+    }
+</style>
+<div id="ctl00_ucSignature1_pnlMain" class="main_note" style="background-color:#C1E2B4;">
+    <div class="verify">
+       
+    
+    </div>
+    <div class="noteholder">
+        <img alt="information" src='../imgs/inforation.png'>
+        <span id="ctl00_ucSignature1_lblSignature" class="signature" style="color:DarkGreen;">اطلاعات نمایش داده شده با اطلاعات امضا شده مطابقت دارد</span>
+        <div class="clear"></div>
+    </div>
+    <div class="clear">
+    </div>
+</div>
+
+    <div class="clear" style="height: 5px;">
+    </div>
+   <div class="errorHolder">
+        <span id="ctl00_lblError" class="Error" style="color:DarkRed;font-weight:bold;"></span>
+    </div>
+   <input type="hidden" name="ctl00$hdfVersion" id="ctl00_hdfVersion" value="0">
+   <div id="ctl00_divPriceNote" class="note_price">
+        <p id="ctl00_pPriceNote">کلیه مبالغ درج شده به میلیون ریال می باشد</p>
+    </div>
+   <div class="note_price_Excel">
+    <input type="image" name="ctl00$ibtnExport" id="ctl00_ibtnExport" class="Hidden" src="../Images/ExportToExcel.jpg" alt="Export To Excel" onclick="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$ibtnExport&quot;, &quot;&quot;, true, &quot;&quot;, &quot;&quot;, false, false))" style="height:20px;border-width:0px;display:none;">
+    </div>
+    <div class="clear">
+    </div>
+    
+    
+
+    <input name="ctl00$cphBody$txbEarningsPerShareAfterTax2Old" type="hidden" id="ctl00_cphBody_txbEarningsPerShareAfterTax2Old" style="width: 2px; height: 10px">
+    <input name="ctl00$cphBody$txbEarningsPerShareAfterTax1Old" type="hidden" id="ctl00_cphBody_txbEarningsPerShareAfterTax1Old" style="width: 2px; height: 10px">
+    <input name="ctl00$cphBody$txbBoardOfDirectorCompensation2Old" type="hidden" id="ctl00_cphBody_txbBoardOfDirectorCompensation2Old" style="width: 2px; height: 10px">
+    <input name="ctl00$cphBody$txbBoardOfDirectorCompensation1Old" type="hidden" id="ctl00_cphBody_txbBoardOfDirectorCompensation1Old" style="width: 2px; height: 10px">
+    <input name="ctl00$cphBody$txbCapitalReserve2Old" type="hidden" id="ctl00_cphBody_txbCapitalReserve2Old" style="width: 2px; height: 10px">
+    <input name="ctl00$cphBody$txbCapitalReserve1Old" type="hidden" id="ctl00_cphBody_txbCapitalReserve1Old" style="width: 2px; height: 10px">
+    <input name="ctl00$cphBody$txbProportionableRetainedEarnings2Old" type="hidden" id="ctl00_cphBody_txbProportionableRetainedEarnings2Old" style="width: 2px; height: 10px">
+    <input name="ctl00$cphBody$txbProportionableRetainedEarnings1Old" type="hidden" id="ctl00_cphBody_txbProportionableRetainedEarnings1Old" style="width: 2px; height: 10px">
+    <input name="ctl00$cphBody$txbTransferToCapital2Old" type="hidden" id="ctl00_cphBody_txbTransferToCapital2Old" style="width: 2px; height: 10px">
+    <input name="ctl00$cphBody$txbTransferToCapital1Old" type="hidden" id="ctl00_cphBody_txbTransferToCapital1Old" style="width: 2px; height: 10px">
+    <input name="ctl00$cphBody$txbProfitLossBeforeIncomeTax2Old" type="hidden" id="ctl00_cphBody_txbProfitLossBeforeIncomeTax2Old" style="width: 2px; height: 10px">
+    <input name="ctl00$cphBody$txbProfitLossBeforeIncomeTax1Old" type="hidden" id="ctl00_cphBody_txbProfitLossBeforeIncomeTax1Old" style="width: 2px; height: 10px">
+    <input name="ctl00$cphBody$txbExtraOrdinaryItems2Old" type="hidden" id="ctl00_cphBody_txbExtraOrdinaryItems2Old" style="width: 2px; height: 10px">
+    <input name="ctl00$cphBody$txbExtraOrdinaryItems1Old" type="hidden" id="ctl00_cphBody_txbExtraOrdinaryItems1Old" style="width: 2px; height: 10px">
+    <input name="ctl00$cphBody$txbIncomeFromInvestment2Old" type="hidden" id="ctl00_cphBody_txbIncomeFromInvestment2Old" style="width: 2px; height: 10px">
+    <input name="ctl00$cphBody$txbIncomeFromInvestment1Old" type="hidden" id="ctl00_cphBody_txbIncomeFromInvestment1Old" style="width: 2px; height: 10px">
+    <input name="ctl00$cphBody$txbIncomeFromOtherActivities2Old" type="hidden" id="ctl00_cphBody_txbIncomeFromOtherActivities2Old" style="width: 2px; height: 10px">
+    <input name="ctl00$cphBody$txbIncomeFromOtherActivities1Old" type="hidden" id="ctl00_cphBody_txbIncomeFromOtherActivities1Old" style="width: 2px; height: 10px">
+    <input name="ctl00$cphBody$txbTotalLiabilities1Old" type="hidden" id="ctl00_cphBody_txbTotalLiabilities1Old" style="width: 2px; height: 10px">
+
+    <style type="text/css">
+        .noWrap {
+            white-space: nowrap;
+        }
+
+        .colorWhite {
+            color: white;
+        }
+
+        .ui-tinytbl-th {
+            background-color: #007ec8;
+        }
+
+        .GridHeader th {
+            padding: 0;
+        }
+
+        .table_wrapper td {
+            /* IE7 and below */
+            *padding: 0;
+        }
+
+        .wrapper {
+            width: 90%;
+            margin: 0 auto;
+        }
+
+        .ui-tinytbl-lastrow, .ui-tinytbl-lastrow th {
+            border-bottom: none;
+        }
+
+        .ui-tinytbl-firstcol, .firstcol {
+            border-right: solid 1px #BCBCBC;
+        }
+
+        .printButton {
+            float: left;
+            *margin-top: -15px;
+        }
+
+        .Hidden {
+            display: none;
+        }
+    </style>
+    
+
+    <script id="myScript" type="text/javascript">
+        function fixColspan(cellElement, colSpan, isToPrint) {
+            // IE7 in non-print mode
+            if ($.browser.msie && parseInt($.browser.version) == 7 && isToPrint == false) {
+                var dir = $('body').css("direction");
+                cellHeight = cellElement.height();
+                // Wrap cellElement.text() into a custom span
+                var spanCaption = $('<span id="span' + cellElement.attr('class').split(' ')[0] +
+                    '" style="position: absolute; color: white;" class="noWrap">' +
+                    cellElement.text() + '</span>');
+                cellElement.css({ 'height': cellHeight, 'verticalAlign': 'middle' });
+                // Wrap created span into cellElement
+                cellElement.html(spanCaption);
+                // Calculate width, height and top position of text
+                var textWidth = cellElement.find('span:first').width();
+                var textHeight = cellElement.find('span:first').height();
+                var top = cellElement.find('span:first').position().top;
+
+                var totalWidth = cellElement.width();
+                var currentCell = cellElement;
+
+                for (i = 0; i < colSpan - 1; i++) {
+                    nextCell = currentCell.next();
+                    totalWidth += nextCell.width();
+
+                    strBorder = "borderRight";
+                    if (dir != "rtl")
+                        strBorder = "borderLeft";
+
+                    nextCell.css(strBorder, "solid 1px #007ec8");
+                    currentCell.text("");
+                    cellElement.closest('table').before(spanCaption);
+
+                    currentCell = nextCell;
+                }
+
+                if (dir == "rtl") {
+                    $('#span' + cellElement.attr("class").split(' ')[0]).css({
+                        'top': top + cellElement.height() / 2 - textHeight / 2,
+                        'left': currentCell.position().left + (totalWidth - textWidth) / 2
+                    });
+
+                    $('.ui-tinytbl-tb-right').scroll(function () {
+                        $('#span' + cellElement.attr("class").split(' ')[0]).css({
+                            'top': top + cellElement.height() / 2 - textHeight / 2,
+                            'left': currentCell.position().left + (totalWidth - textWidth) / 2
+                        });
+                    });
+                }
+                // dir == "ltr" or null
+                else {
+                    $('#span' + cellElement.attr("class").split(' ')[0]).css({
+                        'top': top + cellElement.height() / 2 - textHeight / 2,
+                        'left': cellElement.position().left + (totalWidth - textWidth) / 2
+                    });
+
+                    $('.ui-tinytbl-tb-right').scroll(function () {
+                        $('#span' + cellElement.attr("class").split(' ')[0]).css({
+                            'top': top + cellElement.height() / 2 - textHeight / 2,
+                            'left': cellElement.position().left + (totalWidth - textWidth) / 2
+                        });
+                    });
+                }
+            }
+            // All browsers but IE7 in non-print mode
+            else {
+                cellElement.attr("colspan", colSpan);
+                for (i = 0; i < colSpan - 1; i++) {
+                    cellElement.next().remove();
+                }
+            }
+        }
+
+        // Creates a new window popup to print copy
+        function printPopup(htmlData, printTitle) {
+            var w = window.open('', 'ToPrint', 'width=' + screen.width + ', height=' + screen.height + ', top=' + screen.height / 2 + ' , left=' + screen.width / 2 + ', fullscreen=yes');
+            var html = '<html dir="' + $("body").css("direction") + '">\n' +
+                '<head>\n' +
+                '   <title>' + printTitle + '</title>\n' +
+                '   <style>\n' +
+                '      th { border-top: solid 1px black; border-bottom: solid 1px black; }\n' +
+                '      td { border-top: solid 1px sliver; border-bottom: solid 1px silver; }\n' +
+                '      .GridAlternating { background-color: silver; }\n' +
+                '      .GridFooter { font-size: 9pt; }\n' +
+                '   </style>\n' +
+                '</head>\n' +
+                '<body style="font-family: tahoma; font-size: 10pt;" onload="window.focus(); window.print(); window.close();">\n' +
+                htmlData +
+                '\n</body>\n</html>';
+
+            w.document.write(html);
+            w.document.close();
+
+            return true;
+        }
+
+        function getGridHeight(maxHeight, gridId) {
+            var calcHeight = 0;
+
+            if (document.getElementById(gridId) != null &&
+                document.getElementById(gridId) != "undefined") {
+                calcHeight = maxHeight;
+                var scrollHeight = 20;
+
+                if (bowser.firefox)
+                    scrollHeight = 30;
+
+                var gridHeight = document.getElementById(gridId).clientHeight;
+
+                if (gridHeight < maxHeight) {
+                    calcHeight = gridHeight + scrollHeight;
+                }
+            }
+
+            return calcHeight;
+        }
+    </script>
+
+    
+
+<br>
+
+
+    <div style="clear: both;"></div>
+    <div id="ctl00_cphBody_UpdatePanel1">
+	
+            
+                    <div class="table_holder">
+                        <table border="0" cellpadding="0" cellspacing="0" style="width: 100%; line-height: 17px;">
+                            <tr>
+                                <td id="ctl00_cphBody_tdAuditState" style="padding:5px 5px 5px 5px;display:none;">نوع اظهار نظر:
+                                    
+                                </td>
+	
+                            </tr>
+                            <tr>
+                                
+                            </tr>
+                            <tr>
+                                
+                            </tr>
+                            <tr>
+                                
+                            </tr>
+                            <tr>
+                                
+                            </tr>
+
+                            <tr>
+                                <td id="ctl00_cphBody_tdLetterAuditingNojan" style="padding: 5px 5px 5px 5px;">
+                                    
+<link href="../css/Main.css" type="text/css" rel="stylesheet">
+<link href="../css/MasterMenu.css" rel="stylesheet" type="text/css">
+
+<script language="javascript" type="text/javascript" src="../js/PKI.js"></script>
+
+<script language="javascript" type="text/javascript" src="../js/Common.js"></script>
+
+<script language="javascript" type="text/javascript" src="../js/jquery-latest.js"></script>
+
+<script type="text/javascript" src="../js/jquery.autocomplete.js"></script>
+
+<script src="../js/jquery.min.js" type="text/javascript"></script>
+
+<script src="../js/jquery.maskedinput-1.1.4.pack.js" type="text/javascript"></script>
+
+<div style="border: solid 1px gainsboro; padding: 5px;">
+    <table cellpadding="0" cellspacing="0" style="width: 100%; height: 100%; font-size: 8pt; font-family: tahoma; border-color: #808080; border-style: none; border-width: 1px; background-color: White; direction: rtl">
+        <tr>
+            <td>
+                <table width="100%">
+                    <tr>
+                        <td>
+                            <span id="ctl00_cphBody_ucLetterAuditingNojan_lblInfo" class="Error" style="color:#990000;font-weight:bold;"></span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div style="width:100%;">
+
+                                <div style="display:flex; align-items:center; width:100%; margin-bottom:6px;">
+                                    <div style="width:300px;">
+                                        <span id="txtSubject">گزارش حسابرس مستقل و بازرس قانونی</span>
+                                    </div>
+
+                                    <div id="ctl00_cphBody_ucLetterAuditingNojan_tdSubjectDesc" style="width:200px;padding-right:3px;display:none;">
+                                        <span id="txbSubjectDesc"></span>
+                                    </div>
+                                </div>
+
+                                <div style="display:flex; align-items:center; width:100%;">
+                                    <div style="width:100%;">
+                                        به مجمع عمومی عادی صاحبان سهام
+
+                                         <span>&nbsp;</span>
+
+                                         <span id="ctl00_cphBody_ucLetterAuditingNojan_lblCompanyName" class="label" style="font-weight:normal;">کارخانه هاي توليدي و صنعتي ثابت خراسان</span>
+                                    </div>
+                                    <div id="ctl00_cphBody_ucLetterAuditingNojan_tdReciverDesc" style="width:200px;padding-right:3px;display:none;">
+                                        <span id="txbRecieverDesc"></span>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td style="">
+                <div style="clear: both;">
+                </div>
+                <table id="ctl00_cphBody_ucLetterAuditingNojan_DataList1" cellspacing="0" border="0" style="border-collapse:collapse;">
+		<tr>
+			<td>
+
+                        <h3 style="font-size: larger; margin-top:30px">
+                            گزارش حسابرسی صورت‌های مالی
+                    </h3>
+
+                        <table id="ctl00_cphBody_ucLetterAuditingNojan_DataList1_ctl00_DataListItems" cellspacing="0" border="0" style="border-collapse:collapse;">
+				<tr>
+					<td>
+
+                                <div style="display: flex; align-items: center; width: 100%">
+
+                                    
+
+                                    <input name="ctl00$cphBody$ucLetterAuditingNojan$DataList1$ctl00$DataListItems$ctl00$lblTitle" type="text" value="اظهارنظر مشروط" readonly="readonly" id="ctl00_cphBody_ucLetterAuditingNojan_DataList1_ctl00_DataListItems_ctl00_lblTitle" style="border-width:0px;border-style:None;font-size:8pt;font-weight:bold;flex: 1;">
+
+                                </div>
+
+                                <p style="clear: both; margin-left: 20px; margin-right: 20px; word-wrap: break-word;margin-top:10px;white-space: pre-line;">
+                                    1. 1-	صورت‌های مالي تلفیقی و جداگانه شركت کارخانه‌های تولیدی و صنعتی ثابت خراسان (سهامی عام) شامل صورت‌های وضعیت مالی شرکت به تاریخ 31 تیر 1405 و صورت‌های سود و زیان، تغییرات در حقوق مالکانه و جریان‌های نقدی برای سال مالی منتهی به تاریخ مزبور و یادداشت‌های توضیحی 1 تا 38، توسط این موسسه حسابرسی شده است.
+به نظر این مؤسسه، به استثنای آثار موارد مندرج در بندهای 2 و 3 مبانی اظهارنظر مشروط، صورت‌های مالی یادشده، وضعیت مالی گروه و شرکت در تاریخ 31 تیر 1405 و عملکرد مالی و جریان‌های نقدی گروه و شرکت را برای سال مالی منتهی به تاریخ مزبور، از تمام جنبه‌های بااهمیت، طبق استاندارد‌های حسابداری، به نحو مصفانه نشان می‌دهد.
+4-	حسابرسي اين مؤسسه طبق استانداردهاي حسابرسي انجام‌شده است. مسئوليت‌هاي مؤسسه طبق اين استاندارد‌ها در بخش مسئولیت‌های حسابرس و بازرس قانونی در حسابرسي صورت‎هاي مالي توصیف‌شده است. اين مؤسسه طبق الزامات آيين اخلاق و رفتار حرفه‌اي حسابداران رسمی ، مستقل از گروه است و ساير مسئوليت‌هاي اخلاقي را طبق الزامات مذکور انجام داده است. اين مؤسسه اعتقاد دارد که شواهد حسابرسي کسب‌شده به‌عنوان مبناي اظهارنظر مشروط کافي و مناسب است.
+
+                                </p>
+
+                            </td>
+				</tr><tr>
+					<td>
+
+                                <div style="display: flex; align-items: center; width: 100%">
+
+                                    
+
+                                    <input name="ctl00$cphBody$ucLetterAuditingNojan$DataList1$ctl00$DataListItems$ctl01$lblTitle" type="text" value="مبانی اظهارنظر مشروط" readonly="readonly" id="ctl00_cphBody_ucLetterAuditingNojan_DataList1_ctl00_DataListItems_ctl01_lblTitle" style="border-width:0px;border-style:None;font-size:8pt;font-weight:bold;flex: 1;">
+
+                                </div>
+
+                                <p style="clear: both; margin-left: 20px; margin-right: 20px; word-wrap: break-word;margin-top:10px;white-space: pre-line;">
+                                    2. 2-	دارایی‌های ثابت مشهود (یادداشت توضیحی 13 صورت‌های مالی) شامل 4,231,472 میلیون ریال بهای تجدید ارزیابی زمین‌های شرکت در سال 1399 است که زمین‌های یادشده برخلاف استانداردهای حسابداری و رویه افشا شده در یادداشت توضیحی 1-2-4 صورت‌های مالی، با وجود گذشت 5 سال از زمان تجدید ارزیابی، تجدید ارزیابی مجدد زمین‌ها انجام نشده است. افزون بر این، دارایی‌های ثابت مشهود شامل 2.090 میلیارد ریال بهای دفتری زمین‌های پلاک‌های موسوم به تقی‌‌آباد، لوشاب، هوس، شمس‌آباد و کلاته ذهاب است که باوجود تجدید ارزیابی مابقی زمین‌های شرکت در سال 1399، بر اساس گزارش کارشناس رسمی به تاریخ 16 آبان 1402 عمدتاً به دلیل آنکه در تصرف غیر بوده، قیمت‌گذاری نشده و باوجود پیگیری‌های شرکت همچنان در تصرف غیر است (یادداشت توضیحی 5-13 صورت‌های مالی). افزون بر این وضعیت 446 مترمربع زمین تجاری سهم شرکت از زمین‌های در اختیار شرکت تعاونی مسکن کارکنان کارخانه قند فریمان فاز دو، تا تاریخ این گزارش تعیین تکلیف نشده و آثار مالی آن در حساب‌ها شناسایی نشده است. با توجه به عدم ارائه اطلاعات لازم (ازجمله عدم تجدید ارزیابی زمین‌ها)، گرچه اصلاح صورت‌های مالی ضرورت دارد، به دلیل نبود اطلاعات لازم، تعیین آثار مربوط بر صورت‌های مالی تلفیقی و جداگانه، امکان‌پذیر نشده است.<br>3. 3-	سرمایه‌گذاری‌های بلندمدت در صورت‌های مالی تلفیقی به شرح یادداشت توضیحی 1-16 صورت‌های مالی، شامل ارزش ویژه سرمایه‌گذاری در شرکت‌های وابسته سنگاه (سهامی خاص) و تحقیقات و خدمات زراعی چغندرقند خراسان (سهامی خاص) به ترتیب به مبالغ 97,760و 12,350 میلیون ریال است که برخلاف استانداردهای حسابداری، برای بکار گیری روش ارزش ویژه از صورت‌های مالی حسابرسی شده سال مالی منتهی به 29 اسفند1404 (فاصله بیش از سه ماه پیش از پایان سال مورد گزارش) شرکت‌های یادشده استفاده شده و تعدیلی از بابت عدم تطابق دوره زمانی شرکت‌های یادشده و حذف معاملات فیمابین به عمل نیامده است. افزون بر این، تعدیلی از بابت محاسبه سهم گروه بر اساس ارزش منصفانه خالص دارایی‌های شرکت‌های وابسته درزمان تحصیل و سهم از سایر اقلام حقوق مالکانه شرکت فرآورده‌های غذایی قند تربت‌جام انجام نشده است. به دلیل عدم ارائه اطلاعات موردنیاز، تعیین آثار تعدیلات مورد لزوم صورت‌های مالی تلفیقی برای این موسسه امکان‌پذیر نیست.    
+                                </p>
+
+                            </td>
+				</tr><tr>
+					<td>
+
+                                <div style="display: flex; align-items: center; width: 100%">
+
+                                    
+
+                                    <input name="ctl00$cphBody$ucLetterAuditingNojan$DataList1$ctl00$DataListItems$ctl02$lblTitle" type="text" value="مسائل عمده حسابرسی" readonly="readonly" id="ctl00_cphBody_ucLetterAuditingNojan_DataList1_ctl00_DataListItems_ctl02_lblTitle" style="border-width:0px;border-style:None;font-size:8pt;font-weight:bold;flex: 1;">
+
+                                </div>
+
+                                <p style="clear: both; margin-left: 20px; margin-right: 20px; word-wrap: break-word;margin-top:10px;white-space: pre-line;">
+                                    4. 5-	منظور از مسائل عمده حسابرسی، مسائلی است که به قضاوت حرفه ای حسابرس، در حسابرسی صورت‌های مالی دوره جاری، دارای بیشترین اهمیت بوده اند. این مسائل در چارچوب حسابرسی صورت‌های مالی به عنوان یک مجموعه واحد و به منظور اظهار نظر نسبت به صورت‌های مالی، مورد توجه قرار گرفته اند و اظهارنظر جداگانه ای نسبت به این مسائل ارائه نمی شود. در این خصوص، بجز مسائل درج شده در "بخش مبانی اظهار نظر مشروط" مسائل عمده دیگری برای درج در گزارش وجود ندارد.
+                                </p>
+
+                            </td>
+				</tr><tr>
+					<td>
+
+                                <div style="display: flex; align-items: center; width: 100%">
+
+                                    
+
+                                    <input name="ctl00$cphBody$ucLetterAuditingNojan$DataList1$ctl00$DataListItems$ctl03$lblTitle" type="text" value="تاکید بر مطلب خاص" readonly="readonly" id="ctl00_cphBody_ucLetterAuditingNojan_DataList1_ctl00_DataListItems_ctl03_lblTitle" style="border-width:0px;border-style:None;font-size:8pt;font-weight:bold;flex: 1;">
+
+                                </div>
+
+                                <p style="clear: both; margin-left: 20px; margin-right: 20px; word-wrap: break-word;margin-top:10px;white-space: pre-line;">
+                                    5. 6-	پوشش بیمه‌ای دارایی‌های زیستی و موجودی مواد وکالا
+دارایی‌های زیستی مولد به بهای تمام شده 67.135 میلیون ریال و ارزش دفتری 58.774 میلیون ریال به شرح یادداشت توضیحی      1-2-14 صورت‌های مالی پوشش بیمه‌ای نداشته و دارایی‌های زیستی غیر مولد شرکت کشاورزی و باغات فریمان (سهامی خاص) به بهای تمام شده 72.460 میلیون ریال، به ارزش 11.269 میلیون ریال از پوشش بیمه‌ای برخوردار است و موجودی مواد و کالای شرکت به ارزش دفتری 3.097.383 میلیون ریال به شرح یادداشت توضیحی 6-18 صورت‌های مالی تا سقف، 2.050.000 میلیون ریال از پوشش بیمه ای برخوردار می‌باشد. مفاد این بند تأثیری بر اظهارنظر این موسسه نداشته است.
+<br>6. 7-	ابهام بااهمیت درباره دعوی حقوقی 
+همانطور که در یادداشت توضیحی 1-36 صورت‌های مالی افشاء شده، دعوی شرکت صنعتی و پژوهشی زرکام علیه شرکت مورد گزارش منجر به صدور رأی مبنی بر الزام شرکت به تحویل 317.118 تن شکر و پرداخت خسارت دادرسی شده است. شرکت با توجه به وجود مستندات تحویل شکر، نسبت به رأی صادره اعتراض و تقاضای تجدید نظر خواهی نموده است. مفاد این بند تأثیری بر اظهارنظر این موسسه نداشته است.
+
+                                </p>
+
+                            </td>
+				</tr><tr>
+					<td>
+
+                                <div style="display: flex; align-items: center; width: 100%">
+
+                                    
+
+                                    <input name="ctl00$cphBody$ucLetterAuditingNojan$DataList1$ctl00$DataListItems$ctl04$lblTitle" type="text" value="سایر اطلاعات" readonly="readonly" id="ctl00_cphBody_ucLetterAuditingNojan_DataList1_ctl00_DataListItems_ctl04_lblTitle" style="border-width:0px;border-style:None;font-size:8pt;font-weight:bold;flex: 1;">
+
+                                </div>
+
+                                <p style="clear: both; margin-left: 20px; margin-right: 20px; word-wrap: break-word;margin-top:10px;white-space: pre-line;">
+                                    7. 8-	مسئولیت سایر اطلاعات با هیئت‌مدیره شرکت است. سایر اطلاعات شامل گزارش تفسیری مدیریت است. اظهارنظر این موسسه نسبت به‌ صورت‌های مالی، به سایر اطلاعات تسری ندارد و لذا این موسسه نسبت به آن هیچ نوع اطمینانی ارائه نمی‌کند.
+مسئولیت این موسسه، مطالعه سایر اطلاعات به‌منظور تشخیص مغایرت‌های بااهمیت بین سایر اطلاعات و صورت‌های مالی یا شناخت کسب شده توسط حسابرس در جریان حسابرسی و یا مواردی است که به نظر می‌رسد تحریفی بااهمیت در سایر اطلاعات وجود دارد. درصورتی‌که این موسسه، بر اساس کار انجام شده، به این نتیجه برسد که تحریفی بااهمیت در سایر اطلاعات وجود دارد، باید آن را گزارش کند. همانطور که در مبانی اظهار نظر مشروط بیان گردید این موسسه به این نتیجه رسیده است که سایر اطلاعات از بابت دارایی‌های ثابت مشهود و سرمایه گذاری‌ها به شرح بندهای 2 و 3 تحریف شده است.
+
+
+
+                                </p>
+
+                            </td>
+				</tr><tr>
+					<td>
+
+                                <div style="display: flex; align-items: center; width: 100%">
+
+                                    
+
+                                    <input name="ctl00$cphBody$ucLetterAuditingNojan$DataList1$ctl00$DataListItems$ctl05$lblTitle" type="text" value="مسئولیت‌های هیئت‌مدیره در قبال صورت‌های مالی" readonly="readonly" id="ctl00_cphBody_ucLetterAuditingNojan_DataList1_ctl00_DataListItems_ctl05_lblTitle" style="border-width:0px;border-style:None;font-size:8pt;font-weight:bold;flex: 1;">
+
+                                </div>
+
+                                <p style="clear: both; margin-left: 20px; margin-right: 20px; word-wrap: break-word;margin-top:10px;white-space: pre-line;">
+                                    8. 9-	مسئولیت تهيه و ارائه منصفانه صورت‌های مالي تلفیقی و جداگانه شرکت طبق استانداردهاي حسابداری و همچنین طراحي، اعمال و حفظ كنترل‌هاي داخلي لازم برای تهیه صورت‌های مالي عاري از تحريف بااهميت ناشي از تقلب يا اشتباه، بر عهده هیئت‌مدیره است.
+در تهیه صورت‌های مالی تلفیقی و جداگانه شرکت، هیئت‌مدیره مسئول ارزیابی توانایی شرکت به ادامه فعالیت و حسب ضرورت، افشای موضوعات مرتبط با ادامه فعالیت و مناسب بودن بکارگیری مبنای حسابداری تداوم فعالیت است، مگر اینکه قصد انحلال شرکت یا توقف عملیات آن وجود داشته باشد، یا هیچ راهکار واقع‌بینانه دیگری به‌جز موارد مذکور وجود نداشته باشد.
+
+                                </p>
+
+                            </td>
+				</tr><tr>
+					<td>
+
+                                <div style="display: flex; align-items: center; width: 100%">
+
+                                    
+
+                                    <input name="ctl00$cphBody$ucLetterAuditingNojan$DataList1$ctl00$DataListItems$ctl06$lblTitle" type="text" value="مسئولیت‌های حسابرس و بازرس قانونی در حسابرسی صورت‌های مالی" readonly="readonly" id="ctl00_cphBody_ucLetterAuditingNojan_DataList1_ctl00_DataListItems_ctl06_lblTitle" style="border-width:0px;border-style:None;font-size:8pt;font-weight:bold;flex: 1;">
+
+                                </div>
+
+                                <p style="clear: both; margin-left: 20px; margin-right: 20px; word-wrap: break-word;margin-top:10px;white-space: pre-line;">
+                                    9. 10-	¬اهداف حسابرس شامل کسب اطمينان معقول از اينکه صورت‌هاي مالي تلفیقی و جداگانه شرکت، عاري از تحريف بااهمیت ناشي از تقلب يا اشتباه است و صدور گزارش حسابرس شامل اظهارنظر وي مي‌شود. اطمينان معقول، سطح بالايي از اطمينان است، اما حتي با انجام حسابرسي طبق استانداردهاي حسابرسي ممکن است همه تحريف‌هاي بااهمیت، در صورت وجود، کشف نشود. تحريف‌ها که ناشي از تقلب يـا اشتباه مي‌باشند، زماني بااهمیت تلقي مي‌شوند که به‌طور منطقي انتظار رود، به‌تنهایی يا درمجموع، بتوانند بـر تصميمات اقتصادي استفاده‌کنندگان که بر مبناي صورت‌هاي مالي تلفیقی و جداگانه شرکت اتخاذ مي‌شود، اثر بگذارند.
+ در چارچوب انجام حسابرسي طبق استانداردهاي حسابرسي، به‌کارگیری قضاوت حرفه‌اي و حفظ نگرش ترديد حرفه‌اي در سراسر کار حسابرسي ضروري است، همچنين:
+•	خطرهاي تحريف بااهمیت صورت‌هاي مالي تلفیقی و جداگانه شرکت ناشي از تقلب يا اشتباه، مشخص و ارزيابي مي‌شود، روش‌هاي حسابرسي در برخورد با اين خطرها طراحي و اجرا و شواهد حسابرسي کافي و مناسب به‌عنوان مبناي اظهارنظر کسب مي‌شود. ازآنجاکه تقلب مي‌تواند همراه با تباني، جعل، حذف عمدي، ارائه نادرست اطلاعات، يـا زير پا گذاري کنترل‌هاي داخلي باشد، خطر عدم کشف تحريف بااهمیت ناشي از تقلب، بالاتر از خطر عدم کشف تحريف بااهمیت ناشي از اشتباه است.
+•	از کنترل‌هاي داخلي مرتبط با حسابرسي به‌منظور طراحي روش‌هاي حسابرسي مناسب شرايط موجود و نه به‌قصد اظهارنظر نسبت به اثربخشي کنترل‌هاي داخلي گروه و شرکت، شناخت کافي کسب مي‌شود.
+•	مناسب بودن رويه‌هاي حسابداري استفاده‌شده و معقول بودن برآوردهاي حسابداري و موارد افشاي مرتبط ارزيابي مي‌شود.
+•	 بر مبناي شواهد حسابرسي کسب‌شده، در مورد مناسب بودن به‌کارگیری مبناي حسابداري تداوم فعاليت و وجود يا نبود ابهامي بااهمیت در ارتباط با رويدادها يا شرايطي که مي‌تواند ترديدي عمده نسبت به توانايي گروه و شرکت به ادامه فعاليت ايجاد کند، نتيجه‌گيري مي‌شود. اگر چنين نتيجه‌گيري شود که ابهامي بااهمیت وجود دارد بايد در گزارش حسابرس به اطلاعات افشاشده مرتبط با اين موضوع در صورت‌هاي مالی تلفیقی و جداگانه شرکت اشاره شود يا، اگر اطلاعات افشاشده کافي نبود، اظهارنظر حسابرس تعديل مي‌گردد. نتيجه‌گيري‌ها مبتني بـر شواهد حسابرسي کسب‌شده تا تاريخ گزارش حسابرس است. بااین‌حال، رويدادها يا شرايط آتي ممکن است سبب شود گروه یا شرکت، از ادامه فعاليت باز بماند.
+•	 کليت ارائه، ساختار و محتواي صورت‌هاي مالي تلفیقی و جداگانه شرکت، شامل موارد افشا و اينکه آيا معاملات ‌و رويدادهاي مبناي تهيه صورت‌هاي مالي تلفیقی و جداگانه شرکت، به‌گونه‌ای در صورت‌هاي مالي منعکس ‌شده‌اند که ارائه منصفانه حاصل‌شده باشد، ارزيابي مي‌گردد.
+شواهد حسابرسی کافی و مناسب در مورد اطلاعات مالی شرکت‌های گروه یا فعالیت‌های تجاری درون گروه به‌منظور اظهارنظر مناسب نسبت به صورت‌های مالی تلفیقی و جداگانه شرکت کسب می‌گردد. حسابرس مسئول هدایت، سرپرستی و عملکرد حسابرسی گروه است. مسئولیت اظهارنظر حسابرس، صرفاً متوجه حسابرس است.
+افزون بر اين، زمان‌بندی اجرا و دامنه برنامه‌ریزی‌شده کار حسابرسي و یافته‌های عمده حسابرسی، شامل ضعف‌هاي بااهمیت کنترل‌هاي داخلي که در جريان حسابرسي مشخص‌شده است، به ارکان راهبري اطلاع‌رسانی مي‌شود.
+به‌علاوه، یادداشتی مبنی بر رعایت الزامات اخلاقی مربوط به استقلال به ارکان راهبری ارائه می‌شود و همه روابط و سایر موضوعاتی که می‌توان انتظار معقولی داشت بر استقلال اثرگذار باشد و در موارد مقتضی، تدابیر ايمن‌ساز مربوط به اطلاع آنها می‌رسد.
+از بین موضوعات اطلاع‌‌رسانی‌‌شده به ارکان راهبری، آن‌دسته از مسائلی که در حسابرسی صورت‌های مالی دوره جاری دارای بیشترین اهمیت بوده‌اند و بنابراین مسائل عمده حسابرسی به شمار می‌روند مشخص می‌شود. این مسائل در گزارش حسابرس توصیف می‌شوند، مگر اینکه طبق قوانین یا مقررات افشای آن منع شده باشد یا، هنگامی که در شرایط بسیار نادر، حسابرس به این نتیجه برسد که مسائل مذکور نباید در گزارش حسابرس اطلاع‌‌رسانی شود زیرا به‌طور معقول انتظار می‌رود پیامدهای نامطلوب اطلاع‌رسانی بیش از منافع عمومی حاصل از آن باشد.
+همچنين اين مؤسسه به‌عنوان بازرس قانوني مسئوليت دارد موارد عدم رعايت الزامات قانوني مقرر در اصلاحيه قانون تجارت و مفاد اساسنامه شرکت و نيز ساير موارد لازم را به مجمع عمومي عادي صاحبان سهام گزارش کند.
+
+                                </p>
+
+                            </td>
+				</tr>
+			</table>
+
+                    </td>
+		</tr><tr>
+			<td>
+
+                        <h3 style="font-size: larger; margin-top:30px">
+                            گزارش در مورد سایر الزامات قانونی و مقرراتی
+                    </h3>
+
+                        <table id="ctl00_cphBody_ucLetterAuditingNojan_DataList1_ctl01_DataListItems" cellspacing="0" border="0" style="border-collapse:collapse;">
+				<tr>
+					<td>
+
+                                <div style="display: flex; align-items: center; width: 100%">
+
+                                    
+
+                                    <input name="ctl00$cphBody$ucLetterAuditingNojan$DataList1$ctl01$DataListItems$ctl00$lblTitle" type="text" value="سایر وظایف بازرس قانونی" readonly="readonly" id="ctl00_cphBody_ucLetterAuditingNojan_DataList1_ctl01_DataListItems_ctl00_lblTitle" style="border-width:0px;border-style:None;font-size:8pt;font-weight:bold;flex: 1;">
+
+                                </div>
+
+                                <p style="clear: both; margin-left: 20px; margin-right: 20px; word-wrap: break-word;margin-top:10px;white-space: pre-line;">
+                                    10. 11-	موارد مرتبط با الزامات قانونی مقرر در اصلاحیه قانون تجارت و مفاد اساسنامه شرکت به شرح زیر است:
+1-11- ماده 240 اصلاحیه قانون تجارت مبنی بر پرداخت سود سهام ظرف 8 ماه پس از تصویب در رابطه با سود سهام سال‌های پیش، رعایت نشده است.
+<br>11. 2-11- مفاد ماده 114 و 115 اصلاحیه قانون تجارت و 132 اساسنامه مبنی بر اخذ سهام وثیقه مدیران و نگهداری ان نزد صندوق شرکت رعایت نشده است.
+
+</br>12. 12-	معاملات مندرج در یادداشت توضیحی 3-35 صورت‌های مالی، به‌عنوان کلیه معاملات مشمول ماده 129 اصلاحیه قانون تجارت که طی سال مالی مورد گزارش انجام شده و توسط هیئت‌مدیره به اطلاع این مؤسسه رسیده، بـررسـی شده اسـت. در مورد معـاملات مذکـور، مفاد ماده فوق مبنی بر کسب مجـوز از هیئت‌مدیره و عدم شرکت مدیر ذینفع در رأی‌گیری، رعایت شده است. به‌استثنای پرداخت هزینه‌ها از جانب اشخاص وابسته بدون کارمزد و اجاره اراضی، باغات و دفتر که بر اساس توافق و بدون کارشناسی بوده، نظر این مؤسسه به شواهدی حاکی از اینکه سایر معاملات مزبور با شرایط مناسب تجاری و در روال عادی عملیات شرکت انجام نگرفته باشد، جلب نشده است.<br>13. 13-	گزارش هیئت‌مدیره درباره فعالیت و وضع عمومی شرکت، موضوع ماده 232 اصلاحیه قانون تجارت و 49 اساسنامه شرکت که به‌منظور تقدیم به مجمع عمومی عادی سالانه صاحبان سهام تنظیم گردیده، مورد بررسی این موسسه قرارگرفته است. با توجه به رسیدگی‌های انجام‌شده، نظر این موسسه به موارد بااهمیتی که حاکی از مغایرت اطلاعات مندرج در گزارش مذکور با اسناد و مدارک ارائه ‌شده از جانب هیئت‌مدیره باشد، جلب نگردیده است.</br>14. 3-11- تکالیف مقرر در مجمع عمومی عادی سالانه صاحبان سهام 1 بهمن 1404 در رابطه با موارد زیر به نتیجه نهایی نرسیده است:
+1-3-11- وضعیت 446 مترمربع زمین تجاری سهم شرکت از زمین‌های در اختیار شرکت تعاونی مسکن کارکنان کارخانه قند فریمان فاز دو (بند 2 این گزارش).
+2-3-11- رعایت استانداردهای حسابداری  مربوط به بکارگیری روش ارزش ویژه (بند 3 این گزارش).
+3-3-11- تجدید ارزیابی زمین‌های شرکت (بند 2 این گزارش).
+                                </p>
+
+                            </td>
+				</tr><tr>
+					<td>
+
+                                <div style="display: flex; align-items: center; width: 100%">
+
+                                    
+
+                                    <input name="ctl00$cphBody$ucLetterAuditingNojan$DataList1$ctl01$DataListItems$ctl01$lblTitle" type="text" value="سایر مسئولیت‌های قانونی و مقرراتی حسابرس" readonly="readonly" id="ctl00_cphBody_ucLetterAuditingNojan_DataList1_ctl01_DataListItems_ctl01_lblTitle" style="border-width:0px;border-style:None;font-size:8pt;font-weight:bold;flex: 1;">
+
+                                </div>
+
+                                <p style="clear: both; margin-left: 20px; margin-right: 20px; word-wrap: break-word;margin-top:10px;white-space: pre-line;">
+                                    15. 14-	ضوابط و مقررات وضع‌شده توسط سازمان بورس و اوراق بهادار در چارچوب چک‌لیست‌های ابلاغ شده آن سازمان، به شرح زیر رعایت نشده است:
+ردیف		شماره ماده، بند یا ابلاغیه		موارد عدم رعایت
+دستورالعمل حاکمیت شرکتی
+1		ماده 7 و تبصره 3 ماده 7
+		کنترل مناسب تضاد منافع و متعارف و منصفانه بودن معاملات با اشخاص وابسته و رعایت ضوابط دستورالعمل الزامات افشای اطلاعات و تصویب معاملات با اشخاص وابسته ناشران بورسی و فرابورسی.
+2		تبصره 4 ماده 7		دریافت گزارش کارشناس رسمی منتحب از سوی مراجع ذیصلاح قانونی برای اجاره اراضی به شرکت کشاورزی و باغات فریمان (سهامی خاص)
+دستورالعمل افشای اطلاعات شرکت‌های ثبت شده نزد سازمان
+3		بندهای 4 و 10 
+ماده 7		افشای صورت مالی و گزارش تفسیری مدیریت میان دوره‌ای 6 ماهه حسابرسی شده شرکت و همچنین شرکت تحت کنترل در موعد مقرر (با اعطای مهلت 30 روزه به ناشر توسط سازمان منتشر شده است) 
+4		تبصره 5 ماده 7		افشای فوری گزارش‌ها و صورت‌های مالی سالانه و میان دوره‌ای تهیه شده
+5		ماده 13		افشای فوری رأی دعوی شرکت صنعتی و پژوهشی زرکام (یادداشت توضیحی 1-36 صورت‌های مالی)
+دستورالعمل انضباطی ناشران پذیرفته شده در بورس
+6		ماده 5 و 
+تبصره 2 ماده 5		پرداخت سود سهام تقسیم شده مصوب مجمع عمومی، ظرف مهلت قانونی و طبق برنامه اعلام شده
+اساسنامه نمونه شرکت‌های سهامی عام
+7		بروز رسانی اساسنامه		اساسنامه شرکت مطایق با آخرين تغييرات اساسنامه ابلاغ شده توسط سازمان بورس به‌روزرسانی نشده است.
+دستور العمل الزامات افشا اطلاعات و تصویب معاملات اشخاص وابسته ناشران بورس و فرابورس
+8		مواد 8 و 9 		دریافت گزارش کارشناس رسمی برای اجاره اراضی به شرکت کشاورزی و باغات فریمان (سهامی خاص)
+<br>16. 15-	کنترل‌های داخلی حاکم بر گزارشگری مالی، در چارچوب چک‌لیست ابلاغی سازمان بورس و اوراق بهادار بررسی شده است. بر اساس بررسی انجام شده و با توجه به محدودیت‌های ذاتی سیستم کنترل‌های داخلی، به‌استثنای اجرای کامل ساختار تعریف شده شرکت، تفکیک صحیح و روشن وظايف برای کاهش ریسک اقدامات متقلبانه یا اشتباه، طراحی و اجرا فعالیت‌های مناسبی برای کنترل و مدیریت ریسک‌ها، مستندسازی و آزمون کنترل‌های داخلی و آزمون محتوا و استفاده از برنامه‌ها و کاربرگ‌های حسابرسی و پیگیری‌های لازم و اقدامات اصلاحی، این موسسه به موارد دیگری از وجود نقاط ضعف بااهمیت کنترل‌های داخلی حاکم بر گزارشگری مالی برخورد نکرده است.
+                                </p>
+
+                            </td>
+				</tr>
+			</table>
+
+                    </td>
+		</tr>
+	</table>
+                <div style="clear: both;">
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 0px 5px 0px 5px;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td>
+                            <table width="100%">
+                                <tr>
+                                    <td style="">
+                                        <span id="ctl00_cphBody_ucLetterAuditingNojan_lblDate" class="label" style="font-weight:bold;"></span>
+                                    </td>
+                                    <td>
+                                        <span id="txbDate">19آبان1405</span>
+                                        
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span id="ctl00_cphBody_ucLetterAuditingNojan_lblDateDesc" style="font-weight:bold;"></span>
+                                    </td>
+                                    <td>
+                                        <span id="txbDateDesc"></span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td id="ctl00_cphBody_ucLetterAuditingNojan_tdSigner">
+                <table cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                        <td></td>
+                        <td align="right" style="font-weight: bold;">
+                            <span id="ctl00_cphBody_ucLetterAuditingNojan_lblAuditorName">بصير محاسب توس</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width: 40%;"></td>
+                        <td style="width: 60%;" align="right" valign="top">
+                            
+<table cellpadding="0" cellspacing="0" style="width: 100%; padding: 0px; height: 100%;
+    font-size: 8pt; font-family: tahoma; border-color: #808080; border-style: none;
+    border-width: 0px; background-color: White;">
+    <tr style="width: 100%;" valign="top">
+        <td>
+            <table cellpadding="1" cellspacing="0" style="width: 100%; font-size: 8pt; font-family: tahoma;">
+                <tr valign="top" style="height: 100%;">
+                    <td>
+                        <div>
+		<table tabindex="6" class="Grid" cellspacing="0" cellpadding="3" rules="rows" border="1" id="ctl00_cphBody_ucLetterAuditingNojan_ucLetterSigner1_dgSigner" style="border-color:#E0E0E0;border-width:1px;border-style:Solid;width:100%;border-collapse:collapse;">
+			<tr class="GridHeader">
+				<th scope="col">سمت</th><th scope="col">امضاء كننده</th><th scope="col">شماره عضویت</th><th scope="col">زمان</th>
+			</tr><tr class="GridItem" onmouseover="GridRowSelect(ctl00_cphBody_ucLetterAuditingNojan_ucLetterSigner1_dgSigner, 0);" style="height:25px;cursor: pointer;">
+				<td style="width:25%;">شريک موسسه بصير محاسب توس</td><td> Baratali Meshkani [Sign]</td><td style="width:100px;">811073</td><td style="width:120px;">1405/08/20 16:13:15</td>
+			</tr><tr class="GridAlternating" onmouseover="GridRowSelect(ctl00_cphBody_ucLetterAuditingNojan_ucLetterSigner1_dgSigner, 1);" style="height:25px;cursor: pointer;">
+				<td style="width:25%;">شريک موسسه بصير محاسب توس</td><td> Abdollah Azad [Sign]</td><td style="width:100px;">891781</td><td style="width:120px;">1405/08/20 16:15:36</td>
+			</tr><tr class="GridItem" onmouseover="GridRowSelect(ctl00_cphBody_ucLetterAuditingNojan_ucLetterSigner1_dgSigner, 2);" style="height:25px;cursor: pointer;">
+				<td style="width:25%;">مدير موسسه بصير محاسب توس</td><td> Seyed Mohammad Reza Bani Fatemi Kashi [Sign]</td><td style="width:100px;">&nbsp;</td><td style="width:120px;">1405/08/20 16:19:03</td>
+			</tr>
+		</table>
+	</div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td valign="bottom" align="left" style="padding: 5px;">
+            &nbsp;
+        </td>
+    </tr>
+</table>
+
+                        </td>
+                    </tr>
+                </table>
+            </td>
+	
+        </tr>
+    </table>
+</div>
+
+                                </td>
+	
+                            </tr>
+                            <tr>
+                                
+                            </tr>
+                        </table>
+                    </div>
+                
+        
+</div>
+    <div class="clear height20">
+    </div>
+    <div class="wrapper">
+        <input name="ctl00$cphBody$btnCancel" type="button" id="ctl00_cphBody_btnCancel" class="pBtnOff" onmouseout="this.className=&#39;pBtnOff&#39;" onmouseover="this.className=&#39;pBtnOn&#39;" style="width: 80px; height: 22px; float: left;" value="خروج" onclick="window.close();">
+    </div>
+
+    
+<script type="text/javascript">
+//<![CDATA[
+var Page_Validators =  new Array(document.getElementById("ctl00_CustomValidator1"));
+//]]>
+</script>
+
+<script type="text/javascript">
+//<![CDATA[
+var ctl00_CustomValidator1 = document.all ? document.all["ctl00_CustomValidator1"] : document.getElementById("ctl00_CustomValidator1");
+ctl00_CustomValidator1.controltovalidate = "ctl00_txbPeriodEndToDate";
+ctl00_CustomValidator1.errormessage = "تاریخ نامعتبر";
+ctl00_CustomValidator1.evaluationfunction = "CustomValidatorEvaluateIsValid";
+ctl00_CustomValidator1.clientvalidationfunction = "DateValidator";
+//]]>
+</script>
+
+
+<script type="text/javascript">
+//<![CDATA[
+
+var Page_ValidationActive = false;
+if (typeof(ValidatorOnLoad) == "function") {
+    ValidatorOnLoad();
+}
+
+function ValidatorOnSubmit() {
+    if (Page_ValidationActive) {
+        return ValidatorCommonOnSubmit();
+    }
+    else {
+        return true;
+    }
+}
+        
+document.getElementById('ctl00_CustomValidator1').dispose = function() {
+    Array.remove(Page_Validators, document.getElementById('ctl00_CustomValidator1'));
+}
+//]]>
+</script>
+</form>
+<script language="javascript" type="text/javascript" src="/js/html.script.js"></script></body>
+</html>

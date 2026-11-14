@@ -114,3 +114,31 @@ test('rejected fallback preserves Excel source failure instead of parser success
   assert.equal(completed,0);assert.equal(rejected,0);
  }finally{globalThis.fetch=previous;}
 });
+
+test('official audited mixed workbook follows advertised income sheet after auditor opinion',async()=>{
+ const root=new URL('./fixtures/n10-audited/',import.meta.url);
+ const landing=await readFile(new URL('auditor.html',root),'utf8');
+ const inc=await readFile(new URL('income.html',root),'utf8');
+ const eq=await readFile(new URL('equity.html',root),'utf8');
+ const link='https://codal.ir/Reports/Decision.aspx?LetterSerial=NP5pO9KRGeydNngIiOEYNA%3d%3d&rt=0&let=6&ct=0&ft=-1';
+ const meta={symbol:'قثابت',company_name:'کارخانه هاي توليدي و صنعتي ثابت خراسان',period_end:'1405-04-31',period_months:12,audited:true};
+ const requests=[];
+ const result=await loadDecisionStatement({link},meta,{fetchImpl:async target=>{
+  requests.push(target);const u=new URL(target);assert.equal(u.hostname,'codal.ir');
+  assert.equal(u.searchParams.get('LetterSerial'),new URL(link).searchParams.get('LetterSerial'));
+  return new Response(u.searchParams.get('sheetId')==='1'?inc:u.searchParams.get('sheetId')==='1060'?eq:landing);
+ }});
+ assert.equal(result.reason,null);assert.equal(requests.length,3);
+ assert.deepEqual(result.data.standalone,{revenue:15495349,cogs:14502518,gross_profit:992831,operating_profit:426926,net_profit:1479827});
+ assert.equal(result.data.capital,6462809);assert.equal(result.data.statement_provenance.scope,'standalone');
+ const parse=(i=inc,e=eq)=>admitDecisionStatement(capture(i,link+'&sheetId=1'),capture(e,link+'&sheetId=1060'),meta,{link});
+ for(const changed of [
+  inc.replace('<option value="13">صورت سود و زیان تلفیقی','<option value="1">صورت سود و زیان تلفیقی'),
+  inc.replace('صورت سود و زیان تلفیقی','گزارش دیگر'),
+  editRoot(inc,r=>{r.sheets[0].tables[0].title_Fa='صورت سود و زیان تلفیقی';}),
+  editRoot(inc,r=>{r.period=6;}),
+  editRoot(inc,r=>{r.sheets[0].tables[0].cells.find(c=>c.address==='B4').value='';}),
+ ])assert.equal(parse(changed).data,null);
+ assert.equal(parse(inc,editRoot(eq,r=>{r.tracingNo++;})).data,null);
+ assert.equal(parse().data.statement_provenance.priorAccepted,false);
+});
