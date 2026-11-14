@@ -60,20 +60,29 @@ let state = null;
 
 async function loadState() {
   if (state) return state;
-  try {
     const qs = new URLSearchParams({ select: "payload", key: `eq.${STATE_KEY}`, limit: "1" });
     const res = await fetch(`${SUPABASE_URL}/rest/v1/ir_market_snapshots?${qs}`, {
       headers: SB_HDRS(), signal: AbortSignal.timeout(15000),
     });
-    if (res.ok) {
-      const rows = await res.json();
-      if (rows[0]?.payload && typeof rows[0].payload === "object") state = rows[0].payload;
+    if (!res.ok) throw new Error(`archive state read HTTP ${res.status}`);
+    const rows = await res.json();
+    // Only a successful, explicitly empty query proves a first run. A failed
+    // read or damaged payload must never reset the cursor or consumption.
+    if (!Array.isArray(rows) || rows.length > 1) throw new Error('archive state invalid rows');
+    const candidate = rows.length === 0
+      ? { cursor: 0, budget: { date: null, used: 0 }, perSymbol: {} }
+      : rows[0]?.payload;
+    const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+    const counter = value => Number.isSafeInteger(value) && value >= 0;
+    if (!object(candidate) || !counter(candidate.cursor) || !object(candidate.budget)
+      || !counter(candidate.budget.used) || !object(candidate.perSymbol)
+      || !(candidate.budget.date === null && candidate.budget.used === 0
+        || typeof candidate.budget.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(candidate.budget.date))
+      || Object.values(candidate.perSymbol).some(p => !object(p) || !counter(p.p1) || p.p1 < 1
+        || !counter(p.p3) || p.p3 < 1 || typeof p.done1 !== 'boolean' || typeof p.done3 !== 'boolean')) {
+      throw new Error('archive state invalid payload');
     }
-  } catch { /* از نو */ }
-  if (!state || typeof state !== "object") state = {};
-  state.cursor ??= 0;
-  state.budget ??= { date: null, used: 0 };
-  state.perSymbol ??= {};
+    state = candidate;
   return state;
 }
 
@@ -150,11 +159,21 @@ export async function runArchiveCycle() {
     archiveStatus.lastError = "env ناقص (SUPABASE)";
     return;
   }
-  await loadState();
   const st = archiveStatus.lastCycle;
   st.symbols = []; st.pages = 0; st.downloaded = 0; st.inserted = 0; st.parseFailed = 0;
   st.persistenceUnconfirmed = 0;
   archiveStatus.lastError = null;
+
+  try {
+    await loadState();
+  } catch {
+    archiveStatus.ok = false;
+    archiveStatus.lastError = 'archive_state_read_failed';
+    archiveStatus.lastRun = Date.now();
+    // Do not write a substitute state or call the provider. A later scheduled
+    // cycle can retry the read and resume the authoritative stored state.
+    return;
+  }
 
   try {
     if (budgetLeft() <= 2) {

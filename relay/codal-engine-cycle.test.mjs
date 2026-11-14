@@ -108,7 +108,8 @@ async function fixture(options = {}) {
       return response(options.stateBody ?? [{ payload: persisted }]);
     }
     if (url.pathname.endsWith("/ir_market_snapshots") && url.searchParams.get("key") === "eq.codal_archive_state") {
-      return response(options.archiveStateBody ?? []);
+      if (options.archiveStateError) throw new Error('mock state network failure');
+      return response(options.archiveStateBody ?? [], options.archiveStateStatus ?? 200);
     }
     if (url.pathname.endsWith("/ir_market_snapshots") && url.searchParams.get("key") === "eq.latest") {
       return response(options.marketBody ?? [], options.marketStatus ?? 200);
@@ -125,6 +126,36 @@ async function fixture(options = {}) {
 test.afterEach(() => {
   globalThis.fetch = originalFetch;
   codal.setCodalBudgetPorts(null);
+});
+
+test('archive cannot reset progress or spend on failed or malformed state reads', async () => {
+  for (const options of [
+    { archiveStateStatus: 503 }, { archiveStateError: true },
+    { archiveStateBody: {} }, { archiveStateBody: [{ payload: null }] },
+    { archiveStateBody: [{ payload: { cursor: 9, budget: { date: '2026-11-14', used: -1 }, perSymbol: {} } }] },
+  ]) {
+    const f = await fixture(options);
+    const archive = await import(`./codal-archive.mjs?mock=${++scenario}`);
+    await archive.runArchiveCycle();
+    assert.equal(archive.archiveStatus.ok, false);
+    assert.equal(archive.archiveStatus.lastError, 'archive_state_read_failed');
+    assert.equal(f.budgetJobs.length, 0);
+    assert.equal(f.calls.archiveSaves.length, 0);
+  }
+});
+
+test('archive retries a failed read and preserves the recovered exhausted budget and cursor', async () => {
+  await fixture({ archiveStateStatus: 503 });
+  const archive = await import(`./codal-archive.mjs?mock=${++scenario}`);
+  await archive.runArchiveCycle();
+  const payload = { cursor: 234, budget: { date: new Date().toISOString().slice(0, 10), used: 198 },
+    perSymbol: { sample: { p1: 4, p3: 8, done1: false, done3: true } } };
+  const f = await fixture({ archiveStateBody: [{ payload }] });
+  await archive.runArchiveCycle();
+  assert.equal(f.budgetJobs.length, 0);
+  assert.deepEqual(f.calls.archiveSaves[0], payload);
+  assert.equal(archive.archiveStatus.cursor, 234);
+  assert.equal(archive.archiveStatus.usedToday, 198);
 });
 
 test('unsupported explicit monthly code preserves feed metadata without parsing as N30', async () => {
