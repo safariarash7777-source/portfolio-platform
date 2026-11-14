@@ -22,6 +22,17 @@ test('official industrial current statement binds two sheets and preserves unkno
  assert.equal(result.data.period_months,6);assert.equal(result.data.statement_provenance.periodKind,'cumulative');
  assert.equal(result.data.standalone.prior,undefined);assert.equal(result.data.standalone.eps_rial,undefined);
 });
+
+test('publisher display-symbol header binds the same issuer without accepting ambiguous aliases',()=>{
+ const modern=html=>html.replace(/<span\b[^>]*id="ctl00_lblDisplaySymbol"[^>]*>\s*<\/span>/,'').replaceAll('ctl00_txbSymbol','ctl00_lblDisplaySymbol');
+ assert.equal(parse(modern(income),modern(equity)).data.standalone.net_profit,591629286);
+ for(const changed of [
+  modern(income).replace('id="ctl00_lblDisplaySymbol"','hidden id="ctl00_lblDisplaySymbol"'),
+  modern(income)+'<span id="ctl00_txbSymbol">فولاد</span>',
+  modern(income)+'<span id="ctl00_lblDisplaySymbol">دیگر</span>',
+ ])assert.equal(parse(changed,modern(equity)).data,null);
+ assert.equal(parse(modern(income),modern(equity),{...meta,symbol:'دیگر'}).data,null);
+});
 test('scope, amount unit, issuer, period, hashes and sheet identity fail closed',()=>{
  for(const changed of [
   editRoot(income,r=>{r.isConsolidated=true;}),
