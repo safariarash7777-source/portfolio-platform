@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {deflateRawSync,inflateRawSync} from 'node:zlib';
-import {TARGETS,sameReport,collect,command,parse} from './codal-sector-capture.mjs';
+import {TARGETS,sameReport,collect,command,parse,failureReceipt} from './codal-sector-capture.mjs';
+import vm from 'node:vm';
+import * as zlib from 'node:zlib';
 const pause=async()=>{};
 const marker=p=>'SECTOR_CAPTURE='+deflateRawSync(Buffer.from(JSON.stringify(p))).toString('base64');
 test('fixed command has no credential reads and exactly five public source identities',()=>{
@@ -47,4 +49,20 @@ test('only one bounded same-report redirect, without retry or credential forward
   assert.equal(packet.documents[0].status,'retrieved');
   const failed=await collect([target],sameReport,async()=>{throw new Error('private detail');},pause);
   assert.equal(failed.documents[0].status,'transport_failed');assert.doesNotMatch(JSON.stringify(failed),/private detail/);
+});
+test('exact embedded remote command emits bounded chunks that round-trip without loss',async()=>{
+  const cmd=decodeURIComponent(command());const encoded=cmd.match(/Buffer.from\(\/([^/]+)\//)[1];
+  const source=inflateRawSync(Buffer.from(encoded,'base64url')).toString();const lines=[];
+  const context={Buffer,URL,AbortSignal,Date,process:{exitCode:0},setTimeout:fn=>{fn();},fetch:async()=>new Response('<html>official</html>'),require:name=>{assert.equal(name,'node:zlib');return zlib;},console:{log:line=>lines.push(line)}};
+  await vm.runInNewContext(source,context);
+  assert.equal(context.process.exitCode,0);assert.ok(lines.every(line=>line.length<2050));
+  assert.equal(parse(lines.join('\n'),0).length,5);
+  assert.throws(()=>parse(lines.slice(0,-1).join('\n'),0));
+  assert.throws(()=>parse([lines[0],...lines].join('\n'),0));
+  assert.throws(()=>parse(lines.map(x=>x.replace('SECTOR_PART=0/','SECTOR_PART=9/')).join('\n'),0));
+});
+test('failure receipt preserves bounded diagnostic classes without reflecting private text',()=>{
+  const receipt=failureReceipt('private-key-here\nSyntaxError: unexpected token\nSECTOR_PART=0/2:abc\n',1);
+  assert.equal(receipt.signals.syntax,true);assert.equal(receipt.partMarkers,1);assert.equal(receipt.exitCode,1);
+  assert.doesNotMatch(JSON.stringify(receipt),/private-key|unexpected token|abc/);
 });
