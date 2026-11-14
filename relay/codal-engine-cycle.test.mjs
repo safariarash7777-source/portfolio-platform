@@ -836,3 +836,20 @@ test('stored report local deferral preserves cursor and does not charge a parse 
   assert.deepEqual(f.persisted.fails,{});
   assert.equal(f.engine.engineStatus.storedRecovery.parseFailed,0);
 });
+
+test('audited mixed adapter receives one persisted retry with old counts intact',async()=>{
+ for(const audited of [true,false]){
+  const a={...financial(1),title:`صورت‌های مالی تلفیقی (${audited?'حسابرسی شده':'حسابرسی نشده'})`,link:'https://codal.ir/Reports/Decision.aspx?LetterSerial=audited-fixture'};
+  const options={pages:[[a,boundary],[]],excelHtml:'<table></table>',officialBody:'<html></html>'};
+  const f=await fixture({...options,initialState:{watermark,backfillCursor:0,fails:{[a.link]:5},decisionStatementV1Attempts:{[a.link]:1},interimStatementV1Attempts:{[a.link]:1}}});
+  await f.engine.runEngineCycle();assert.equal(f.calls.excel.length,audited?1:0);
+  assert.equal(f.persisted.fails[a.link],audited?6:5);
+  assert.equal(f.persisted.auditedStatementV1Attempts[a.link],audited?1:undefined);
+  const restarted=await fixture({...options,initialState:f.persisted});
+  await restarted.engine.runEngineCycle();assert.equal(restarted.calls.excel.length,0);
+ }
+});
+test('malformed audited attempt ledger stops before any source traffic',async()=>{
+ const f=await fixture({pages:[[]],initialState:{watermark,fails:{},auditedStatementV1Attempts:{bad:2}}});
+ await f.engine.runEngineCycle();assert.equal(f.engine.engineStatus.ok,false);assert.equal(f.calls.pages.length,0);
+});

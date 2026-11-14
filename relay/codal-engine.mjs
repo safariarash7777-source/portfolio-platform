@@ -124,6 +124,11 @@ async function loadState() {
   }
   payload.decisionStatementV1Attempts ??= {};
   payload.interimStatementV1Attempts ??= {};
+  payload.auditedStatementV1Attempts ??= {};
+  if (typeof payload.auditedStatementV1Attempts !== 'object' || Array.isArray(payload.auditedStatementV1Attempts) ||
+      Object.entries(payload.auditedStatementV1Attempts).some(([url,n]) => url.length>4096 || n!==1)) {
+    throw new Error('audited statement retry ledger invalid schema');
+  }
   if (typeof payload.interimStatementV1Attempts !== 'object' || Array.isArray(payload.interimStatementV1Attempts) ||
       Object.entries(payload.interimStatementV1Attempts).some(([url,n]) => url.length>4096 || n!==1)) {
     throw new Error('interim statement retry ledger invalid schema');
@@ -154,6 +159,8 @@ async function saveState() {
   }
   const statementAttempts = Object.entries(state.decisionStatementV1Attempts);
   const interimAttempts = Object.entries(state.interimStatementV1Attempts);
+  const auditedAttempts = Object.entries(state.auditedStatementV1Attempts);
+  if (auditedAttempts.length > LEDGER_CAP) state.auditedStatementV1Attempts = Object.fromEntries(auditedAttempts.slice(-LEDGER_CAP));
   if (interimAttempts.length > LEDGER_CAP) state.interimStatementV1Attempts = Object.fromEntries(interimAttempts.slice(-LEDGER_CAP));
   if (statementAttempts.length > LEDGER_CAP) state.decisionStatementV1Attempts = Object.fromEntries(statementAttempts.slice(-LEDGER_CAP));
   try {
@@ -186,17 +193,20 @@ export function sentKey(a) {
 }
 
 const interimEligible = (url, kind, announcement) => kind === 'ن-۱۰' && supportsDecisionUrl(url) && /تلفیقی/.test(String(announcement?.title || ''));
+const auditedEligible = (url, kind, announcement) => interimEligible(url,kind,announcement) && /حسابرسی\s+شده/.test(String(announcement?.title || ''));
 function recordFail(url, kind, announcement) {
   state.fails[url] = (state.fails[url] || 0) + 1;
   if (kind === 'ن-۱۰' && supportsDecisionUrl(url)) state.decisionStatementV1Attempts[url] = 1;
   if (interimEligible(url,kind,announcement)) state.interimStatementV1Attempts[url] = 1;
+  if (auditedEligible(url,kind,announcement)) state.auditedStatementV1Attempts[url] = 1;
   return state.fails[url];
 }
 // One bounded attempt for previously blocked official N10 reports now supported
 // by the new adapter. Preserve old failure counts and all existing cycle limits.
 const isBlocked = (url, kind, announcement) => (state.fails[url] || 0) >= MAX_FAILS &&
   !(kind === 'ن-۱۰' && supportsDecisionUrl(url) && !state.decisionStatementV1Attempts[url]) &&
-  !(interimEligible(url,kind,announcement) && !state.interimStatementV1Attempts[url]);
+  !(interimEligible(url,kind,announcement) && !state.interimStatementV1Attempts[url]) &&
+  !(auditedEligible(url,kind,announcement) && !state.auditedStatementV1Attempts[url]);
 
 /* ── مسیر ۱: فید سراسری ────────────────────────────────────────────────────── */
 /** دستهٔ اطلاعیه برای فیلتر صفحهٔ /codal (M4) — فقط از کد/عنوان رسمی خود اطلاعیه. */
