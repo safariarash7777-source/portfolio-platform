@@ -75,10 +75,13 @@ async function loadState() {
       : rows[0]?.payload;
     const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
     const counter = value => Number.isSafeInteger(value) && value >= 0;
+    const day = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+      && Number.isFinite(Date.parse(`${value}T00:00:00Z`))
+      && new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value;
     if (!object(candidate) || !counter(candidate.cursor) || !object(candidate.budget)
       || !counter(candidate.budget.used) || !object(candidate.perSymbol)
       || !(candidate.budget.date === null && candidate.budget.used === 0
-        || typeof candidate.budget.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(candidate.budget.date))
+        || day(candidate.budget.date))
       || Object.values(candidate.perSymbol).some(p => !object(p) || !counter(p.p1) || p.p1 < 1
         || !counter(p.p3) || p.p3 < 1 || typeof p.done1 !== 'boolean' || typeof p.done3 !== 'boolean')) {
       throw new Error('archive state invalid payload');
@@ -109,6 +112,7 @@ function todayUtc() { return new Date().toISOString().slice(0, 10); }
 
 function budgetLeft() {
   const d = todayUtc();
+  if (state.budget.date && state.budget.date > d) throw new Error('archive budget clock moved backwards');
   if (state.budget.date !== d) state.budget = { date: d, used: 0 };
   return ARCHIVE_DAILY_CAP - state.budget.used;
 }

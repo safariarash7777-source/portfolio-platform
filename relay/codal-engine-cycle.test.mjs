@@ -133,6 +133,7 @@ test('archive cannot reset progress or spend on failed or malformed state reads'
     { archiveStateStatus: 503 }, { archiveStateError: true },
     { archiveStateBody: {} }, { archiveStateBody: [{ payload: null }] },
     { archiveStateBody: [{ payload: { cursor: 9, budget: { date: '2026-11-14', used: -1 }, perSymbol: {} } }] },
+    { archiveStateBody: [{ payload: { cursor: 9, budget: { date: '2026-02-31', used: 198 }, perSymbol: {} } }] },
   ]) {
     const f = await fixture(options);
     const archive = await import(`./codal-archive.mjs?mock=${++scenario}`);
@@ -156,6 +157,17 @@ test('archive retries a failed read and preserves the recovered exhausted budget
   assert.deepEqual(f.calls.archiveSaves[0], { ...payload, sourceHoldUntil: 0 });
   assert.equal(archive.archiveStatus.cursor, 234);
   assert.equal(archive.archiveStatus.usedToday, 198);
+});
+
+test('archive cannot reset a future-day budget after a backward clock change', async () => {
+  const payload={cursor:234,budget:{date:'2999-01-01',used:198},perSymbol:{}};
+  const f=await fixture({archiveStateBody:[{payload}]});
+  const archive=await import(`./codal-archive.mjs?mock=${++scenario}`);
+  await archive.runArchiveCycle();
+  assert.equal(f.budgetJobs.length,0);
+  assert.equal(archive.archiveStatus.ok,false);
+  assert.match(archive.archiveStatus.lastError,/clock moved backwards/);
+  assert.deepEqual(f.calls.archiveSaves[0],{...payload,sourceHoldUntil:0});
 });
 
 test('unsupported explicit monthly code preserves feed metadata without parsing as N30', async () => {
