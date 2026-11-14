@@ -1,0 +1,386 @@
+[
+  [
+    "بیمه و صندوق بازنشستگی به جز تامین اجتماعی",
+    {
+      "total": 36,
+      "withoutFinancial": 36,
+      "withoutBoth": 36
+    }
+  ],
+  [
+    "سرمایه‌گذاری‌ها",
+    {
+      "total": 63,
+      "withoutFinancial": 34,
+      "withoutBoth": 34
+    }
+  ],
+  [
+    "زراعت و خدمات وابسته",
+    {
+      "total": 22,
+      "withoutFinancial": 20,
+      "withoutBoth": 19
+    }
+  ],
+  [
+    "انبوه‌سازی، املاک و مستغلات",
+    {
+      "total": 33,
+      "withoutFinancial": 13,
+      "withoutBoth": 13
+    }
+  ],
+  [
+    "محصولات شیمیایی",
+    {
+      "total": 67,
+      "withoutFinancial": 21,
+      "withoutBoth": 9
+    }
+  ],
+  [
+    "خودرو و ساخت قطعات",
+    {
+      "total": 41,
+      "withoutFinancial": 22,
+      "withoutBoth": 9
+    }
+  ],
+  [
+    "حمل و نقل، انبارداری و ارتباطات",
+    {
+      "total": 18,
+      "withoutFinancial": 9,
+      "withoutBoth": 9
+    }
+  ],
+  [
+    "سایر واسطه‌گری‌های مالی",
+    {
+      "total": 15,
+      "withoutFinancial": 9,
+      "withoutBoth": 9
+    }
+  ],
+  [
+    "عرضه برق، گاز، بخار و آب گرم",
+    {
+      "total": 22,
+      "withoutFinancial": 11,
+      "withoutBoth": 7
+    }
+  ],
+  [
+    "محصولات غذایی و آشامیدنی به جز قند و شکر",
+    {
+      "total": 52,
+      "withoutFinancial": 12,
+      "withoutBoth": 7
+    }
+  ],
+  [
+    "فعالیت‌های کمکی به نهادهای مالی واسط",
+    {
+      "total": 14,
+      "withoutFinancial": 7,
+      "withoutBoth": 7
+    }
+  ],
+  [
+    "سیمان، آهک و گچ",
+    {
+      "total": 43,
+      "withoutFinancial": 14,
+      "withoutBoth": 7
+    }
+  ],
+  [
+    "فلزات اساسی",
+    {
+      "total": 58,
+      "withoutFinancial": 13,
+      "withoutBoth": 5
+    }
+  ],
+  [
+    "رایانه و فعالیت‌های وابسته به آن",
+    {
+      "total": 20,
+      "withoutFinancial": 5,
+      "withoutBoth": 5
+    }
+  ],
+  [
+    "سایر محصولات کانی غیرفلزی",
+    {
+      "total": 21,
+      "withoutFinancial": 7,
+      "withoutBoth": 4
+    }
+  ],
+  [
+    "هتل و رستوران",
+    {
+      "total": 7,
+      "withoutFinancial": 4,
+      "withoutBoth": 4
+    }
+  ],
+  [
+    "شرکت‌های چند رشته‌ای صنعتی",
+    {
+      "total": 9,
+      "withoutFinancial": 3,
+      "withoutBoth": 3
+    }
+  ],
+  [
+    "استخراج کانه‌های فلزی",
+    {
+      "total": 17,
+      "withoutFinancial": 4,
+      "withoutBoth": 3
+    }
+  ],
+  [
+    "مواد و محصولات دارویی",
+    {
+      "total": 51,
+      "withoutFinancial": 9,
+      "withoutBoth": 3
+    }
+  ],
+  [
+    "خدمات فنی و مهندسی",
+    {
+      "total": 8,
+      "withoutFinancial": 3,
+      "withoutBoth": 3
+    }
+  ],
+  [
+    "اطلاعات و ارتباطات",
+    {
+      "total": 7,
+      "withoutFinancial": 3,
+      "withoutBoth": 3
+    }
+  ],
+  [
+    "ماشین‌آلات و تجهیزات",
+    {
+      "total": 17,
+      "withoutFinancial": 7,
+      "withoutBoth": 3
+    }
+  ],
+  [
+    "بانک‌ها و موسسات اعتباری",
+    {
+      "total": 12,
+      "withoutFinancial": 2,
+      "withoutBoth": 2
+    }
+  ],
+  [
+    "ساخت محصولات فلزی",
+    {
+      "total": 13,
+      "withoutFinancial": 4,
+      "withoutBoth": 2
+    }
+  ],
+  [
+    "ماشین‌آلات و دستگاه‌های برقی",
+    {
+      "total": 16,
+      "withoutFinancial": 9,
+      "withoutBoth": 2
+    }
+  ],
+  [
+    "قند و شکر",
+    {
+      "total": 16,
+      "withoutFinancial": 7,
+      "withoutBoth": 2
+    }
+  ],
+  [
+    "لاستیک و پلاستیک",
+    {
+      "total": 12,
+      "withoutFinancial": 7,
+      "withoutBoth": 2
+    }
+  ],
+  [
+    "ساخت دستگاه‌ها و وسایل ارتباطی",
+    {
+      "total": 3,
+      "withoutFinancial": 3,
+      "withoutBoth": 2
+    }
+  ],
+  [
+    "پیمانکاری صنعتی",
+    {
+      "total": 3,
+      "withoutFinancial": 2,
+      "withoutBoth": 2
+    }
+  ],
+  [
+    "فعالیت‌های فرهنگی و ورزشی",
+    {
+      "total": 2,
+      "withoutFinancial": 2,
+      "withoutBoth": 2
+    }
+  ],
+  [
+    "استخراج نفت گاز و خدمات جنبی جز اکتشاف",
+    {
+      "total": 2,
+      "withoutFinancial": 1,
+      "withoutBoth": 1
+    }
+  ],
+  [
+    "کاشی و سرامیک",
+    {
+      "total": 10,
+      "withoutFinancial": 4,
+      "withoutBoth": 1
+    }
+  ],
+  [
+    "خرده‌فروشی، به‌استثنای وسایل نقلیه موتوری",
+    {
+      "total": 3,
+      "withoutFinancial": 1,
+      "withoutBoth": 1
+    }
+  ],
+  [
+    "منسوجات",
+    {
+      "total": 6,
+      "withoutFinancial": 2,
+      "withoutBoth": 1
+    }
+  ],
+  [
+    "فعالیت‌های هنری، سرگرمی و خلاقانه",
+    {
+      "total": 1,
+      "withoutFinancial": 1,
+      "withoutBoth": 1
+    }
+  ],
+  [
+    "فعالیت مهندسی، تجزیه، تحلیل و آزمایش فنی",
+    {
+      "total": 1,
+      "withoutFinancial": 1,
+      "withoutBoth": 1
+    }
+  ],
+  [
+    "فراورده‌های نفتی، کک و سوخت هسته‌ای",
+    {
+      "total": 12,
+      "withoutFinancial": 1,
+      "withoutBoth": 0
+    }
+  ],
+  [
+    "تولید محصولات کامپیوتری الکترونیکی و نوری",
+    {
+      "total": 3,
+      "withoutFinancial": 1,
+      "withoutBoth": 0
+    }
+  ],
+  [
+    "مخابرات",
+    {
+      "total": 2,
+      "withoutFinancial": 0,
+      "withoutBoth": 0
+    }
+  ],
+  [
+    "unknown",
+    {
+      "total": 1,
+      "withoutFinancial": 0,
+      "withoutBoth": 0
+    }
+  ],
+  [
+    "محصولات کاغذی",
+    {
+      "total": 6,
+      "withoutFinancial": 3,
+      "withoutBoth": 0
+    }
+  ],
+  [
+    "حمل و نقل آبی",
+    {
+      "total": 1,
+      "withoutFinancial": 0,
+      "withoutBoth": 0
+    }
+  ],
+  [
+    "استخراج سایر معادن",
+    {
+      "total": 3,
+      "withoutFinancial": 1,
+      "withoutBoth": 0
+    }
+  ],
+  [
+    "استخراج زغال سنگ",
+    {
+      "total": 5,
+      "withoutFinancial": 1,
+      "withoutBoth": 0
+    }
+  ],
+  [
+    "محصولات چوبی",
+    {
+      "total": 3,
+      "withoutFinancial": 1,
+      "withoutBoth": 0
+    }
+  ],
+  [
+    "انتشار، چاپ و تکثیر",
+    {
+      "total": 1,
+      "withoutFinancial": 1,
+      "withoutBoth": 0
+    }
+  ],
+  [
+    "دباغی، پرداخت چرم و ساخت انواع پاپوش",
+    {
+      "total": 1,
+      "withoutFinancial": 0,
+      "withoutBoth": 0
+    }
+  ],
+  [
+    "تجارت عمده‌فروشی به جز وسایل نقلیه موتوری",
+    {
+      "total": 1,
+      "withoutFinancial": 0,
+      "withoutBoth": 0
+    }
+  ]
+]
