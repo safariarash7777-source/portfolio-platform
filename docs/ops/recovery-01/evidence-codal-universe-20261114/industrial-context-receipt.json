@@ -1,0 +1,32 @@
+[
+  {
+    "id": "29700-equity",
+    "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=HnQQQaQQQBLakgis593HbgHAuolw%3d%3d&rt=1&let=6&ct=0&ft=-1&sheetId=1060",
+    "capturedAt": "2026-11-14T11:57:42.339Z",
+    "status": "retrieved",
+    "responseUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=HnQQQaQQQBLakgis593HbgHAuolw%3d%3d&rt=1&let=6&ct=0&ft=-1&sheetId=1060",
+    "sha256": "bed7b9357ac50cd5084409daea8fad5856feb0f7ce7162c4ec91aa9d9eb4160c",
+    "filename": "29700-equity.html",
+    "bytes": 5577
+  },
+  {
+    "id": "29245-income",
+    "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=HYQQQaQQQcEzJdrkARLoU7MAsyKA%3d%3d&rt=0&let=6&ct=0&ft=-1&sheetId=1",
+    "capturedAt": "2026-11-14T11:57:44.813Z",
+    "status": "retrieved",
+    "responseUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=HYQQQaQQQcEzJdrkARLoU7MAsyKA%3d%3d&rt=0&let=6&ct=0&ft=-1&sheetId=1",
+    "sha256": "bed7b9357ac50cd5084409daea8fad5856feb0f7ce7162c4ec91aa9d9eb4160c",
+    "filename": "29245-income.html",
+    "bytes": 5577
+  },
+  {
+    "id": "29245-equity",
+    "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=HYQQQaQQQcEzJdrkARLoU7MAsyKA%3d%3d&rt=0&let=6&ct=0&ft=-1&sheetId=1060",
+    "capturedAt": "2026-11-14T11:57:47.433Z",
+    "status": "retrieved",
+    "responseUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=HYQQQaQQQcEzJdrkARLoU7MAsyKA%3d%3d&rt=0&let=6&ct=0&ft=-1&sheetId=1060",
+    "sha256": "bed7b9357ac50cd5084409daea8fad5856feb0f7ce7162c4ec91aa9d9eb4160c",
+    "filename": "29245-equity.html",
+    "bytes": 5577
+  }
+]

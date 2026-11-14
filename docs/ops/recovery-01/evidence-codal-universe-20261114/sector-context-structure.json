@@ -1,0 +1,370 @@
+[
+  {
+    "id": "23022",
+    "url": "https://codal.ir/Reports/InterimStatement.aspx?LetterSerial=GaX5WVcrooFnBEWMQQQaQQQ2ja8g%3d%3d",
+    "bytes": 140924,
+    "datasource": true,
+    "options": [
+      [
+        "1",
+        "صورت سود و زیان"
+      ],
+      [
+        "1058",
+        "صورت سود و زیان جامع"
+      ],
+      [
+        "0",
+        "صورت وضعیت مالی"
+      ],
+      [
+        "1060",
+        "صورت تغییرات در حقوق مالکانه"
+      ],
+      [
+        "9",
+        "صورت جریان های نقدی"
+      ],
+      [
+        "20",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 1"
+      ],
+      [
+        "21",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 2"
+      ],
+      [
+        "22",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 3"
+      ],
+      [
+        "23",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 4"
+      ],
+      [
+        "24",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 5"
+      ]
+    ],
+    "root": {
+      "title_En": "Financial Statement - Insurance- OTC - V2",
+      "type": 6,
+      "isConsolidated": false,
+      "period": 6,
+      "periodEndToDate": "1405/06/31",
+      "isAudited": false,
+      "tracingNo": 1623479,
+      "yearEndToDate": "1405/12/29"
+    },
+    "sheets": [
+      {
+        "alias": "IncomeStatement",
+        "code": 1,
+        "tables": [
+          {
+            "alias": "IncomeStatement",
+            "title": "صورت سود و زیان",
+            "cells": 177
+          },
+          {
+            "alias": "",
+            "title": "",
+            "cells": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "22271",
+    "url": "https://codal.ir/Reports/InterimStatement.aspx?LetterSerial=qQ7fKiLEAxkBOevIPSiQFw%3d%3d",
+    "bytes": 160885,
+    "datasource": true,
+    "options": [
+      [
+        "1",
+        "صورت سود و زیان"
+      ],
+      [
+        "1058",
+        "صورت سود و زیان جامع"
+      ],
+      [
+        "0",
+        "صورت وضعیت مالی"
+      ],
+      [
+        "1060",
+        "صورت تغییرات در حقوق مالکانه"
+      ],
+      [
+        "9",
+        "صورت جریان های نقدی"
+      ],
+      [
+        "20",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 1"
+      ],
+      [
+        "21",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 2"
+      ],
+      [
+        "22",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 3"
+      ],
+      [
+        "23",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 4"
+      ]
+    ],
+    "root": {
+      "title_En": "Financial Statement - Agriculture- OTC- V2",
+      "type": 6,
+      "isConsolidated": false,
+      "period": 6,
+      "periodEndToDate": "1405/06/31",
+      "isAudited": false,
+      "tracingNo": 1621153,
+      "yearEndToDate": "1405/12/29"
+    },
+    "sheets": [
+      {
+        "alias": "IncomeStatement",
+        "code": 1,
+        "tables": [
+          {
+            "alias": "IncomeStatement",
+            "title": "صورت سود و زیان",
+            "cells": 213
+          },
+          {
+            "alias": "IncomeStamemetDescription",
+            "title": "",
+            "cells": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "29700",
+    "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=HnQQQaQQQBLakgis593HbgHAuolw%3d%3d&rt=1&let=6&ct=0&ft=-1",
+    "bytes": 128576,
+    "datasource": true,
+    "options": [
+      [
+        "1",
+        "صورت سود و زیان\r\n\t"
+      ],
+      [
+        "1058",
+        "صورت سود و زیان جامع\r\n\t"
+      ],
+      [
+        "0",
+        "صورت وضعیت مالی\r\n\t"
+      ],
+      [
+        "1060",
+        "صورت تغییرات در حقوق مالکانه\r\n\t"
+      ],
+      [
+        "9",
+        "صورت جریان های نقدی\r\n\t"
+      ],
+      [
+        "20",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 1\r\n\t"
+      ],
+      [
+        "21",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 2\r\n\t"
+      ],
+      [
+        "22",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 3\r\n\r\n"
+      ]
+    ],
+    "root": {
+      "title_En": "Financial Statement -Building- OTC - V3",
+      "type": 6,
+      "isConsolidated": false,
+      "period": 9,
+      "periodEndToDate": "1405/03/31",
+      "isAudited": false,
+      "tracingNo": 1632966,
+      "yearEndToDate": "1405/06/31"
+    },
+    "sheets": [
+      {
+        "alias": "IncomeStatement",
+        "code": 1,
+        "tables": [
+          {
+            "alias": "IncomeStatement",
+            "title": "صورت سود و زیان",
+            "cells": 183
+          },
+          {
+            "alias": "",
+            "title": "",
+            "cells": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "29399",
+    "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=XWpcCloAeodXnF946XztEQ%3d%3d&rt=2&let=6&ct=0&ft=-1",
+    "bytes": 146416,
+    "datasource": true,
+    "options": [
+      [
+        "1",
+        "صورت سود و زیان\r\n\t"
+      ],
+      [
+        "1058",
+        "صورت سود و زیان جامع\r\n\t"
+      ],
+      [
+        "0",
+        "صورت وضعیت مالی\r\n\t"
+      ],
+      [
+        "1060",
+        "صورت تغییرات در حقوق مالکانه\r\n\t"
+      ],
+      [
+        "9",
+        "صورت جریان های نقدی\r\n\t"
+      ],
+      [
+        "20",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 1\r\n\t"
+      ],
+      [
+        "21",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 2\r\n\t"
+      ],
+      [
+        "22",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 3\r\n\t"
+      ],
+      [
+        "3",
+        "صورت خلاصه سرمایه گذاری در سهام به تفکیک صنعت\r\n\t"
+      ],
+      [
+        "4",
+        "صورت وضعیت پرتفوی سهام قابل معامله در بازار سرمایه\r\n\t"
+      ],
+      [
+        "5",
+        "صورت وضعيت پرتفوي سهام سایر شركت‌ها\r\n\t"
+      ],
+      [
+        "6",
+        "صورت ريزمعاملات سهام - تحصیل شده\r\n\t"
+      ],
+      [
+        "7",
+        "صورت ريزمعاملات سهام - واگذار شده\r\n\t"
+      ],
+      [
+        "2567",
+        "صورت وضعیت سایر سرمایه گذاری‌ها\r\n\t"
+      ],
+      [
+        "17",
+        "درآمد سود سهام محقق شده\r\n\r\n"
+      ]
+    ],
+    "root": {
+      "title_En": "Financial Statement - Investment - Listed - V5",
+      "type": 6,
+      "isConsolidated": false,
+      "period": 3,
+      "periodEndToDate": "1405/07/30",
+      "isAudited": false,
+      "tracingNo": 1628386,
+      "yearEndToDate": "1406/04/31"
+    },
+    "sheets": [
+      {
+        "alias": "IncomeStatement",
+        "code": 1,
+        "tables": [
+          {
+            "alias": "IncomeStatement",
+            "title": "صورت سود و زیان",
+            "cells": 222
+          },
+          {
+            "alias": "IncomeStatementDesc",
+            "title": null,
+            "cells": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "29245",
+    "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=HYQQQaQQQcEzJdrkARLoU7MAsyKA%3d%3d&rt=0&let=6&ct=0&ft=-1",
+    "bytes": 41168,
+    "datasource": false,
+    "options": [
+      [
+        "19",
+        "نظر حسابرس\r\n\t"
+      ],
+      [
+        "1",
+        "صورت سود و زیان\r\n\t"
+      ],
+      [
+        "1058",
+        "صورت سود و زیان جامع\r\n\t"
+      ],
+      [
+        "0",
+        "صورت وضعیت مالی\r\n\t"
+      ],
+      [
+        "1060",
+        "صورت تغییرات در حقوق مالکانه\r\n\t"
+      ],
+      [
+        "9",
+        "صورت جریان های نقدی\r\n\t"
+      ],
+      [
+        "20",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 1\r\n\t"
+      ],
+      [
+        "21",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 2\r\n\t"
+      ],
+      [
+        "22",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 3\r\n\t"
+      ],
+      [
+        "23",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 4\r\n\t"
+      ],
+      [
+        "24",
+        "خلاصه اطلاعات گزارش تفسیری - صفحه 5\r\n\t"
+      ],
+      [
+        "30",
+        "اعضاي هيئت مديره\r\n\r\n"
+      ]
+    ]
+  }
+]

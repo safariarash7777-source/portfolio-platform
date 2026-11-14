@@ -1,0 +1,52 @@
+[
+  {
+    "id": "23022",
+    "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=GaX5WVcrooFnBEWMQQQaQQQ2ja8g%3d%3d&rt=6&let=6&ct=0&ft=-1",
+    "capturedAt": "2026-11-14T11:46:45.541Z",
+    "status": "retrieved",
+    "responseUrl": "https://codal.ir/Reports/InterimStatement.aspx?LetterSerial=GaX5WVcrooFnBEWMQQQaQQQ2ja8g%3d%3d",
+    "sha256": "9e4d878873d39baf842cbfafc63afa331d3e6932f93d6f28f8dfb473fe64b032",
+    "filename": "23022.html",
+    "bytes": 140924
+  },
+  {
+    "id": "22271",
+    "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=qQ7fKiLEAxkBOevIPSiQFw%3d%3d&rt=8&let=6&ct=0&ft=-1",
+    "capturedAt": "2026-11-14T11:46:51.289Z",
+    "status": "retrieved",
+    "responseUrl": "https://codal.ir/Reports/InterimStatement.aspx?LetterSerial=qQ7fKiLEAxkBOevIPSiQFw%3d%3d",
+    "sha256": "5f8ac7ed79abadf4b678e00b3091a7f40a97f9e44c58151583ecee6f6f5befda",
+    "filename": "22271.html",
+    "bytes": 160885
+  },
+  {
+    "id": "29700",
+    "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=HnQQQaQQQBLakgis593HbgHAuolw%3d%3d&rt=1&let=6&ct=0&ft=-1",
+    "capturedAt": "2026-11-14T11:46:56.768Z",
+    "status": "retrieved",
+    "responseUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=HnQQQaQQQBLakgis593HbgHAuolw%3d%3d&rt=1&let=6&ct=0&ft=-1",
+    "sha256": "cdaef472abe6fcc29590139a5009f546e679f8aa35d90c6282df60397e89d73e",
+    "filename": "29700.html",
+    "bytes": 128576
+  },
+  {
+    "id": "29399",
+    "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=XWpcCloAeodXnF946XztEQ%3d%3d&rt=2&let=6&ct=0&ft=-1",
+    "capturedAt": "2026-11-14T11:46:59.092Z",
+    "status": "retrieved",
+    "responseUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=XWpcCloAeodXnF946XztEQ%3d%3d&rt=2&let=6&ct=0&ft=-1",
+    "sha256": "d6e849392e42905b45b3f5b71b0c8cf93c6ef17ec8c4ab903c2bf7e27cfb9f50",
+    "filename": "29399.html",
+    "bytes": 146416
+  },
+  {
+    "id": "29245",
+    "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=HYQQQaQQQcEzJdrkARLoU7MAsyKA%3d%3d&rt=0&let=6&ct=0&ft=-1",
+    "capturedAt": "2026-11-14T11:47:03.303Z",
+    "status": "retrieved",
+    "responseUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=HYQQQaQQQcEzJdrkARLoU7MAsyKA%3d%3d&rt=0&let=6&ct=0&ft=-1",
+    "sha256": "cec2c282e2ce551e3ba555e76f345d2e52d179974e08339c345a0f7acd0e5611",
+    "filename": "29245.html",
+    "bytes": 41168
+  }
+]
