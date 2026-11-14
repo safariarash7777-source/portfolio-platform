@@ -162,7 +162,14 @@ function document(source,meta,announcement,alias,interim=false) {
     day(root.yearEndToDate)<meta.period_end)fail('period_mismatch');
  const visible=html.replace(/<!--[\s\S]*?-->/g,'').replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
  const label=id=>text(element(visible,'span',id));
- if(norm(label('ctl00_txbSymbol'))!==norm(meta.symbol) || !norm(meta.symbol) ||
+ // Old pages also contain one empty display placeholder. Each ID must be unique,
+ // and exactly one visible, populated symbol identity must remain.
+ const symbolIds=[...visible.matchAll(/<span\b[^>]*>/gi)].flatMap(m=>attributes(m[0])
+  .filter(a=>a.name==='id'&&['ctl00_txbSymbol','ctl00_lblDisplaySymbol'].includes(a.value)).map(a=>a.value));
+ if(new Set(symbolIds).size!==symbolIds.length)fail('header_conflict');
+ const symbols=symbolIds.map(label).filter(value=>norm(value));
+ if(symbols.length!==1)fail('header_conflict');
+ if(norm(symbols[0])!==norm(meta.symbol) || !norm(meta.symbol) ||
     norm(label('ctl00_txbCompanyName'))!==norm(meta.company_name) || !norm(meta.company_name) ||
     day(label('ctl00_lblPeriodEndToDate'))!==meta.period_end ||
     norm(label('ctl00_lblPeriod'))!==`${root.period}ماهه` ||
