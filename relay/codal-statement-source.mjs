@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { setTimeout as sleep } from 'node:timers/promises';
+import { codalAccess } from './codal-source-access.mjs';
 
 // Bounded interpretation of public publisher reports without executing their
 // scripts. Admission binds income and capital to the same issuer and report;
@@ -270,7 +271,9 @@ let requestTail=Promise.resolve();
 let nextRequest=0;
 async function captureDecision(url,fetchImpl,request={}){
  const operation=async()=>{
+  codalAccess.check();
   await sleep(Math.max(0,nextRequest-Date.now()));
+  codalAccess.check();
   nextRequest=Date.now()+2100;
   let response=await fetchImpl(url,{...request,redirect:'manual',signal:AbortSignal.timeout(15000)});
   if([301,302,307,308].includes(response.status)){
@@ -295,6 +298,7 @@ async function captureDecision(url,fetchImpl,request={}){
   const chunks=[];let size=0;
   for await(const chunk of response.body){size+=chunk.byteLength;if(size>MAX_DECISION)throw Error('codal_statement_bound');chunks.push(chunk);}
   const htmlBytes=Buffer.concat(chunks);
+  codalAccess.inspect(htmlBytes.toString('utf8'));
   return {url,htmlBytes,sha256:hash(htmlBytes)};
  };
  const pending=requestTail.then(operation,operation);requestTail=pending.catch(()=>{});return pending;

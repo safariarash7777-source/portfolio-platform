@@ -3,6 +3,7 @@ import { isBrsLocalDeferral } from "./brsapi-policy.mjs";
 import { notifyAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 import { createHash } from "node:crypto";
 import { loadDecisionStatement } from "./codal-statement-source.mjs";
+import { codalAccess, isCodalSourceDeferred } from "./codal-source-access.mjs";
 // ماژول کدال — دریافت خودکار گزارش‌های بنیادی از وب‌سرویس کدالِ BrsApi.
 // چرا این‌جا (رله): excel.codal.ir و codal.ir به IP خارجی پاسخ نمی‌دهند؛
 // فقط هاست داخل ایران (لیارا) می‌تواند اکسل گزارش‌ها را دانلود کند.
@@ -898,6 +899,7 @@ function announcementRows(json) {
 }
 
 async function downloadExcelHtml(url, onBody) {
+  codalAccess.check();
   // excel.codal.ir کُند است و گاه بار اول timeout می‌دهد — تا ۳ تلاش با مهلت فزاینده.
   let lastErr;
   for (let attempt = 1; attempt <= 3; attempt++) {
@@ -907,13 +909,18 @@ async function downloadExcelHtml(url, onBody) {
         signal: AbortSignal.timeout(30000 * attempt),
       });
       if (!res.ok) throw new Error(`excel HTTP ${res.status}`);
-      if (!onBody) return await res.text();
+      if (!onBody) {
+        const html = await res.text();
+        codalAccess.inspect(html);
+        return html;
+      }
       const htmlBytes = new Uint8Array(await res.arrayBuffer());
       const html = new TextDecoder().decode(htmlBytes);
-      onBody({ htmlBytes, sourceRef: url, responseUrl: res.url });
+      codalAccess.inspect(html);
+      onBody?.({ htmlBytes, sourceRef: url, responseUrl: res.url });
       return html;
     } catch (e) {
-      if (isBrsLocalDeferral(e)) throw e;
+      if (isBrsLocalDeferral(e) || isCodalSourceDeferred(e)) throw e;
       lastErr = e;
       if (attempt < 3) await sleep(3000 * attempt);
     }
@@ -1120,7 +1127,7 @@ export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejec
     // A failed Excel endpoint must not hide a valid same-report publisher
     // statement. Local quota deferrals still stop immediately; unsupported or
     // rejected fallback content retains the original download failure stage.
-    if (kind !== "ن-۱۰" || isBrsLocalDeferral(excelError)) throw excelError;
+    if (kind !== "ن-۱۰" || isBrsLocalDeferral(excelError) || isCodalSourceDeferred(excelError)) throw excelError;
     const result = await loadDecisionStatement(a, metaFrom(a, kind), { fetchImpl: fetch });
     if (!result.data) throw excelError;
     onDownloaded();

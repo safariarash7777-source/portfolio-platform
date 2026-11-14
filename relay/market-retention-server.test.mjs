@@ -324,6 +324,8 @@ test('complete core snapshot persists when optional enrichment exhausts its budg
   assert.equal(r.second.body.snapshotQuality.state,'complete');
   assert.equal(r.debug.brsapiBudgetStop.active,true);
   assert.ok(r.debug.brsapiBudgetStop.producers['fund-meta']>0);
+  assert.equal(r.debug.sources.brsapi_fund_meta.error,'budget_deferred');
+  assert.equal(r.debug.sources.brsapi_fund_meta.ok,false);
   assert.equal(r.writesAfterSecond,2);
   assert.equal(r.latest[1].fetchedAt,r.second.body.fetchedAt);
   assert.equal(r.latest[1].options[0].price,300);

@@ -745,9 +745,11 @@ async function refreshFundMeta(funds) {
 
   let updated = 0;
   let failed = 0;
+  let metaError = null;
+  let deferred = false;
   const queue = [...pending];
   async function worker() {
-    while (queue.length) {
+    while (queue.length && !deferred) {
       const f = queue.shift();
       if (!f) return;
       try {
@@ -767,7 +769,7 @@ async function refreshFundMeta(funds) {
             `${BRSAPI_BASE}/Tsetmc/Symbol.php?key=${BRSAPI_KEY}&l18=${encodeURIComponent(f.id)}`,
             { headers: HDRS, signal: AbortSignal.timeout(15000) }
           );
-          if (!res.ok) { failed++; continue; }
+          if (!res.ok) { failed++; metaError ??= `HTTP ${res.status}`; continue; }
           j = await res.json();
         }
         const d = Array.isArray(j) ? j[0] : j;
@@ -779,19 +781,23 @@ async function refreshFundMeta(funds) {
           // پاسخ بدون cs_sub → دوبارهٔ زودهنگام نخواهیم؛ برچسبِ خالی ثبت می‌شود
           fundMetaCache.set(f.id, { type: null, at: Date.now() });
           failed++;
+          metaError ??= 'schema_missing_fund_type';
         }
-      } catch {
+      } catch (error) {
         failed++;
+        const budget = ['BudgetExceededError', 'LegacyBudgetError', 'BudgetUnavailableError'].includes(error?.name);
+        if (budget) { deferred = true; metaError = 'budget_deferred'; }
+        else metaError ??= sourceErrorCategory(error);
       }
     }
   }
   await Promise.all(Array.from({ length: META_CONCURRENCY }, worker));
   status.sources.brsapi_fund_meta = {
-    ok: updated > 0,
+    ok: failed === 0,
     cached: fundMetaCache.size,
     updated,
     failed,
-    error: updated === 0 && pending.length > 0 ? "no meta fetched" : null,
+    error: metaError,
   };
 }
 

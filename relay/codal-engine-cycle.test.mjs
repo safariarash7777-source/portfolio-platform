@@ -108,7 +108,8 @@ async function fixture(options = {}) {
       return response(options.stateBody ?? [{ payload: persisted }]);
     }
     if (url.pathname.endsWith("/ir_market_snapshots") && url.searchParams.get("key") === "eq.codal_archive_state") {
-      return response(options.archiveStateBody ?? []);
+      if (options.archiveStateError) throw new Error('mock state network failure');
+      return response(options.archiveStateBody ?? [], options.archiveStateStatus ?? 200);
     }
     if (url.pathname.endsWith("/ir_market_snapshots") && url.searchParams.get("key") === "eq.latest") {
       return response(options.marketBody ?? [], options.marketStatus ?? 200);
@@ -125,6 +126,48 @@ async function fixture(options = {}) {
 test.afterEach(() => {
   globalThis.fetch = originalFetch;
   codal.setCodalBudgetPorts(null);
+});
+
+test('archive cannot reset progress or spend on failed or malformed state reads', async () => {
+  for (const options of [
+    { archiveStateStatus: 503 }, { archiveStateError: true },
+    { archiveStateBody: {} }, { archiveStateBody: [{ payload: null }] },
+    { archiveStateBody: [{ payload: { cursor: 9, budget: { date: '2026-11-14', used: -1 }, perSymbol: {} } }] },
+    { archiveStateBody: [{ payload: { cursor: 9, budget: { date: '2026-02-31', used: 198 }, perSymbol: {} } }] },
+  ]) {
+    const f = await fixture(options);
+    const archive = await import(`./codal-archive.mjs?mock=${++scenario}`);
+    await archive.runArchiveCycle();
+    assert.equal(archive.archiveStatus.ok, false);
+    assert.equal(archive.archiveStatus.lastError, 'archive_state_read_failed');
+    assert.equal(f.budgetJobs.length, 0);
+    assert.equal(f.calls.archiveSaves.length, 0);
+  }
+});
+
+test('archive retries a failed read and preserves the recovered exhausted budget and cursor', async () => {
+  await fixture({ archiveStateStatus: 503 });
+  const archive = await import(`./codal-archive.mjs?mock=${++scenario}`);
+  await archive.runArchiveCycle();
+  const payload = { cursor: 234, budget: { date: new Date().toISOString().slice(0, 10), used: 198 },
+    perSymbol: { sample: { p1: 4, p3: 8, done1: false, done3: true } } };
+  const f = await fixture({ archiveStateBody: [{ payload }] });
+  await archive.runArchiveCycle();
+  assert.equal(f.budgetJobs.length, 0);
+  assert.deepEqual(f.calls.archiveSaves[0], { ...payload, sourceHoldUntil: 0 });
+  assert.equal(archive.archiveStatus.cursor, 234);
+  assert.equal(archive.archiveStatus.usedToday, 198);
+});
+
+test('archive cannot reset a future-day budget after a backward clock change', async () => {
+  const payload={cursor:234,budget:{date:'2999-01-01',used:198},perSymbol:{}};
+  const f=await fixture({archiveStateBody:[{payload}]});
+  const archive=await import(`./codal-archive.mjs?mock=${++scenario}`);
+  await archive.runArchiveCycle();
+  assert.equal(f.budgetJobs.length,0);
+  assert.equal(archive.archiveStatus.ok,false);
+  assert.match(archive.archiveStatus.lastError,/clock moved backwards/);
+  assert.deepEqual(f.calls.archiveSaves[0],{...payload,sourceHoldUntil:0});
 });
 
 test('unsupported explicit monthly code preserves feed metadata without parsing as N30', async () => {
@@ -916,4 +959,25 @@ test('archive rejection does not advance its page or claim a successful cycle',a
  assert.equal(archive.archiveStatus.lastCycle.parseFailed,1);
  assert.equal(f.calls.archiveSaves.at(-1).perSymbol['نمونه'].p1,1);
  assert.equal(f.calls.reportWrites.length,0);
+});
+
+test('publisher challenge stops the cycle without poisoning report failures and persists across engine/archive', async () => {
+ const a=financial(2);
+ const f=await fixture({pages:[[a,boundary],[]],excelHtml:'<h1>تأیید کاربر</h1><img id="captchaImage"><input id="captchaCode">کد امنیتی'});
+ await f.engine.runEngineCycle();
+ assert.equal(f.calls.excel.length,1);
+ assert.equal(f.engine.engineStatus.ok,false);
+ assert.match(f.engine.engineStatus.lastError,/codal_source_challenge/);
+ assert.deepEqual(f.persisted.fails,{});
+ assert.deepEqual(f.persisted.watermark,watermark);
+ assert.ok(f.persisted.sourceHoldUntil>Date.now());
+ const resumed=await fixture({initialState:f.persisted,pages:[[a,boundary],[]]});
+ await resumed.engine.runEngineCycle();
+ assert.equal(resumed.budgetJobs.length,0);
+ assert.equal(resumed.calls.excel.length,0);
+ const archive=await import(`./codal-archive.mjs?mock=${++scenario}`);
+ await archive.runArchiveCycle();
+ assert.equal(resumed.budgetJobs.length,0);
+ assert.equal(archive.archiveStatus.lastError,'codal_source_challenge');
+ assert.equal(resumed.calls.archiveSaves.at(-1).sourceHoldUntil,f.persisted.sourceHoldUntil);
 });
