@@ -426,12 +426,34 @@ export function toMarket(payload: unknown): IrMarket {
 }
 
 /** منبعِ اول: آخرین اسنپ‌شاتِ بازار از Supabase (از همه‌جای دنیا در دسترس). */
+/** One reconnect for stalled read headers, within the caller's original deadline.
+ * HTTP errors, body failures and TLS failures never trigger another request. */
+export async function fetchStoredMarketRows(url: string, init: RequestInit & { signal: AbortSignal }, read: typeof fetch = fetch, firstHeadersMs = 2000): Promise<Response> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    init.signal.throwIfAborted();
+    const headersDeadline = new AbortController();
+    const timeout = Object.assign(new Error('Market header deadline'), { name: 'TimeoutError' });
+    const timer = attempt === 0 ? setTimeout(() => headersDeadline.abort(timeout), firstHeadersMs) : null;
+    try {
+      return await read(url, { ...init, method: 'GET', redirect: 'error', credentials: 'omit',
+        signal: AbortSignal.any([init.signal, headersDeadline.signal]) });
+    } catch (error) {
+      const code = (error as { cause?: { code?: unknown } } | null)?.cause?.code;
+      if (attempt !== 0 || init.signal.aborted ||
+          !(error === timeout || code === 'UND_ERR_CONNECT_TIMEOUT')) throw error;
+    } finally {
+      if (timer !== null) clearTimeout(timer);
+    }
+  }
+  throw new Error('Market read exhausted');
+}
+
 async function readSupabase(diag: IrDiag, signal: AbortSignal, explicit?: StoredTransport): Promise<IrMarket | null> {
   const url = explicit === undefined ? process.env.NEXT_PUBLIC_SUPABASE_URL : explicit.pair.url;
   const anon = explicit === undefined ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY : explicit.pair.anon;
   if (!url || !anon) return null;
   diag.supabaseConfigured = true;
-  const res = await fetch(
+  const res = await fetchStoredMarketRows(
     `${url.replace(/\/+$/, "")}/rest/v1/ir_market_snapshots?key=eq.latest&select=payload`,
     {
       headers: { apikey: anon, Authorization: `Bearer ${anon}`, Accept: "application/json" },
