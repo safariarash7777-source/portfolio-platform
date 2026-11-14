@@ -19,7 +19,7 @@ import {
   classifyAnnouncement, fetchAnnouncementsPage, downloadAndParse,
   insertParsedReport, existingUrlsFor, faToEn, codalEnv,
 } from "./codal.mjs";
-import { isMainTicker } from "./symbols-util.mjs"; // C1 — قاعدهٔ یگانهٔ زیرنماد/حق‌تقدم
+import { companyUniverse, readStoredReportInventory, summarizeReportInventory } from "./codal-coverage.mjs";
 
 const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = codalEnv;
 
@@ -50,7 +50,7 @@ export const archiveStatus = {
   queueSize: 0,
   doneSymbols: 0,
   lastCycle: { symbols: [], pages: 0, downloaded: 0, inserted: 0, parseFailed: 0, persistenceUnconfirmed: 0 },
-  coverage: { n30Symbols: 0, n10Symbols: 0, lastChecked: null },
+  coverage: { n30Symbols: null, n10Symbols: null, lastChecked: null, error: null },
 };
 
 /* ── وضعیت پایدار (Supabase) ───────────────────────────────────────────────── */
@@ -113,43 +113,25 @@ export function jdateKey(s) {
 
 /* ── صف نمادها (همان اولویت موتور: پرمعامله‌ترین‌ها) ───────────────────────── */
 async function priorityQueue() {
-  try {
-    const qs = new URLSearchParams({ select: "payload", key: "eq.latest", limit: "1" });
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/ir_market_snapshots?${qs}`, {
-      headers: SB_HDRS(), signal: AbortSignal.timeout(20000),
-    });
-    if (!res.ok) return [];
-    const rows = await res.json();
-    const stocks = rows[0]?.payload?.stocks || [];
-    // C1 — قاعدهٔ یگانهٔ پروژه (symbols-util): فقط نمادهای اصلی — رقم عربی هم پوشش داده می‌شود.
-    const fromEnv = String(process.env.CODAL_ARCHIVE_EXTRA || "")
-      .split(",").map((s) => s.trim()).filter(Boolean); // «هرچه آرش اضافه کند»
-    const top = stocks
-      .map((s) => ({ ...s, id: String(s?.id || "").trim() }))
-      .filter((s) => s.id && (s.value || 0) > 0 && isMainTicker(s.id))
-      .sort((x, y) => (y.value || 0) - (x.value || 0))
-      .map((s) => s.id);
-    return [...new Set([...fromEnv, ...top])].slice(0, 300);
-  } catch { return []; }
+  const qs = new URLSearchParams({select:'payload',key:'eq.latest',limit:'1'});
+  const res=await fetch(`${SUPABASE_URL}/rest/v1/ir_market_snapshots?${qs}`,{headers:SB_HDRS(),signal:AbortSignal.timeout(20000)});
+  if(!res.ok)throw Error(`archive universe HTTP ${res.status}`);
+  const rows=await res.json();
+  if(!Array.isArray(rows) || rows.length!==1 || !Array.isArray(rows[0]?.payload?.stocks))throw Error('archive universe invalid schema');
+  const extra=String(process.env.CODAL_ARCHIVE_EXTRA || '').split(',').map(id=>({id:id.trim()}));
+  return companyUniverse([...(rows[0]?.payload?.stocks ?? []),...extra]);
 }
 
 /* ── پوشش لحظه‌ای برای /debug (پذیرش T4: قابل مشاهده در debug) ─────────────── */
 export async function refreshCoverage() {
   try {
-    const count = async (kind) => {
-      const qs = `select=symbol&report_kind=eq.${encodeURIComponent(kind)}&data=not.is.null&limit=20000`;
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/codal_reports?${qs}`, {
-        headers: SB_HDRS(), signal: AbortSignal.timeout(20000),
-      });
-      if (!res.ok) return null;
-      const rows = await res.json();
-      return new Set(rows.map((r) => r.symbol)).size;
-    };
-    const [n30, n10] = await Promise.all([count("ن-۳۰"), count("ن-۱۰")]);
-    if (n30 !== null) archiveStatus.coverage.n30Symbols = n30;
-    if (n10 !== null) archiveStatus.coverage.n10Symbols = n10;
-    archiveStatus.coverage.lastChecked = new Date().toISOString();
-  } catch { /* پوشش قبلی می‌ماند */ }
+    const universe=await priorityQueue();
+    const inventory=await readStoredReportInventory({baseUrl:SUPABASE_URL,headers:SB_HDRS()});
+    archiveStatus.coverage={...summarizeReportInventory(universe,inventory),lastChecked:new Date().toISOString(),error:null};
+  } catch {
+    // Preserve the last complete inventory and its clock; failure is not zero.
+    archiveStatus.coverage={...archiveStatus.coverage,error:'inventory_read_failed'};
+  }
 }
 
 /* ── یک چرخهٔ آرشیو ────────────────────────────────────────────────────────── */
