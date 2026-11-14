@@ -341,3 +341,16 @@ test('unknown or malformed scale/zero-downtime stays null without coercion',asyn
     assert.equal(out.project.data.configuredNotActual,true);
   }
 });
+
+test('inventory receipt distinguishes complete stored presence from freshness and unknown counters',()=>{
+ const input={codalArchive:{coverage:{basis:'stored-presence-not-freshness',universeSize:780,universeFinancial:459,universeMonthly:357,withoutReports:224,storedRows:12571,error:'inventory_read_failed',lastChecked:'2026-11-14T08:17:00Z',private:secret}},codalEngine:{backfill:{workWindow:'overnight',symbolLimit:8,downloaded:6,cursor:12,symbols:[secret]}}};
+ const result=sanitizeDebug(input).codal;
+ assert.equal(result.archive.coverage.universeSize,780);
+ assert.equal(result.archive.coverage.withoutReports,224);
+ assert.equal(result.archive.coverage.basis,'stored-presence-not-freshness');
+ assert.equal(result.archive.coverage.error,'inventory_read_failed');
+ assert.equal(result.backfill.workWindow,'overnight');
+ assert.equal(result.backfill.symbolLimit,8);
+ assert.equal(JSON.stringify(result).includes(secret),false);
+ assert.equal(sanitizeDebug({}).codal.archive.coverage.withoutReports,null);
+});
