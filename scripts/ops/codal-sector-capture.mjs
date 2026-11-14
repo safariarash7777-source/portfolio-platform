@@ -10,6 +10,13 @@ export const TARGETS = Object.freeze([
   ['29399','XWpcCloAeodXnF946XztEQ%3d%3d',2],
   ['29245','HYQQQaQQQcEzJdrkARLoU7MAsyKA%3d%3d',0],
 ].map(([id,serial,rt])=>Object.freeze({id,url:`https://codal.ir/Reports/Decision.aspx?LetterSerial=${serial}&rt=${rt}&let=6&ct=0&ft=-1`})));
+// Sheet IDs are advertised by the captured official selectors, never inferred.
+export const SOURCE_SETS=Object.freeze({sectors:TARGETS,'industrial-20261114':Object.freeze([
+  Object.freeze({id:'29700-equity',url:TARGETS[2].url+'&sheetId=1060'}),
+  Object.freeze({id:'29245-income',url:TARGETS[4].url+'&sheetId=1'}),
+  Object.freeze({id:'29245-equity',url:TARGETS[4].url+'&sheetId=1060'}),
+])});
+function targetsFor(profile){if(!Object.hasOwn(SOURCE_SETS,profile))throw Error('profile_invalid');return SOURCE_SETS[profile];}
 export function sameReport(url, source) {
   try {
     const u=new URL(url), original=new URL(source);
@@ -50,12 +57,13 @@ export async function collect(targets, allowed, fetchImpl=fetch, delay=ms=>new P
   }
   return {schemaVersion:1,documents};
 }
-export function command(){
-  const code=`(${collect.toString()})(${JSON.stringify(TARGETS)},${sameReport.toString()}).then(p=>{const text=require('node:zlib').deflateRawSync(Buffer.from(JSON.stringify(p))).toString('base64');const parts=text.match(/.{1,2000}/g);for(let i=0;i<parts.length;i++)console.log('SECTOR_PART='+i+'/'+parts.length+':'+parts[i]);console.log('SECTOR_DONE='+parts.length)}).catch(()=>{console.log('sector_capture_failed');process.exitCode=1})`;
+export function command(profile='sectors'){
+  const code=`(${collect.toString()})(${JSON.stringify(targetsFor(profile))},${sameReport.toString()}).then(p=>{const text=require('node:zlib').deflateRawSync(Buffer.from(JSON.stringify(p))).toString('base64');const parts=text.match(/.{1,2000}/g);for(let i=0;i<parts.length;i++)console.log('SECTOR_PART='+i+'/'+parts.length+':'+parts[i]);console.log('SECTOR_DONE='+parts.length)}).catch(()=>{console.log('sector_capture_failed');process.exitCode=1})`;
   const cmd=encodeURIComponent(`node -e eval(require(/node:zlib/.source).inflateRawSync(Buffer.from(/${deflateRawSync(code).toString('base64url')}/.source,/base64url/.source)).toString())`);
   if(cmd.length>6000)throw Error('command_limit');return cmd;
 }
-export function parse(raw,exitCode){
+export function parse(raw,exitCode,profile='sectors'){
+  const targets=targetsFor(profile);
   if(exitCode!==0||typeof raw!=='string'||Buffer.byteLength(raw)>4*1024*1024)throw Error('capture_transport');
   // The CLI may prefix the first remote stdout line with a terminal status.
   // Extract only complete protocol records ending at the line boundary.
@@ -71,9 +79,9 @@ export function parse(raw,exitCode){
   }
   let packet;
   try{packet=JSON.parse(inflateRawSync(Buffer.from(encoded,'base64'),{maxOutputLength:15*1024*1024}).toString('utf8'));}catch{throw Error('capture_decode');}
-  if(packet.schemaVersion!==1||!Array.isArray(packet.documents)||packet.documents.length!==TARGETS.length)throw Error('capture_schema');
+  if(packet.schemaVersion!==1||!Array.isArray(packet.documents)||packet.documents.length!==targets.length)throw Error('capture_schema');
   return packet.documents.map((d,i)=>{
-    const expected=TARGETS[i];
+    const expected=targets[i];
     if(d.id!==expected.id||d.sourceUrl!==expected.url||!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(d.capturedAt))throw Error('capture_identity');
     const result={id:expected.id,sourceUrl:expected.url,capturedAt:d.capturedAt,status:d.status};
     if(d.status==='retrieved'){
@@ -95,10 +103,10 @@ export function failureReceipt(raw,exitCode,error){
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
   let privateRaw,exitCode;
   try{
-    if(process.argv[2]==='command'&&process.argv.length===3)console.log(command());
-    else if(process.argv[2]==='parse'&&process.argv.length===5){
+    if(process.argv[2]==='command'&&[3,4].includes(process.argv.length))console.log(command(process.argv[3]||'sectors'));
+    else if(process.argv[2]==='parse'&&[5,6].includes(process.argv.length)){
       privateRaw=await readFile(process.argv[3],'utf8');exitCode=Number(process.argv[4]);
-      const docs=parse(privateRaw,exitCode);
+      const docs=parse(privateRaw,exitCode,process.argv[5]||'sectors');
       await mkdir('sector-primary-sources',{recursive:true});
       const receipt=[];
       for(const {bytes,...d} of docs){if(bytes){d.filename=d.id+'.html';await writeFile('sector-primary-sources/'+d.filename,bytes,{flag:'wx'});d.bytes=bytes.length;}receipt.push(d);}
