@@ -1,0 +1,29 @@
+{
+  "atUtc": "2026-11-14T11:17:23.843053+00:00",
+  "checks": [
+    {
+      "symbol": "گلدیرا",
+      "url": "https://portfolio-platform-fawn.vercel.app/symbol/%DA%AF%D9%84%D8%AF%DB%8C%D8%B1%D8%A7",
+      "http": 200,
+      "sourceSerialPresent": true,
+      "reportReadError": false,
+      "capturedAt": "2026-11-14T11:14:46.529564+00:00"
+    },
+    {
+      "symbol": "کپارس",
+      "url": "https://portfolio-platform-fawn.vercel.app/symbol/%DA%A9%D9%BE%D8%A7%D8%B1%D8%B3",
+      "http": 200,
+      "sourceSerialPresent": true,
+      "reportReadError": false,
+      "capturedAt": "2026-11-14T11:14:41.240981+00:00"
+    },
+    {
+      "symbol": "کاذر",
+      "url": "https://portfolio-platform-fawn.vercel.app/symbol/%DA%A9%D8%A7%D8%B0%D8%B1",
+      "http": 200,
+      "sourceSerialPresent": true,
+      "reportReadError": false,
+      "capturedAt": "2026-11-14T11:14:27.339076+00:00"
+    }
+  ]
+}

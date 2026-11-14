@@ -1,0 +1,55 @@
+{
+  "atUtc": "2026-11-14T11:17:11.575209+00:00",
+  "rows": [
+    {
+      "symbol": "گلدیرا",
+      "report_kind": "ن-۳۰",
+      "period_end": "2026-11-01",
+      "captured_at": "2026-11-14T11:14:46.529564+00:00",
+      "source_url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=DXBXzGOOObOOOg6SUmowU9wYLXnA%3d%3d&rt=0&let=58&ct=0&ft=-1#pv2"
+    },
+    {
+      "symbol": "کپارس",
+      "report_kind": "ن-۱۰",
+      "period_end": "2026-07-22",
+      "captured_at": "2026-11-14T11:14:41.240981+00:00",
+      "source_url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=fXQ473HZIHBffdRBEOr7jw%3d%3d&rt=0&let=6&ct=0&ft=-1#pv2"
+    },
+    {
+      "symbol": "کاذر",
+      "report_kind": "ن-۱۰",
+      "period_end": "2026-09-22",
+      "captured_at": "2026-11-14T11:14:27.339076+00:00",
+      "source_url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=dywV2bRFhlPt6wGC045N3Q%3d%3d&rt=0&let=6&ct=0&ft=-1#pv2"
+    },
+    {
+      "symbol": "کاوان",
+      "report_kind": "ن-۳۰",
+      "period_end": "2026-10-22",
+      "captured_at": "2026-11-14T11:13:22.462603+00:00",
+      "source_url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=DCXQQQaQQQYkp9kZqkFAIAiLKOow%3d%3d&rt=0&let=58&ct=0&ft=-1#pv2"
+    },
+    {
+      "symbol": "شتوکا",
+      "report_kind": "ن-۳۰",
+      "period_end": "2026-09-22",
+      "captured_at": "2026-11-14T11:13:21.305629+00:00",
+      "source_url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=OOObOOOOK1wrtf9QOOObOOOg9RWiLKMUoA%3d%3d&rt=0&let=58&ct=0&ft=-1#pv2"
+    },
+    {
+      "symbol": "نبروج",
+      "report_kind": "ن-۳۰",
+      "period_end": "2026-10-22",
+      "captured_at": "2026-11-14T11:13:04.448257+00:00",
+      "source_url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=GVfbBLfAxZtaFNn7ynwxzw%3d%3d&rt=0&let=58&ct=0&ft=-1#pv2"
+    },
+    {
+      "symbol": "سشرق",
+      "report_kind": "ن-۱۰",
+      "period_end": "2026-09-22",
+      "captured_at": "2026-11-14T11:12:49.147815+00:00",
+      "source_url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=AqXIz7zubBdvY4CZsygkdg%3d%3d&rt=0&let=6&ct=0&ft=-1#pv2"
+    }
+  ],
+  "credentialsEmitted": false
+}

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "profile": "company-families-20261114",
+  "purpose": "primary-document-retrieval",
+  "limitation": "Retrieved documents require separate financial and source validation.",
+  "documents": [
+    {
+      "documentId": "N10-23022",
+      "reportKind": "N10",
+      "sourceUrl": "https://excel.codal.ir/service/Excel/GetAll/GaX5WVcrooFnBEWMQQQaQQQ2ja8g%3d%3d/0",
+      "startedAt": "2026-11-14T11:06:25.961Z",
+      "httpStatus": 200,
+      "status": "retrieved",
+      "filename": "N10-23022.html",
+      "bytes": 387546,
+      "sha256": "f600ed860abe38c338165e3f0a180d1ded97aacdbd219217f23ce979b7129322",
+      "completedAt": "2026-11-14T11:06:30.968Z"
+    },
+    {
+      "documentId": "N10-22271",
+      "reportKind": "N10",
+      "sourceUrl": "https://excel.codal.ir/service/Excel/GetAll/qQ7fKiLEAxkBOevIPSiQFw%3d%3d/0",
+      "startedAt": "2026-11-14T11:06:30.968Z",
+      "httpStatus": 200,
+      "status": "retrieved",
+      "filename": "N10-22271.html",
+      "bytes": 355074,
+      "sha256": "8504567b9a5c44283d318c2c63c74b5ac9b7b27341c05d07a1be644552cdd234",
+      "completedAt": "2026-11-14T11:06:35.414Z"
+    },
+    {
+      "documentId": "N10-29700",
+      "reportKind": "N10",
+      "sourceUrl": "https://excel.codal.ir/service/Excel/GetAll/HnQQQaQQQBLakgis593HbgHAuolw%3d%3d/0",
+      "startedAt": "2026-11-14T11:06:35.414Z",
+      "httpStatus": 200,
+      "status": "retrieved",
+      "filename": "N10-29700.html",
+      "bytes": 279955,
+      "sha256": "cf2ea9d17e3b2a2e309c260a0c0bbc92b44a8dfa0e93e49b870e5af5a8169c61",
+      "completedAt": "2026-11-14T11:06:42.323Z"
+    },
+    {
+      "documentId": "N10-29399",
+      "reportKind": "N10",
+      "sourceUrl": "https://excel.codal.ir/service/Excel/GetAll/XWpcCloAeodXnF946XztEQ%3d%3d/0",
+      "startedAt": "2026-11-14T11:06:42.323Z",
+      "httpStatus": 200,
+      "status": "retrieved",
+      "filename": "N10-29399.html",
+      "bytes": 500404,
+      "sha256": "d10962b3cd8395387af9f6455f8d6293658c96704a2128832fdba580814cbfbc",
+      "completedAt": "2026-11-14T11:06:46.861Z"
+    },
+    {
+      "documentId": "N10-29245",
+      "reportKind": "N10",
+      "sourceUrl": "https://excel.codal.ir/service/Excel/GetAll/HYQQQaQQQcEzJdrkARLoU7MAsyKA%3d%3d/0",
+      "startedAt": "2026-11-14T11:06:46.861Z",
+      "httpStatus": 200,
+      "status": "retrieved",
+      "filename": "N10-29245.html",
+      "bytes": 441499,
+      "sha256": "2e6da2df10a4a581b3c9e635c49fa3f0d504726747422881d9a056bd47d4e559",
+      "completedAt": "2026-11-14T11:06:55.565Z"
+    }
+  ]
+}
