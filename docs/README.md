@@ -77,7 +77,7 @@
 | [`ENVIRONMENT-MATRIX.md`](./ENVIRONMENT-MATRIX.md) | نامِ متغیرهای محیطی | فقط **نام**، هرگز مقدار |
 | [`SERVICE-OWNERSHIP.md`](./SERVICE-OWNERSHIP.md) | مالکِ هر سرویس | پاسخ‌گوییِ عملیاتی |
 | [`MARKET-CORE-AUDIT.md`](./MARKET-CORE-AUDIT.md) | وضعیتِ **هستهٔ تحلیل بازار** | پنج قابلیت (صندوق، نماد، رادار، میز، پنلِ عضو) با برچسبِ وضعیت + ممیزیِ مصرفِ داده + ترتیبِ اجرا · اندازه‌گیریِ زندهٔ ۲۰۲۶-۰۹-۰۶ |
-| [`BRSAPI-CLIENT-DESIGN.md`](./BRSAPI-CLIENT-DESIGN.md) | ممیزیِ مصرفِ BrsApi + کلاینت/صفِ مرکزی | ۱۵ مسیرِ مصرف · ۹ producerِ مستقل · سقفِ ۱۱٬۵۶۵ در برابرِ سهمیهٔ ۱۰٬۰۰۰ · کلاینت و **بودجهٔ ماندگار** پیاده شد، **مستقر نشد** (ضمیمهٔ ب) |
+| [`BRSAPI-CLIENT-DESIGN.md`](./BRSAPI-CLIENT-DESIGN.md) | ممیزیِ مصرفِ BrsApi + کلاینت/صفِ مرکزی | طرح و سابقهٔ کنترل مصرف؛ وضعیت مؤثر client/legacy و انتشار فقط در COMMAND-CENTER؛ نقشهٔ جاری در PRODUCTION-ARCHITECTURE |
 | [`CAPABILITY-INVENTORY.md`](./CAPABILITY-INVENTORY.md) | توانمندی‌های **محیطِ کارِ عامل** | چه ابزاری هست، چه چیزی آزموده شده، چه چیزی نیست — با شاهد. **در هر جلسه بازآزمایی می‌شود** |
 
 ### تصمیم‌های معماری (ADR)
