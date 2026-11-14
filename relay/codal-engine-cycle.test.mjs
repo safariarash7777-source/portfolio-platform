@@ -1,3 +1,4 @@
+process.env.RELAY_BACKGROUND_WINDOW_ENABLED = "0"; // deterministic existing fixtures; window boundaries tested separately
 // Deterministic integration mocks only: every unmatched fetch fails closed.
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -873,4 +874,20 @@ test('stable reconciliation advances across cycles without resetting its durable
   await f.engine.runEngineCycle();
   assert.deepEqual(f.engine.engineStatus.backfill.symbols,['پ','الف']);
   assert.equal(f.persisted.backfillCursor,4);
+});
+
+test('overnight reconciliation inspects eight issuers without raising the existing download allocation', async () => {
+  const originalNow=Date.now;
+  process.env.RELAY_BACKGROUND_WINDOW_ENABLED='1';
+  Date.now=()=>Date.parse('2026-11-14T21:00:00+03:30');
+  try {
+    const symbols=['الف','ب','پ','ت','ث','ج','چ','حس'];
+    const f=await fixture({pages:[[]],backfillPages:[],marketBody:[{payload:{stocks:symbols.map(id=>({id,value:0}))}}]});
+    await f.engine.runEngineCycle();
+    assert.equal(f.engine.engineStatus.backfill.symbols.length,8);
+    assert.equal(f.engine.engineStatus.backfill.symbolLimit,8);
+    assert.equal(f.engine.engineStatus.backfill.workWindow,'overnight');
+    assert.equal(f.calls.excel.length,0);
+    assert.equal(f.persisted.backfillCursor,8);
+  } finally { Date.now=originalNow;process.env.RELAY_BACKGROUND_WINDOW_ENABLED='0'; }
 });

@@ -124,3 +124,24 @@ Parser fix plan: findIncomeTable(tables) = table with revenue+net rows; parse co
 - codal_reports latest id=34. فملی(5) فولاد(6) شبندر(5) pv2 rows verified correct.
 - FINAL DELIVERABLE (user's latest instruction): ONE comprehensive plain execution document (MD) merging FINAL-PROJECT-DOCUMENT.pdf + 9-layer critique architecture + new data reality (20yr history API + live codal ingestion) — "نمیخوام پیچیده یا خیلی خوشگل فقط یک فایل جامع". This supersedes the fancy presentation for now.
 - Prior analysis docs available: /home/ubuntu/quant-critique-analysis.md, /home/ubuntu/quant-dashboard-plan.md, /home/ubuntu/roadmap-response.md, /home/ubuntu/slide_content.md
+
+## Background workload policy (2026-11-14)
+
+`background-work-window.mjs` uses Asia/Tehran 20:00–08:00 as a conservative
+workload window, **not** an exchange calendar or proof that a market is closed.
+Stock/fund quotes share AllSymbols; do not stop that source at the equity close.
+NAV publication can occur after trading. NAV, shared quotes, on-demand symbol
+reads, and gold/currency/crypto polling are unchanged by this policy.
+
+Overnight automatic symbol-detail rotation checks at most hourly. Issuer
+reconciliation can inspect four times the regular symbol count (default 8 vs 2),
+but recovery and reconciliation retain their existing combined download cap
+(default 12), provider transport, daily budgets and durable failure ledgers.
+Unknown clocks do not enable increased work. `RELAY_BACKGROUND_WINDOW_ENABLED=0`
+restores the regular cadence without resetting any cursor or quota.
+
+This is not full exchange-session scheduling: holiday calendars, instrument
+exceptions and independently confirmed exchange closing times remain necessary
+before reducing shared quote polling. No unused request is a reason to exceed a
+provider/account cap. Snapshot universe coverage is not an issuer-registry or
+financial-freshness claim.
