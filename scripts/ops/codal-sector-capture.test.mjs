@@ -1,11 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {deflateRawSync,inflateRawSync} from 'node:zlib';
-import {TARGETS,sameReport,collect,command,parse,failureReceipt} from './codal-sector-capture.mjs';
+import {TARGETS,SOURCE_SETS,sameReport,collect,command,parse,failureReceipt} from './codal-sector-capture.mjs';
 import vm from 'node:vm';
 import * as zlib from 'node:zlib';
 const pause=async()=>{};
 const marker=p=>'SECTOR_CAPTURE='+deflateRawSync(Buffer.from(JSON.stringify(p))).toString('base64');
+test('supplemental profile requests only the three advertised official sheets',async()=>{
+ const targets=SOURCE_SETS['industrial-20261114'];assert.equal(targets.length,3);
+ assert.deepEqual(targets.map(t=>t.id),['29700-equity','29245-income','29245-equity']);
+ const packet=await collect(targets,sameReport,async()=>new Response('<html>official sheet</html>'),pause);
+ assert.equal(parse(marker(packet),0,'industrial-20261114').length,3);
+ assert.throws(()=>parse(marker(packet),0));assert.throws(()=>command('arbitrary'));
+ assert.ok(decodeURIComponent(command('industrial-20261114')).length<6000);
+});
 test('fixed command has no credential reads and exactly five public source identities',()=>{
   const cmd=decodeURIComponent(command());
   assert.ok(cmd.length<6000);assert.equal(TARGETS.length,5);
