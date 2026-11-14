@@ -6,7 +6,7 @@ on:
       profile:
         description: Reviewed fixed public documents; no arbitrary source URL
         type: choice
-        options: [folad, rejected-n10-20261114]
+        options: [folad, rejected-n10-20261114, company-families-20261114]
         default: folad
         required: true
 
@@ -20,7 +20,7 @@ concurrency:
 jobs:
   read:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -28,7 +28,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      # Two fixed Codal documents; one relay request each, no outer retry.
+      # Fixed public Codal profiles; one relay request per document, no outer retry.
       - name: Retrieve public primary documents
         env:
           RELAY_TOKEN: ${{ secrets.RELAY_TOKEN }}
