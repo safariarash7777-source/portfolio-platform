@@ -706,11 +706,13 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
       const knownBySymbol=new Map();
       if(monthlyBounds&&limit>0){
         try{
-          // Share the current workbook cap with the persistent historical sweep.
+          // Keep one historical slot when there are at least two downloads available.
+          // If recent candidates run out, the historical sweep uses the unused slots.
+          const recentLimit=Math.max(1,limit-1);
           if(engineStatus.officialMonthlyDiscovery.inserted>0){
-            await recoverStoredReports({monthlyOnly,monthlyBounds,limit:1,attempted,knownBySymbol,freshHead:true});
+            await recoverStoredReports({monthlyOnly,monthlyBounds,limit:Math.ceil(recentLimit/2),attempted,knownBySymbol,freshHead:true});
           }
-          await recoverStoredReports({monthlyOnly,monthlyBounds,limit:Math.ceil(limit/2),attempted,knownBySymbol});
+          await recoverStoredReports({monthlyOnly,monthlyBounds,limit:recentLimit,attempted,knownBySymbol});
         }catch(error){
           if(isBrsLocalDeferral(error))throw error;
           engineStatus.recentMonthlyRecovery.readFailed=true;

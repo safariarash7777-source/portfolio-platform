@@ -1247,18 +1247,18 @@ test('recent monthly recovery uses the verified publication date and shares the 
  t.mock.method(Date,'now',()=>Date.parse("2026-11-15T16:30:00Z"));
  const month=(id,publish_date)=>({...stored(id),symbol:'فولاد',title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',
    report_code:'ن-۳۰',category:'ماهانه',publish_date});
- const recent=Array.from({length:4},(_,i)=>month(40-i,"۱۴۰۵/۰۸/۲۴"));
+ const recent=Array.from({length:7},(_,i)=>month(40-i,"۱۴۰۵/۰۸/۲۴"));
  const old=Array.from({length:6},(_,i)=>month(30-i,"۱۴۰۵/۰۶/۳۱"));
  const excelHtml=readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
  const f=await fixture({pages:[[]],storedRows:[month(41,"۱۴۰۵/۰۸/۲۵"),...recent,...old],
    initialState:{watermark,fails:{},monthlyRecoveryCursor:'31'},excelHtml});
  await f.engine.runEngineCycle({monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true});
- assert.deepEqual(f.calls.excel,[40,39,38,30,29,28].map(id=>`/service/Excel/GetAll/serial${id}/0`));
+ assert.deepEqual(f.calls.excel,[40,39,38,37,36,30].map(id=>`/service/Excel/GetAll/serial${id}/0`));
  assert.equal(f.calls.pages.length,1);
- assert.equal(f.engine.engineStatus.recentMonthlyRecovery.inserted,3);
+ assert.equal(f.engine.engineStatus.recentMonthlyRecovery.inserted,5);
  assert.equal(f.engine.engineStatus.recentMonthlyRecovery.metadataSkipped,1);
- assert.equal(f.persisted.recentMonthlyRecoveryCursor,'38');
- assert.equal(f.persisted.monthlyRecoveryCursor,'28');
+ assert.equal(f.persisted.recentMonthlyRecoveryCursor,'36');
+ assert.equal(f.persisted.monthlyRecoveryCursor,'30');
  const fallback=await fixture({pages:[[]],storedRows:old,initialState:{watermark,fails:{},monthlyRecoveryCursor:'31'},
    excelHtml,rejectMonthlyPublicationRead:true});
  await fallback.engine.runEngineCycle({monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true});
