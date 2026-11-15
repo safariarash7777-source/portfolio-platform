@@ -244,6 +244,33 @@ test("HTTP errors, redirect, malformed body and request failure never retry or f
   assert.equal((await read("failure-402", pair())).state, "empty"); assert.equal(calls.length, 2);
 });
 
+test("temporary monthly failure retains a bounded verified chart only for the same binding", async () => {
+  const start = 1800000000000;
+  const environment = pair(jwt({ fixture: "stale-chart" }));
+  Date.now = () => start;
+  try {
+    fixture([row("stale-chart", 17), row("stale-other", 23)]);
+    assert.equal((await read("stale-chart", environment)).state, "ready");
+    Date.now = () => start + 61000;
+    globalThis.fetch = async () => new Response("", { status: 503 });
+    const retained = await read("stale-chart", environment);
+    assert.equal(retained.state, "stale");
+    assert.equal(amount(retained), 17);
+    assert.equal((await read("stale-other", environment)).state, "error");
+
+    globalThis.fetch = async () => new Response("", { status: 401 });
+    assert.equal((await read("stale-chart", environment)).state, "error");
+
+    globalThis.fetch = async () => new Response("", { status: 503 });
+    Date.now = () => start + 6 * 60 * 60 * 1000;
+    assert.equal((await read("stale-chart", environment)).state, "error");
+
+    Date.now = () => start + 61000;
+    const other = pair(jwt({ fixture: "stale-other-binding" }));
+    assert.equal((await read("stale-chart", other)).state, "error");
+  } finally { Date.now = originalNow; }
+});
+
 test("a pending old read cannot poison a new binding's cache", async () => {
   const a = pair(jwt({ fixture: "pending-a" })), b = pair(jwt({ fixture: "pending-b" }));
   let release!: () => void, started!: () => void, calls = 0, aCalls = 0;

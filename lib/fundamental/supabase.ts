@@ -50,6 +50,7 @@ export interface CodalRow {
 }
 
 const REVALIDATE_MS = 60 * 1000;
+const MONTHLY_STALE_LIMIT_MS = 6 * 60 * 60 * 1000;
 const cache = new Map<string, { at: number; value: SymbolFundamentals | null }>();
 let activeBinding: string | null = null;
 let readRevision = 0;
@@ -63,7 +64,7 @@ export interface FundamentalReadOptions {
 
 export interface FundamentalRead {
   data: SymbolFundamentals | null;
-  state: "ready" | "partial" | "empty" | "error";
+  state: "ready" | "partial" | "stale" | "empty" | "error";
 }
 
 function env(environment: FundamentalReadOptions["environment"]): { url: string; anon: string } | null {
@@ -99,7 +100,9 @@ export function fetchQueries(symbol: string): Array<{ kind: keyof typeof FETCH_L
   }));
 }
 
-async function fetchRows(symbol: string, e: { url: string; anon: string }): Promise<{ rows: CodalRow[]; partial: boolean } | null> {
+async function fetchRows(symbol: string, e: { url: string; anon: string }): Promise<
+  { rows: CodalRow[]; partial: boolean } | { rows: null; temporary: boolean }
+> {
   const parts = await Promise.all(
     fetchQueries(symbol).map(async ({ kind, qs }) => {
       try {
@@ -107,12 +110,12 @@ async function fetchRows(symbol: string, e: { url: string; anon: string }): Prom
           { apikey: e.anon, Authorization: `Bearer ${e.anon}` });
         if (!res.ok) {
           console.warn("fundamental_read_failed", { phase: "headers", status: res.status, kind });
-          return null;
+          return { kind, rows: null, temporary: res.status === 408 || res.status === 429 || res.status >= 500 };
         }
         const rows = (await res.json()) as CodalRow[];
         if (!Array.isArray(rows)) {
           console.warn("fundamental_read_failed", { phase: "body", reason: "invalid-response", kind });
-          return null;
+          return { kind, rows: null, temporary: false };
         }
         if (rows.length >= FETCH_LIMITS[kind]) {
           // برش رخ داد: قدیمی‌ترین دوره‌ها بیرون ماندند. بی‌صدا نباشد.
@@ -123,14 +126,15 @@ async function fetchRows(symbol: string, e: { url: string; anon: string }): Prom
         const safeNames = ["AbortError", "TimeoutError", "TypeError", "SyntaxError"];
         const reason = error instanceof Error && safeNames.includes(error.name) ? error.name : "read-error";
         console.warn("fundamental_read_failed", { phase: "request-or-body", reason, kind });
-        return null;
+        const temporary = reason === "TimeoutError" || reason === "AbortError" || reason === "TypeError";
+        return { kind, rows: null, temporary };
       }
     }),
   );
   const monthly = parts.find(part => part?.kind === "ن-۳۰");
-  if (!monthly) return null;
+  if (!monthly?.rows) return { rows: null, temporary: monthly?.temporary ?? false };
   const financial = parts.find(part => part?.kind === "ن-۱۰");
-  if (!financial) return { rows: monthly.rows, partial: true };
+  if (!financial?.rows) return { rows: monthly.rows, partial: true };
   return { rows: [...financial.rows, ...monthly.rows], partial: false };
 }
 
@@ -546,7 +550,16 @@ export async function readFundamentalsFromSupabase(symbol: string, options?: Fun
   const age = hit ? Date.now() - hit.at : -1;
   if (hit && age >= 0 && age < REVALIDATE_MS) return { data: hit.value, state: hit.value ? "ready" : "empty" };
   const result = await fetchRows(symbol, selected);
-  if (result === null) return { data: null, state: "error" };
+  if (result.rows === null) {
+    // A timeout can leave a verified monthly chart available from this binding.
+    const now = Date.now();
+    const previous = activeBinding === binding && requestEpoch === cacheEpoch ? cache.get(symbol) : undefined;
+    if (result.temporary && previous?.value?.n30 && now >= previous.at && now - previous.at < MONTHLY_STALE_LIMIT_MS &&
+        (selected.expiresAt === undefined || selected.expiresAt > now / 1000)) {
+      return { data: previous.value, state: "stale" };
+    }
+    return { data: null, state: "error" };
+  }
   const value = result.rows.length > 0 ? buildFundamentals(symbol, result.rows) : null;
   // A failed historical statement read must not hide genuine monthly charts.
   // Do not cache the partial result or infer an empty historical statement set.
