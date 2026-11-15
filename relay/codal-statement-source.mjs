@@ -101,9 +101,10 @@ function attr(opening, name) {
   if (matches.length !== 1) fail('header_ambiguous');
   return matches[0].value;
 }
-function element(html, tag, id) {
+function element(html, tag, id, { optional = false } = {}) {
   const matches = [...html.matchAll(new RegExp('<'+tag+'\\b[^>]*>[\\s\\S]*?<\\/'+tag+'\\s*>', 'gi'))]
     .filter(m => attributes(m[0].slice(0, m[0].indexOf('>') + 1)).some(a=>a.name==='id' && a.value===id));
+  if (matches.length === 0 && optional) return '';
   if (matches.length !== 1) fail('header_ambiguous');
   const opening = matches[0][0].slice(0, matches[0][0].indexOf('>') + 1);
   if (attr(opening, 'id') !== id || /\bhidden\b|display\s*:\s*none|visibility\s*:\s*hidden/i.test(opening)) fail('header_invalid');
@@ -407,8 +408,11 @@ export async function loadMonthlyDecision(announcement, meta, {fetchImpl=globalT
   const action=new URL(attr(form.slice(0,form.indexOf('>')+1),'action'),capture.url);
   if(action.origin!==new URL(capture.url).origin||reportSerial(action.href,true,MONTHLY_PATH)!==serial)return null;
   const field=id=>text(element(html,'span',id));
+  const symbols=['ctl00_lblDisplaySymbol','ctl00_txbSymbol']
+   .map(id=>norm(text(element(html,'span',id,{optional:true}))))
+   .filter(Boolean);
   if(norm(field('ctl00_lblReportName'))!==norm('گزارش فعالیت ماهانه')||
-     norm(field('ctl00_lblDisplaySymbol'))!==norm(meta.symbol)||
+     !symbols.length||symbols.some(symbol=>symbol!==norm(meta.symbol))||
      norm(field('ctl00_lblPeriod'))!==norm('1 ماهه')||
      day(field('ctl00_lblPeriodEndToDate'))!==meta.period_end)return null;
   const root=literalDatasource(html);

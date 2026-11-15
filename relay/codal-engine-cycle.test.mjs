@@ -1196,11 +1196,15 @@ test('monthly decision admission binds the publisher identity, period and explic
  const payload={type:58,period:1,periodEndToDate:date,isConsolidated:false,tracingNo:42,
   sheets:[{code:sheetCode,aliasName:'MonthlyActivity',tables:[{code,metaTableId:code,sheetCode,
    aliasName:'RevenuesServiceDeliveryRealized',description:'کلیه مبالغ به میلیون ریال است',cells}]}]};
- const publisher=(data=payload)=>`<form id="aspnetForm" action="./MonthlyActivity.aspx?LetterSerial=serial23">
-  <span id="ctl00_lblReportName">${title}</span><span id="ctl00_lblDisplaySymbol">${report.symbol}</span>
+ const publisher=(data=payload,symbols=`<span id="ctl00_lblDisplaySymbol">${report.symbol}</span>`)=>`<form id="aspnetForm" action="./MonthlyActivity.aspx?LetterSerial=serial23">
+  <span id="ctl00_lblReportName">${title}</span>${symbols}
   <span id="ctl00_lblPeriod">1 ماهه</span><span id="ctl00_lblPeriodEndToDate">${date}</span>
   <script>var datasource = ${JSON.stringify(data)};</script></form>`;
- const f=await fixture({storedRows:[report],pages:[[]],monthlyDecision:{html:publisher()}});
+ const alternate=`<span id="ctl00_lblDisplaySymbol"></span><span id="ctl00_txbSymbol">${report.symbol}</span>`;
+ const failureKey=`monthly-sector-v1:${report.link}`;
+ const retryKey=`monthly-decision-symbol-v1:${report.link}`;
+ const f=await fixture({storedRows:[report],pages:[[]],monthlyDecision:{html:publisher(payload,alternate)},
+  initialState:{watermark,fails:{[failureKey]:3}}});
  await f.engine.runEngineCycle({monthlyOnly:true,allowBackground:false});
  const result=f.calls.reportWrites[0][0].data;
  assert.equal(result.monthly_measure,'financing_service_income');
@@ -1209,12 +1213,22 @@ test('monthly decision admission binds the publisher identity, period and explic
  assert.equal(result.monthly_source.table_code,2162);
  assert.match(result.monthly_source.sha256,/^[0-9a-f]{64}$/);
  assert.deepEqual(f.calls.excel,['monthly-view']);
+ assert.equal(f.persisted.fails[failureKey],undefined);
  const forged=structuredClone(payload);
  forged.sheets[0].tables[0].cells.push(forged.sheets[0].tables[0].cells.at(-3));
  await fixture({monthlyDecision:{html:publisher(forged)}});
  assert.equal(await codal.downloadAndParse({
   ...report,l18:report.symbol,code:report.report_code,link_excel:report.link_excel,
  },'ن-۳۰'),null);
+ const conflict=alternate.replace('ctl00_lblDisplaySymbol"></span>','ctl00_lblDisplaySymbol">نماد دیگر</span>');
+ const mismatch=await fixture({storedRows:[report],pages:[[]],monthlyDecision:{html:publisher(payload,conflict)},
+  initialState:{watermark,fails:{[failureKey]:3}}});
+ await mismatch.engine.runEngineCycle({monthlyOnly:true,allowBackground:false});
+ assert.equal(mismatch.calls.reportWrites.length,0);
+ assert.equal(mismatch.persisted.fails[retryKey],1);
+ await mismatch.engine.runEngineCycle({monthlyOnly:true,allowBackground:false});
+ await mismatch.engine.runEngineCycle({monthlyOnly:true,allowBackground:false});
+ assert.deepEqual(mismatch.calls.excel,['monthly-view']);
  const bad=await fixture({monthlyDecision:{html:publisher(),redirectSerial:'another-report'}});
  await assert.rejects(codal.downloadAndParse({
   ...report,l18:report.symbol,code:report.report_code,link_excel:report.link_excel,
