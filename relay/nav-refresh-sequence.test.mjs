@@ -42,7 +42,7 @@ test('deployed entrypoint schedules only shared sequence and primary requests ar
   assert.match(build, /refreshNavSequence\(sf\.funds\)/);
   assert.doesNotMatch(build, /refreshNav(?:s|Completion)\(sf\.funds\)/);
   const primary = source.slice(source.indexOf('async function refreshNavs'), source.indexOf('async function refreshNavCompletion'));
-  assert.match(primary, /countLegacy\("nav-primary", "standard"\)/);
+  assert.match(primary, /countLegacy\("nav-primary", "bulk"\)/);
   assert.match(primary, /producer: "nav-primary"/);
   assert.match(primary, /attempted\.add\(f\.id\)/);
   const completion = source.slice(source.indexOf('async function refreshNavCompletion'), source.indexOf('function applyNav'));

@@ -6,6 +6,7 @@ async function probe(scenario) {
   const source = new URL('./server.mjs', import.meta.url).href;
   const program = `
     import http from 'node:http';
+    import assert from 'node:assert/strict';
     import { performance } from 'node:perf_hooks';
     import timers from 'node:timers/promises';
     import { syncBuiltinESMExports } from 'node:module';
@@ -52,7 +53,10 @@ async function probe(scenario) {
           navReads++;
           return phase<2?reply({error:'temporary provider failure'},503):reply({predtran:1000,psubtran:1010,date:'1405-07-14',time:'09:30:00'});
         }
-        if(/Nav/.test(u.pathname)&&scenario.startsWith('nav-restart'))return reply(u.searchParams.has('l18')?{predtran:0}:[{l18:fund.l18,predtran:1200,psubtran:1210,date:'1405-07-14',time:'09:30:00'},{l18:'unavailable-fund',predtran:0}]);
+        if(/Nav/.test(u.pathname)&&scenario.startsWith('nav-restart')){
+          assert.ok(u.searchParams.has('l18'),'NAV must use the documented single-symbol endpoint');
+          return reply(u.searchParams.get('l18')===fund.l18?{predtran:1200,psubtran:1210,date:'1405-07-14',time:'09:30:00'}:{predtran:0});
+        }
         if(/AllSymbols/.test(u.pathname)&&scenario.startsWith('nav-restart'))return reply([stock,fund,{...fund,l18:'isolated-second-fund'}]);
         if(/AllSymbols/.test(u.pathname))return reply(phase===1&&scenario==='authoritative-empty'?[]:phase===1&&scenario==='invalid-fund'?[stock,{...fund,pl:0}]:[stock,fund]);
         if(/Index/.test(u.pathname))return reply({index:100,index_change:0,date:'1405-07-14',time:'09:30:00'});

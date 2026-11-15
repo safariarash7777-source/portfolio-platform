@@ -1,17 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { selectNavRefreshTargets } from './nav-refresh-targets.mjs';
+import { selectNavRefreshTargets, selectPriorityNavTargets } from './nav-refresh-targets.mjs';
 
-test('existing 150-request rounds rotate across quiet funds instead of refreshing the same leaders', () => {
+test('ten leaders stay prioritized while four bounded rounds rotate through the rest', () => {
   const funds=Array.from({length:346},(_,i)=>({id:String(i),value:346-i}));
   const cache=new Map();
   const seen=new Set();
-  for(let round=1;round<=3;round++){
-    const selected=selectNavRefreshTargets(funds,cache,{now:round*1000,limit:150});
-    assert.equal(selected.length,150);
+  const leaders=selectPriorityNavTargets(funds,10);
+  assert.deepEqual(leaders.map(x=>x.id), funds.slice(0,10).map(x=>x.id));
+  const quiet=funds.filter(x=>!leaders.includes(x));
+  for(let round=1;round<=4;round++){
+    const selected=selectNavRefreshTargets(quiet.filter(x=>!cache.has(x.id)),cache,{now:round*1000,limit:90});
+    assert.equal(selected.length,round===4?66:90);
     for(const row of selected){seen.add(row.id);cache.set(row.id,{at:round*1000});}
   }
-  assert.equal(seen.size,346);
+  assert.equal(seen.size,336);
   assert.equal(funds[0].id,'0');
 });
 

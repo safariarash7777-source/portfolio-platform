@@ -29,3 +29,13 @@ test('morning returns to regular cooldown and existing faster explicit cadence i
  assert.equal(createCompanyWorkScheduler({job:async()=>{},regularIntervalMs:5*60000}).state.overnightIntervalMs,5*60000);
  assert.equal(createCompanyWorkScheduler({job:async()=>{},regularIntervalMs:NaN}).state.regularIntervalMs,3*60*60*1000);
 });
+
+test('daytime discovery runs after 15 minutes without accelerating historical work',async()=>{
+ let clock=at('09:00');const background=[];const s=createCompanyWorkScheduler({job:async ({allowBackground})=>background.push(allowBackground),now:()=>clock,discoveryIntervalMs:15*60000});
+ await s.run({initial:true});
+ clock=at('09:14');assert.equal(await s.run(),false);
+ clock=at('09:15');assert.equal(await s.run(),true);
+ clock=at('09:30');assert.equal(await s.run(),true);
+ clock=at('12:00');assert.equal(await s.run(),true);
+ assert.deepEqual(background,[true,false,false,true]);
+});

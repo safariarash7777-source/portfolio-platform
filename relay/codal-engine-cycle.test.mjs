@@ -40,6 +40,9 @@ async function fixture(options = {}) {
     budgetJobs.push({ producer: job.producer, budgetClass: job.budgetClass });
     calls.pages.push(Number(job.params.page));
     if (options.announcementErrorCode) throw Object.assign(new Error(options.announcementErrorCode), { code: options.announcementErrorCode });
+    if (!job.params.l18 && Number(job.params.page) === options.deferBudgetOnPage) {
+      throw Object.assign(new Error('internal allocation exhausted'), { name: 'LegacyBudgetError' });
+    }
     if (options.backfillPages && job.params.l18) {
       return { announcement: job.params.category === "1" ? options.backfillPages : [] };
     }
@@ -961,7 +964,20 @@ test('archive rejection does not advance its page or claim a successful cycle',a
  assert.equal(f.calls.reportWrites.length,0);
 });
 
-test('publisher challenge stops the cycle without poisoning report failures and persists across engine/archive', async () => {
+test('a budget stop on page two saves verified announcement metadata without advancing checkpoints', async () => {
+ const a=financial(2);
+ const f=await fixture({pages:[[a]],deferBudgetOnPage:2});
+ await f.engine.runEngineCycle({allowBackground:false});
+ assert.deepEqual(f.calls.pages,[1,2]);
+ assert.deepEqual(f.calls.feedWrites[0].rows.map(row=>row.link),[a.link]);
+ assert.equal(f.calls.excel.length,0);
+ assert.deepEqual(f.persisted.watermark,watermark);
+ assert.equal(f.persisted.metadataWatermark,undefined);
+ assert.equal(f.engine.engineStatus.feed.incompleteReason,'local_deferred');
+ assert.deepEqual(f.persisted.fails,{});
+});
+
+test('publisher challenge keeps discovery available while file reads and archive remain paused', async () => {
  const a=financial(2);
  const f=await fixture({pages:[[a,boundary],[]],excelHtml:'<h1>تأیید کاربر</h1><img id="captchaImage"><input id="captchaCode">کد امنیتی'});
  await f.engine.runEngineCycle();
@@ -971,13 +987,21 @@ test('publisher challenge stops the cycle without poisoning report failures and 
  assert.deepEqual(f.persisted.fails,{});
  assert.deepEqual(f.persisted.watermark,watermark);
  assert.ok(f.persisted.sourceHoldUntil>Date.now());
- const resumed=await fixture({initialState:f.persisted,pages:[[a,boundary],[]]});
+ const newer=financial(3);
+ const resumed=await fixture({initialState:f.persisted,pages:[[newer,a,boundary],[]]});
  await resumed.engine.runEngineCycle();
- assert.equal(resumed.budgetJobs.length,0);
+ assert.equal(resumed.budgetJobs.length,1);
+ assert.deepEqual(resumed.calls.feedWrites[0].rows.map(row=>row.link),[newer.link]);
  assert.equal(resumed.calls.excel.length,0);
+ assert.deepEqual(resumed.persisted.watermark,watermark);
+ assert.deepEqual(resumed.persisted.metadataWatermark.links,[newer.link]);
+ await resumed.engine.runEngineCycle();
+ assert.equal(resumed.calls.feedWrites.length,1);
+ assert.equal(resumed.calls.excel.length,0);
+ const beforeArchive=resumed.budgetJobs.length;
  const archive=await import(`./codal-archive.mjs?mock=${++scenario}`);
  await archive.runArchiveCycle();
- assert.equal(resumed.budgetJobs.length,0);
+ assert.equal(resumed.budgetJobs.length,beforeArchive);
  assert.equal(archive.archiveStatus.lastError,'codal_source_challenge');
  assert.equal(resumed.calls.archiveSaves.at(-1).sourceHoldUntil,f.persisted.sourceHoldUntil);
 });
