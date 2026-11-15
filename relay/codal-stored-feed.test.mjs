@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readStoredAnnouncements } from './codal-stored-feed.mjs';
+import { readStoredAnnouncements, recentMonthlyBounds } from './codal-stored-feed.mjs';
 
 const row = (id, overrides = {}) => ({id, symbol:'فولاد', company_name:'فولاد مبارکه', title:'گزارش 1405/06/31', report_code:'ن-۱۰',
   link:'https://codal.ir/Reports/Decision.aspx?LetterSerial=abc%2B%3D',
@@ -34,4 +34,22 @@ test('untrusted source or mismatched serial cannot be downloaded', async()=>{
     assert.equal(result.announcement,null);
     assert.equal(result.id,'1');
   }
+});
+
+test('recent monthly publication bounds use the Tehran day and retain only real dates', async()=>{
+ const bounds=recentMonthlyBounds(Date.parse('2026-11-15T16:00:00Z'));
+ assert.deepEqual(bounds,{since:'1405/07/19',until:'1405/08/24'});
+ assert.equal(recentMonthlyBounds(Date.parse('2026-11-15T20:30:00Z')).until,'1405/08/25');
+ const dates=['۱۴۰۵/۰۸/۲۴','١٤٠٥-٠٨-٢٣','1405/07/19','1405/07/18','1405/08/25','1405/07/31',null];
+ const found=await readStoredAnnouncements(null,{
+  baseUrl:'https://storage.invalid',headers:{},monthlyOnly:true,monthlyBounds:bounds,
+  fetch:async url=>{
+   const qs=new URL(url).searchParams,filter=qs.get('or');
+   assert.equal(qs.get('category'),'eq.ماهانه');
+   assert.ok(filter.includes('publish_date.gte.1405/07/19'));
+   assert.ok(filter.includes('publish_date.lte.۱۴۰۵/۰۸/۲۴'));
+   return Response.json(dates.map((date,i)=>row(dates.length-i,{publish_date:date})));
+  },
+ });
+ assert.deepEqual(found.map(x=>x.announcement?.date_publish??null),[...dates.slice(0,3),null,null,null,null]);
 });
