@@ -13,9 +13,9 @@
 //   sales_rate «ریال بر واحد» — بدون تبدیل، فقط برچسب.
 // - خروجی متن با ارقام لاتین؛ لایهٔ UI با toPersianDigits نمایش می‌دهد.
 
-import type { CodalN30Data, N30Market } from "@/lib/fundamental/types";
+import type { CodalN30Data, MonthlyMeasure, N30Market } from "@/lib/fundamental/types";
 import { withKnownMonthlyQuantities, monthlyMarket, monthlyMarketUnavailableReason, type MonthlyMarketUnavailableReason } from './monthly-quantity';
-import { meaningfulRate } from './monthlyReport';
+import { comparableMonthlyReports, meaningfulRate, monthlyMeasureLabel } from './monthlyReport';
 
 /* ── واحدها ── */
 
@@ -64,6 +64,7 @@ export interface CardProduct {
 
 export interface FundamentalCardData {
   symbol: string;
+  measure?: MonthlyMeasure;
   /** آخرین ماه گزارش‌شده */
   latestMonth: string | null;
   /** فروش آخرین ماه — میلیارد تومان */
@@ -144,6 +145,7 @@ function fmtPct(v: number): string {
  * هر بند فقط وقتی داده‌اش هست؛ بدون داده‌ٔ فروش → کل روایت null.
  */
 export function buildNarrative(d: {
+  measure?: MonthlyMeasure;
   monthLabel: string | null;
   salesBToman: number | null;
   yoyPct: number | null;
@@ -151,7 +153,7 @@ export function buildNarrative(d: {
   exportSharePct: number | null;
 }): string | null {
   if (d.monthLabel == null || d.salesBToman == null) return null;
-  let s = `فروش ${d.monthLabel}: ${fmtB(d.salesBToman)} میلیارد تومان`;
+  let s = `${monthlyMeasureLabel(d.measure)} ${d.monthLabel}: ${fmtB(d.salesBToman)} میلیارد تومان`;
   if (d.yoyPct != null) {
     s += d.yoyPct >= 0
       ? ` — ${fmtPct(d.yoyPct)} درصد بیشتر از همین ماه پارسال`
@@ -175,10 +177,11 @@ export function buildFundamentalCard(
   reports: CodalN30Data[],
   source?: { title: string | null; url: string | null }
 ): FundamentalCardData {
-  const series = monthSeries(reports.map(withKnownMonthlyQuantities));
+  const series = monthSeries(comparableMonthlyReports(reports).map(withKnownMonthlyQuantities));
   const monthKeys = [...series.keys()];
   const latestMonth = monthKeys.length > 0 ? monthKeys[monthKeys.length - 1] : null;
   const latest = latestMonth ? series.get(latestMonth)! : null;
+  const measure = latest?.monthly_measure ?? "sales";
 
   // سری ۱۲ ماه اخیر
   const months12: CardMonth[] = monthKeys.slice(-12).map((month) => {
@@ -255,6 +258,7 @@ export function buildFundamentalCard(
   const latestSalesBToman = mrialToBToman(latestSalesM);
 
   const narrative = buildNarrative({
+    measure,
     monthLabel: jalaliMonthLabel(latestMonth),
     salesBToman: latestSalesBToman,
     yoyPct,
@@ -264,6 +268,7 @@ export function buildFundamentalCard(
 
   return {
     symbol,
+    measure,
     latestMonth,
     latestSalesBToman,
     yoyPct,

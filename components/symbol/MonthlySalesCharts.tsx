@@ -25,6 +25,7 @@ import { toPersianDigits } from "@/lib/format";
 import type { CodalN30Data } from "@/lib/fundamental/types";
 import {
   buildMonthlySales,
+  monthlyMeasureLabel,
   narrativeCumulative,
   narrativeMix,
   narrativeMonthlyVsAvg,
@@ -429,6 +430,7 @@ export default function MonthlySalesCharts({
 }) {
   const m = useMemo(() => buildMonthlySales(reports), [reports]);
   if (!m) return null;
+  const measureLabel = monthlyMeasureLabel(m.measure);
   const firstRate = m.rateSeries[0];
   const rateNarrative = firstRate?.rateUnit && firstRate.points.every(point => point.rate === null || hasRateUnit(point, firstRate.rateUnit!.denominator))
     ? narrativeRate(m) : null;
@@ -440,7 +442,7 @@ export default function MonthlySalesCharts({
       <header className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h2 className="text-[18px] font-extrabold" style={{ color: "var(--heading)" }}>
-            شناسنامهٔ بنیادی — فروش ماهانه
+            شناسنامهٔ بنیادی — {measureLabel} ماهانه
           </h2>
           <p className="mt-1 text-[12px]" style={{ color: "var(--text-3)" }}>
             {toPersianDigits(String(m.reportCount))} گزارش فعالیت ماهانه (ن-۳۰) کدال · واحد مبالغ: میلیون ریال (نمایش: میلیارد تومان/همت)
@@ -459,8 +461,8 @@ export default function MonthlySalesCharts({
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <QCard
           id="q-monthly-sales"
-          question="فروش ماهانه چطور حرکت می‌کند؟"
-          subtitle={`درآمد ماهانهٔ سال ${faDigits(m.currentFY)}${m.priorFY ? ` در کنار سال ${faDigits(m.priorFY)}` : ""} · خط طلایی: میانگین سال جاری · ماه بدون گزارش خالی است`}
+          question={`${measureLabel} ماهانه چطور حرکت می‌کند؟`}
+          subtitle={`${measureLabel} ماهانهٔ سال ${faDigits(m.currentFY)}${m.priorFY ? ` در کنار سال ${faDigits(m.priorFY)}` : ""} · خط طلایی: میانگین سال جاری · ماه بدون گزارش خالی است`}
           narrative={narrativeMonthlyVsAvg(m)}
         >
           <MonthlyBars m={m} />
@@ -469,7 +471,7 @@ export default function MonthlySalesCharts({
         <QCard
           id="q-cumulative"
           question="از ابتدای سال مالی کجاییم؟"
-          subtitle={`فروش تجمیعی (fy_cumulative از خود گزارش) — سال ${faDigits(m.currentFY)}${m.priorFY ? ` در برابر ${faDigits(m.priorFY)}` : ""}`}
+          subtitle={`${measureLabel} تجمیعی از گزارش سال ${faDigits(m.currentFY)}${m.priorFY ? ` در برابر سال ${faDigits(m.priorFY)}` : ""}`}
           narrative={narrativeCumulative(m)}
         >
           <CumulativeChart m={m} />

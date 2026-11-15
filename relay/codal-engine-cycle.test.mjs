@@ -57,7 +57,9 @@ async function fixture(options = {}) {
       calls.excel.push(url.pathname);
       if (options.excelErrorCode) throw Object.assign(new Error(options.excelErrorCode), { code: options.excelErrorCode });
       if (options.excelError) throw new Error(options.excelError);
-      return new Response(options.excelBodies?.[url.pathname] ?? options.excelHtml ?? mockIncomeHtml);
+      const workbook = new Response(options.excelBodies?.[url.pathname] ?? options.excelHtml ?? mockIncomeHtml);
+      if (options.exactWorkbookResponse) Object.defineProperty(workbook, "url", { value: url.href });
+      return workbook;
     }
     assert.equal(url.hostname, "storage.invalid", `Unmocked network request: ${url.hostname}`);
     if (url.pathname.endsWith("/codal_feed") && init.method === "POST") {
@@ -1000,6 +1002,68 @@ test('monthly-only cycle keeps public announcements and recovers a verified mont
  assert.equal(inserted.data.unit,'میلیون ریال');
  assert.ok(inserted.data.period_total_amount>0);
  assert.equal(f.persisted.storedFeedCursor,'2');
+});
+
+test('monthly discovery retains valid rows beyond an out-of-order boundary and holds the checkpoint', async () => {
+  const first = announcement(5);
+  const older = { ...announcement(1), date_send: "1405/06/30" };
+  const reordered = announcement(6);
+  const broken = { ...announcement(7), date_send: "bad" };
+  const fromNextPage = announcement(4);
+  const f = await fixture({pages:[[first, older, reordered, broken, reordered],[fromNextPage],[]]});
+  await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true});
+  assert.deepEqual(f.calls.feedWrites[0].rows.map(row=>row.link), [first.link,reordered.link,fromNextPage.link]);
+  assert.deepEqual(f.persisted.watermark,watermark);
+  assert.equal(f.engine.engineStatus.feed.incompleteReason,"invalid_order_or_identity");
+});
+
+test('monthly bank profile can retry pre-adapter rejects and verifies publisher table, unit and period', async () => {
+  const bankReport = {
+    ...stored(9), symbol:"وبملت", title:"گزارش فعالیت ماهانه دوره ۱ ماهه منتهی به ۱۴۰۵/۰۷/۳۰",
+    report_code:"ن-۳۰", category:"ماهانه",
+    link:"https://codal.ir/Reports/Decision.aspx?LetterSerial=serial9&rt=3&let=58",
+  };
+  const header=["شرح","ابتدای سال","اصلاحات","اصلاح شده",
+    "درآمد محقق شده طی دوره یک ماهه منتهی به ۱۴۰۵/۰۷/۳۰",
+    "جمع درآمد محقق شده از ابتدای سال مالی تا پایان ۱۴۰۵/۰۷/۳۰"];
+  const items=[
+    ["درآمد تسهیلات اعطایی",1816866984,0,1816866984,311887001,2128753985],
+    ["درآمد سپرده گذاری",185495292,0,185495292,17451513,202946805],
+    ["درآمد اوراق بدهی",137910183,0,137910183,24244406,162154589],
+    ["درآمد سرمایه گذاری ها",558091,0,558091,10001216,10559307],
+    ["درامد کارمزد",352564391,0,352564391,62474312,415038703],
+  ];
+  const table=[header,...items].map(row=>`<tr>${row.map(value=>`<td>${value}</td>`).join("")}</tr>`).join("");
+  const excelHtml=`<div>کلیه مبالغ به میلیون ریال است</div><app-table><table>${table}</table></app-table>`;
+  const meta={symbol:bankReport.symbol,period_months:1,period_end:"1405-07-30"};
+  assert.equal(codal.normalizeSectorN30(excelHtml.replace("میلیون ریال","هزار ریال"),meta,"bank_reported_income"),null);
+  assert.equal(codal.normalizeSectorN30(excelHtml,{...meta,period_end:"1405-06-31"},"bank_reported_income"),null);
+  const f=await fixture({excelHtml,storedRows:[bankReport],exactWorkbookResponse:true,
+    initialState:{watermark,fails:{[bankReport.link]:3}}});
+  await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true});
+  const report=f.calls.reportWrites[0]?.[0];
+  assert.equal(report?.data.monthly_measure,"bank_reported_income");
+  assert.equal(report.data.period_total_amount,426058448);
+  assert.deepEqual(report.data.products,[]);
+  assert.equal(f.persisted.fails[bankReport.link],undefined);
+});
+
+test('insurance monthly admission checks published totals and reads premium apart from paid claims', () => {
+  const date="۱۴۰۵/۰۷/۳۰";
+  const top=["شرح","ابتدای سال","اصلاحات","اصلاح شده",`دوره یک ماهه منتهی به ${date}`,`از ابتدای سال مالی تا پایان مورخ ${date}`];
+  const groups=Array.from({length:5},()=>["حق بیمه صادره (شامل قبولی اتکایی)","خسارت پرداختی"]).flat();
+  const units=Array(19).fill("مبلغ (میلیون ریال)");
+  units[0]="رشته بیمه ای";
+  const values=[71325758,100,55306523,100,0,0,71325758,100,55306523,100,15463740,100,12955444,100,86789498,100,68261967,100];
+  const total=["جمع",...values];
+  const report=rows=>`<div>کلیه مبالغ درج شده به میلیون ریال می باشد.</div><app-table><table>${rows.map(row=>`<tr>${row.map(value=>`<td>${value}</td>`).join("")}</tr>`).join("")}</table></app-table>`;
+  const body=[top,groups,units,["زندگی",...values],total];
+  const meta={symbol:"بخاور",period_months:1,period_end:"1405-07-30"};
+  const d=codal.normalizeSectorN30(report(body),meta,"issued_premium");
+  assert.equal(d?.period_total_amount,15463740);
+  assert.equal(d?.fy_cumulative_amount,86789498);
+  total[11]+=2;
+  assert.equal(codal.normalizeSectorN30(report(body),meta,"issued_premium"),null);
 });
 
 test('monthly discovery can advance past a rejected workbook once the announcement is durable', async () => {

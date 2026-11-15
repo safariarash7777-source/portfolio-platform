@@ -17,7 +17,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import {
   classifyAnnouncement, fetchAnnouncementsPage, downloadAndParse,
-  insertParsedReport, existingUrlsFor, faToEn, codalEnv,
+  insertParsedReport, existingUrlsFor, faToEn, codalEnv, monthlySectorProfile,
 } from "./codal.mjs";
 import { companyUniverse, readStoredReportInventory, summarizeReportInventory } from "./codal-coverage.mjs";
 import { codalAccess, isCodalSourceDeferred } from './codal-source-access.mjs';
@@ -234,7 +234,8 @@ export async function runArchiveCycle({ monthlyOnly = false } = {}) {
               if (k !== null && k < boundary) { sawOlderThanBoundary = true; continue; }
               const kind = classifyAnnouncement(a);
               if (!kind || monthlyOnly && kind !== "ن-۳۰" || !a.link || !a.link_excel) continue;
-              if (known.has(a.link) || isBlocked(a.link)) continue;
+              const failure = kind === "ن-۳۰" && monthlySectorProfile(a) ? `monthly-sector-v1:${a.link}` : a.link;
+              if (known.has(a.link) || isBlocked(failure)) continue;
               if (st.downloaded >= DL_PER_CYCLE || budgetLeft() <= 2) { pageComplete = false; break; }
               st.downloaded++;
               spend(); // دانلود اکسل هم از سهمیهٔ سرویس کدال حساب می‌شود (محافظه‌کارانه)
@@ -244,16 +245,17 @@ export async function runArchiveCycle({ monthlyOnly = false } = {}) {
                   st.inserted += await insertParsedReport(a, kind, data);
                   known.add(a.link);
                   delete state.fails?.[a.link];
+                  delete state.fails?.[failure];
                 } else {
                   st.parseFailed++;
                   pageComplete = false;
-                  recordFail(a.link);
+                  recordFail(failure);
                 }
               } catch (e) {
                 if (isCodalSourceDeferred(e)) throw e;
                 st.parseFailed++;
                 pageComplete = false;
-                recordFail(a.link);
+                recordFail(failure);
                 if (e?.name === "ReportPersistenceError") {
                   st.persistenceUnconfirmed++;
                   archiveStatus.lastError = e.message;
