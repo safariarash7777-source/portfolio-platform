@@ -2,7 +2,7 @@ import { brsFetch as fetch } from "./brsapi-transport.mjs";
 import { isBrsLocalDeferral } from "./brsapi-policy.mjs";
 import { notifyAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 import { createHash } from "node:crypto";
-import { loadDecisionStatement } from "./codal-statement-source.mjs";
+import { loadDecisionStatement, loadMonthlyDecision } from "./codal-statement-source.mjs";
 import { codalAccess, isCodalSourceDeferred } from "./codal-source-access.mjs";
 // ماژول کدال — دریافت خودکار گزارش‌های بنیادی از وب‌سرویس کدالِ BrsApi.
 // چرا این‌جا (رله): excel.codal.ir و codal.ir به IP خارجی پاسخ نمی‌دهند؛
@@ -1160,6 +1160,8 @@ export function monthlySectorProfile(a) {
     if (type === "4") return "leasing_reported_income";
     if (type === "5") return "service_recognized_income";
     if (type === "6") return "issued_premium";
+    if (type === "8") return "agriculture_operating_income";
+    if (type === "9") return "financing_service_income";
   } catch { /* Invalid publisher identity. */ }
   return null;
 }
@@ -1327,17 +1329,108 @@ export function normalizeSectorN30(html, meta, profile) {
     if (result && Number.isSafeInteger(result.amount) && Number.isSafeInteger(result.cumulative)) candidates.push(result);
   }
   if (candidates.length !== 1) return null;
+  return sectorMonthlyData(meta, profile, candidates[0]);
+}
+
+function sectorMonthlyData(meta, profile, total) {
   return {
     symbol: meta.symbol, report_kind: "ن-۳۰", period_end: meta.period_end,
     fiscal_year: Number(meta.period_end.slice(0, 4)), monthly_measure: profile,
-    period_total_amount: candidates[0].amount, fy_cumulative_amount: candidates[0].cumulative,
+    period_total_amount: total.amount, fy_cumulative_amount: total.cumulative,
     products: [], unit: "میلیون ریال", unit_basis: "header_only", unit_header: "میلیون ریال", unit_inferred: null,
     qty_unit: null,
   };
 }
 
+function gridRows(table, width) {
+  if (!Array.isArray(table.cells) || table.cells.length > 4000) return null;
+  const grid = new Map();
+  const addresses = new Set();
+  for (const cell of table.cells) {
+    if (cell?.isVisible !== true) continue;
+    const {rowSequence:row,columnSequence:column,value,address} = cell;
+    if (!Number.isSafeInteger(row) || row<1 || row>500 || !Number.isSafeInteger(column) || column<1 || column>width ||
+        address!==String.fromCharCode(64+column)+row || addresses.has(address) ||
+        cell.metaTableId!==table.metaTableId || cell.metaTableCode!==table.code ||
+        (value!==null && typeof value!=="string" && typeof value!=="number")) return null;
+    addresses.add(address);
+    if (!grid.has(row)) grid.set(row, Array(width).fill(""));
+    grid.get(row)[column-1] = value==null ? "" : String(value);
+  }
+  return [...grid].sort(([a],[b])=>a-b).map(([,values])=>values);
+}
+
+const agricultureComponents = [
+  "جمع فروش داخلی", "جمع فروش صادراتی", "ارزش منصفانه تولیدات کشاورزی",
+  "خالص افزایش (کاهش) ارزش منصفانه دارائیهای زیستی غیر مولد", "بهای تمام شده انتسابی",
+].map(normLabel);
+
+function readAgricultureDecision(rows, periodEnd) {
+  const [h0, h1, ...items] = rows;
+  if (!h0 || !h1 || normLabel(h0[0])!==normLabel("نام محصول") ||
+      !normLabel(h0[13]).startsWith(normLabel("دوره یک ماهه منتهی به")) ||
+      !normLabel(h0[17]).startsWith(normLabel("از ابتدای سال مالی تا تاریخ")) ||
+      jalaliStr(h0[13])!==periodEnd || jalaliStr(h0[17])!==periodEnd ||
+      ![16,20].every(i=>normLabel(h1[i])===normLabel("مبلغ فروش (میلیون ریال)"))) return null;
+  const required = [...agricultureComponents, normLabel("جمع درآمدهای عملیاتی")];
+  const selected = new Map();
+  for (const row of items) {
+    const label=normLabel(row[0]);
+    if (!required.includes(label)) continue;
+    if (selected.has(label)) return null;
+    selected.set(label,row);
+  }
+  if (selected.size!==required.length) return null;
+  const total=selected.get(required.at(-1));
+  const result=[16,20].map(column=>{
+    const value=cellNum(total[column]);
+    const sub=agricultureComponents.map(label=>cellNum(selected.get(label)[column]));
+    return Number.isSafeInteger(value)&&sub.every(Number.isSafeInteger)&&Math.abs(sub.reduce((a,b)=>a+b,0)-value)<=1
+      ? value : null;
+  });
+  return result.every(Number.isSafeInteger) ? {amount:result[0],cumulative:result[1]} : null;
+}
+
+function readFinancingDecision(rows, periodEnd) {
+  const [header,...items]=rows;
+  const labels=items.map(row=>normLabel(row[0]));
+  if (!header || normLabel(header[0])!=="شرح" || normLabel(header[2])!=="اصلاحات" ||
+      !normLabel(header[4]).startsWith(normLabel("درآمد محقق شده طی دوره یک ماهه منتهی به")) ||
+      !normLabel(header[5]).startsWith(normLabel("جمع درآمد محقق شده از ابتدای سال مالی تا پایان")) ||
+      jalaliStr(header[4])!==periodEnd||jalaliStr(header[5])!==periodEnd||
+      !labels.includes(normLabel("درآمد بازارگردانی"))||!labels.includes(normLabel("درآمد تعهد پذیره نویسی"))) return null;
+  return readIncomeTotal(items,8,1);
+}
+
+const monthlyDecisionTables = new Map([
+  ["agriculture_operating_income",{code:1197,alias:"MonthlyOperatingRevenues",width:26,read:readAgricultureDecision}],
+  ["financing_service_income",{code:2162,alias:"RevenuesServiceDeliveryRealized",width:8,read:readFinancingDecision}],
+]);
+
+function normalizeMonthlyDecision(source,meta,profile) {
+  if (!source) return null;
+  const descriptor=monthlyDecisionTables.get(profile);
+  const candidates=source.sheet.tables.filter(table=>table?.code===descriptor.code&&table.aliasName===descriptor.alias);
+  if (candidates.length!==1) return null;
+  const table=candidates[0];
+  if (table.sheetCode!==source.sheet.code||normLabel(table.description)!==normLabel("کلیه مبالغ به میلیون ریال است")) return null;
+  const rows=gridRows(table,descriptor.width);
+  const total=rows&&descriptor.read(rows,meta.period_end);
+  if (!total) return null;
+  return {...sectorMonthlyData(meta,profile,total),monthly_source:{
+    url:source.url,sha256:source.sha256,tracing_no:source.tracingNo,sheet_code:source.sheet.code,table_code:table.code,
+  }};
+}
+
 /** دانلود اکسل اطلاعیه و نرمال‌سازی — null یعنی پارس ناموفق (درج نکنید). */
 export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejected) {
+  const sector=kind==="ن-۳۰" ? monthlySectorProfile(a) : null;
+  if (monthlyDecisionTables.has(sector)) {
+    const meta=metaFrom(a,kind);
+    const source=meta.period_months===1&&meta.period_end ? await loadMonthlyDecision(a,meta,{fetchImpl:fetch}) : null;
+    onDownloaded();
+    return normalizeMonthlyDecision(source,meta,sector) ?? notifyAdmissionRejection(onRejected,kind,"unsupported_layout");
+  }
   let body = null;
   let html;
   try {
@@ -1369,7 +1462,6 @@ export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejec
   const source = body && sameQuantityResponseSource(body.sourceRef, body.responseUrl)
     ? { version: 1, sourceId: body.sourceRef, htmlSha256: createHash("sha256").update(body.htmlBytes).digest("hex"),
       htmlBytes: body.htmlBytes, symbol: meta.symbol, periodEnd: meta.period_end } : null;
-  const sector = monthlySectorProfile(a);
   if (sector) {
     const sectorData = source ? normalizeSectorN30(html, meta, sector) : null;
     return sectorData ?? notifyAdmissionRejection(onRejected, kind, "unsupported_layout");

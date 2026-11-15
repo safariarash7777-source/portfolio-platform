@@ -52,6 +52,13 @@ async function fixture(options = {}) {
   } } });
   globalThis.fetch = async (input, init = {}) => {
     const url = new URL(input);
+    if (url.hostname === 'codal.ir' && options.monthlyDecision) {
+      if (url.pathname === '/Reports/Decision.aspx') return new Response(null,{status:302,
+        headers:{Location:`/Reports/MonthlyActivity.aspx?LetterSerial=${options.monthlyDecision.redirectSerial ?? url.searchParams.get('LetterSerial')}`}});
+      assert.equal(url.pathname,'/Reports/MonthlyActivity.aspx');
+      calls.excel.push('monthly-view');
+      return new Response(options.monthlyDecision.html);
+    }
     if (url.hostname === 'codal.ir' && options.officialBody !== undefined) return new Response(options.officialBody);
     if (["excel.invalid", "excel.codal.ir"].includes(url.hostname)) {
       calls.excel.push(url.pathname);
@@ -1129,6 +1136,55 @@ test('real estate monthly totals require a reconciled view and matching duplicat
  double[1][9]=0;
  assert.equal(codal.normalizeSectorN30(html(double),meta,profile),null);
  assert.equal(codal.normalizeSectorN30(html(plain),{...meta,period_end:"1405-06-31"},profile),null);
+});
+
+test('monthly decision admission binds the publisher identity, period and explicit financing service total', async () => {
+ const date='1405/07/30';
+ const title='گزارش فعالیت ماهانه';
+ const report={
+  ...stored(23),category:'ماهانه',symbol:'لوتوس',report_code:'ن-۳۰',
+  title:`${title} دوره ۱ ماهه منتهی به ${date}`,
+  link:'https://codal.ir/Reports/Decision.aspx?LetterSerial=serial23&rt=9&let=58',
+ };
+ const values=[
+  ['شرح','از ابتدای دوره','اصلاحات','اصلاح شده',`درآمد محقق شده طی دوره یک ماهه منتهی به ${date}`,
+   `جمع درآمد محقق شده از ابتدای سال مالی تا پایان ${date}`,'سال قبل','توضیحات'],
+  ['درآمد تعهد پذیره نویسی',60,-5,55,6,61,0,''],
+  ['درآمد بازارگردانی',30,0,30,8,38,0,''],
+  ['جمع',90,-5,85,14,99,0,''],
+ ];
+ const code=2162,sheetCode=1000009;
+ const cells=values.flatMap((row,r)=>row.map((value,c)=>({
+  address:String.fromCharCode(65+c)+(r+1),rowSequence:r+1,columnSequence:c+1,isVisible:true,
+  value,metaTableId:code,metaTableCode:code,
+ })));
+ const payload={type:58,period:1,periodEndToDate:date,isConsolidated:false,tracingNo:42,
+  sheets:[{code:sheetCode,aliasName:'MonthlyActivity',tables:[{code,metaTableId:code,sheetCode,
+   aliasName:'RevenuesServiceDeliveryRealized',description:'کلیه مبالغ به میلیون ریال است',cells}]}]};
+ const publisher=(data=payload)=>`<form id="aspnetForm" action="./MonthlyActivity.aspx?LetterSerial=serial23">
+  <span id="ctl00_lblReportName">${title}</span><span id="ctl00_lblDisplaySymbol">${report.symbol}</span>
+  <span id="ctl00_lblPeriod">1 ماهه</span><span id="ctl00_lblPeriodEndToDate">${date}</span>
+  <script>var datasource = ${JSON.stringify(data)};</script></form>`;
+ const f=await fixture({storedRows:[report],pages:[[]],monthlyDecision:{html:publisher()}});
+ await f.engine.runEngineCycle({monthlyOnly:true,allowBackground:false});
+ const result=f.calls.reportWrites[0][0].data;
+ assert.equal(result.monthly_measure,'financing_service_income');
+ assert.equal(result.period_total_amount,14);
+ assert.equal(result.fy_cumulative_amount,99);
+ assert.equal(result.monthly_source.table_code,2162);
+ assert.match(result.monthly_source.sha256,/^[0-9a-f]{64}$/);
+ assert.deepEqual(f.calls.excel,['monthly-view']);
+ const forged=structuredClone(payload);
+ forged.sheets[0].tables[0].cells.push(forged.sheets[0].tables[0].cells.at(-3));
+ await fixture({monthlyDecision:{html:publisher(forged)}});
+ assert.equal(await codal.downloadAndParse({
+  ...report,l18:report.symbol,code:report.report_code,link_excel:report.link_excel,
+ },'ن-۳۰'),null);
+ const bad=await fixture({monthlyDecision:{html:publisher(),redirectSerial:'another-report'}});
+ await assert.rejects(codal.downloadAndParse({
+  ...report,l18:report.symbol,code:report.report_code,link_excel:report.link_excel,
+ },'ن-۳۰'),/redirect_unsupported/);
+ assert.deepEqual(bad.calls.excel,[]);
 });
 
 test('monthly discovery can advance past a rejected workbook once the announcement is durable', async () => {

@@ -6,6 +6,9 @@ import { codalAccess } from './codal-source-access.mjs';
 // scripts. Admission binds income and capital to the same issuer and report;
 // the loader below supplies captures and the existing engine owns persistence.
 const MAX_DECISION = 2 * 1024 * 1024;
+const DECISION_PATH = '/Reports/Decision.aspx';
+const INTERIM_PATH = '/Reports/InterimStatement.aspx';
+const MONTHLY_PATH = '/Reports/MonthlyActivity.aspx';
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const fail = reason => { throw new Error(reason); };
 export function supportsDecisionUrl(value){
@@ -114,13 +117,13 @@ function sourceText(source, limit) {
   if (!bytes.equals(Buffer.from(text, 'utf8'))) fail('source_encoding');
   return text;
 }
-function reportSerial(url, decision, interim = false) {
+function reportSerial(url, decision, expectedPath = DECISION_PATH) {
   if (typeof url !== 'string' || url.length>4096 || url.trim() !== url) fail('source_identity');
   const u = new URL(url);
   if (u.protocol !== 'https:' || u.username || u.password || u.hash || u.port ||
       !(decision ? ['codal.ir', 'www.codal.ir'].includes(u.hostname) : u.hostname === 'excel.codal.ir')) fail('source_identity');
   if (decision) {
-    if (u.pathname !== (interim ? '/Reports/InterimStatement.aspx' : '/Reports/Decision.aspx')) fail('source_identity');
+    if (u.pathname !== expectedPath) fail('source_identity');
     const pairs = u.search.slice(1).split('&').map(p => p.split('='));
     const serials = pairs.filter(p => p[0] === 'LetterSerial');
     if (serials.length !== 1 || serials[0].length !== 2) fail('source_identity');
@@ -149,7 +152,7 @@ const number = value => {
 };
 
 function document(source,meta,announcement,alias,interim=false) {
- const serial=reportSerial(source.url,true,interim);
+ const serial=reportSerial(source.url,true,interim ? INTERIM_PATH : DECISION_PATH);
  if(serial!==reportSerial(announcement.link,true))fail('source_identity');
  const html=sourceText(source,MAX_DECISION);
  const root=literalDatasource(html);
@@ -187,7 +190,7 @@ function document(source,meta,announcement,alias,interim=false) {
   const form=element(visible,'form','aspnetForm');
   const opening=form.slice(0,form.indexOf('>')+1);
   const action=new URL(attr(opening,'action'),source.url);
-  if(attr(opening,'method')?.toLowerCase()!=='post' || reportSerial(action.href,true,true)!==serial ||
+  if(attr(opening,'method')?.toLowerCase()!=='post' || reportSerial(action.href,true,INTERIM_PATH)!==serial ||
      action.origin!==new URL(source.url).origin || source.requestedSheetCode!==sheet.code)fail('source_identity');
   const choices=[...select.matchAll(/<option\b([^>]*)>([\s\S]*?)<\/option\s*>/gi)];
   const selected=choices.filter(m=>attributes('<option '+m[1]+'>').some(a=>a.name==='selected'));
@@ -269,7 +272,7 @@ export const admitInterimStatement=(income,equity,meta,announcement)=>admitState
 // The existing engine still owns discovery, per-cycle caps and persistence.
 let requestTail=Promise.resolve();
 let nextRequest=0;
-async function captureDecision(url,fetchImpl,request={}){
+async function captureDecision(url,fetchImpl,request={},reportPath=INTERIM_PATH){
  const operation=async()=>{
   codalAccess.check();
   await sleep(Math.max(0,nextRequest-Date.now()));
@@ -282,12 +285,12 @@ async function captureDecision(url,fetchImpl,request={}){
    const redirect=new URL(location,url);
    const original=new URL(url);
    if(request.method==='POST')throw Error('codal_statement_redirect_unsupported');
-   const legacy=redirect.pathname==='/Reports/InterimStatement.aspx' && original.pathname==='/Reports/Decision.aspx';
-   const sameReport=legacy
-    ? reportSerial(redirect.href,true,true)===reportSerial(original.href,true)
+   const alternateView=redirect.pathname===reportPath && original.pathname===DECISION_PATH;
+   const sameReport=alternateView
+    ? reportSerial(redirect.href,true,reportPath)===reportSerial(original.href,true)
     : redirect.search===original.search;
    if(!['codal.ir','www.codal.ir'].includes(redirect.hostname)||redirect.protocol!=='https:'||
-      (!legacy && redirect.pathname!==original.pathname)||!sameReport||redirect.username||redirect.password||redirect.port||redirect.hash)throw Error('codal_statement_redirect_unsupported');
+      (!alternateView && redirect.pathname!==original.pathname)||!sameReport||redirect.username||redirect.password||redirect.port||redirect.hash)throw Error('codal_statement_redirect_unsupported');
    await response.body?.cancel();
    await sleep(2100);nextRequest=Date.now()+2100;
    response=await fetchImpl(redirect.href,{redirect:'error',signal:AbortSignal.timeout(15000)});
@@ -308,12 +311,12 @@ async function captureDecision(url,fetchImpl,request={}){
 // script, event target, authentication material or arbitrary form is replayed.
 function legacySelection(source,title,announcement){
  const html=sourceText(source,MAX_DECISION).replace(/<!--[\s\S]*?-->/g,'');
- if(reportSerial(source.url,true,true)!==reportSerial(announcement.link,true))fail('source_identity');
+ if(reportSerial(source.url,true,INTERIM_PATH)!==reportSerial(announcement.link,true))fail('source_identity');
  const form=element(html,'form','aspnetForm');
  const opening=form.slice(0,form.indexOf('>')+1);
  if(attr(opening,'method').toLowerCase()!=='post')fail('source_identity');
  const action=new URL(attr(opening,'action').replace(/&amp;/g,'&'),source.url);
- if(action.origin!==new URL(source.url).origin||reportSerial(action.href,true,true)!==reportSerial(source.url,true,true))fail('source_identity');
+ if(action.origin!==new URL(source.url).origin||reportSerial(action.href,true,INTERIM_PATH)!==reportSerial(source.url,true,INTERIM_PATH))fail('source_identity');
  const select=element(form,'select','ctl00_ddlTable');
  if(attr(select.slice(0,select.indexOf('>')+1),'name')!=='ctl00$ddlTable')fail('source_identity');
  const options=[...select.matchAll(/<option\b([^>]*)>([\s\S]*?)(?=<option\b|<\/select>|$)/gi)]
@@ -388,4 +391,32 @@ export async function loadDecisionStatement(announcement,meta,{fetchImpl=globalT
  const equityUrl=new URL(url);equityUrl.searchParams.set('sheetId',code);
  const equity=await captureDecision(equityUrl.href,fetchImpl);
  return admitDecisionStatement(income,equity,meta,bound);
+}
+
+export async function loadMonthlyDecision(announcement, meta, {fetchImpl=globalThis.fetch}={}) {
+ const original=new URL(announcement.link);
+ if(original.hostname==='www.codal.ir')original.hostname='codal.ir';
+ const serial=reportSerial(original.href,true);
+ const type=original.searchParams.get('rt');
+ if(original.searchParams.get('let')!=='58'||!['8','9'].includes(type))return null;
+ const capture=await captureDecision(original.href,fetchImpl,{},MONTHLY_PATH);
+ try{
+  if(reportSerial(capture.url,true,MONTHLY_PATH)!==serial)return null;
+  const html=sourceText(capture,MAX_DECISION);
+  const form=element(html,'form','aspnetForm');
+  const action=new URL(attr(form.slice(0,form.indexOf('>')+1),'action'),capture.url);
+  if(action.origin!==new URL(capture.url).origin||reportSerial(action.href,true,MONTHLY_PATH)!==serial)return null;
+  const field=id=>text(element(html,'span',id));
+  if(norm(field('ctl00_lblReportName'))!==norm('گزارش فعالیت ماهانه')||
+     norm(field('ctl00_lblDisplaySymbol'))!==norm(meta.symbol)||
+     norm(field('ctl00_lblPeriod'))!==norm('1 ماهه')||
+     day(field('ctl00_lblPeriodEndToDate'))!==meta.period_end)return null;
+  const root=literalDatasource(html);
+  if(root.type!==58||root.period!==1||root.isConsolidated!==false||day(root.periodEndToDate)!==meta.period_end||
+     !Number.isSafeInteger(root.tracingNo)||root.tracingNo<1||
+     !Array.isArray(root.sheets)||root.sheets.length!==1)return null;
+  const [sheet]=root.sheets;
+  if(sheet.code!==1000000+Number(type)||sheet.aliasName!=='MonthlyActivity'||!Array.isArray(sheet.tables))return null;
+  return {sheet,tracingNo:root.tracingNo,url:capture.url,sha256:capture.sha256};
+ }catch{return null;}
 }
