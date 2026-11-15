@@ -42,6 +42,7 @@ const SB_HDRS = () => ({
 // وضعیت تشخیصی برای /debug — پوشش لحظه‌ای + مصرف بودجه
 export const archiveStatus = {
   ok: false,
+  reportScope: null,
   lastRun: 0,
   lastError: null,
   dailyCap: ARCHIVE_DAILY_CAP,
@@ -161,7 +162,8 @@ function recordFail(url) {
 }
 const isBlocked = (url) => (state?.fails?.[url] || 0) >= 3;
 
-export async function runArchiveCycle() {
+export async function runArchiveCycle({ monthlyOnly = false } = {}) {
+  archiveStatus.reportScope = monthlyOnly ? "monthly_only" : "all_reports";
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     archiveStatus.lastError = "env ناقص (SUPABASE)";
     return;
@@ -196,7 +198,7 @@ export async function runArchiveCycle() {
         const sym = queue[state.cursor % queue.length];
         state.cursor++;
         const ps = (state.perSymbol[sym] ??= { p1: 1, p3: 1, done1: false, done3: false });
-        if (ps.done1 && ps.done3) continue;
+        if ((monthlyOnly || ps.done1) && ps.done3) continue;
 
         processed++;
         st.symbols.push(sym);
@@ -207,6 +209,7 @@ export async function runArchiveCycle() {
           { cat: 3, pageKey: "p3", doneKey: "done3", boundary: BOUNDARY_N30 },
           { cat: 1, pageKey: "p1", doneKey: "done1", boundary: BOUNDARY_N10 },
         ]) {
+          if (monthlyOnly && cat !== 3) continue;
           if (ps[doneKey]) continue;
           let pagesThis = 0;
           while (pagesThis < PAGES_PER_SYMBOL && budgetLeft() > 2 && st.downloaded < DL_PER_CYCLE) {
@@ -230,7 +233,7 @@ export async function runArchiveCycle() {
               const k = jdateKey(a?.date_send);
               if (k !== null && k < boundary) { sawOlderThanBoundary = true; continue; }
               const kind = classifyAnnouncement(a);
-              if (!kind || !a.link || !a.link_excel) continue;
+              if (!kind || monthlyOnly && kind !== "ن-۳۰" || !a.link || !a.link_excel) continue;
               if (known.has(a.link) || isBlocked(a.link)) continue;
               if (st.downloaded >= DL_PER_CYCLE || budgetLeft() <= 2) { pageComplete = false; break; }
               st.downloaded++;
@@ -267,7 +270,7 @@ export async function runArchiveCycle() {
         }
         await new Promise((r) => setTimeout(r, 1000));
       }
-      archiveStatus.doneSymbols = Object.values(state.perSymbol).filter((p) => p.done1 && p.done3).length;
+      archiveStatus.doneSymbols = Object.values(state.perSymbol).filter((p) => (monthlyOnly || p.done1) && p.done3).length;
     }
   } catch (e) {
     archiveStatus.lastError = e?.message ?? String(e);

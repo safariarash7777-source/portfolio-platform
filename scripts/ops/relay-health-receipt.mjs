@@ -70,6 +70,7 @@ function diagnostics(value, shape) {
 }
 function codalDetails(engine, archive) {
   return {
+    reportScope: choice(engine?.reportScope, ['monthly_only', 'all_reports']),
     // Attempt clocks are not successful ingestion receipts.
     lastAttemptStartedAt: clock(engine?.lastRun),
     schedule: { running: boolean(engine?.schedule?.running), started: boolean(engine?.schedule?.started),
@@ -78,6 +79,7 @@ function codalDetails(engine, archive) {
     failureDiagnostics: diagnostics(engine?.failureDiagnostics, { download: ['exception'], admission: ['rejected', 'exception'], persistence: ['exception'] }),
     admissionDiagnostics: diagnostics(engine?.admissionDiagnostics, ADMISSION_REASONS),
     archive: {
+      reportScope: choice(archive?.reportScope, ['monthly_only', 'all_reports']),
       ok: boolean(archive?.ok), lastAttemptFinishedAt: clock(archive?.lastRun), error: errorCategory(archive?.lastError),
       budgetDate: date(archive?.budgetDate), ...integerCounts(archive, ['dailyCap', 'usedToday', 'cursor', 'queueSize', 'doneSymbols']),
       lastCycle: integerCounts(archive?.lastCycle, ['pages', 'downloaded', 'inserted', 'parseFailed', 'persistenceUnconfirmed']),

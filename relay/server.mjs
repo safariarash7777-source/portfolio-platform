@@ -1569,7 +1569,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   // کدال — CODAL_ENABLED=1 برای فعال‌سازی موتور v3 (فید سراسری + بک‌فیل اولویت‌دار).
   // مسیر legacy نمادبه‌نماد در پاک‌سازی C3 حذف شد (موتور v3 از ۱۶ تیر سالم، ۱۶۵ گزارش).
   if (process.env.CODAL_ENABLED === "1") {
-    const scheduler = createCompanyWorkScheduler({ job: runEngineCycle, regularIntervalMs: CODAL_INTERVAL_MS,
+    const scheduler = createCompanyWorkScheduler({ job: options => runEngineCycle({ ...options, monthlyOnly: true }), regularIntervalMs: CODAL_INTERVAL_MS,
       discoveryIntervalMs: 15 * 60 * 1000,
       overnightEnabled: process.env.RELAY_BACKGROUND_WINDOW_ENABLED !== "0" });
     engineStatus.schedule = scheduler.state;
@@ -1588,10 +1588,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     if (process.env.CODAL_ARCHIVE_ENABLED !== "0") {
       console.log("codal archive (T4) armed: first run in 6m");
       setTimeout(() => {
-        runArchiveCycle().catch((e) => console.error("codal archive error:", e?.message ?? e));
+      runArchiveCycle({ monthlyOnly: true }).catch((e) => console.error("codal archive error:", e?.message ?? e));
       }, 6 * 60 * 1000).unref();
       setInterval(() => {
-        runArchiveCycle().catch((e) => console.error("codal archive error:", e?.message ?? e));
+        runArchiveCycle({ monthlyOnly: true }).catch((e) => console.error("codal archive error:", e?.message ?? e));
       }, 45 * 60 * 1000).unref();
     }
   }
