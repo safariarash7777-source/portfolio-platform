@@ -210,14 +210,14 @@ export function sentKey(a) {
   );
 }
 
-function recentInterim(a, start, end) {
-  if (!a || classifyAnnouncement(a) !== "ن-۱۰") return false;
+function recentInterim(a, { startDay, endDay, symbols }) {
+  if (!a || !symbols.has(canonicalMarketSymbol(a.l18)) || classifyAnnouncement(a) !== "ن-۱۰") return false;
   const { period_end, period_months } = metaFromAnnouncement(a, "ن-۱۰");
   if (!period_end || ![3, 6, 9].includes(period_months)) return false;
   const key = String(sentKey(a));
   if (key.length !== 14) return false;
   const sentDate = jalaliYmdToGregorian(key.slice(0, 4), key.slice(4, 6), key.slice(6, 8));
-  return sentDate >= start && sentDate <= end;
+  return sentDate >= startDay && sentDate <= endDay;
 }
 
 const interimEligible = (url, kind, announcement) => kind === 'ن-۱۰' && supportsDecisionUrl(url) && /تلفیقی/.test(String(announcement?.title || ''));
@@ -382,7 +382,7 @@ async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false, inter
       if (a.link) feedItems.push(a); // M4
       const kind = classifyAnnouncement(a);
       if (monthlyOnly && kind !== "ن-۳۰" &&
-          !(interimWindow && recentInterim(a, interimWindow.startDay, interimWindow.endDay))) continue;
+          !(interimWindow && recentInterim(a, interimWindow))) continue;
       if (!kind || !a.link || !a.link_excel) continue;
       st.matched++;
       candidates.push({ a, kind, k });
@@ -609,7 +609,7 @@ async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBound
     for(const row of rows){
       const a=row.announcement,classified=a && classifyAnnouncement(a);
       const kind=interimWindow
-        ? (recentInterim(a, interimWindow.startDay, interimWindow.endDay) ? classified : null)
+        ? (recentInterim(a, interimWindow) ? classified : null)
         : monthlyOnly && classified !== "ن-۳۰" ? null : classified;
       if(a && kind && st.downloaded>=limit)return;
       st.scanned++;
@@ -667,16 +667,26 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
   Object.assign(engineStatus.recentMonthlyRecovery,recoveryCounts(),{active:monthlyBounds!==null,readFailed:false});
   Object.assign(engineStatus.officialMonthlyDiscovery,{pages:0,matched:0,inserted:0,nextPage:officialMonthlyPageBefore??2,failed:false});
   Object.assign(engineStatus.interimRecovery, recoveryCounts());
-  const tehranOffset = (3 * 60 + 30) * 60 * 1000;
-  const interimWindow = includeInterim ? {
-    startIso: new Date(engineStatus.lastRun - INTERIM_RECENT_MS).toISOString(),
-    startDay: new Date(engineStatus.lastRun + tehranOffset - INTERIM_RECENT_MS).toISOString().slice(0, 10),
-    endDay: new Date(engineStatus.lastRun + tehranOffset).toISOString().slice(0, 10),
-  } : null;
   let feedDeferred = false;
   const monthlyAttempts=monthlyBounds ? new Set() : null;
   let companies;
   const loadCompanies=()=>companies??=allCompanySymbols();
+  let interimWindow = null;
+  if (includeInterim) {
+    try {
+      const symbols = new Set((await loadCompanies()).map(canonicalMarketSymbol));
+      if (!symbols.size) throw new Error("empty market stock roster");
+      const tehranOffset = (3 * 60 + 30) * 60 * 1000;
+      interimWindow = {
+        symbols,
+        startIso: new Date(engineStatus.lastRun - INTERIM_RECENT_MS).toISOString(),
+        startDay: new Date(engineStatus.lastRun + tehranOffset - INTERIM_RECENT_MS).toISOString().slice(0, 10),
+        endDay: new Date(engineStatus.lastRun + tehranOffset).toISOString().slice(0, 10),
+      };
+    } catch {
+      engineStatus.lastError = "stock roster unavailable for recent interim recovery";
+    }
+  }
   const sourceHeld = codalAccess.snapshot() > Date.now();
   try {
     if (sourceHeld && process.env.CODAL_ANNOUNCEMENT_SOURCE === 'official') codalAccess.check();
@@ -687,7 +697,7 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
     feedDeferred = isBrsLocalDeferral(e);
     if (feedDeferred) engineStatus.feed.incompleteReason = 'local_deferred';
     else engineStatus.feed.incompleteReason ??= "feed_failure";
-    engineStatus.lastError = `feed: ${e?.message ?? e}`;
+    engineStatus.lastError = [engineStatus.lastError, `feed: ${e?.message ?? e}`].filter(Boolean).join("; ");
     console.error("codal-engine feed error:", e?.message ?? e);
   }
   if(monthlyBounds&&officialMonthlyReconciliation&&codalAccess.snapshot()<=Date.now()){

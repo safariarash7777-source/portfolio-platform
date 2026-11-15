@@ -1298,7 +1298,9 @@ test('the fast discovery cycle includes recent interim statements within the sha
    ...financial(id), title:`اطلاعات و صورت‌های مالی دوره ${months} ماهه منتهی به ۱۴۰۵/۰۶/۳۱`,
    date_title:'1405/06/31', date_send:'1405/08/24',
  });
- const options = {pages:[[recent(7,12),recent(6,6),recent(5,6),recent(4,6),boundary],[]],
+ const fund = {...recent(8,6),l18:'صندوق نمونه'};
+ const options = {pages:[[fund,recent(7,12),recent(6,6),recent(5,6),recent(4,6),boundary],[]],
+   marketBody:[{payload:{stocks:[{id:'نمونه'}],funds:[{id:fund.l18}]}}],
    excelHtml:industrial({period:'1405/06/31',months:6,prior:false})};
  const f = await fixture(options);
  await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true,recentInterimReports:true});
@@ -1307,7 +1309,8 @@ test('the fast discovery cycle includes recent interim statements within the sha
  assert.deepEqual(f.calls.excel,["/6","/5"]);
  assert.deepEqual(f.calls.reportWrites.map(rows=>rows[0].report_kind),["ن-۱۰","ن-۱۰"]);
  assert.equal(f.engine.engineStatus.feed.interimDownloads,2);
- assert.equal(f.calls.feedWrites[0].rows.length,4);
+ assert.equal(f.calls.feedWrites[0].rows.length,5);
+ assert.equal(f.calls.feedWrites[0].rows[0].symbol,fund.l18);
 });
 
 test('interim recovery uses stored fresh announcements, with its own cursor and without annual or old downloads', async t => {
@@ -1316,8 +1319,9 @@ test('interim recovery uses stored fresh announcements, with its own cursor and 
    ...stored(id), category:'صورت مالی', sent_date,
    title:`اطلاعات و صورت‌های مالی دوره ${months} ماهه منتهی به ۱۴۰۵/۰۶/۳۱`,
  });
- const f = await fixture({pages:[[]],storedPageSize:2,
-   storedRows:[row(9,12,"1405/08/24"),row(8,6,"1405/06/31"),row(7,6,"1405/08/24"),row(6,6,"1405/08/25")],
+ const f = await fixture({pages:[[]],storedPageSize:3,
+   storedRows:[{...row(10,6,"1405/08/24"),symbol:'خارج از بازار'},row(9,12,"1405/08/24"),row(8,6,"1405/06/31"),row(7,6,"1405/08/24"),row(6,6,"1405/08/25")],
+   marketBody:[{payload:{stocks:[{id:'نمونه'}]}}],
    excelHtml:industrial({period:'1405/06/31',months:6,prior:false}),
    initialState:{watermark,fails:{},storedFeedCursor:'2',monthlyRecoveryCursor:'5'}});
  await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true,recentInterimReports:true});
@@ -1327,6 +1331,18 @@ test('interim recovery uses stored fresh announcements, with its own cursor and 
  assert.equal(f.persisted.storedFeedCursor,'2');
  assert.equal(f.persisted.interimRecoveryCursor,'6');
  assert.equal(f.engine.engineStatus.interimRecovery.inserted,1);
+});
+
+test('an unavailable stock roster defers interim recovery and leaves announcements available', async t => {
+ t.mock.method(Date,'now',()=>Date.parse("2026-11-15T15:30:00Z"));
+ const recent={...financial(5),title:'اطلاعات و صورت‌های مالی دوره ۶ ماهه منتهی به ۱۴۰۵/۰۶/۳۱',date_send:'1405/08/24'};
+ const f=await fixture({pages:[[recent,boundary]],marketStatus:503,
+   initialState:{watermark,fails:{},interimRecoveryCursor:'16'}});
+ await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true,recentInterimReports:true});
+ assert.deepEqual(f.calls.feedWrites[0].rows.map(row=>row.link),[recent.link]);
+ assert.deepEqual(f.calls.excel,[]);
+ assert.equal(f.persisted.interimRecoveryCursor,'16');
+ assert.match(f.engine.engineStatus.lastError,/stock roster unavailable/);
 });
 
 test('publisher challenge keeps discovery available while file reads and archive remain paused', async () => {
