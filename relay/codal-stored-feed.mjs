@@ -69,10 +69,11 @@ export function verifiedMonthlyDiscovery(candidate,bounds,marketSymbols) {
 }
 
 export const canonicalMarketSymbol=value=>String(value??"").trim().normalize("NFC").replace(/[يى]/g,"ی").replace(/ك/g,"ک");
-export async function readStoredAnnouncements(cursor,{baseUrl,headers,fetch:read=globalThis.fetch,monthlyOnly=false,interimSince=null,monthlyBounds=null}) {
+export async function readStoredAnnouncements(cursor,{baseUrl,headers,fetch:read=globalThis.fetch,monthlyOnly=false,interimSince=null,monthlyBounds=null,pageSize=100}) {
   if(!validStoredCursor(cursor))throw Error('stored feed cursor invalid');
+  if(!Number.isInteger(pageSize)||pageSize<1||pageSize>100)throw Error('stored feed page size invalid');
   const qs=new URLSearchParams({select:'id,symbol,company_name,title,report_code,link,link_excel,link_pdf,sent_date,sent_time,publish_date',
-    order:'id.desc',limit:'100'});
+    order:'id.desc',limit:String(pageSize)});
   if(monthlyOnly)qs.set('category','eq.ماهانه');
   if(monthlyBounds!==null)qs.set('or',dateRangeFilter(monthlyBounds));
   if(interimSince!==null){
@@ -83,7 +84,7 @@ export async function readStoredAnnouncements(cursor,{baseUrl,headers,fetch:read
   const response=await read(`${baseUrl}/rest/v1/codal_feed?${qs}`,{headers,signal:AbortSignal.timeout(15000)});
   if(!response.ok)throw Error(`stored feed HTTP ${response.status}`);
   const rows=await response.json();
-  if(!Array.isArray(rows)||rows.length>100)throw Error('stored feed schema invalid');
+  if(!Array.isArray(rows)||rows.length>pageSize)throw Error('stored feed schema invalid');
   let before=cursor;
   return rows.map(row=>{
     const id=identifier(row?.id);

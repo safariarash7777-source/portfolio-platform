@@ -611,7 +611,7 @@ async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBound
   // read per cycle; an empty page, not a short server-capped page, ends the scan.
   for(let page=0;page<(freshHead?1:2);page++){
     const rows=await readStoredAnnouncements(cursor,{baseUrl:SUPABASE_URL,headers:SB_HDRS(),
-      monthlyOnly,interimSince:interimWindow?.startIso ?? null,monthlyBounds});
+      monthlyOnly,interimSince:interimWindow?.startIso ?? null,monthlyBounds,pageSize:freshHead?20:100});
     if(!rows.length){advance(null);if(!freshHead)st.reachedEnd=true;break;}
     for(const row of rows){
       const a=row.announcement,classified=a && classifyAnnouncement(a);

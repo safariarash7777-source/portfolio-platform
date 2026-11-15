@@ -32,7 +32,7 @@ const mockIncomeHtml = industrial({ period: "1404/12/29", months: 12, prior: fal
 
 async function fixture(options = {}) {
   let persisted = structuredClone(options.initialState ?? { watermark, backfillCursor: 0, fails: {} });
-  const calls = { pages: [], announcementCategories: [], coverageReads: [], feedWrites: [], reportWrites: [], saves: [], excel: [], existingFilters: [], confirmations: [], archiveSaves: [], storedReads: [], storedCategories: [], storedDates: [], storedPublicationFilters: [] };
+  const calls = { pages: [], announcementCategories: [], coverageReads: [], feedWrites: [], reportWrites: [], saves: [], excel: [], existingFilters: [], confirmations: [], archiveSaves: [], storedReads: [], storedCategories: [], storedDates: [], storedPublicationFilters: [], storedPageSizes: [] };
   const reports = new Map((options.initialReports ?? []).map(r => [r.source_url, r]));
   let rejectFeed = !!options.rejectFeed;
   let rejectSave = !!options.rejectSave;
@@ -93,10 +93,13 @@ async function fixture(options = {}) {
       calls.storedDates.push(url.searchParams.get("created_at"));
       const publicationFilter=url.searchParams.get("or");
       calls.storedPublicationFilters.push(publicationFilter);
+      const requestedPageSize=Number(url.searchParams.get('limit') ?? 100);
+      calls.storedPageSizes.push(requestedPageSize);
       if(publicationFilter&&(options.rejectMonthlyPublicationRead||
          options.rejectMonthlyHeadRead&&!url.searchParams.has('id')))return response({},503);
       const before = BigInt(url.searchParams.get("id")?.slice(3) ?? "9223372036854775807");
-      return response(storedRows.filter(r => BigInt(r.id) < before && (!category || category === `eq.${r.category}`)).slice(0, options.storedPageSize ?? 100));
+      const pageSize = Math.min(requestedPageSize, options.storedPageSize ?? 100);
+      return response(storedRows.filter(r => BigInt(r.id) < before && (!category || category === `eq.${r.category}`)).slice(0,pageSize));
     }
     if (url.pathname.endsWith("/codal_reports") && init.method === "POST") {
       const rows = JSON.parse(init.body);
@@ -1295,6 +1298,7 @@ test('recent monthly recovery serves the head and resumes the saved sweep withou
  const f=await fixture(options);
  await f.engine.runEngineCycle(run);
  assert.deepEqual(f.calls.excel,[50,37,36,35,34,30].map(id=>`/service/Excel/GetAll/serial${id}/0`));
+ assert.deepEqual(f.calls.storedPageSizes,[20,100,100]);
  assert.equal(f.engine.engineStatus.recentMonthlyRecovery.inserted,5);
  assert.equal(f.persisted.recentMonthlyRecoveryCursor,'34');
  assert.equal(f.persisted.monthlyRecoveryCursor,'30');
