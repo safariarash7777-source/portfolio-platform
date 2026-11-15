@@ -13,6 +13,7 @@
 import { unstable_cache } from "next/cache";
 import { yoyGrowthPercent, type YoYMap } from "./fundamentalPresets";
 import { dedupeByPeriod, latestParserRows, isConsolidatedTitle, isMillionRialUnit, type CodalRow } from "../fundamental/supabase";
+import { isMonthlyMeasure } from "../fundamental/types";
 
 const SB = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -87,7 +88,7 @@ async function readMonthlyYoY(): Promise<{ values: YoYMap; coverage: Coverage }>
     const pe = jym(d["period_end"]);
     const amt = num(d["period_total_amount"]);
     const measure = d["monthly_measure"] ?? "sales";
-    if (measure !== "sales" && measure !== "bank_reported_income" && measure !== "issued_premium") continue;
+    if (!isMonthlyMeasure(measure)) continue;
     if (!pe || amt == null) continue;
     let m = bySymbol.get(r.symbol);
     if (!m) {

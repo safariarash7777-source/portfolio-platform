@@ -1156,6 +1156,8 @@ export function monthlySectorProfile(a) {
         || workbook.search || decodeURIComponent(workbook.pathname.split("/")[4]) !== serials[0]) return null;
     const type = report.searchParams.get("rt");
     if (type === "3") return "bank_reported_income";
+    if (type === "4") return "leasing_reported_income";
+    if (type === "5") return "service_recognized_income";
     if (type === "6") return "issued_premium";
   } catch { /* Invalid publisher identity. */ }
   return null;
@@ -1213,10 +1215,64 @@ function readInsuranceMonthly(rows, periodEnd) {
   return { amount: cellNum(total[11]), cumulative: cellNum(total[15]) };
 }
 
+function readIncomeTotal(rows, width, firstAmountColumn) {
+  const total = rows.at(-1);
+  if (rows.length < 2 || normLabel(total?.[0]) !== "جمع" ||
+      rows.some(row => row.length !== width || !normLabel(row[0]))) return null;
+  const totals = total.slice(firstAmountColumn, firstAmountColumn + 5).map(cellNum);
+  if (!totals.every(Number.isSafeInteger)) return null;
+  const sums = [0, 0, 0, 0, 0];
+  for (const row of rows.slice(0, -1)) {
+    if (normLabel(row[0]) === "جمع") return null;
+    const amounts = row.slice(firstAmountColumn, firstAmountColumn + 5).map(cellNum);
+    if (!amounts.every(Number.isSafeInteger) ||
+        Math.abs(amounts[0] + amounts[1] - amounts[2]) > 1 ||
+        Math.abs(amounts[2] + amounts[3] - amounts[4]) > 1) return null;
+    for (const [index, amount] of amounts.entries()) sums[index] += amount;
+  }
+  if (sums.some((sum, index) => !Number.isSafeInteger(sum) || Math.abs(sum - totals[index]) > 1) ||
+      Math.abs(totals[0] + totals[1] - totals[2]) > 1 ||
+      Math.abs(totals[2] + totals[3] - totals[4]) > 1) return null;
+  return { amount: totals[3], cumulative: totals[4] };
+}
+
+function readServiceMonthly(rows, periodEnd) {
+  const [groups, header, ...items] = rows;
+  // Both spellings occur in the publisher's service column captions.
+  const incomeLabel = label => normLabel(label).replace("شناساسی", "شناسایی");
+  if (groups.length !== 4 || header?.length !== 8 ||
+      normLabel(groups[0]) !== normLabel("شرح خدمات یا فروش") ||
+      normLabel(groups[2]) !== normLabel("درآمد شناسایی شده") ||
+      normLabel(header[0]) !== normLabel("تاریخ عقد قرارداد") ||
+      normLabel(header[3]) !== "اصلاحات" ||
+      !incomeLabel(header[5]).startsWith(normLabel("درآمد شناسایی شده طی دوره یک ماهه منتهی به")) ||
+      !incomeLabel(header[6]).startsWith(normLabel("درآمد شناسایی شده از اول سال مالی تا پایان دوره مالی منتهی به")) ||
+      jalaliStr(header[5]) !== periodEnd || jalaliStr(header[6]) !== periodEnd) return null;
+  return readIncomeTotal(items, 10, 3);
+}
+
+function readLeasingMonthly(rows, periodEnd) {
+  const [header, ...items] = rows;
+  if (header.length !== 6 || normLabel(header[0]) !== "شرح" || normLabel(header[2]) !== "اصلاحات" ||
+      !normLabel(header[4]).startsWith(normLabel("درآمد محقق شده طی دوره یک ماهه منتهی به")) ||
+      !normLabel(header[5]).startsWith(normLabel("جمع درآمد محقق شده از ابتدای سال مالی تا پایان")) ||
+      jalaliStr(header[4]) !== periodEnd || jalaliStr(header[5]) !== periodEnd) return null;
+  const labels = items.map(row => normLabel(row[0]));
+  if (!labels.includes(normLabel("سود اقساط مربوط به قراردادهای سال جاری")) ||
+      !labels.includes(normLabel("سایر درآمد حاصل از عملیات لیزینگ"))) return null;
+  return readIncomeTotal(items, 6, 1);
+}
+
+const monthlySectorReaders = new Map([
+  ["bank_reported_income", readBankMonthly],
+  ["issued_premium", readInsuranceMonthly],
+  ["service_recognized_income", readServiceMonthly],
+  ["leasing_reported_income", readLeasingMonthly],
+]);
+
 export function normalizeSectorN30(html, meta, profile) {
   if (meta.period_months !== 1 || !meta.period_end || !meta.symbol) return null;
-  const read = profile === "bank_reported_income" ? readBankMonthly
-    : profile === "issued_premium" ? readInsuranceMonthly : null;
+  const read = monthlySectorReaders.get(profile);
   if (!read) return null;
   const candidates = [];
   const millionRialCaptions = ["کلیه مبالغ به میلیون ریال است", "کلیه مبالغ درج شده به میلیون ریال می باشد"].map(normLabel);

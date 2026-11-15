@@ -1067,6 +1067,44 @@ test('insurance monthly admission checks published totals and reads premium apar
   assert.equal(codal.normalizeSectorN30(report(body),meta,"issued_premium"),null);
 });
 
+test('service and leasing monthly income verify the source period, adjustments and published totals', () => {
+ const date="۱۴۰۵/۰۷/۳۰";
+ const caption="کلیه مبالغ درج شده به میلیون ریال می باشد";
+ const report=rows=>`<div>${caption}</div><app-table><table>${rows.map(row=>`<tr>${row.map(value=>`<td>${value}</td>`).join("")}</tr>`).join("")}</table></app-table>`;
+ const service=[["شرح خدمات یا فروش","قرارد دادها","درآمد شناسایی شده","توضیحات"],
+   ["تاریخ عقد قرارداد","مدت قرارداد (ماه)","تا ماه قبل","اصلاحات","اصلاح شده",
+     `درآمد شناساسی شده طی دوره یک ماهه منتهی به ${date}`,
+     `درآمد شناساسی شده از اول سال مالی تا پایان دوره مالی منتهی به ${date}`,"دوره قبل"],
+   ["درآمد خدمات","1404/01/01","2","105","(5)","100","7","107","80",""],
+   ["جمع","","0","105","(5)","100","7","107","80",""]];
+ const leasing=[["شرح","تا ماه قبل","اصلاحات","اصلاح شده",
+   `درآمد محقق شده طی دوره یک ماهه منتهی به ${date}`,
+   `جمع درآمد محقق شده از ابتدای سال مالی تا پایان مورخ ${date}`],
+   ["سود اقساط مربوط به قراردادهای سال جاری","80","0","80","0","80"],
+   ["سایر درآمد حاصل از عملیات لیزینگ","20","0","20","0","20"],
+   ["جمع","100","0","100","0","100"]];
+ const meta={symbol:"نمونه",period_months:1,period_end:"1405-07-30"};
+ for (const [profile, body, current, cumulative] of [
+   ["service_recognized_income",service,7,107],
+   ["leasing_reported_income",leasing,0,100],
+ ]) {
+   const source=report(body);
+   const data=codal.normalizeSectorN30(source,meta,profile);
+   assert.equal(data?.period_total_amount,current);
+   assert.equal(data.fy_cumulative_amount,cumulative);
+   assert.equal(data.monthly_measure,profile);
+   assert.deepEqual(data.products,[]);
+   assert.equal(codal.normalizeSectorN30(source,{...meta,period_end:"1405-06-31"},profile),null);
+   assert.equal(codal.normalizeSectorN30(source.replace("میلیون ریال","هزار ریال"),meta,profile),null);
+   const badTotal=structuredClone(body);
+   badTotal.at(-1)[profile==="service_recognized_income"?6:4]="";
+   assert.equal(codal.normalizeSectorN30(report(badTotal),meta,profile),null);
+   const inconsistent=structuredClone(body);
+   inconsistent.at(-1)[profile==="service_recognized_income"?7:5]="12345";
+   assert.equal(codal.normalizeSectorN30(report(inconsistent),meta,profile),null);
+ }
+});
+
 test('monthly discovery can advance past a rejected workbook once the announcement is durable', async () => {
  const a=announcement(2,{code:'ن-۳۰',title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',link_excel:'https://excel.invalid/2'});
  const f=await fixture({pages:[[a,boundary],[]],excelHtml:'<p>Unsupported worksheet</p>'});

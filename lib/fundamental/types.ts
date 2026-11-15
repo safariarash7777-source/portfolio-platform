@@ -81,7 +81,19 @@ export interface N30ProductRow {
   sales_amount: number | null; // میلیون ریال
 }
 
-export type MonthlyMeasure = "sales" | "bank_reported_income" | "issued_premium";
+export const MONTHLY_MEASURE_LABELS = {
+  sales: "فروش",
+  bank_reported_income: "درآمدهای گزارش‌شدهٔ بانک",
+  issued_premium: "حق بیمهٔ صادره",
+  service_recognized_income: "درآمد شناسایی‌شدهٔ خدمات و فروش",
+  leasing_reported_income: "درآمدهای گزارش‌شدهٔ لیزینگ",
+} as const;
+
+export type MonthlyMeasure = keyof typeof MONTHLY_MEASURE_LABELS;
+
+export function isMonthlyMeasure(value: unknown): value is MonthlyMeasure {
+  return typeof value === "string" && Object.hasOwn(MONTHLY_MEASURE_LABELS, value);
+}
 
 /** دادهٔ نرمال‌شدهٔ گزارش ن-۳۰ (فعالیت ماهانه). */
 export interface CodalN30Data {
