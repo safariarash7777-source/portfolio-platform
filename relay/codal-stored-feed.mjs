@@ -23,11 +23,15 @@ function announcement(row) {
   return {l18:symbol,l30:company,title,code:row.report_code,link,link_excel:excel,
     link_pdf:text(row.link_pdf,4096),date_send:row.sent_date,time_send:row.sent_time,date_publish:row.publish_date};
 }
-export async function readStoredAnnouncements(cursor,{baseUrl,headers,fetch:read=globalThis.fetch,monthlyOnly=false}) {
+export async function readStoredAnnouncements(cursor,{baseUrl,headers,fetch:read=globalThis.fetch,monthlyOnly=false,interimSince=null}) {
   if(!validStoredCursor(cursor))throw Error('stored feed cursor invalid');
   const qs=new URLSearchParams({select:'id,symbol,company_name,title,report_code,link,link_excel,link_pdf,sent_date,sent_time,publish_date',
     order:'id.desc',limit:'100'});
   if(monthlyOnly)qs.set('category','eq.ماهانه');
+  if(interimSince!==null){
+    qs.set('category','eq.صورت مالی');
+    qs.set('created_at',`gte.${interimSince}`);
+  }
   if(cursor!==null)qs.set('id',`lt.${cursor}`);
   const response=await read(`${baseUrl}/rest/v1/codal_feed?${qs}`,{headers,signal:AbortSignal.timeout(15000)});
   if(!response.ok)throw Error(`stored feed HTTP ${response.status}`);

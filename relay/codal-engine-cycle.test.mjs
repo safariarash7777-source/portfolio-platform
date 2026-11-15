@@ -32,7 +32,7 @@ const mockIncomeHtml = industrial({ period: "1404/12/29", months: 12, prior: fal
 
 async function fixture(options = {}) {
   let persisted = structuredClone(options.initialState ?? { watermark, backfillCursor: 0, fails: {} });
-  const calls = { pages: [], announcementCategories: [], coverageReads: [], feedWrites: [], reportWrites: [], saves: [], excel: [], existingFilters: [], confirmations: [], archiveSaves: [], storedReads: [], storedCategories: [] };
+  const calls = { pages: [], announcementCategories: [], coverageReads: [], feedWrites: [], reportWrites: [], saves: [], excel: [], existingFilters: [], confirmations: [], archiveSaves: [], storedReads: [], storedCategories: [], storedDates: [] };
   const reports = new Map((options.initialReports ?? []).map(r => [r.source_url, r]));
   let rejectFeed = !!options.rejectFeed;
   let rejectSave = !!options.rejectSave;
@@ -72,6 +72,7 @@ async function fixture(options = {}) {
       calls.storedReads.push(url.searchParams.get("id"));
       const category = url.searchParams.get("category");
       calls.storedCategories.push(category);
+      calls.storedDates.push(url.searchParams.get("created_at"));
       const before = BigInt(url.searchParams.get("id")?.slice(3) ?? "9223372036854775807");
       return response((options.storedRows ?? []).filter(r => BigInt(r.id) < before && (!category || category === `eq.${r.category}`)).slice(0, options.storedPageSize ?? 100));
     }
@@ -1085,6 +1086,43 @@ test('monthly background and archive allocation do not request the financial cat
  await archive.runArchiveCycle({monthlyOnly:true});
  assert.equal(archive.archiveStatus.reportScope,'monthly_only');
  assert.deepEqual(f.calls.announcementCategories,[null,'3','3']);
+});
+
+test('the fast discovery cycle includes recent interim statements within the shared download allocation', async t => {
+ t.mock.method(Date,'now',()=>Date.parse("2026-11-15T15:30:00Z"));
+ const recent = (id, months) => ({
+   ...financial(id), title:`اطلاعات و صورت‌های مالی دوره ${months} ماهه منتهی به ۱۴۰۵/۰۶/۳۱`,
+   date_title:'1405/06/31', date_send:'1405/08/24',
+ });
+ const options = {pages:[[recent(7,12),recent(6,6),recent(5,6),recent(4,6),boundary],[]],
+   excelHtml:industrial({period:'1405/06/31',months:6,prior:false})};
+ const f = await fixture(options);
+ await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true,recentInterimReports:true});
+ assert.equal(f.engine.engineStatus.reportScope,"monthly_and_recent_interim");
+ assert.deepEqual(f.calls.pages,[1,2]);
+ assert.deepEqual(f.calls.excel,["/6","/5"]);
+ assert.deepEqual(f.calls.reportWrites.map(rows=>rows[0].report_kind),["ن-۱۰","ن-۱۰"]);
+ assert.equal(f.engine.engineStatus.feed.interimDownloads,2);
+ assert.equal(f.calls.feedWrites[0].rows.length,4);
+});
+
+test('interim recovery uses stored fresh announcements, with its own cursor and without annual or old downloads', async t => {
+ t.mock.method(Date,'now',()=>Date.parse("2026-11-15T15:30:00Z"));
+ const row = (id, months, sent_date) => ({
+   ...stored(id), category:'صورت مالی', sent_date,
+   title:`اطلاعات و صورت‌های مالی دوره ${months} ماهه منتهی به ۱۴۰۵/۰۶/۳۱`,
+ });
+ const f = await fixture({pages:[[]],storedPageSize:2,
+   storedRows:[row(9,12,"1405/08/24"),row(8,6,"1405/06/31"),row(7,6,"1405/08/24"),row(6,6,"1405/08/25")],
+   excelHtml:industrial({period:'1405/06/31',months:6,prior:false}),
+   initialState:{watermark,fails:{},storedFeedCursor:'2',monthlyRecoveryCursor:'5'}});
+ await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true,recentInterimReports:true});
+ assert.deepEqual(f.calls.excel,["/service/Excel/GetAll/serial7/0"]);
+ assert.deepEqual(f.calls.storedCategories,["eq.ماهانه","eq.صورت مالی","eq.صورت مالی"]);
+ assert.deepEqual(f.calls.storedDates,[null,"gte.2026-10-11T15:30:00.000Z","gte.2026-10-11T15:30:00.000Z"]);
+ assert.equal(f.persisted.storedFeedCursor,'2');
+ assert.equal(f.persisted.interimRecoveryCursor,'6');
+ assert.equal(f.engine.engineStatus.interimRecovery.inserted,1);
 });
 
 test('publisher challenge keeps discovery available while file reads and archive remain paused', async () => {

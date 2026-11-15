@@ -23,6 +23,7 @@
 import {
   classifyAnnouncement, fetchAnnouncementsPage, downloadAndParse,
   insertParsedReport, existingUrlsFor, faToEn, codalEnv, monthlySectorProfile,
+  jalaliYmdToGregorian, metaFromAnnouncement,
 } from "./codal.mjs";
 import { backgroundWorkWindow } from "./background-work-window.mjs";
 import { companyUniverse } from "./codal-coverage.mjs";
@@ -42,6 +43,9 @@ const BACKFILL_PER_CYCLE = Number(process.env.CODAL_BACKFILL_SYMBOLS || 2); // �
 const BACKFILL_MAX_DL = Number(process.env.CODAL_BACKFILL_DL || 6);    // سقف دانلود هر نماد بک‌فیل
 const MAX_FAILS = 3;                                                    // بعد از این تعداد شکست، اطلاعیه بلاک می‌شود
 const LEDGER_CAP = 600;                                                 // سقف دفتر خطا (قدیمی‌ها حذف می‌شوند)
+const INTERIM_RECENT_MS = 35 * 24 * 60 * 60 * 1000;
+const INTERIM_MAX_DL = Math.max(0, Math.min(2, FEED_MAX_DL - 1));
+const recoveryCounts = () => ({ scanned: 0, downloaded: 0, inserted: 0, parseFailed: 0, blocked: 0, skippedKnown: 0, metadataSkipped: 0, reachedEnd: false });
 
 // Fixed-cardinality, content-free counters. They describe observed failures,
 // not a classification of historical ledger entries or an extraction fix.
@@ -85,11 +89,12 @@ export const engineStatus = {
   ok: false,
   lastRun: 0,
   lastError: null,
-  feed: { pages: 0, seen: 0, matched: 0, downloaded: 0, inserted: 0, parseFailed: 0, watermark: null, complete: false, incompleteReason: null },
+  feed: { pages: 0, seen: 0, matched: 0, downloaded: 0, interimDownloads: 0, inserted: 0, parseFailed: 0, watermark: null, complete: false, incompleteReason: null },
   // codal_feed has no publish_time/raw column; only date_publish can be stored here.
   feedTable: { attempted: 0, inserted: 0, duplicates: 0, lastError: null, publishTimeStored: false },
   backfill: { cursor: 0, queueSize: 0, symbols: [], inserted: 0, downloaded: 0, parseFailed: 0, skippedCovered: 0, coverageBasis: "snapshot-universe-not-freshness" },
-  storedRecovery: { scanned: 0, downloaded: 0, inserted: 0, parseFailed: 0, blocked: 0, skippedKnown: 0, metadataSkipped: 0, reachedEnd: false },
+  storedRecovery: recoveryCounts(),
+  interimRecovery: recoveryCounts(),
   ledgerSize: 0,
   failureDiagnostics: readFailureDiagnostics(),
   admissionDiagnostics: readAdmissionDiagnostics(),
@@ -121,6 +126,7 @@ async function loadState() {
     }
   }
   if (!validStoredCursor(payload.monthlyRecoveryCursor ?? null)) throw new Error('monthly recovery cursor invalid');
+  if (!validStoredCursor(payload.interimRecoveryCursor ?? null)) throw new Error('interim recovery cursor invalid');
   if ((payload.backfillCursor != null && (!Number.isInteger(payload.backfillCursor) || payload.backfillCursor < 0)) ||
       (payload.fails != null && (typeof payload.fails !== "object" || Array.isArray(payload.fails) ||
        Object.values(payload.fails).some(n => !Number.isInteger(n) || n < 0)))) {
@@ -196,6 +202,16 @@ export function sentKey(a) {
   return Number(
     `${dm[1]}${pad(dm[2])}${pad(dm[3])}${tm ? pad(tm[1]) + pad(tm[2]) + pad(tm[3] || 0) : "000000"}`
   );
+}
+
+function recentInterim(a, start, end) {
+  if (!a || classifyAnnouncement(a) !== "ن-۱۰") return false;
+  const { period_end, period_months } = metaFromAnnouncement(a, "ن-۱۰");
+  if (!period_end || ![3, 6, 9].includes(period_months)) return false;
+  const key = String(sentKey(a));
+  if (key.length !== 14) return false;
+  const sentDate = jalaliYmdToGregorian(key.slice(0, 4), key.slice(4, 6), key.slice(6, 8));
+  return sentDate >= start && sentDate <= end;
 }
 
 const interimEligible = (url, kind, announcement) => kind === 'ن-۱۰' && supportsDecisionUrl(url) && /تلفیقی/.test(String(announcement?.title || ''));
@@ -295,9 +311,9 @@ async function fetchPageWithRetry(params) {
   }
 }
 
-async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false } = {}) {
+async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false, interimWindow = null } = {}) {
   const st = engineStatus.feed;
-  st.pages = 0; st.seen = 0; st.matched = 0; st.downloaded = 0; st.inserted = 0; st.parseFailed = 0;
+  st.pages = 0; st.seen = 0; st.matched = 0; st.downloaded = 0; st.interimDownloads = 0; st.inserted = 0; st.parseFailed = 0;
   st.complete = false; st.incompleteReason = "page_limit";
   st.watermark = state.watermark?.key ?? null;
 
@@ -349,7 +365,8 @@ async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false } = {}
       else if (k === newestSeen.key) newestSeen.links.push(a.link);
       if (a.link) feedItems.push(a); // M4
       const kind = classifyAnnouncement(a);
-      if (monthlyOnly && kind !== "ن-۳۰") continue;
+      if (monthlyOnly && kind !== "ن-۳۰" &&
+          !(interimWindow && recentInterim(a, interimWindow.startDay, interimWindow.endDay))) continue;
       if (!kind || !a.link || !a.link_excel) continue;
       st.matched++;
       candidates.push({ a, kind, k });
@@ -386,6 +403,11 @@ async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false } = {}
     if (known.has(a.link)) { clearFailure(a, kind); continue; }
     if (isBlocked(a.link, kind, a)) { st.complete = false; st.incompleteReason = "blocked_report"; continue; }
     if (dl >= FEED_MAX_DL) { st.complete = false; st.incompleteReason = "download_limit"; break; }
+    if (interimWindow && (kind === "ن-۱۰" ? st.interimDownloads >= INTERIM_MAX_DL : dl - st.interimDownloads >= FEED_MAX_DL - INTERIM_MAX_DL)) {
+      st.complete = false; st.incompleteReason = "download_limit";
+      continue;
+    }
+    if (kind === "ن-۱۰") st.interimDownloads++;
     dl++;
     st.downloaded = dl;
     let stage = "download";
@@ -519,21 +541,22 @@ async function backfillSome({ monthlyOnly = false } = {}) {
 }
 
 /* ── اجرای یک چرخهٔ کامل موتور ─────────────────────────────────────────────── */
-async function recoverStoredReports({ monthlyOnly = false } = {}) {
-  const st=engineStatus.storedRecovery;
-  Object.assign(st,{scanned:0,downloaded:0,inserted:0,parseFailed:0,blocked:0,skippedKnown:0,metadataSkipped:0,reachedEnd:false});
+async function recoverStoredReports({ monthlyOnly, interimWindow = null, limit }) {
+  const st=interimWindow ? engineStatus.interimRecovery : engineStatus.storedRecovery;
   const knownBySymbol=new Map();
-  const cursorKey = monthlyOnly ? "monthlyRecoveryCursor" : "storedFeedCursor";
-  const limit = monthlyOnly ? Math.max(0, Math.min(BACKFILL_MAX_DL, FEED_MAX_DL - engineStatus.feed.downloaded)) : BACKFILL_MAX_DL;
-  if (limit === 0) return;
+  const cursorKey = interimWindow ? "interimRecoveryCursor" : monthlyOnly ? "monthlyRecoveryCursor" : "storedFeedCursor";
+  if (limit <= 0) return;
   // Share the existing backfill download allocation. Only two stored pages are
   // read per cycle; an empty page, not a short server-capped page, ends the scan.
   for(let page=0;page<2;page++){
-    const rows=await readStoredAnnouncements(state[cursorKey] ?? null,{baseUrl:SUPABASE_URL,headers:SB_HDRS(),monthlyOnly});
+    const rows=await readStoredAnnouncements(state[cursorKey] ?? null,{baseUrl:SUPABASE_URL,headers:SB_HDRS(),
+      monthlyOnly,interimSince:interimWindow?.startIso ?? null});
     if(!rows.length){state[cursorKey]=null;st.reachedEnd=true;break;}
     for(const row of rows){
       const a=row.announcement,classified=a && classifyAnnouncement(a);
-      const kind=monthlyOnly && classified !== "ن-۳۰" ? null : classified;
+      const kind=interimWindow
+        ? (recentInterim(a, interimWindow.startDay, interimWindow.endDay) ? classified : null)
+        : monthlyOnly && classified !== "ن-۳۰" ? null : classified;
       if(a && kind && st.downloaded>=limit)return;
       st.scanned++;
       if(!a || !kind){st.metadataSkipped++;state[cursorKey]=row.id;continue;}
@@ -560,8 +583,9 @@ async function recoverStoredReports({ monthlyOnly = false } = {}) {
   }
 }
 
-export async function runEngineCycle({ allowBackground = true, monthlyOnly = false } = {}) {
-  engineStatus.reportScope = monthlyOnly ? "monthly_only" : "all_reports";
+export async function runEngineCycle({ allowBackground = true, monthlyOnly = false, recentInterimReports = false } = {}) {
+  const includeInterim = monthlyOnly && recentInterimReports && INTERIM_MAX_DL > 0;
+  engineStatus.reportScope = includeInterim ? "monthly_and_recent_interim" : monthlyOnly ? "monthly_only" : "all_reports";
   engineStatus.ok = false;
   engineStatus.lastError = null;
   engineStatus.lastRun = Date.now();
@@ -578,13 +602,21 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
   const metadataBefore = state.metadataWatermark ?? null;
   const storedCursorBefore = state.storedFeedCursor;
   const monthlyCursorBefore = state.monthlyRecoveryCursor ?? null;
+  const interimCursorBefore = state.interimRecoveryCursor ?? null;
   Object.assign(engineStatus.backfill, { inserted: 0, downloaded: 0, parseFailed: 0, symbols: [], skippedCovered: 0 });
-  Object.assign(engineStatus.storedRecovery, { scanned: 0, downloaded: 0, inserted: 0, parseFailed: 0, blocked: 0, skippedKnown: 0, metadataSkipped: 0, reachedEnd: false });
+  Object.assign(engineStatus.storedRecovery, recoveryCounts());
+  Object.assign(engineStatus.interimRecovery, recoveryCounts());
+  const tehranOffset = (3 * 60 + 30) * 60 * 1000;
+  const interimWindow = includeInterim ? {
+    startIso: new Date(engineStatus.lastRun - INTERIM_RECENT_MS).toISOString(),
+    startDay: new Date(engineStatus.lastRun + tehranOffset - INTERIM_RECENT_MS).toISOString().slice(0, 10),
+    endDay: new Date(engineStatus.lastRun + tehranOffset).toISOString().slice(0, 10),
+  } : null;
   let feedDeferred = false;
   const sourceHeld = codalAccess.snapshot() > Date.now();
   try {
     if (sourceHeld && process.env.CODAL_ANNOUNCEMENT_SOURCE === 'official') codalAccess.check();
-    await pollGlobalFeed({ metadataOnly: sourceHeld, monthlyOnly });
+    await pollGlobalFeed({ metadataOnly: sourceHeld, monthlyOnly, interimWindow });
     if (sourceHeld) codalAccess.check();
   } catch (e) {
     engineStatus.feed.complete = false;
@@ -596,7 +628,11 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
   }
   try {
     if ((allowBackground || monthlyOnly) && codalAccess.snapshot() <= Date.now()) {
-      await recoverStoredReports({monthlyOnly});
+      const remaining = FEED_MAX_DL - engineStatus.feed.downloaded;
+      const interimRemaining = interimWindow ? Math.min(remaining, INTERIM_MAX_DL - engineStatus.feed.interimDownloads) : 0;
+      const limit = monthlyOnly ? Math.min(BACKFILL_MAX_DL, remaining - interimRemaining) : BACKFILL_MAX_DL;
+      await recoverStoredReports({monthlyOnly,limit});
+      if (interimRemaining > 0) await recoverStoredReports({monthlyOnly:false,interimWindow,limit:interimRemaining});
       if (allowBackground && !feedDeferred) await backfillSome({monthlyOnly});
     }
   } catch (e) {
@@ -607,7 +643,7 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
   if (!engineStatus.lastError && !engineStatus.feed.complete) {
     engineStatus.lastError = `feed incomplete: ${engineStatus.feed.incompleteReason}`;
   }
-  if (!engineStatus.lastError && (engineStatus.feed.parseFailed || engineStatus.backfill.parseFailed || engineStatus.storedRecovery.parseFailed)) {
+  if (!engineStatus.lastError && (engineStatus.feed.parseFailed || engineStatus.backfill.parseFailed || engineStatus.storedRecovery.parseFailed || engineStatus.interimRecovery.parseFailed)) {
     engineStatus.lastError = "report parsing/insertion failed";
   }
   try { await saveState(); }
@@ -616,6 +652,7 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
     state.metadataWatermark = metadataBefore;
     state.storedFeedCursor = storedCursorBefore;
     state.monthlyRecoveryCursor = monthlyCursorBefore;
+    state.interimRecoveryCursor = interimCursorBefore;
     engineStatus.feed.watermark = state.watermark?.key ?? null;
     engineStatus.lastError = [engineStatus.lastError, `state save: ${e?.message ?? e}`].filter(Boolean).join("; ");
   }

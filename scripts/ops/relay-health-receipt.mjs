@@ -70,7 +70,9 @@ function diagnostics(value, shape) {
 }
 function codalDetails(engine, archive) {
   return {
-    reportScope: choice(engine?.reportScope, ['monthly_only', 'all_reports']),
+    reportScope: choice(engine?.reportScope, ['monthly_only', 'monthly_and_recent_interim', 'all_reports']),
+    interimRecovery: { ...integerCounts(engine?.interimRecovery, ['scanned', 'downloaded', 'inserted', 'parseFailed', 'blocked']),
+      feedDownloads: integer(engine?.feed?.interimDownloads), reachedEnd: boolean(engine?.interimRecovery?.reachedEnd) },
     // Attempt clocks are not successful ingestion receipts.
     lastAttemptStartedAt: clock(engine?.lastRun),
     schedule: { running: boolean(engine?.schedule?.running), started: boolean(engine?.schedule?.started),
