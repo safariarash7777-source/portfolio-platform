@@ -32,7 +32,7 @@ const mockIncomeHtml = industrial({ period: "1404/12/29", months: 12, prior: fal
 
 async function fixture(options = {}) {
   let persisted = structuredClone(options.initialState ?? { watermark, backfillCursor: 0, fails: {} });
-  const calls = { pages: [], announcementCategories: [], coverageReads: [], feedWrites: [], reportWrites: [], saves: [], excel: [], existingFilters: [], confirmations: [], archiveSaves: [], storedReads: [], storedCategories: [], storedDates: [], storedPublicationFilters: [] };
+  const calls = { pages: [], announcementCategories: [], coverageReads: [], feedWrites: [], reportWrites: [], saves: [], excel: [], existingFilters: [], confirmations: [], archiveSaves: [], storedReads: [], storedCategories: [], storedDates: [], storedPublicationFilters: [], storedPageSizes: [] };
   const reports = new Map((options.initialReports ?? []).map(r => [r.source_url, r]));
   let rejectFeed = !!options.rejectFeed;
   let rejectSave = !!options.rejectSave;
@@ -93,9 +93,13 @@ async function fixture(options = {}) {
       calls.storedDates.push(url.searchParams.get("created_at"));
       const publicationFilter=url.searchParams.get("or");
       calls.storedPublicationFilters.push(publicationFilter);
-      if(publicationFilter&&options.rejectMonthlyPublicationRead)return response({},503);
+      const requestedPageSize=Number(url.searchParams.get('limit') ?? 100);
+      calls.storedPageSizes.push(requestedPageSize);
+      if(publicationFilter&&(options.rejectMonthlyPublicationRead||
+         options.rejectMonthlyHeadRead&&!url.searchParams.has('id')))return response({},503);
       const before = BigInt(url.searchParams.get("id")?.slice(3) ?? "9223372036854775807");
-      return response(storedRows.filter(r => BigInt(r.id) < before && (!category || category === `eq.${r.category}`)).slice(0, options.storedPageSize ?? 100));
+      const pageSize = Math.min(requestedPageSize, options.storedPageSize ?? 100);
+      return response(storedRows.filter(r => BigInt(r.id) < before && (!category || category === `eq.${r.category}`)).slice(0,pageSize));
     }
     if (url.pathname.endsWith("/codal_reports") && init.method === "POST") {
       const rows = JSON.parse(init.body);
@@ -1281,6 +1285,30 @@ test('recent monthly recovery uses the verified publication date and shares the 
  assert.equal(fallback.calls.excel.length,6);
 });
 
+test('recent monthly recovery serves the head and resumes the saved sweep without a new notice', async t => {
+ t.mock.method(Date,'now',()=>Date.parse('2026-11-15T16:30:00Z'));
+ const month=(id,publish_date)=>({...stored(id),symbol:'فولاد',title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',
+   report_code:'ن-۳۰',category:'ماهانه',publish_date});
+ const recent=[50,49,37,36,35,34,33,32].map(id=>month(id,'۱۴۰۵/۰۸/۲۴'));
+ const older=[30,29].map(id=>month(id,'۱۴۰۵/۰۶/۳۱'));
+ const excelHtml=readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
+ const options={pages:[[]],storedRows:[...recent,...older],excelHtml,
+  initialState:{watermark,fails:{},recentMonthlyRecoveryCursor:'38',monthlyRecoveryCursor:'31'}};
+ const run={monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true};
+ const f=await fixture(options);
+ await f.engine.runEngineCycle(run);
+ assert.deepEqual(f.calls.excel,[50,37,36,35,34,30].map(id=>`/service/Excel/GetAll/serial${id}/0`));
+ assert.deepEqual(f.calls.storedPageSizes,[20,100,100]);
+ assert.equal(f.engine.engineStatus.recentMonthlyRecovery.inserted,5);
+ assert.equal(f.persisted.recentMonthlyRecoveryCursor,'34');
+ assert.equal(f.persisted.monthlyRecoveryCursor,'30');
+ const noHead=await fixture({...options,rejectMonthlyHeadRead:true});
+ await noHead.engine.runEngineCycle(run);
+ assert.equal(noHead.engine.engineStatus.recentMonthlyRecovery.readFailed,true);
+ assert.deepEqual(noHead.calls.excel,[37,36,35,34,33,30].map(id=>`/service/Excel/GetAll/serial${id}/0`));
+ assert.equal(noHead.persisted.recentMonthlyRecoveryCursor,'33');
+});
+
 test('official monthly reconciliation fills a missing listed report through the existing recovery, preserving page and download bounds',async t=>{
  t.mock.method(Date,'now',()=>Date.parse("2026-11-15T16:30:00Z"));
  const title="گزارش فعالیت ماهانه منتهی به 1405/06/31";
@@ -1295,15 +1323,20 @@ test('official monthly reconciliation fills a missing listed report through the 
    monthlyOfficialPages:{
      1:[expected[0],official(4,{Symbol:"خارج بازار"}),official(5,{LetterCode:"ن-۱۰"}),official(6,{ExcelUrl:null})],
      5:[expected[1]],
+    ...Object.fromEntries([6,7,8,9,10,11].map(page=>[page,[official(20+page,{Symbol:'خارج بازار'})]])),
    }});
  await f.engine.runEngineCycle({monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true,officialMonthlyReconciliation:true});
- assert.deepEqual(f.officialPages,[1,5,6]);
+ assert.deepEqual(f.officialPages,[1,5,6,7,8,9,10,11]);
  assert.deepEqual(f.calls.pages,[1]);
  assert.deepEqual(f.calls.feedWrites.flatMap(write=>write.rows.map(row=>row.link)),expected.map(x=>"https://codal.ir"+x.Url));
  assert.deepEqual(f.calls.excel,["/service/Excel/GetAll/official2/0","/service/Excel/GetAll/official3/0"]);
  assert.equal(f.calls.reportWrites.length,2);
- assert.deepEqual(f.engine.engineStatus.officialMonthlyDiscovery,{pages:2,matched:2,inserted:2,nextPage:6,failed:true});
- assert.equal(f.persisted.officialMonthlyNextPage,6);
+ assert.deepEqual(f.engine.engineStatus.officialMonthlyDiscovery,{pages:8,matched:2,inserted:2,nextPage:12,failed:false});
+ assert.equal(f.persisted.officialMonthlyNextPage,12);
+ await f.engine.runEngineCycle({monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true,officialMonthlyReconciliation:true});
+ assert.equal(f.officialPages.at(-1),12);
+ assert.equal(f.persisted.officialMonthlyNextPage,12);
+ assert.equal(f.engine.engineStatus.officialMonthlyDiscovery.failed,true);
 });
 
 test('the fast discovery cycle includes recent interim statements within the shared download allocation', async t => {
