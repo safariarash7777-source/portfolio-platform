@@ -22,7 +22,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import {
   classifyAnnouncement, fetchAnnouncementsPage, downloadAndParse,
-  insertParsedReport, existingUrlsFor, faToEn, codalEnv, monthlySectorProfile,
+  insertParsedReport, existingUrlsFor, faToEn, codalEnv, monthlySectorProfile, isIndustrialMonthlyWorkbook,
   jalaliYmdToGregorian, metaFromAnnouncement,
 } from "./codal.mjs";
 import { backgroundWorkWindow } from "./background-work-window.mjs";
@@ -220,9 +220,13 @@ const interimEligible = (url, kind, announcement) => kind === 'ن-۱۰' && suppo
 const auditedEligible = (url, kind, announcement) => interimEligible(url,kind,announcement) && /حسابرسی\s+شده/.test(String(announcement?.title || ''));
 const failureKey = (url, kind, announcement) => kind === "ن-۳۰" && monthlySectorProfile(announcement)
   ? `monthly-sector-v1:${url}` : url;
+const industrialRetryKey=(url,kind,announcement)=>kind==="ن-۳۰"&&isIndustrialMonthlyWorkbook(announcement)
+  ? `monthly-industrial-v1:${url}` : null;
 function recordFail(url, kind, announcement) {
   const key = failureKey(url, kind, announcement);
   state.fails[key] = (state.fails[key] || 0) + 1;
+  const industrialRetry=industrialRetryKey(url,kind,announcement);
+  if(industrialRetry&&state.fails[key]>=MAX_FAILS)state.fails[industrialRetry]=1;
   if (kind === 'ن-۱۰' && supportsDecisionUrl(url)) state.decisionStatementV1Attempts[url] = 1;
   if (interimEligible(url,kind,announcement)) state.interimStatementV1Attempts[url] = 1;
   if (auditedEligible(url,kind,announcement)) state.auditedStatementV1Attempts[url] = 1;
@@ -231,13 +235,19 @@ function recordFail(url, kind, announcement) {
 function clearFailure(a, kind) {
   delete state.fails[a.link];
   delete state.fails[failureKey(a.link, kind, a)];
+  const industrialRetry=industrialRetryKey(a.link,kind,a);
+  if(industrialRetry)delete state.fails[industrialRetry];
 }
 // One bounded attempt for previously blocked official N10 reports now supported
 // by the new adapter. Preserve old failure counts and all existing cycle limits.
-const isBlocked = (url, kind, announcement) => (state.fails[failureKey(url, kind, announcement)] || 0) >= MAX_FAILS &&
-  !(kind === 'ن-۱۰' && supportsDecisionUrl(url) && !state.decisionStatementV1Attempts[url]) &&
-  !(interimEligible(url,kind,announcement) && !state.interimStatementV1Attempts[url]) &&
-  !(auditedEligible(url,kind,announcement) && !state.auditedStatementV1Attempts[url]);
+function isBlocked(url,kind,announcement) {
+  if((state.fails[failureKey(url,kind,announcement)]||0)<MAX_FAILS)return false;
+  const industrialRetry=industrialRetryKey(url,kind,announcement);
+  if(industrialRetry&&!state.fails[industrialRetry])return false;
+  return !(kind==='ن-۱۰'&&supportsDecisionUrl(url)&&!state.decisionStatementV1Attempts[url]) &&
+    !(interimEligible(url,kind,announcement)&&!state.interimStatementV1Attempts[url]) &&
+    !(auditedEligible(url,kind,announcement)&&!state.auditedStatementV1Attempts[url]);
+}
 
 /* ── مسیر ۱: فید سراسری ────────────────────────────────────────────────────── */
 /** دستهٔ اطلاعیه برای فیلتر صفحهٔ /codal (M4) — فقط از کد/عنوان رسمی خود اطلاعیه. */

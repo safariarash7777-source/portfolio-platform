@@ -105,6 +105,7 @@ export interface CodalN30Data {
   period_end: string; // ماه جلالی
   fiscal_year: number;
   monthly_measure?: MonthlyMeasure;
+  sales_zero_reported?: true;
   products: N30ProductRow[];
   period_total_amount: number;
   fy_cumulative_amount: number | null;
