@@ -1155,6 +1155,7 @@ export function monthlySectorProfile(a) {
         || serials.length !== 1 || !serials[0] || !sameQuantityResponseSource(a.link_excel, a.link_excel)
         || workbook.search || decodeURIComponent(workbook.pathname.split("/")[4]) !== serials[0]) return null;
     const type = report.searchParams.get("rt");
+    if (type === "1") return "real_estate_recognized_income";
     if (type === "3") return "bank_reported_income";
     if (type === "4") return "leasing_reported_income";
     if (type === "5") return "service_recognized_income";
@@ -1263,11 +1264,51 @@ function readLeasingMonthly(rows, periodEnd) {
   return readIncomeTotal(items, 6, 1);
 }
 
+function readRealEstateMonthly(rows, periodEnd) {
+  const [header, ...items] = rows;
+  const width = header.length;
+  const stride = width === 12 ? 2 : 1;
+  const columns = header.filter((_, index) => index % stride === 0);
+  const month = columns.length - 2;
+  if (![3, 6, 12].includes(width) || normLabel(columns[0]) !== "شرح" ||
+      !normLabel(columns[month]).startsWith(normLabel("درآمد محقق شده طی دوره یک ماهه منتهی به")) ||
+      !normLabel(columns[month + 1]).startsWith(normLabel("جمع درآمد محقق شده از ابتدای سال مالی تا")) ||
+      jalaliStr(columns[month]) !== periodEnd || jalaliStr(columns[month + 1]) !== periodEnd ||
+      items.length < 2 || items.some(row => row.length !== width || !normLabel(row[0]))) return null;
+  const total = items.at(-1);
+  const labels = items.slice(0, -1).map(row => normLabel(row[0]));
+  if (normLabel(total[0]) !== "جمع" || labels.includes("جمع") ||
+      !labels.includes(normLabel("فروش واحد های ساختمانی آماده فروش")) ||
+      !labels.includes(normLabel("فروش واحد های ساختمانی در جریان ساخت"))) return null;
+  if (width === 6) return readIncomeTotal(items, 6, 1);
+  if (width === 12) {
+    // The official export can render each column twice. Use only the totals
+    // agreed by both columns and independently reconciled by a complete view.
+    if (columns.some((label, index) => normLabel(label) !== normLabel(header[2 * index + 1])) ||
+        items.some(row => normLabel(row[0]) !== normLabel(row[1])) ||
+        cellNum(total[8]) !== cellNum(total[9]) || cellNum(total[10]) !== cellNum(total[11])) return null;
+    for (const lane of [0, 1]) {
+      const view = items.map(row => row.filter((_, index) => index % 2 === lane));
+      const verified = readIncomeTotal(view, 6, 1);
+      if (verified) return verified;
+    }
+    return null;
+  }
+  for (const column of [1, 2]) {
+    const figures = items.slice(0, -1).map(row => cellNum(row[column]));
+    const declared = cellNum(total[column]);
+    if (!figures.every(Number.isSafeInteger) || !Number.isSafeInteger(declared) ||
+        Math.abs(figures.reduce((sum, amount) => sum + amount, 0) - declared) > 1) return null;
+  }
+  return { amount: cellNum(total[1]), cumulative: cellNum(total[2]) };
+}
+
 const monthlySectorReaders = new Map([
   ["bank_reported_income", readBankMonthly],
   ["issued_premium", readInsuranceMonthly],
   ["service_recognized_income", readServiceMonthly],
   ["leasing_reported_income", readLeasingMonthly],
+  ["real_estate_recognized_income", readRealEstateMonthly],
 ]);
 
 export function normalizeSectorN30(html, meta, profile) {
@@ -1276,7 +1317,7 @@ export function normalizeSectorN30(html, meta, profile) {
   if (!read) return null;
   const candidates = [];
   const millionRialCaptions = ["کلیه مبالغ به میلیون ریال است", "کلیه مبالغ درج شده به میلیون ریال می باشد"].map(normLabel);
-  const withLocalUnit = /<div\b[^>]*>\s*(کلیه مبالغ[^<]{1,90})<\/div>\s*<app-table\b[^>]*>([\s\S]*?)<\/app-table>/gi;
+  const withLocalUnit = /<div\b[^>]*>\s*(کل[یي]ه مبالغ[^<]{1,90})<\/div>\s*<app-table\b[^>]*>([\s\S]*?)<\/app-table>/gi;
   for (const match of html.matchAll(withLocalUnit)) {
     const unit = normLabel(match[1]).replace(/\.$/, "");
     if (!millionRialCaptions.includes(unit)) continue;
