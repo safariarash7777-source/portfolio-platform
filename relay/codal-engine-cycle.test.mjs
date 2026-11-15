@@ -89,6 +89,8 @@ async function fixture(options = {}) {
     if (url.pathname.endsWith("/codal_feed") && !init.method) {
       calls.storedReads.push(url.searchParams.get("id"));
       const category = url.searchParams.get("category");
+      const linkFilter=url.searchParams.get('link');
+      const requestedLinks=linkFilter ? new Set(JSON.parse('['+linkFilter.slice(4,-1)+']')) : null;
       calls.storedCategories.push(category);
       calls.storedDates.push(url.searchParams.get("created_at"));
       const publicationFilter=url.searchParams.get("or");
@@ -99,7 +101,8 @@ async function fixture(options = {}) {
          options.rejectMonthlyHeadRead&&!url.searchParams.has('id')))return response({},503);
       const before = BigInt(url.searchParams.get("id")?.slice(3) ?? "9223372036854775807");
       const pageSize = Math.min(requestedPageSize, options.storedPageSize ?? 100);
-      return response(storedRows.filter(r => BigInt(r.id) < before && (!category || category === `eq.${r.category}`)).slice(0,pageSize));
+      return response(storedRows.filter(r => BigInt(r.id) < before && (!category || category === `eq.${r.category}`)
+        && (!requestedLinks||requestedLinks.has(r.link))).slice(0,pageSize));
     }
     if (url.pathname.endsWith("/codal_reports") && init.method === "POST") {
       const rows = JSON.parse(init.body);
@@ -1307,6 +1310,33 @@ test('recent monthly recovery serves the head and resumes the saved sweep withou
  assert.equal(noHead.engine.engineStatus.recentMonthlyRecovery.readFailed,true);
  assert.deepEqual(noHead.calls.excel,[37,36,35,34,33,30].map(id=>`/service/Excel/GetAll/serial${id}/0`));
  assert.equal(noHead.persisted.recentMonthlyRecoveryCursor,'33');
+});
+
+test('recovery replays one previously rejected monthly file per corrected reader without rewinding the sweep',async t=>{
+ t.mock.method(Date,'now',()=>Date.parse('2026-11-15T16:30:00Z'));
+ const month=(id,fields={})=>({...stored(id),symbol:'فولاد',title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',
+  report_code:'ن-۳۰',category:'ماهانه',publish_date:'۱۴۰۵/۰۸/۲۴',...fields});
+ const report=(id)=>month(id,{link:`https://codal.ir/Reports/Decision.aspx?LetterSerial=serial${id}&let=58&rt=0`});
+ const repaired=report(70),rejected=report(69);
+ const marker=`monthly-industrial-v1:${rejected.link}`;
+ const excelPath=id=>`/service/Excel/GetAll/serial${id}/0`;
+ const storedRows=[month(80),month(79),month(78),repaired,rejected,
+  ...Array.from({length:12},(_,i)=>month(37-i)),...Array.from({length:5},(_,i)=>month(20-i,{publish_date:'۱۴۰۵/۰۶/۳۱'}))];
+ const excelHtml=readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
+ const f=await fixture({pages:[[]],storedRows,excelHtml,exactWorkbookResponse:true,excelBodies:{[excelPath(69)]:'<h1>Unsupported</h1>'},
+  initialState:{watermark,recentMonthlyRecoveryCursor:'38',monthlyRecoveryCursor:'21',fails:{[repaired.link]:1,[rejected.link]:1}}});
+ const run={monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true};
+ await f.engine.runEngineCycle(run);
+ assert.deepEqual(f.calls.excel,[80,70,37,36,35,20].map(excelPath));
+ assert.equal(f.persisted.recentMonthlyRecoveryCursor,'35');
+ assert.equal(f.persisted.fails[repaired.link],undefined);
+ await f.engine.runEngineCycle(run);
+ assert.deepEqual(f.calls.excel.slice(6),[79,69,34,33,32,19].map(excelPath));
+ assert.equal(f.persisted.fails[rejected.link],2);
+ assert.equal(f.persisted.fails[marker],1);
+ await f.engine.runEngineCycle(run);
+ assert.equal(f.calls.excel.filter(path=>path===excelPath(69)).length,1);
+ assert.deepEqual(f.calls.excel.slice(12),[78,31,30,29,28,18].map(excelPath));
 });
 
 test('official monthly reconciliation fills a missing listed report through the existing recovery, preserving page and download bounds',async t=>{

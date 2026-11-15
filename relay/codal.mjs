@@ -1170,7 +1170,7 @@ function sameQuantityResponseSource(sourceRef, responseUrl) {
 }
 
 /** Identify the verified monthly workbook families by the linked Codal report. */
-function monthlyWorkbookType(a) {
+export function monthlyWorkbookType(a) {
   try {
     const report = new URL(a.link);
     const serials = report.searchParams.getAll("LetterSerial");
