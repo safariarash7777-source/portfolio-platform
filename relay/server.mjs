@@ -1570,7 +1570,8 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   // مسیر legacy نمادبه‌نماد در پاک‌سازی C3 حذف شد (موتور v3 از ۱۶ تیر سالم، ۱۶۵ گزارش).
   if (process.env.CODAL_ENABLED === "1") {
     const scheduler = createCompanyWorkScheduler({
-      job: options => runEngineCycle({ ...options, monthlyOnly: true, recentInterimReports: true, prioritizeRecentMonthly: true }),
+      job: options => runEngineCycle({ ...options, monthlyOnly: true, recentInterimReports: true,
+        prioritizeRecentMonthly: true, officialMonthlyReconciliation: true }),
       regularIntervalMs: CODAL_INTERVAL_MS,
       discoveryIntervalMs: 15 * 60 * 1000,
       overnightEnabled: process.env.RELAY_BACKGROUND_WINDOW_ENABLED !== "0" });

@@ -905,6 +905,10 @@ async function readOfficialAnnouncements(params) {
   return (await officialAnnouncements)(params);
 }
 
+export function fetchOfficialMonthlyPage(page,date_start) {
+  return readOfficialAnnouncements({category:3,page,date_start});
+}
+
 async function fetchAnnouncements(symbol, category) {
   if (process.env.CODAL_ANNOUNCEMENT_SOURCE === 'official') return readOfficialAnnouncements({ l18: symbol, category });
   // only_subsidiaries=false: گزارش شرکت‌های زیرمجموعه (مثل «بهساز مشارکت‌های ملت») قاطی نشود.

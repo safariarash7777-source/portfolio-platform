@@ -56,6 +56,19 @@ function announcement(row) {
   return {l18:symbol,l30:company,title,code:row.report_code,link,link_excel:excel,
     link_pdf:text(row.link_pdf,4096),date_send:row.sent_date,time_send:row.sent_time,date_publish:row.publish_date};
 }
+
+export function verifiedMonthlyDiscovery(candidate,bounds,marketSymbols) {
+  if(!publicationInRange(candidate?.date_publish,bounds)||
+     typeof candidate.code!=="string"||!/^ن-[3۳٣][0۰٠]$/.test(candidate.code.trim()))return null;
+  const symbol=marketSymbols.get(canonicalMarketSymbol(candidate.l18));
+  if(!symbol)return null;
+  const verified=announcement({symbol,company_name:candidate.l30,title:candidate.title,
+    report_code:"ن-۳۰",link:candidate.link,link_excel:candidate.link_excel,link_pdf:candidate.link_pdf,
+    sent_date:candidate.date_send,sent_time:candidate.time_send,publish_date:candidate.date_publish});
+  return verified&&new URL(verified.link).searchParams.get("let")==="58"?verified:null;
+}
+
+export const canonicalMarketSymbol=value=>String(value??"").trim().normalize("NFC").replace(/[يى]/g,"ی").replace(/ك/g,"ک");
 export async function readStoredAnnouncements(cursor,{baseUrl,headers,fetch:read=globalThis.fetch,monthlyOnly=false,interimSince=null,monthlyBounds=null}) {
   if(!validStoredCursor(cursor))throw Error('stored feed cursor invalid');
   const qs=new URLSearchParams({select:'id,symbol,company_name,title,report_code,link,link_excel,link_pdf,sent_date,sent_time,publish_date',
