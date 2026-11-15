@@ -33,7 +33,7 @@ export const CALL_SITES = [
   ["market-index",     "server.mjs",           "Tsetmc/Index.php",        "main",     "critical"],
   ["gold-currency",    "server.mjs",           "Market/Gold_Currency.php","main",     "critical"],
   ["all-symbols",      "server.mjs",           "Tsetmc/AllSymbols.php",   "main",     "critical"],
-  ["nav-bulk",         "server.mjs",           "Tsetmc/Nav.php",          "main",     "standard"],
+  ["nav-primary",      "server.mjs",           "Tsetmc/Nav.php",          "main",     "bulk"],
   ["nav-completion",   "server.mjs",           "Tsetmc/Nav.php",          "main",     "bulk"],
   ["fund-meta",        "server.mjs",           "Tsetmc/Symbol.php",       "main",     "bulk"],
   ["symbol-detail",    "symbol-detail.mjs",    "Tsetmc/Symbol.php",       "main",     "bulk"],

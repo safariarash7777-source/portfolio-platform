@@ -26,9 +26,9 @@ import {
 } from "./codal.mjs";
 import { backgroundWorkWindow } from "./background-work-window.mjs";
 import { companyUniverse } from "./codal-coverage.mjs";
-import { isBrsLocalDeferral as isBrsDeferred } from "./brsapi-transport.mjs";
+import { isBrsBudgetDeferral, isBrsLocalDeferral as isBrsDeferred } from "./brsapi-policy.mjs";
 import { codalAccess, isCodalSourceDeferred } from './codal-source-access.mjs';
-const isBrsLocalDeferral = error => isBrsDeferred(error) || isCodalSourceDeferred(error);
+const isBrsLocalDeferral = error => isBrsDeferred(error) || isBrsBudgetDeferral(error) || isCodalSourceDeferred(error);
 import { admissionCounts, admissionEvent, readAdmissionDiagnostics, recordAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 import { supportsDecisionUrl } from "./codal-statement-source.mjs";
 import { readStoredAnnouncements, validStoredCursor } from "./codal-stored-feed.mjs";
@@ -113,9 +113,11 @@ async function loadState() {
   const payload = rows[0]?.payload ?? {};
   payload.storedFeedCursor ??= null;
   if(!validStoredCursor(payload.storedFeedCursor))throw new Error('stored feed cursor invalid');
-  if (payload.watermark != null && (!Number.isFinite(payload.watermark.key) ||
-      !Array.isArray(payload.watermark.links) || !payload.watermark.links.every(l => typeof l === "string"))) {
-    throw new Error("state watermark invalid schema");
+  for (const mark of [payload.watermark, payload.metadataWatermark]) {
+    if (mark != null && (!Number.isSafeInteger(mark.key) || mark.key <= 0 ||
+        !Array.isArray(mark.links) || !mark.links.every(l => typeof l === "string"))) {
+      throw new Error("state watermark invalid schema");
+    }
   }
   if ((payload.backfillCursor != null && (!Number.isInteger(payload.backfillCursor) || payload.backfillCursor < 0)) ||
       (payload.fails != null && (typeof payload.fails !== "object" || Array.isArray(payload.fails) ||
@@ -284,21 +286,28 @@ async function fetchPageWithRetry(params) {
   }
 }
 
-async function pollGlobalFeed() {
+async function pollGlobalFeed({ metadataOnly = false } = {}) {
   const st = engineStatus.feed;
   st.pages = 0; st.seen = 0; st.matched = 0; st.downloaded = 0; st.inserted = 0; st.parseFailed = 0;
   st.complete = false; st.incompleteReason = "page_limit";
   st.watermark = state.watermark?.key ?? null;
 
-  const wm = state.watermark; // { key: number, links: string[] } — links برای هم‌زمان‌های هم‌کلید
+  const wm = metadataOnly ? state.metadataWatermark ?? state.watermark : state.watermark;
   const newestSeen = { key: 0, links: [] };
   const candidates = [];
   const feedItems = []; // M4: متادیتای همهٔ اطلاعیه‌های تازه، نه فقط ن-۱۰/ن-۳۰
   let previousKey = Infinity;
+  let pageDeferral = null;
 
   outer:
   for (let page = 1; page <= FEED_MAX_PAGES; page++) {
-    const items = await fetchPageWithRetry({ page, purpose: "current" }); // بدون l18 → کل بازار
+    let items;
+    try { items = await fetchPageWithRetry({ page, purpose: "current" }); }
+    catch (error) {
+      if (!isBrsLocalDeferral(error)) throw error;
+      pageDeferral = error;
+      break;
+    }
     st.pages = page;
     if (!items.length) { st.complete = true; st.incompleteReason = null; break; }
     for (const a of items) {
@@ -327,6 +336,19 @@ async function pollGlobalFeed() {
   // M4: فید عمومی کدال — متادیتا قبل از دانلودها درج می‌شود تا فید عقب نماند
   try { await pushFeedRows(feedItems); }
   catch (e) { st.complete = false; st.incompleteReason = "feed_write_failure"; throw e; }
+
+  const metadataMark = state.metadataWatermark ?? state.watermark;
+  if (st.complete && newestSeen.key > 0 && (!metadataMark || newestSeen.key >= metadataMark.key)) {
+    state.metadataWatermark = { key: newestSeen.key, links: [...new Set([
+      ...newestSeen.links, ...(newestSeen.key === metadataMark?.key ? metadataMark.links : []),
+    ])] };
+  }
+  if (pageDeferral) throw pageDeferral;
+  if (metadataOnly) {
+    st.complete = false;
+    st.incompleteReason ??= "local_deferred";
+    return;
+  }
 
   // دانلود و درج (جدیدترین‌ها اول)
   let dl = 0;
@@ -505,7 +527,7 @@ async function recoverStoredReports() {
   }
 }
 
-export async function runEngineCycle() {
+export async function runEngineCycle({ allowBackground = true } = {}) {
   engineStatus.ok = false;
   engineStatus.lastError = null;
   engineStatus.lastRun = Date.now();
@@ -519,12 +541,16 @@ export async function runEngineCycle() {
   state.failureDiagnostics.lastCycle = failureCounts();
   state.admissionDiagnostics.lastCycle = admissionCounts();
   const watermarkBefore = state.watermark;
+  const metadataBefore = state.metadataWatermark ?? null;
   const storedCursorBefore = state.storedFeedCursor;
   Object.assign(engineStatus.backfill, { inserted: 0, downloaded: 0, parseFailed: 0, symbols: [], skippedCovered: 0 });
+  Object.assign(engineStatus.storedRecovery, { scanned: 0, downloaded: 0, inserted: 0, parseFailed: 0, blocked: 0, skippedKnown: 0, metadataSkipped: 0, reachedEnd: false });
   let feedDeferred = false;
+  const sourceHeld = codalAccess.snapshot() > Date.now();
   try {
-    codalAccess.check();
-    await pollGlobalFeed();
+    if (sourceHeld && process.env.CODAL_ANNOUNCEMENT_SOURCE === 'official') codalAccess.check();
+    await pollGlobalFeed({ metadataOnly: sourceHeld });
+    if (sourceHeld) codalAccess.check();
   } catch (e) {
     engineStatus.feed.complete = false;
     feedDeferred = isBrsLocalDeferral(e);
@@ -534,8 +560,10 @@ export async function runEngineCycle() {
     console.error("codal-engine feed error:", e?.message ?? e);
   }
   try {
-    await recoverStoredReports();
-    if (!feedDeferred) await backfillSome();
+    if (allowBackground && codalAccess.snapshot() <= Date.now()) {
+      await recoverStoredReports();
+      if (!feedDeferred) await backfillSome();
+    }
   } catch (e) {
     engineStatus.lastError = [engineStatus.lastError, `backfill: ${e?.message ?? e}`].filter(Boolean).join("; ");
     console.error("codal-engine backfill error:", e?.message ?? e);
@@ -550,6 +578,7 @@ export async function runEngineCycle() {
   try { await saveState(); }
   catch (e) {
     state.watermark = watermarkBefore;
+    state.metadataWatermark = metadataBefore;
     state.storedFeedCursor = storedCursorBefore;
     engineStatus.feed.watermark = state.watermark?.key ?? null;
     engineStatus.lastError = [engineStatus.lastError, `state save: ${e?.message ?? e}`].filter(Boolean).join("; ");

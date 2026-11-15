@@ -219,13 +219,13 @@ const SERVER = readFileSync(new URL("./server.mjs", import.meta.url), "utf8")
   .replace(/\r\n/g, "\n")
   .split("\n").filter((l) => !/^\s*(\/\/|\*)/.test(l)).join("\n");
 
-test("server.mjs: نوشتن از writeEodHistory، و چرخهٔ ناقص (بودجه) چیزی نمی‌نویسد", () => {
+test("server.mjs: budget stops history writes while an eligible latest snapshot can still be saved", () => {
   const fn = SERVER.slice(SERVER.indexOf("async function pushDailyHistory("), SERVER.indexOf("\n}\n", SERVER.indexOf("async function pushDailyHistory(")));
   assert.match(fn, /writeEodHistory\(/);
   assert.match(fn, /if \(!cycleComplete\)/);
   assert.match(fn, /lastDate: r\.complete \? r\.tradeDate : eodStatus\.lastDate/);
   assert.match(SERVER, /if \(!result\.successes\) return;/);
-  assert.match(SERVER, /if \(budgetStop\.active\) \{\s*if \(result\.complete\) await pushToSupabase\(body\);\s*return;\s*\}/);
+  assert.match(SERVER, /if \(budgetStop\.active\) \{\s*if \(baselineResolved \|\| result\.complete\) await pushToSupabase\(body\);\s*return;\s*\}/);
   assert.match(SERVER, /pushDailyHistory\(freshBody, \{ cycleComplete: outcomes\.stocks\.ok && outcomes\.funds\.ok && outcomes\.indices\.ok \}\)/);
   assert.doesNotMatch(fn, /select=id&trade_date/, "میان‌برِ «یک ردیف هست ⇒ تمام» برگشته");
 });

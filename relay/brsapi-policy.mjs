@@ -1,6 +1,8 @@
 // Pure receipt validation. Local process evidence is not global ownership proof.
 const LOCAL_DEFERRALS = new Set(['brs_transport_aborted', 'brs_transport_queue_full', 'brs_transport_wait_failed', 'brs_transport_clock_invalid']);
 export const isBrsLocalDeferral = error => LOCAL_DEFERRALS.has(error?.code);
+const BUDGET_DEFERRALS = new Set(['BudgetExceededError', 'LegacyBudgetError', 'BudgetUnavailableError']);
+export const isBrsBudgetDeferral = error => BUDGET_DEFERRALS.has(error?.name);
 export function observedBrsTransportPolicy(t) {
   return t?.enabled === true && t.scope === 'process' && t.spacingMs === 300 &&
     t.rollingWindowMs === 300000 && t.rollingLimit === 300 && t.ipWindowMs === 1000 && t.ipLimit === 20 &&
