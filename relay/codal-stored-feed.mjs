@@ -69,13 +69,19 @@ export function verifiedMonthlyDiscovery(candidate,bounds,marketSymbols) {
 }
 
 export const canonicalMarketSymbol=value=>String(value??"").trim().normalize("NFC").replace(/[يى]/g,"ی").replace(/ك/g,"ک");
-export async function readStoredAnnouncements(cursor,{baseUrl,headers,fetch:read=globalThis.fetch,monthlyOnly=false,interimSince=null,monthlyBounds=null,pageSize=100}) {
+export async function readStoredAnnouncements(cursor,{baseUrl,headers,fetch:read=globalThis.fetch,monthlyOnly=false,interimSince=null,monthlyBounds=null,pageSize=100,links=null}) {
   if(!validStoredCursor(cursor))throw Error('stored feed cursor invalid');
   if(!Number.isInteger(pageSize)||pageSize<1||pageSize>100)throw Error('stored feed page size invalid');
   const qs=new URLSearchParams({select:'id,symbol,company_name,title,report_code,link,link_excel,link_pdf,sent_date,sent_time,publish_date',
     order:'id.desc',limit:String(pageSize)});
   if(monthlyOnly)qs.set('category','eq.ماهانه');
   if(monthlyBounds!==null)qs.set('or',dateRangeFilter(monthlyBounds));
+  if(links!==null&&(!Array.isArray(links)||links.some(link=>typeof link!=='string'||!link||link.length>240)))throw Error('stored feed links invalid');
+  const requestedLinks=links===null ? null : new Set(links);
+  if(requestedLinks){
+    if(!requestedLinks.size||requestedLinks.size>pageSize)throw Error('stored feed links invalid');
+    qs.set('link',`in.(${[...requestedLinks].map(link=>JSON.stringify(link)).join(',')})`);
+  }
   if(interimSince!==null){
     qs.set('category','eq.صورت مالی');
     qs.set('created_at',`gte.${interimSince}`);
@@ -89,6 +95,7 @@ export async function readStoredAnnouncements(cursor,{baseUrl,headers,fetch:read
   return rows.map(row=>{
     const id=identifier(row?.id);
     if(!id || before!==null && BigInt(id)>=BigInt(before))throw Error('stored feed order invalid');
+    if(requestedLinks&&!requestedLinks.has(row.link))throw Error('unexpected stored feed link');
     before=id;
     return {id,announcement:monthlyBounds!==null&&!publicationInRange(row.publish_date,monthlyBounds)?null:announcement(row)};
   });

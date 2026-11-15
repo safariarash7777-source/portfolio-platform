@@ -18,11 +18,11 @@
 //
 // دفتر خطا (failure ledger): اطلاعیه‌ای که ۳ بار پارس/دانلودش شکست بخورد
 // (مثل صورت‌های مالی بانک‌ها که ساختار متفاوت دارند) کنار گذاشته می‌شود تا
-// سهمیه و زمان چرخه هدر نرود. با آمدن پارسر بانک/بیمه، پاک‌کردن دفتر کافی است.
+// سهمیه و زمان چرخه هدر نرود. اصلاح خواننده با کلید نسخه یک تلاش محدود دارد.
 // ─────────────────────────────────────────────────────────────────────────────
 import {
   classifyAnnouncement, fetchAnnouncementsPage, fetchOfficialMonthlyPage, downloadAndParse,
-  insertParsedReport, existingUrlsFor, faToEn, codalEnv, monthlySectorProfile, isIndustrialMonthlyWorkbook,
+  insertParsedReport, existingUrlsFor, faToEn, codalEnv, monthlySectorProfile, monthlyWorkbookType,
   jalaliYmdToGregorian, metaFromAnnouncement,
 } from "./codal.mjs";
 import { backgroundWorkWindow } from "./background-work-window.mjs";
@@ -224,20 +224,33 @@ const interimEligible = (url, kind, announcement) => kind === 'ن-۱۰' && suppo
 const auditedEligible = (url, kind, announcement) => interimEligible(url,kind,announcement) && /حسابرسی\s+شده/.test(String(announcement?.title || ''));
 const failureKey = (url, kind, announcement) => kind === "ن-۳۰" && monthlySectorProfile(announcement)
   ? `monthly-sector-v1:${url}` : url;
+const monthlyRetryPrefixes = new Map([
+  ['0','monthly-industrial-v1'], ['1','monthly-real-estate-v1'],
+  ['8','monthly-decision-symbol-v1'], ['9','monthly-decision-symbol-v1'],
+]);
 function monthlyRetryKey(url, kind, announcement) {
   if (kind !== "ن-۳۰") return null;
-  if (isIndustrialMonthlyWorkbook(announcement)) return `monthly-industrial-v1:${url}`;
-  const sector = monthlySectorProfile(announcement);
-  if (sector === 'agriculture_operating_income' || sector === 'financing_service_income') {
-    return `monthly-decision-symbol-v1:${url}`;
-  }
-  return null;
+  const prefix=monthlyRetryPrefixes.get(monthlyWorkbookType(announcement));
+  return prefix ? `${prefix}:${url}` : null;
 }
-function recordFail(url, kind, announcement) {
+function pendingMonthlyReplayLinks() {
+  const links=new Set();
+  for(const [key,count] of Object.entries(state.fails).reverse()){
+    const link=key.replace(/^monthly-sector-v1:/,'');
+    if(!count||link.length>240||!supportsDecisionUrl(link))continue;
+    const query=new URL(link).searchParams;
+    const prefix=monthlyRetryPrefixes.get(query.get('rt'));
+    if(query.get('let')!=='58'||!prefix||state.fails[`${prefix}:${link}`])continue;
+    links.add(link);
+    if(links.size===20)break;
+  }
+  return [...links];
+}
+function recordFail(url, kind, announcement, replay=false) {
   const key = failureKey(url, kind, announcement);
   state.fails[key] = (state.fails[key] || 0) + 1;
   const monthlyRetry=monthlyRetryKey(url,kind,announcement);
-  if(monthlyRetry&&state.fails[key]>=MAX_FAILS)state.fails[monthlyRetry]=1;
+  if(monthlyRetry&&(replay||state.fails[key]>=MAX_FAILS))state.fails[monthlyRetry]=1;
   if (kind === 'ن-۱۰' && supportsDecisionUrl(url)) state.decisionStatementV1Attempts[url] = 1;
   if (interimEligible(url,kind,announcement)) state.interimStatementV1Attempts[url] = 1;
   if (auditedEligible(url,kind,announcement)) state.auditedStatementV1Attempts[url] = 1;
@@ -600,19 +613,21 @@ async function backfillSome({ monthlyOnly = false, loadCompanies = allCompanySym
 }
 
 /* ── اجرای یک چرخهٔ کامل موتور ─────────────────────────────────────────────── */
-async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBounds=null,limit,attempted=new Set(),knownBySymbol=new Map(),freshHead=false}) {
+async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBounds=null,limit,attempted=new Set(),knownBySymbol=new Map(),freshHead=false,replayLinks=null}) {
   const st=interimWindow ? engineStatus.interimRecovery : monthlyBounds ? engineStatus.recentMonthlyRecovery : engineStatus.storedRecovery;
   const cursorKey=interimWindow ? "interimRecoveryCursor" : monthlyBounds ? "recentMonthlyRecoveryCursor"
     : monthlyOnly ? "monthlyRecoveryCursor" : "storedFeedCursor";
-  if (limit <= 0) return;
-  let cursor=freshHead?null:state[cursorKey]??null;
-  const advance=next=>{cursor=next;if(!freshHead)state[cursorKey]=next;};
+  if (limit <= 0 || replayLinks?.length===0) return;
+  const replay=replayLinks!==null;
+  const probe=freshHead||replay;
+  let cursor=probe?null:state[cursorKey]??null;
+  const advance=next=>{cursor=next;if(!probe)state[cursorKey]=next;};
   // Share the existing backfill download allocation. Only two stored pages are
   // read per cycle; an empty page, not a short server-capped page, ends the scan.
-  for(let page=0;page<(freshHead?1:2);page++){
+  for(let page=0;page<(probe?1:2);page++){
     const rows=await readStoredAnnouncements(cursor,{baseUrl:SUPABASE_URL,headers:SB_HDRS(),
-      monthlyOnly,interimSince:interimWindow?.startIso ?? null,monthlyBounds,pageSize:freshHead?20:100});
-    if(!rows.length){advance(null);if(!freshHead)st.reachedEnd=true;break;}
+      monthlyOnly,interimSince:interimWindow?.startIso ?? null,monthlyBounds,pageSize:probe?20:100,links:replayLinks});
+    if(!rows.length){advance(null);if(!probe)st.reachedEnd=true;break;}
     for(const row of rows){
       const a=row.announcement,classified=a && classifyAnnouncement(a);
       const kind=interimWindow
@@ -622,9 +637,17 @@ async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBound
       st.scanned++;
       if(!a || !kind){st.metadataSkipped++;advance(row.id);continue;}
       if(attempted.has(a.link)){advance(row.id);continue;}
+      if(replay){
+        const retryKey=monthlyRetryKey(a.link,kind,a);
+        if(!retryKey||state.fails[retryKey]||!(state.fails[failureKey(a.link,kind,a)]||state.fails[a.link]))continue;
+      }
       if(!knownBySymbol.has(a.l18))knownBySymbol.set(a.l18,await existingUrlsFor(a.l18));
       const known=knownBySymbol.get(a.l18);
-      if(known.has(a.link)){st.skippedKnown++;advance(row.id);continue;}
+      if(known.has(a.link)){
+        st.skippedKnown++;
+        if(replay)clearFailure(a,kind);
+        advance(row.id);continue;
+      }
       if(isBlocked(a.link,kind,a)){st.blocked++;advance(row.id);continue;}
       let stage='download',rejection=null;st.downloaded++;attempted.add(a.link);
       try {
@@ -634,11 +657,11 @@ async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBound
           known.add(a.link);clearFailure(a, kind);
         } else {
           st.parseFailed++;recordFailureDiagnostic('admission','rejected');
-          recordAdmissionRejection(state.admissionDiagnostics,kind,rejection);recordFail(a.link,kind,a);
+          recordAdmissionRejection(state.admissionDiagnostics,kind,rejection);recordFail(a.link,kind,a,replay);
         }
       } catch(error) {
         if(isBrsLocalDeferral(error))throw error;
-        st.parseFailed++;recordFailureDiagnostic(stage,'exception');recordFail(a.link,kind,a);
+        st.parseFailed++;recordFailureDiagnostic(stage,'exception');recordFail(a.link,kind,a,replay);
       }
       advance(row.id);
     }
@@ -722,9 +745,9 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
       const attempted=monthlyAttempts ?? new Set();
       const knownBySymbol=new Map();
       if(monthlyBounds&&limit>0){
-        const recoverRecent=async (limit,freshHead=false)=>{
+        const recoverRecent=async (limit,{freshHead=false,replayLinks=null}={})=>{
           try{
-            await recoverStoredReports({monthlyOnly,monthlyBounds,limit,attempted,knownBySymbol,freshHead});
+            await recoverStoredReports({monthlyOnly,monthlyBounds,limit,attempted,knownBySymbol,freshHead,replayLinks});
           }catch(error){
             if(isBrsLocalDeferral(error))throw error;
             engineStatus.recentMonthlyRecovery.readFailed=true;
@@ -737,7 +760,12 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
         // slot for pending new entries even if this cycle found no new notice.
         if(state.recentMonthlyRecoveryCursor!=null&&recentLimit>1){
           const headLimit=engineStatus.officialMonthlyDiscovery.inserted>0 ? Math.ceil(recentLimit/2) : 1;
-          await recoverRecent(headLimit,true);
+          await recoverRecent(headLimit,{freshHead:true});
+        }
+        const downloaded=engineStatus.recentMonthlyRecovery.downloaded;
+        // Replay one report under a corrected reader while preserving the saved sweep.
+        if(downloaded+1<recentLimit){
+          await recoverRecent(downloaded+1,{replayLinks:pendingMonthlyReplayLinks()});
         }
         await recoverRecent(recentLimit);
         if(engineStatus.recentMonthlyRecovery.readFailed){
