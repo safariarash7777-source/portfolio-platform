@@ -5,7 +5,7 @@
 // relay/codal.mjs خط ۳۹۲: اعتبارسنجی مبلغ ≈ فروش×نرخ÷10^6).
 // روایت‌ها فقط template‌ای و قطعی‌اند — هیچ ارزش‌داوری تجویزی.
 
-import type { CodalN30Data, MonthlyMeasure, N30Market } from "@/lib/fundamental/types";
+import { isMonthlyMeasure, MONTHLY_MEASURE_LABELS, type CodalN30Data, type MonthlyMeasure, type N30Market } from "@/lib/fundamental/types";
 import { monthlyMarket, monthlyMarketUnavailableReason, withKnownMonthlyQuantities, type MonthlyMarketUnavailableReason, type QuantityWitnessedReport, type QuantityWitnessedProduct, type MonthlyQuantityWitness } from "./monthly-quantity";
 
 /* ── انواع خروجی ─────────────────────────────────────────────────────────── */
@@ -17,16 +17,14 @@ export const JALALI_MONTHS = [
 ] as const;
 
 export function monthlyMeasureLabel(measure: MonthlyMeasure = "sales"): string {
-  if (measure === "bank_reported_income") return "درآمدهای گزارش‌شدهٔ بانک";
-  if (measure === "issued_premium") return "حق بیمهٔ صادره";
-  return "فروش";
+  return isMonthlyMeasure(measure) ? MONTHLY_MEASURE_LABELS[measure] : MONTHLY_MEASURE_LABELS.sales;
 }
 
 /** Each displayed series uses the definition of the latest eligible report. */
 export function comparableMonthlyReports(reports: CodalN30Data[]): CodalN30Data[] {
   const valid = reports.filter(report => report && typeof report.period_end === "string"
     && monthKeyOf(report.period_end) !== null
-    && Array.isArray(report.products));
+    && Array.isArray(report.products) && isMonthlyMeasure(report.monthly_measure ?? "sales"));
   const latest = valid.reduce<CodalN30Data | null>((current, item) =>
     current && current.period_end >= item.period_end ? current : item, null);
   const measure = latest?.monthly_measure ?? "sales";
