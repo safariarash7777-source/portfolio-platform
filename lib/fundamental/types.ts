@@ -87,6 +87,7 @@ export const MONTHLY_MEASURE_LABELS = {
   issued_premium: "حق بیمهٔ صادره",
   service_recognized_income: "درآمد شناسایی‌شدهٔ خدمات و فروش",
   leasing_reported_income: "درآمدهای گزارش‌شدهٔ لیزینگ",
+  real_estate_recognized_income: "درآمد محقق‌شدهٔ فعالیت ساختمانی",
 } as const;
 
 export type MonthlyMeasure = keyof typeof MONTHLY_MEASURE_LABELS;

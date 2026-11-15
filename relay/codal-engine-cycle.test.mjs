@@ -1105,6 +1105,32 @@ test('service and leasing monthly income verify the source period, adjustments a
  }
 });
 
+test('real estate monthly totals require a reconciled view and matching duplicated headlines', () => {
+ const date="۱۴۰۵/۰۷/۳۰";
+ const month=`درآمد محقق شده طي دوره يک ماهه منتهي به ${date}`;
+ const year=`جمع درآمد محقق شده از ابتداي سال مالي تا ${date}`;
+ const ready="فروش واحد هاي ساختماني آماده فروش";
+ const progress="فروش واحد هاي ساختماني در جريان ساخت";
+ const html=rows=>`<div class="table-description">کليه مبالغ به ميليون ريال است</div><app-table><table>${rows.map(row=>`<tr>${row.map(value=>`<td>${value}</td>`).join("")}</tr>`).join("")}</table></app-table>`;
+ const meta={symbol:"نمونه",period_months:1,period_end:"1405-07-30"};
+ const profile="real_estate_recognized_income";
+ const plain=[["شرح",month,year],[ready,100,200],[progress,50,70],["جمع",150,270]];
+ assert.equal(codal.normalizeSectorN30(html(plain),meta,profile)?.period_total_amount,150);
+ const double = [
+   ["شرح","قبل","اصلاحات","اصلاح‌شده",month,year],
+   [ready,100,0,100,100,200], [progress,20,0,20,50,70], ["جمع",120,0,120,150,270],
+ ].map(row=>row.flatMap(value=>[value,value]));
+ // One rendered view drops a value. The other sums to the same declared total.
+ double[1][8]=0;
+ assert.equal(codal.normalizeSectorN30(html(double),meta,profile)?.fy_cumulative_amount,270);
+ double.at(-1)[8]=80;
+ assert.equal(codal.normalizeSectorN30(html(double),meta,profile),null);
+ double.at(-1)[8]=150;
+ double[1][9]=0;
+ assert.equal(codal.normalizeSectorN30(html(double),meta,profile),null);
+ assert.equal(codal.normalizeSectorN30(html(plain),{...meta,period_end:"1405-06-31"},profile),null);
+});
+
 test('monthly discovery can advance past a rejected workbook once the announcement is durable', async () => {
  const a=announcement(2,{code:'ن-۳۰',title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',link_excel:'https://excel.invalid/2'});
  const f=await fixture({pages:[[a,boundary],[]],excelHtml:'<p>Unsupported worksheet</p>'});
