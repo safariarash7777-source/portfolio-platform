@@ -129,6 +129,14 @@ check("compact N30 cannot infer a missing official total",
 const compactWrongUnit = compactColumns.map((label,index) => index === 5 ? "مبلغ فروش (هزار ریال)" : label);
 check("compact N30 rejects mismatched month units",
   normalizeN30([[compactGroups, compactWrongUnit, compactProduct, compactTotal]], compactMeta) === null);
+const explicitZeroProduct=compactProduct.map((value,index)=>index===3||index===4?"":index===5?"0":value);
+const explicitZeroTotal=compactTotal.map((value,index)=>index===5?"0":value);
+const zeroSale=normalizeN30([[compactGroups,compactColumns,explicitZeroProduct,explicitZeroTotal]],compactMeta);
+check("verified zero month retains the reported cumulative total",
+  zeroSale?.sales_zero_reported===true&&zeroSale.period_total_amount===0&&zeroSale.fy_cumulative_amount===168&&zeroSale.products.length===0);
+const missingTotal=explicitZeroTotal.map((value,index)=>index===5?"":value);
+check("unreported monthly total cannot become zero",
+  normalizeN30([[compactGroups,compactColumns,explicitZeroProduct,missingTotal]],compactMeta)===null);
 
 
 /* ── بانک (T5): تطبیق عددی با اکسل واقعی کدال — ونوین FY1404 (فیکسچر کامل) ────

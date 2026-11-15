@@ -698,6 +698,25 @@ function compactProductLayout(groups, columns, periodEnd) {
     && prior.slice(5, 7) === periodEnd.slice(5, 7);
 }
 
+function verifiedZeroProductSales(groups, columns, rows, periodEnd, compact, amountColumn, cumulativeColumn) {
+  const month=groups[compact?1:4],cumulative=groups[compact?2:5];
+  const amountLabel=normLabel("مبلغ فروش (میلیون ریال)");
+  if (!periodEnd || !normLabel(month).startsWith(normLabel("دوره یک ماهه منتهی به")) ||
+      !normLabel(cumulative).startsWith(normLabel("از ابتدای سال مالی تا تاریخ")) ||
+      jalaliStr(month)!==periodEnd || jalaliStr(cumulative)!==periodEnd ||
+      normLabel(columns[amountColumn])!==amountLabel || normLabel(columns[cumulativeColumn])!==amountLabel) return null;
+  const details=rows.filter(row=>row[0]?.trim()&&!row[0].trim().endsWith(":"));
+  const totals=details.filter(row=>["جمع","جمعکل"].includes(normLabel(row[0])));
+  const unexplainedValues=rows.some(row=>{
+    const label=row[0]?.trim();
+    const value=cellNum(row[amountColumn]);
+    return (!label||label.endsWith(":"))&&value!==null&&value!==0;
+  });
+  if (unexplainedValues||totals.length!==1||details.length<2||!details.every(row=>cellNum(row[amountColumn])===0)) return null;
+  const fyAmount=cellNum(totals[0][cumulativeColumn]);
+  return fyAmount===null||Number.isSafeInteger(fyAmount) ? {amount:0,cumulative:fyAmount} : null;
+}
+
 export function normalizeN30(tables, meta, onRejected) {
   const products = [];
   let supportedLayout = false;
@@ -759,7 +778,8 @@ export function normalizeN30(tables, meta, onRejected) {
 
     let cumTotal = null;
     let sectionMarket = "نامشخص";
-    for (const [offset, row] of t.slice(h1Idx + 1).entries()) {
+    const observations=t.slice(h1Idx+1);
+    for (const [offset, row] of observations.entries()) {
       const name = (row[0] || "").trim();
       if (!name) continue;
       if (name.endsWith(":")) {
@@ -817,6 +837,8 @@ export function normalizeN30(tables, meta, onRejected) {
     }
     if (cumTotal !== null) fyCumulative = cumTotal;
     if (products.length) { quantitySource = source; break; } // فقط جدول محصول اصلی
+    const zero=verifiedZeroProductSales(h0,t[h1Idx],observations,meta.period_end,compact,M.amount,C.amount);
+    if (zero) return {...sectorMonthlyData(meta,"sales",zero),period_months:1,sales_zero_reported:true};
   }
 
   if (products.length === 0) return notifyAdmissionRejection(onRejected, "ن-۳۰",
@@ -1144,7 +1166,7 @@ function sameQuantityResponseSource(sourceRef, responseUrl) {
 }
 
 /** Identify the verified monthly workbook families by the linked Codal report. */
-export function monthlySectorProfile(a) {
+function monthlyWorkbookType(a) {
   try {
     const report = new URL(a.link);
     const serials = report.searchParams.getAll("LetterSerial");
@@ -1154,16 +1176,26 @@ export function monthlySectorProfile(a) {
         || report.pathname !== "/Reports/Decision.aspx" || report.searchParams.get("let") !== "58"
         || serials.length !== 1 || !serials[0] || !sameQuantityResponseSource(a.link_excel, a.link_excel)
         || workbook.search || decodeURIComponent(workbook.pathname.split("/")[4]) !== serials[0]) return null;
-    const type = report.searchParams.get("rt");
-    if (type === "1") return "real_estate_recognized_income";
-    if (type === "3") return "bank_reported_income";
-    if (type === "4") return "leasing_reported_income";
-    if (type === "5") return "service_recognized_income";
-    if (type === "6") return "issued_premium";
-    if (type === "8") return "agriculture_operating_income";
-    if (type === "9") return "financing_service_income";
+    return report.searchParams.get("rt");
   } catch { /* Invalid publisher identity. */ }
   return null;
+}
+
+export function isIndustrialMonthlyWorkbook(a) {
+  return monthlyWorkbookType(a)==="0";
+}
+
+export function monthlySectorProfile(a) {
+  switch (monthlyWorkbookType(a)) {
+    case "1": return "real_estate_recognized_income";
+    case "3": return "bank_reported_income";
+    case "4": return "leasing_reported_income";
+    case "5": return "service_recognized_income";
+    case "6": return "issued_premium";
+    case "8": return "agriculture_operating_income";
+    case "9": return "financing_service_income";
+    default: return null;
+  }
 }
 
 const bankIncomeRows = [
@@ -1467,6 +1499,9 @@ export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejec
     return sectorData ?? notifyAdmissionRejection(onRejected, kind, "unsupported_layout");
   }
   const data = normalizeN30(parseHtmlTables(html), { ...meta, quantity_source: source }, onRejected);
+  if (data?.sales_zero_reported && (!source || !isIndustrialMonthlyWorkbook(a))) {
+    return notifyAdmissionRejection(onRejected,kind,"zero_sales_only");
+  }
   if (data?.quantity_source && typeof a.link === "string" && a.link.trim() && a.link.trim() === a.link) {
     const receipt = {
       version: 1, symbol: a.l18, report_kind: kind, announcement_link: a.link, source_url: versionedUrl(a.link),

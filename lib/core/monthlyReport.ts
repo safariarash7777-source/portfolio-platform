@@ -248,7 +248,7 @@ export function dedupeByMonth(reports: CodalN30Data[]): Map<string, CodalN30Data
     // اگر نسخهٔ نگه‌داشته جمعِ صفر دارد و این نسخه جمع ناصفر، جایگزین شود.
     const prevTotal = prev.period_total_amount ?? 0;
     const curTotal = r.period_total_amount ?? 0;
-    if ((prev.monthly_measure ?? "sales") === "sales" && prevTotal === 0 && curTotal > 0) byMonth.set(key, r);
+    if ((prev.monthly_measure ?? "sales") === "sales" && prev.sales_zero_reported !== true && prevTotal === 0 && curTotal > 0) byMonth.set(key, r);
   }
   return byMonth;
 }

@@ -1059,6 +1059,27 @@ test('monthly bank profile can retry pre-adapter rejects and verifies publisher 
   assert.equal(f.persisted.fails[bankReport.link],undefined);
 });
 
+test('an industrial report blocked before the parser update receives one bounded automatic reattempt', async () => {
+ const a={...stored(9),symbol:"فولاد",title:"گزارش فعالیت ماهانه منتهی به 1405/06/31",report_code:"ن-۳۰",category:"ماهانه",
+   link:"https://codal.ir/Reports/Decision.aspx?LetterSerial=serial9&rt=0&let=58"};
+ const failKey=`monthly-industrial-v1:${a.link}`;
+ const initialState={watermark,fails:{[a.link]:3}};
+ const base={pages:[[]],storedRows:[a],initialState,exactWorkbookResponse:true};
+ const accepted=await fixture({...base,excelHtml:readFileSync(new URL("./fixtures/folad-n30-primary.html",import.meta.url),"utf8")});
+ await accepted.engine.runEngineCycle({monthlyOnly:true,allowBackground:false});
+ assert.equal(accepted.engine.engineStatus.storedRecovery.inserted,1);
+ assert.equal(accepted.persisted.fails[a.link],undefined);
+ const rejected=await fixture({...base,excelHtml:"<p>No table</p>"});
+ await rejected.engine.runEngineCycle({monthlyOnly:true,allowBackground:false});
+ assert.equal(rejected.calls.excel.length,1);
+ assert.equal(rejected.persisted.fails[a.link],4);
+ assert.equal(rejected.persisted.fails[failKey],1);
+ const next=await fixture({...base,initialState:rejected.persisted,excelHtml:"<p>No table</p>"});
+ await next.engine.runEngineCycle({monthlyOnly:true,allowBackground:false});
+ assert.equal(next.calls.excel.length,0);
+ assert.equal(next.engine.engineStatus.storedRecovery.blocked,1);
+});
+
 test('insurance monthly admission checks published totals and reads premium apart from paid claims', () => {
   const date="۱۴۰۵/۰۷/۳۰";
   const top=["شرح","ابتدای سال","اصلاحات","اصلاح شده",`دوره یک ماهه منتهی به ${date}`,`از ابتدای سال مالی تا پایان مورخ ${date}`];
