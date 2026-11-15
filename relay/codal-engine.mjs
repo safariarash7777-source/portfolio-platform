@@ -741,7 +741,9 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
     if ((allowBackground || monthlyOnly) && codalAccess.snapshot() <= Date.now()) {
       const remaining = FEED_MAX_DL - engineStatus.feed.downloaded;
       const interimRemaining = interimWindow ? Math.min(remaining, INTERIM_MAX_DL - engineStatus.feed.interimDownloads) : 0;
-      const limit = monthlyOnly ? Math.min(BACKFILL_MAX_DL, remaining - interimRemaining) : BACKFILL_MAX_DL;
+      // A monthly-focused cycle can use the unused interim file slots.
+      const recoveryLimit=monthlyBounds&&!interimWindow ? BACKFILL_MAX_DL+INTERIM_MAX_DL : BACKFILL_MAX_DL;
+      const limit = monthlyOnly ? Math.min(recoveryLimit, remaining - interimRemaining) : BACKFILL_MAX_DL;
       const attempted=monthlyAttempts ?? new Set();
       const knownBySymbol=new Map();
       if(monthlyBounds&&limit>0){

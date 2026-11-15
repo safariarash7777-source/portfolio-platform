@@ -1268,48 +1268,48 @@ test('recent monthly recovery uses the verified publication date and shares the 
  t.mock.method(Date,'now',()=>Date.parse("2026-11-15T16:30:00Z"));
  const month=(id,publish_date)=>({...stored(id),symbol:'فولاد',title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',
    report_code:'ن-۳۰',category:'ماهانه',publish_date});
- const recent=Array.from({length:7},(_,i)=>month(40-i,"۱۴۰۵/۰۸/۲۴"));
- const old=Array.from({length:6},(_,i)=>month(30-i,"۱۴۰۵/۰۶/۳۱"));
+ const recent=Array.from({length:8},(_,i)=>month(40-i,"۱۴۰۵/۰۸/۲۴"));
+ const old=Array.from({length:9},(_,i)=>month(30-i,"۱۴۰۵/۰۶/۳۱"));
  const excelHtml=readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
  const f=await fixture({pages:[[]],storedRows:[month(41,"۱۴۰۵/۰۸/۲۵"),...recent,...old],
    initialState:{watermark,fails:{},monthlyRecoveryCursor:'31'},excelHtml});
  await f.engine.runEngineCycle({monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true});
- assert.deepEqual(f.calls.excel,[40,39,38,37,36,30].map(id=>`/service/Excel/GetAll/serial${id}/0`));
+ assert.deepEqual(f.calls.excel,[40,39,38,37,36,35,34,30].map(id=>`/service/Excel/GetAll/serial${id}/0`));
  assert.equal(f.calls.pages.length,1);
- assert.equal(f.engine.engineStatus.recentMonthlyRecovery.inserted,5);
+ assert.equal(f.engine.engineStatus.recentMonthlyRecovery.inserted,7);
  assert.equal(f.engine.engineStatus.recentMonthlyRecovery.metadataSkipped,1);
- assert.equal(f.persisted.recentMonthlyRecoveryCursor,'36');
+ assert.equal(f.persisted.recentMonthlyRecoveryCursor,'34');
  assert.equal(f.persisted.monthlyRecoveryCursor,'30');
  const fallback=await fixture({pages:[[]],storedRows:old,initialState:{watermark,fails:{},monthlyRecoveryCursor:'31'},
    excelHtml,rejectMonthlyPublicationRead:true});
  await fallback.engine.runEngineCycle({monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true});
  assert.equal(fallback.engine.engineStatus.recentMonthlyRecovery.readFailed,true);
- assert.equal(fallback.engine.engineStatus.storedRecovery.inserted,6);
- assert.equal(fallback.calls.excel.length,6);
+ assert.equal(fallback.engine.engineStatus.storedRecovery.inserted,8);
+ assert.equal(fallback.calls.excel.length,8);
 });
 
 test('recent monthly recovery serves the head and resumes the saved sweep without a new notice', async t => {
  t.mock.method(Date,'now',()=>Date.parse('2026-11-15T16:30:00Z'));
  const month=(id,publish_date)=>({...stored(id),symbol:'فولاد',title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',
    report_code:'ن-۳۰',category:'ماهانه',publish_date});
- const recent=[50,49,37,36,35,34,33,32].map(id=>month(id,'۱۴۰۵/۰۸/۲۴'));
- const older=[30,29].map(id=>month(id,'۱۴۰۵/۰۶/۳۱'));
+ const recent=[50,49,37,36,35,34,33,32,31,30].map(id=>month(id,'۱۴۰۵/۰۸/۲۴'));
+ const older=[25,24].map(id=>month(id,'۱۴۰۵/۰۶/۳۱'));
  const excelHtml=readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
  const options={pages:[[]],storedRows:[...recent,...older],excelHtml,
-  initialState:{watermark,fails:{},recentMonthlyRecoveryCursor:'38',monthlyRecoveryCursor:'31'}};
+  initialState:{watermark,fails:{},recentMonthlyRecoveryCursor:'38',monthlyRecoveryCursor:'26'}};
  const run={monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true};
  const f=await fixture(options);
  await f.engine.runEngineCycle(run);
- assert.deepEqual(f.calls.excel,[50,37,36,35,34,30].map(id=>`/service/Excel/GetAll/serial${id}/0`));
+ assert.deepEqual(f.calls.excel,[50,37,36,35,34,33,32,25].map(id=>`/service/Excel/GetAll/serial${id}/0`));
  assert.deepEqual(f.calls.storedPageSizes,[20,100,100]);
- assert.equal(f.engine.engineStatus.recentMonthlyRecovery.inserted,5);
- assert.equal(f.persisted.recentMonthlyRecoveryCursor,'34');
- assert.equal(f.persisted.monthlyRecoveryCursor,'30');
+ assert.equal(f.engine.engineStatus.recentMonthlyRecovery.inserted,7);
+ assert.equal(f.persisted.recentMonthlyRecoveryCursor,'32');
+ assert.equal(f.persisted.monthlyRecoveryCursor,'25');
  const noHead=await fixture({...options,rejectMonthlyHeadRead:true});
  await noHead.engine.runEngineCycle(run);
  assert.equal(noHead.engine.engineStatus.recentMonthlyRecovery.readFailed,true);
- assert.deepEqual(noHead.calls.excel,[37,36,35,34,33,30].map(id=>`/service/Excel/GetAll/serial${id}/0`));
- assert.equal(noHead.persisted.recentMonthlyRecoveryCursor,'33');
+ assert.deepEqual(noHead.calls.excel,[37,36,35,34,33,32,31,25].map(id=>`/service/Excel/GetAll/serial${id}/0`));
+ assert.equal(noHead.persisted.recentMonthlyRecoveryCursor,'31');
 });
 
 test('recovery replays one previously rejected monthly file per corrected reader without rewinding the sweep',async t=>{
@@ -1321,22 +1321,22 @@ test('recovery replays one previously rejected monthly file per corrected reader
  const marker=`monthly-industrial-v1:${rejected.link}`;
  const excelPath=id=>`/service/Excel/GetAll/serial${id}/0`;
  const storedRows=[month(80),month(79),month(78),repaired,rejected,
-  ...Array.from({length:12},(_,i)=>month(37-i)),...Array.from({length:5},(_,i)=>month(20-i,{publish_date:'۱۴۰۵/۰۶/۳۱'}))];
+  ...Array.from({length:16},(_,i)=>month(37-i)),...Array.from({length:5},(_,i)=>month(20-i,{publish_date:'۱۴۰۵/۰۶/۳۱'}))];
  const excelHtml=readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
  const f=await fixture({pages:[[]],storedRows,excelHtml,exactWorkbookResponse:true,excelBodies:{[excelPath(69)]:'<h1>Unsupported</h1>'},
   initialState:{watermark,recentMonthlyRecoveryCursor:'38',monthlyRecoveryCursor:'21',fails:{[repaired.link]:1,[rejected.link]:1}}});
  const run={monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true};
  await f.engine.runEngineCycle(run);
- assert.deepEqual(f.calls.excel,[80,70,37,36,35,20].map(excelPath));
- assert.equal(f.persisted.recentMonthlyRecoveryCursor,'35');
+ assert.deepEqual(f.calls.excel,[80,70,37,36,35,34,33,20].map(excelPath));
+ assert.equal(f.persisted.recentMonthlyRecoveryCursor,'33');
  assert.equal(f.persisted.fails[repaired.link],undefined);
  await f.engine.runEngineCycle(run);
- assert.deepEqual(f.calls.excel.slice(6),[79,69,34,33,32,19].map(excelPath));
+ assert.deepEqual(f.calls.excel.slice(8),[79,69,32,31,30,29,28,19].map(excelPath));
  assert.equal(f.persisted.fails[rejected.link],2);
  assert.equal(f.persisted.fails[marker],1);
  await f.engine.runEngineCycle(run);
  assert.equal(f.calls.excel.filter(path=>path===excelPath(69)).length,1);
- assert.deepEqual(f.calls.excel.slice(12),[78,31,30,29,28,18].map(excelPath));
+ assert.deepEqual(f.calls.excel.slice(16),[78,27,26,25,24,23,22,18].map(excelPath));
 });
 
 test('official monthly reconciliation fills a missing listed report through the existing recovery, preserving page and download bounds',async t=>{
