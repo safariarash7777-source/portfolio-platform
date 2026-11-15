@@ -497,10 +497,10 @@ async function reconcileOfficialMonthly(bounds,loadCompanies) {
     else if(symbols.get(key)!==name)symbols.set(key,null);
   }
   if(!symbols.size)return;
-  // Check for new publications first, then continue a bounded sweep of older
-  // pages in the same official release window. The BRS watermark is independent.
+  // Check for new publications first, then sweep seven older pages at most.
+  // The official search client still paces each request and owns cooldowns.
   let page=1;
-  for(let i=0;i<3;i++){
+  for(let i=0;i<8;i++){
     codalAccess.check();
     const official=await fetchOfficialMonthlyPage(page,bounds.since);
     status.pages++;
@@ -722,17 +722,25 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
       const attempted=monthlyAttempts ?? new Set();
       const knownBySymbol=new Map();
       if(monthlyBounds&&limit>0){
-        try{
-          // Keep one historical slot when there are at least two downloads available.
-          // If recent candidates run out, the historical sweep uses the unused slots.
-          const recentLimit=Math.max(1,limit-1);
-          if(engineStatus.officialMonthlyDiscovery.inserted>0){
-            await recoverStoredReports({monthlyOnly,monthlyBounds,limit:Math.ceil(recentLimit/2),attempted,knownBySymbol,freshHead:true});
+        const recoverRecent=async (limit,freshHead=false)=>{
+          try{
+            await recoverStoredReports({monthlyOnly,monthlyBounds,limit,attempted,knownBySymbol,freshHead});
+          }catch(error){
+            if(isBrsLocalDeferral(error))throw error;
+            engineStatus.recentMonthlyRecovery.readFailed=true;
           }
-          await recoverStoredReports({monthlyOnly,monthlyBounds,limit:recentLimit,attempted,knownBySymbol});
-        }catch(error){
-          if(isBrsLocalDeferral(error))throw error;
-          engineStatus.recentMonthlyRecovery.readFailed=true;
+        };
+        // Keep one historical slot when there are at least two downloads available.
+        // If recent candidates run out, the historical sweep uses the unused slots.
+        const recentLimit=Math.max(1,limit-1);
+        // The saved cursor may already be deep in the queue. Give the head a
+        // slot for pending new entries even if this cycle found no new notice.
+        if(state.recentMonthlyRecoveryCursor!=null&&recentLimit>1){
+          const headLimit=engineStatus.officialMonthlyDiscovery.inserted>0 ? Math.ceil(recentLimit/2) : 1;
+          await recoverRecent(headLimit,true);
+        }
+        await recoverRecent(recentLimit);
+        if(engineStatus.recentMonthlyRecovery.readFailed){
           engineStatus.lastError=[engineStatus.lastError,"recent monthly recovery read failed"].filter(Boolean).join("; ");
         }
       }
