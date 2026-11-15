@@ -224,13 +224,20 @@ const interimEligible = (url, kind, announcement) => kind === 'ن-۱۰' && suppo
 const auditedEligible = (url, kind, announcement) => interimEligible(url,kind,announcement) && /حسابرسی\s+شده/.test(String(announcement?.title || ''));
 const failureKey = (url, kind, announcement) => kind === "ن-۳۰" && monthlySectorProfile(announcement)
   ? `monthly-sector-v1:${url}` : url;
-const industrialRetryKey=(url,kind,announcement)=>kind==="ن-۳۰"&&isIndustrialMonthlyWorkbook(announcement)
-  ? `monthly-industrial-v1:${url}` : null;
+function monthlyRetryKey(url, kind, announcement) {
+  if (kind !== "ن-۳۰") return null;
+  if (isIndustrialMonthlyWorkbook(announcement)) return `monthly-industrial-v1:${url}`;
+  const sector = monthlySectorProfile(announcement);
+  if (sector === 'agriculture_operating_income' || sector === 'financing_service_income') {
+    return `monthly-decision-symbol-v1:${url}`;
+  }
+  return null;
+}
 function recordFail(url, kind, announcement) {
   const key = failureKey(url, kind, announcement);
   state.fails[key] = (state.fails[key] || 0) + 1;
-  const industrialRetry=industrialRetryKey(url,kind,announcement);
-  if(industrialRetry&&state.fails[key]>=MAX_FAILS)state.fails[industrialRetry]=1;
+  const monthlyRetry=monthlyRetryKey(url,kind,announcement);
+  if(monthlyRetry&&state.fails[key]>=MAX_FAILS)state.fails[monthlyRetry]=1;
   if (kind === 'ن-۱۰' && supportsDecisionUrl(url)) state.decisionStatementV1Attempts[url] = 1;
   if (interimEligible(url,kind,announcement)) state.interimStatementV1Attempts[url] = 1;
   if (auditedEligible(url,kind,announcement)) state.auditedStatementV1Attempts[url] = 1;
@@ -239,15 +246,15 @@ function recordFail(url, kind, announcement) {
 function clearFailure(a, kind) {
   delete state.fails[a.link];
   delete state.fails[failureKey(a.link, kind, a)];
-  const industrialRetry=industrialRetryKey(a.link,kind,a);
-  if(industrialRetry)delete state.fails[industrialRetry];
+  const monthlyRetry=monthlyRetryKey(a.link,kind,a);
+  if(monthlyRetry)delete state.fails[monthlyRetry];
 }
 // One bounded attempt for previously blocked official N10 reports now supported
 // by the new adapter. Preserve old failure counts and all existing cycle limits.
 function isBlocked(url,kind,announcement) {
   if((state.fails[failureKey(url,kind,announcement)]||0)<MAX_FAILS)return false;
-  const industrialRetry=industrialRetryKey(url,kind,announcement);
-  if(industrialRetry&&!state.fails[industrialRetry])return false;
+  const monthlyRetry=monthlyRetryKey(url,kind,announcement);
+  if(monthlyRetry&&!state.fails[monthlyRetry])return false;
   return !(kind==='ن-۱۰'&&supportsDecisionUrl(url)&&!state.decisionStatementV1Attempts[url]) &&
     !(interimEligible(url,kind,announcement)&&!state.interimStatementV1Attempts[url]) &&
     !(auditedEligible(url,kind,announcement)&&!state.auditedStatementV1Attempts[url]);
