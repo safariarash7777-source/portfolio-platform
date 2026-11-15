@@ -328,7 +328,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
       </section>
 
       {/* T1 — شناسنامهٔ بنیادی: فروش ماهانهٔ ن-۳۰ — فقط وقتی داده هست (قانون ۲) */}
-      <FundamentalReadNotice readFailed={fundamentalRead.state === "error"} unitUnknown={fundamentals?.n30Unavailable?.unitUnknown} />
+      <FundamentalReadNotice readFailed={fundamentalRead.state === "error"} stale={fundamentalRead.state === "stale"} unitUnknown={fundamentals?.n30Unavailable?.unitUnknown} />
       {fundamentals?.n30 && fundamentals.n30.data.length > 0 ? (
         <section>
           <MonthlySalesCharts
