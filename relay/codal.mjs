@@ -1117,6 +1117,102 @@ function sameQuantityResponseSource(sourceRef, responseUrl) {
   } catch { return false; }
 }
 
+/** Identify the verified monthly workbook families by the linked Codal report. */
+export function monthlySectorProfile(a) {
+  try {
+    const report = new URL(a.link);
+    const serials = report.searchParams.getAll("LetterSerial");
+    const workbook = new URL(a.link_excel);
+    if (report.protocol !== "https:" || !["codal.ir", "www.codal.ir"].includes(report.hostname)
+        || report.username || report.password || report.port || report.hash
+        || report.pathname !== "/Reports/Decision.aspx" || report.searchParams.get("let") !== "58"
+        || serials.length !== 1 || !serials[0] || !sameQuantityResponseSource(a.link_excel, a.link_excel)
+        || workbook.search || decodeURIComponent(workbook.pathname.split("/")[4]) !== serials[0]) return null;
+    const type = report.searchParams.get("rt");
+    if (type === "3") return "bank_reported_income";
+    if (type === "6") return "issued_premium";
+  } catch { /* Invalid publisher identity. */ }
+  return null;
+}
+
+const bankIncomeRows = [
+  "درآمد تسهیلات اعطایی", "درآمد سپرده گذاری", "درآمد اوراق بدهی", "درآمد سرمایه گذاری ها", "درامد کارمزد",
+].map(normLabel);
+
+function readBankMonthly(rows, periodEnd) {
+  const [header, ...items] = rows;
+  if (header.length !== 6 || normLabel(header[0]) !== "شرح"
+      || !normLabel(header[4]).startsWith(normLabel("درآمد محقق شده طی دوره یک ماهه منتهی به"))
+      || !normLabel(header[5]).startsWith(normLabel("جمع درآمد محقق شده از ابتدای سال مالی تا پایان"))
+      || jalaliStr(header[4]) !== periodEnd || jalaliStr(header[5]) !== periodEnd) return null;
+  const entries = items.filter(row => !normLabel(row[0]).startsWith(normLabel("سرفصل های مندرج در جدول فوق الذکر")));
+  if (entries.length !== bankIncomeRows.length
+      || new Set(entries.map(row => normLabel(row[0]))).size !== bankIncomeRows.length) return null;
+  let amount = 0;
+  let cumulative = 0;
+  for (const row of entries) {
+    if (row.length !== 6 || !bankIncomeRows.includes(normLabel(row[0]))) return null;
+    const [adjusted, month, year] = row.slice(3, 6).map(cellNum);
+    if (![adjusted, month, year].every(Number.isSafeInteger)
+        || Math.abs(adjusted + month - year) > 1) return null;
+    amount += month;
+    cumulative += year;
+  }
+  return { amount, cumulative };
+}
+
+function readInsuranceMonthly(rows, periodEnd) {
+  const [header, groups, units, ...items] = rows;
+  const premium = normLabel("حق بیمه صادره (شامل قبولی اتکایی)");
+  const claims = normLabel("خسارت پرداختی");
+  const unit = normLabel("مبلغ (میلیون ریال)");
+  if (header.length !== 6 || normLabel(header[0]) !== "شرح"
+      || !normLabel(header[4]).startsWith(normLabel("دوره یک ماهه منتهی به"))
+      || !normLabel(header[5]).startsWith(normLabel("از ابتدای سال مالی تا پایان"))
+      || jalaliStr(header[4]) !== periodEnd || jalaliStr(header[5]) !== periodEnd
+      || groups?.length !== 10 || !groups.every((label, i) => normLabel(label) === (i % 2 === 0 ? premium : claims))
+      || units?.length !== 19 || normLabel(units[0]) !== normLabel("رشته بیمه ای")
+      || ![11, 13, 15, 17].every(i => normLabel(units[i]) === unit)) return null;
+  const total = items.at(-1);
+  if (normLabel(total?.[0]) !== "جمع" || total.length !== 19 || items.length < 2) return null;
+  const details = items.slice(0, -1);
+  if (details.some(row => !row[0] || row.length !== 19)
+      || new Set(details.map(row => normLabel(row[0]))).size !== details.length) return null;
+  for (const column of [11, 13, 15, 17]) {
+    const values = details.map(row => cellNum(row[column]));
+    const declared = cellNum(total[column]);
+    if (!Number.isSafeInteger(declared) || !values.every(Number.isSafeInteger)
+        || Math.abs(values.reduce((sum, value) => sum + value, 0) - declared) > 1) return null;
+  }
+  return { amount: cellNum(total[11]), cumulative: cellNum(total[15]) };
+}
+
+export function normalizeSectorN30(html, meta, profile) {
+  if (meta.period_months !== 1 || !meta.period_end || !meta.symbol) return null;
+  const read = profile === "bank_reported_income" ? readBankMonthly
+    : profile === "issued_premium" ? readInsuranceMonthly : null;
+  if (!read) return null;
+  const candidates = [];
+  const millionRialCaptions = ["کلیه مبالغ به میلیون ریال است", "کلیه مبالغ درج شده به میلیون ریال می باشد"].map(normLabel);
+  const withLocalUnit = /<div\b[^>]*>\s*(کلیه مبالغ[^<]{1,90})<\/div>\s*<app-table\b[^>]*>([\s\S]*?)<\/app-table>/gi;
+  for (const match of html.matchAll(withLocalUnit)) {
+    const unit = normLabel(match[1]).replace(/\.$/, "");
+    if (!millionRialCaptions.includes(unit)) continue;
+    const tables = parseHtmlTables(match[2]);
+    if (tables.length !== 1) continue;
+    const result = read(tables[0], meta.period_end);
+    if (result && Number.isSafeInteger(result.amount) && Number.isSafeInteger(result.cumulative)) candidates.push(result);
+  }
+  if (candidates.length !== 1) return null;
+  return {
+    symbol: meta.symbol, report_kind: "ن-۳۰", period_end: meta.period_end,
+    fiscal_year: Number(meta.period_end.slice(0, 4)), monthly_measure: profile,
+    period_total_amount: candidates[0].amount, fy_cumulative_amount: candidates[0].cumulative,
+    products: [], unit: "میلیون ریال", unit_basis: "header_only", unit_header: "میلیون ریال", unit_inferred: null,
+    qty_unit: null,
+  };
+}
+
 /** دانلود اکسل اطلاعیه و نرمال‌سازی — null یعنی پارس ناموفق (درج نکنید). */
 export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejected) {
   let body = null;
@@ -1150,6 +1246,11 @@ export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejec
   const source = body && sameQuantityResponseSource(body.sourceRef, body.responseUrl)
     ? { version: 1, sourceId: body.sourceRef, htmlSha256: createHash("sha256").update(body.htmlBytes).digest("hex"),
       htmlBytes: body.htmlBytes, symbol: meta.symbol, periodEnd: meta.period_end } : null;
+  const sector = monthlySectorProfile(a);
+  if (sector) {
+    const sectorData = source ? normalizeSectorN30(html, meta, sector) : null;
+    return sectorData ?? notifyAdmissionRejection(onRejected, kind, "unsupported_layout");
+  }
   const data = normalizeN30(parseHtmlTables(html), { ...meta, quantity_source: source }, onRejected);
   if (data?.quantity_source && typeof a.link === "string" && a.link.trim() && a.link.trim() === a.link) {
     const receipt = {

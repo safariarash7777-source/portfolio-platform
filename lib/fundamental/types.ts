@@ -81,12 +81,15 @@ export interface N30ProductRow {
   sales_amount: number | null; // میلیون ریال
 }
 
+export type MonthlyMeasure = "sales" | "bank_reported_income" | "issued_premium";
+
 /** دادهٔ نرمال‌شدهٔ گزارش ن-۳۰ (فعالیت ماهانه). */
 export interface CodalN30Data {
   symbol: string;
   report_kind: "ن-۳۰";
   period_end: string; // ماه جلالی
   fiscal_year: number;
+  monthly_measure?: MonthlyMeasure;
   products: N30ProductRow[];
   period_total_amount: number;
   fy_cumulative_amount: number | null;

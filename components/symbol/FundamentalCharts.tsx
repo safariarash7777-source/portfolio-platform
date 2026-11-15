@@ -26,6 +26,7 @@ import { toPersianDigits } from "@/lib/format";
 import type { SymbolFundamentals } from "@/lib/fundamental/types";
 import { isMillionRialUnit } from "@/lib/fundamental/units";
 import { withKnownMonthlyQuantities } from "@/lib/core/monthly-quantity";
+import { comparableMonthlyReports } from "@/lib/core/monthlyReport";
 import CodalSourceLink from "@/components/symbol/CodalSourceLink";
 import {
   deriveN10,
@@ -516,7 +517,9 @@ export default function FundamentalCharts({
   const n10Comparable = !!n10 && isMillionRialUnit(n10.data.unit) && n10.source.scope === "company";
   const derived = useMemo(() => (n10Comparable && n10 ? deriveN10(n10.data) : null), [n10, n10Comparable]);
   const n30 = fundamentals.n30;
-  const n30d = useMemo(() => (n30 ? deriveN30(n30.data.map(withKnownMonthlyQuantities)) : null), [n30]);
+  const monthly = useMemo(() => comparableMonthlyReports(n30?.data ?? []), [n30]);
+  const productSales = (monthly[0]?.monthly_measure ?? "sales") === "sales";
+  const n30d = useMemo(() => (productSales && monthly.length ? deriveN30(monthly.map(withKnownMonthlyQuantities)) : null), [monthly, productSales]);
   const smallPositiveExportShare = n30d !== null && n30d.exportSharePct === 0
     && n30d.months.some(month => month.exportAmount !== null && month.exportAmount > 0);
   const [usd, setUsd] = useState(false);
@@ -640,6 +643,7 @@ export default function FundamentalCharts({
           ) : null}
         </ChartCard>
 
+        {productSales ? <>
         {/* چارت ۴ — ترکیب فروش و سهم محصولات — از ن-۳۰ واقعی (T5) */}
         {n30d && n30d.productMix.length > 0 ? (
           <ChartCard
@@ -698,6 +702,7 @@ export default function FundamentalCharts({
               : "در خواندن فعلی، گزارش ماهانهٔ ن-۳۰ قابل نمایش برای این نماد در دسترس نیست."}
           />
         )}
+        </> : null}
       </div>
 
       {/* روند ۵ساله — دادهٔ واقعی جدول رسمی خود گزارش (مکمل چارت‌های بالا) */}

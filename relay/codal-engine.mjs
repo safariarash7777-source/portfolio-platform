@@ -22,7 +22,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import {
   classifyAnnouncement, fetchAnnouncementsPage, downloadAndParse,
-  insertParsedReport, existingUrlsFor, faToEn, codalEnv,
+  insertParsedReport, existingUrlsFor, faToEn, codalEnv, monthlySectorProfile,
 } from "./codal.mjs";
 import { backgroundWorkWindow } from "./background-work-window.mjs";
 import { companyUniverse } from "./codal-coverage.mjs";
@@ -200,16 +200,23 @@ export function sentKey(a) {
 
 const interimEligible = (url, kind, announcement) => kind === 'ن-۱۰' && supportsDecisionUrl(url) && /تلفیقی/.test(String(announcement?.title || ''));
 const auditedEligible = (url, kind, announcement) => interimEligible(url,kind,announcement) && /حسابرسی\s+شده/.test(String(announcement?.title || ''));
+const failureKey = (url, kind, announcement) => kind === "ن-۳۰" && monthlySectorProfile(announcement)
+  ? `monthly-sector-v1:${url}` : url;
 function recordFail(url, kind, announcement) {
-  state.fails[url] = (state.fails[url] || 0) + 1;
+  const key = failureKey(url, kind, announcement);
+  state.fails[key] = (state.fails[key] || 0) + 1;
   if (kind === 'ن-۱۰' && supportsDecisionUrl(url)) state.decisionStatementV1Attempts[url] = 1;
   if (interimEligible(url,kind,announcement)) state.interimStatementV1Attempts[url] = 1;
   if (auditedEligible(url,kind,announcement)) state.auditedStatementV1Attempts[url] = 1;
-  return state.fails[url];
+  return state.fails[key];
+}
+function clearFailure(a, kind) {
+  delete state.fails[a.link];
+  delete state.fails[failureKey(a.link, kind, a)];
 }
 // One bounded attempt for previously blocked official N10 reports now supported
 // by the new adapter. Preserve old failure counts and all existing cycle limits.
-const isBlocked = (url, kind, announcement) => (state.fails[url] || 0) >= MAX_FAILS &&
+const isBlocked = (url, kind, announcement) => (state.fails[failureKey(url, kind, announcement)] || 0) >= MAX_FAILS &&
   !(kind === 'ن-۱۰' && supportsDecisionUrl(url) && !state.decisionStatementV1Attempts[url]) &&
   !(interimEligible(url,kind,announcement) && !state.interimStatementV1Attempts[url]) &&
   !(auditedEligible(url,kind,announcement) && !state.auditedStatementV1Attempts[url]);
@@ -300,6 +307,8 @@ async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false } = {}
   const feedItems = []; // M4: متادیتای همهٔ اطلاعیه‌های تازه، نه فقط ن-۱۰/ن-۳۰
   let previousKey = Infinity;
   let pageDeferral = null;
+  let unverifiedOrder = false;
+  const seenLinks = new Set();
 
   outer:
   for (let page = 1; page <= FEED_MAX_PAGES; page++) {
@@ -311,20 +320,31 @@ async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false } = {}
       break;
     }
     st.pages = page;
-    if (!items.length) { st.complete = true; st.incompleteReason = null; break; }
+    if (!items.length) {
+      if (!unverifiedOrder) { st.complete = true; st.incompleteReason = null; }
+      break;
+    }
+    let passedWatermark = false;
     for (const a of items) {
       st.seen++;
       const k = sentKey(a);
-      if (!k || typeof a.link !== "string" || !a.link.trim() || k > previousKey) {
+      const validIdentity = k > 0 && typeof a.link === "string" && !!a.link.trim();
+      if (!validIdentity || k > previousKey) {
+        unverifiedOrder = true;
         st.incompleteReason = "invalid_order_or_identity";
-        // Keep the verified prefix, but never acknowledge a gap in the feed.
-        // The next scheduled cycle resumes from the unchanged watermark.
-        break outer;
+        if (!monthlyOnly) break outer;
+        if (!validIdentity) continue;
       }
       previousKey = k;
       // Only an older timestamp proves the same-time group is exhausted.
-      if (wm && k < wm.key) { st.complete = true; st.incompleteReason = null; break outer; }
+      if (wm && k < wm.key) {
+        if (!monthlyOnly) { st.complete = true; st.incompleteReason = null; break outer; }
+        passedWatermark = true;
+        continue;
+      }
       if (wm && k === wm.key && wm.links.includes(a.link)) continue;
+      if (seenLinks.has(a.link)) continue;
+      seenLinks.add(a.link);
       if (k > newestSeen.key) { newestSeen.key = k; newestSeen.links = [a.link]; }
       else if (k === newestSeen.key) newestSeen.links.push(a.link);
       if (a.link) feedItems.push(a); // M4
@@ -332,8 +352,11 @@ async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false } = {}
       if (monthlyOnly && kind !== "ن-۳۰") continue;
       if (!kind || !a.link || !a.link_excel) continue;
       st.matched++;
-      candidates.push({ a, kind });
+      candidates.push({ a, kind, k });
     }
+    // A monthly page can contain a newer valid row after one older than the
+    // checkpoint. Inspect the page before deciding that discovery caught up.
+    if (passedWatermark && !unverifiedOrder) { st.complete = true; st.incompleteReason = null; break; }
   }
 
   // M4: فید عمومی کدال — متادیتا قبل از دانلودها درج می‌شود تا فید عقب نماند
@@ -355,11 +378,12 @@ async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false } = {}
   }
 
   // دانلود و درج (جدیدترین‌ها اول)
+  if (monthlyOnly) candidates.sort((a, b) => b.k - a.k);
   let dl = 0;
   for (const { a, kind } of candidates) {
     // dedup با ردیف‌های موجودِ همان نماد
     const known = await existingUrlsFor(a.l18);
-    if (known.has(a.link)) { delete state.fails[a.link]; continue; }
+    if (known.has(a.link)) { clearFailure(a, kind); continue; }
     if (isBlocked(a.link, kind, a)) { st.complete = false; st.incompleteReason = "blocked_report"; continue; }
     if (dl >= FEED_MAX_DL) { st.complete = false; st.incompleteReason = "download_limit"; break; }
     dl++;
@@ -372,7 +396,7 @@ async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false } = {}
       if (data) {
         stage = "persistence";
         st.inserted += await insertParsedReport(a, kind, data);
-        delete state.fails[a.link];
+        clearFailure(a, kind);
       } else {
         recordFailureDiagnostic("admission", "rejected");
         recordAdmissionRejection(state.admissionDiagnostics, kind, rejection);
@@ -466,7 +490,7 @@ async function backfillSome({ monthlyOnly = false } = {}) {
           if (data) {
             stage = "persistence";
             st.inserted += await insertParsedReport(a, kind, data);
-            delete state.fails[a.link];
+            clearFailure(a, kind);
           } else {
             recordFailureDiagnostic("admission", "rejected");
             recordAdmissionRejection(state.admissionDiagnostics, kind, rejection);
@@ -522,7 +546,7 @@ async function recoverStoredReports({ monthlyOnly = false } = {}) {
         const data=await downloadAndParse(a,kind,()=>{stage='admission';},event=>{rejection??=admissionEvent(event,kind);});
         if(data){
           stage='persistence';st.inserted+=await insertParsedReport(a,kind,data);
-          known.add(a.link);delete state.fails[a.link];
+          known.add(a.link);clearFailure(a, kind);
         } else {
           st.parseFailed++;recordFailureDiagnostic('admission','rejected');
           recordAdmissionRejection(state.admissionDiagnostics,kind,rejection);recordFail(a.link,kind,a);

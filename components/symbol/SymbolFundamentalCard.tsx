@@ -8,6 +8,7 @@
 import { useId, useState } from "react";
 import { ChevronDown, ExternalLink } from "lucide-react";
 import type { FundamentalCardData } from "@/lib/core/fundamentalCard";
+import { monthlyMeasureLabel } from "@/lib/core/monthlyReport";
 import { toPersianDigits } from "@/lib/format";
 import Term from "@/components/learn/Term";
 import styles from "./SymbolDossier.module.css";
@@ -46,7 +47,9 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
   // بدون هیچ داده‌ای، کارت اصلاً رندر نمی‌شود (قانون ۲ — تصمیم در والد هم تکرار شده)
   if (!card.latestMonth || card.narrative == null) return null;
 
-  const maxTotal = Math.max(1, ...card.months12.map((m) => m.totalAmount));
+  const measure = card.measure ?? "sales";
+  const measureLabel = monthlyMeasureLabel(measure);
+  const maxTotal = Math.max(1, ...card.months12.map((m) => Math.abs(m.totalAmount)));
   const smallPositiveExportShare = card.exportSharePct === 0 && card.months12.some(month =>
     month.month === card.latestMonth && month.exportAmount !== null && month.exportAmount > 0);
 
@@ -88,7 +91,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
         aria-expanded={openTrend}
         aria-controls={trendId}
       >
-        <span>روند و ترکیب فروش (۱۲ ماه)</span>
+        <span>{measure === "sales" ? "روند و ترکیب فروش" : `روند ${measureLabel}`} (۱۲ ماه)</span>
         <ChevronDown size={16} aria-hidden="true" />
       </button>
       <div id={trendId} hidden={!openTrend}>
@@ -98,7 +101,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
           <div>
             <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-[12px] font-bold" style={{ color: "var(--text-2)" }}>
-                فروش ماهانه (میلیارد تومان)
+                {measureLabel} ماهانه (میلیارد تومان)
               </h3>
               <span className="text-[11px]" style={{ color: "var(--text-3)" }}>
                 درصدها: تغییر نسبت به همین ماه سال قبل
@@ -108,7 +111,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
             <div className={`space-y-1 ${styles.trendRows}`}>
               {card.months12.map((m) => {
                 const yoy = card.monthlyYoY.find((x) => x.month === m.month)?.yoyPct ?? null;
-                const w = Math.max(2, Math.round((m.totalAmount / maxTotal) * 100));
+                const w = Math.max(2, Math.round((Math.abs(m.totalAmount) / maxTotal) * 100));
                 return (
                   <div key={m.month} className="flex items-center gap-2">
                     <span className="w-16 shrink-0 text-[11px]" style={{ color: "var(--text-3)" }} dir="ltr">
@@ -133,7 +136,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
           </div>
 
           {/* ترکیب داخلی/صادراتی + شکاف تولید−فروش + نرخ محصول اصلی */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {measure === "sales" ? <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="rounded-lg px-3 py-2" style={{ background: "var(--surface-2)" }}>
               <div className="text-[11px]" style={{ color: "var(--text-3)" }}>سهم صادرات (آخرین ماه)</div>
               <div className="mt-1 text-[15px] font-bold" style={{ color: "var(--heading)" }}>
@@ -164,7 +167,7 @@ export default function SymbolFundamentalCard({ card }: { card: FundamentalCardD
                 {card.topProductRate != null ? fa(card.topProductRate.toLocaleString("en-US")) : "—"}
               </div>
             </div>
-          </div>
+          </div> : null}
         </div>
       ) : null}
       </div>
