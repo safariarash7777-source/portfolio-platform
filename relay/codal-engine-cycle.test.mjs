@@ -37,6 +37,8 @@ async function fixture(options = {}) {
   let rejectFeed = !!options.rejectFeed;
   let rejectSave = !!options.rejectSave;
   const budgetJobs = [];
+  const storedRows=[...(options.storedRows??[])];
+  const officialPages=[];
   codal.setCodalBudgetPorts({ client: { request: async (job) => {
     budgetJobs.push({ producer: job.producer, budgetClass: job.budgetClass });
     calls.pages.push(Number(job.params.page));
@@ -52,6 +54,12 @@ async function fixture(options = {}) {
   } } });
   globalThis.fetch = async (input, init = {}) => {
     const url = new URL(input);
+    if(url.hostname==="search.codal.ir"&&options.monthlyOfficialPages){
+      assert.equal(url.searchParams.get("Category"),"3");
+      officialPages.push(Number(url.searchParams.get("PageNumber")));
+      const entries=options.monthlyOfficialPages[officialPages.at(-1)];
+      return entries instanceof Array ? response({Total:100,Letters:entries}) : response({},503);
+    }
     if (url.hostname === 'codal.ir' && options.monthlyDecision) {
       if (url.pathname === '/Reports/Decision.aspx') return new Response(null,{status:302,
         headers:{Location:`/Reports/MonthlyActivity.aspx?LetterSerial=${options.monthlyDecision.redirectSerial ?? url.searchParams.get('LetterSerial')}`}});
@@ -73,6 +81,9 @@ async function fixture(options = {}) {
       const rows = JSON.parse(init.body);
       calls.feedWrites.push({ rows, prefer: init.headers.Prefer });
       if (rejectFeed) return response({ error: "mock failure" }, 503);
+      if(options.monthlyOfficialPages){
+        for(const row of rows)if(!storedRows.some(old=>old.link===row.link))storedRows.unshift({...row,id:100000+storedRows.length});
+      }
       return response(options.feedBody ?? rows);
     }
     if (url.pathname.endsWith("/codal_feed") && !init.method) {
@@ -84,7 +95,7 @@ async function fixture(options = {}) {
       calls.storedPublicationFilters.push(publicationFilter);
       if(publicationFilter&&options.rejectMonthlyPublicationRead)return response({},503);
       const before = BigInt(url.searchParams.get("id")?.slice(3) ?? "9223372036854775807");
-      return response((options.storedRows ?? []).filter(r => BigInt(r.id) < before && (!category || category === `eq.${r.category}`)).slice(0, options.storedPageSize ?? 100));
+      return response(storedRows.filter(r => BigInt(r.id) < before && (!category || category === `eq.${r.category}`)).slice(0, options.storedPageSize ?? 100));
     }
     if (url.pathname.endsWith("/codal_reports") && init.method === "POST") {
       const rows = JSON.parse(init.body);
@@ -138,7 +149,7 @@ async function fixture(options = {}) {
   };
   const engine = await import(`./codal-engine.mjs?mock=${++scenario}`);
   return {
-    engine, calls, budgetJobs, get persisted() { return persisted; },
+    engine, calls, budgetJobs, officialPages, get persisted() { return persisted; },
     allowFeed: () => { rejectFeed = false; }, allowSave: () => { rejectSave = false; },
   };
 }
@@ -1254,6 +1265,31 @@ test('recent monthly recovery uses the verified publication date and shares the 
  assert.equal(fallback.engine.engineStatus.recentMonthlyRecovery.readFailed,true);
  assert.equal(fallback.engine.engineStatus.storedRecovery.inserted,6);
  assert.equal(fallback.calls.excel.length,6);
+});
+
+test('official monthly reconciliation fills a missing listed report through the existing recovery, preserving page and download bounds',async t=>{
+ t.mock.method(Date,'now',()=>Date.parse("2026-11-15T16:30:00Z"));
+ const title="گزارش فعالیت ماهانه منتهی به 1405/06/31";
+ const official=(id,changes={})=>({TracingNo:id,Symbol:"فولاد",Title:title,CompanyName:"فولاد مبارکه",LetterCode:"ن-۳۰",
+  Url:`/Reports/Decision.aspx?LetterSerial=official${id}&rt=0&let=58`,
+  ExcelUrl:`https://excel.codal.ir/service/Excel/GetAll/official${id}/0`,
+  SentDateTime:"1405/08/24 10:00:00",PublishDateTime:"1405/08/24 11:00:00",...changes});
+ const expected=[official(3),official(2)];
+ const excelHtml=readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
+ const f=await fixture({pages:[[]],marketBody:[{payload:{stocks:[{id:"فولاد"}]}}],excelHtml,exactWorkbookResponse:true,
+   initialState:{watermark,fails:{},officialMonthlyNextPage:5,recentMonthlyRecoveryCursor:"10"},
+   monthlyOfficialPages:{
+     1:[expected[0],official(4,{Symbol:"خارج بازار"}),official(5,{LetterCode:"ن-۱۰"}),official(6,{ExcelUrl:null})],
+     5:[expected[1]],
+   }});
+ await f.engine.runEngineCycle({monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true,officialMonthlyReconciliation:true});
+ assert.deepEqual(f.officialPages,[1,5,6]);
+ assert.deepEqual(f.calls.pages,[1]);
+ assert.deepEqual(f.calls.feedWrites.flatMap(write=>write.rows.map(row=>row.link)),expected.map(x=>"https://codal.ir"+x.Url));
+ assert.deepEqual(f.calls.excel,["/service/Excel/GetAll/official2/0","/service/Excel/GetAll/official3/0"]);
+ assert.equal(f.calls.reportWrites.length,2);
+ assert.deepEqual(f.engine.engineStatus.officialMonthlyDiscovery,{pages:2,matched:2,inserted:2,nextPage:6,failed:true});
+ assert.equal(f.persisted.officialMonthlyNextPage,6);
 });
 
 test('the fast discovery cycle includes recent interim statements within the shared download allocation', async t => {

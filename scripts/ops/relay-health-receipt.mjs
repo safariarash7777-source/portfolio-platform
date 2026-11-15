@@ -71,6 +71,8 @@ function diagnostics(value, shape) {
 function codalDetails(engine, archive) {
   return {
     reportScope: choice(engine?.reportScope, ['monthly_only', 'monthly_and_recent_interim', 'all_reports']),
+    officialMonthlyDiscovery: { ...integerCounts(engine?.officialMonthlyDiscovery, ['pages','matched','inserted','nextPage']),
+      failed:boolean(engine?.officialMonthlyDiscovery?.failed) },
     recentMonthlyRecovery: { ...integerCounts(engine?.recentMonthlyRecovery, ['scanned', 'downloaded', 'inserted', 'parseFailed', 'blocked', 'metadataSkipped']),
       active:boolean(engine?.recentMonthlyRecovery?.active), readFailed:boolean(engine?.recentMonthlyRecovery?.readFailed),
       reachedEnd:boolean(engine?.recentMonthlyRecovery?.reachedEnd) },

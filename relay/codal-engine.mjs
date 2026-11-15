@@ -21,7 +21,7 @@
 // سهمیه و زمان چرخه هدر نرود. با آمدن پارسر بانک/بیمه، پاک‌کردن دفتر کافی است.
 // ─────────────────────────────────────────────────────────────────────────────
 import {
-  classifyAnnouncement, fetchAnnouncementsPage, downloadAndParse,
+  classifyAnnouncement, fetchAnnouncementsPage, fetchOfficialMonthlyPage, downloadAndParse,
   insertParsedReport, existingUrlsFor, faToEn, codalEnv, monthlySectorProfile, isIndustrialMonthlyWorkbook,
   jalaliYmdToGregorian, metaFromAnnouncement,
 } from "./codal.mjs";
@@ -32,7 +32,8 @@ import { codalAccess, isCodalSourceDeferred } from './codal-source-access.mjs';
 const isBrsLocalDeferral = error => isBrsDeferred(error) || isBrsBudgetDeferral(error) || isCodalSourceDeferred(error);
 import { admissionCounts, admissionEvent, readAdmissionDiagnostics, recordAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 import { supportsDecisionUrl } from "./codal-statement-source.mjs";
-import { readStoredAnnouncements, recentMonthlyBounds, validStoredCursor } from "./codal-stored-feed.mjs";
+import { canonicalMarketSymbol, readStoredAnnouncements, recentMonthlyBounds, validStoredCursor,
+  verifiedMonthlyDiscovery } from "./codal-stored-feed.mjs";
 
 const { BRSAPI_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = codalEnv;
 
@@ -95,6 +96,7 @@ export const engineStatus = {
   backfill: { cursor: 0, queueSize: 0, symbols: [], inserted: 0, downloaded: 0, parseFailed: 0, skippedCovered: 0, coverageBasis: "snapshot-universe-not-freshness" },
   storedRecovery: recoveryCounts(),
   recentMonthlyRecovery: { ...recoveryCounts(), active: false, readFailed: false },
+  officialMonthlyDiscovery: { pages:0, matched:0, inserted:0, nextPage:null, failed:false },
   interimRecovery: recoveryCounts(),
   ledgerSize: 0,
   failureDiagnostics: readFailureDiagnostics(),
@@ -128,6 +130,8 @@ async function loadState() {
   }
   if (!validStoredCursor(payload.monthlyRecoveryCursor ?? null)) throw new Error('monthly recovery cursor invalid');
   if (!validStoredCursor(payload.recentMonthlyRecoveryCursor ?? null)) throw new Error('recent monthly recovery cursor invalid');
+  const officialPage=payload.officialMonthlyNextPage??2;
+  if(!Number.isSafeInteger(officialPage)||officialPage<2||officialPage>10000)throw new Error('official monthly page invalid');
   if (!validStoredCursor(payload.interimRecoveryCursor ?? null)) throw new Error('interim recovery cursor invalid');
   if ((payload.backfillCursor != null && (!Number.isInteger(payload.backfillCursor) || payload.backfillCursor < 0)) ||
       (payload.fails != null && (typeof payload.fails !== "object" || Array.isArray(payload.fails) ||
@@ -477,11 +481,45 @@ async function allCompanySymbols() {
   return companyUniverse(stocks);
 }
 
-async function backfillSome({ monthlyOnly = false } = {}) {
+async function reconcileOfficialMonthly(bounds,loadCompanies) {
+  const status=engineStatus.officialMonthlyDiscovery;
+  const symbols=new Map();
+  for(const name of await loadCompanies()){
+    const key=canonicalMarketSymbol(name);
+    if(!symbols.has(key))symbols.set(key,name);
+    else if(symbols.get(key)!==name)symbols.set(key,null);
+  }
+  if(!symbols.size)return;
+  // Check for new publications first, then continue a bounded sweep of older
+  // pages in the same official release window. The BRS watermark is independent.
+  let page=1;
+  for(let i=0;i<3;i++){
+    codalAccess.check();
+    const official=await fetchOfficialMonthlyPage(page,bounds.since);
+    status.pages++;
+    const matched=new Map();
+    for(const candidate of official){
+      const entry=verifiedMonthlyDiscovery(candidate,bounds,symbols);
+      if(entry)matched.set(entry.link,entry);
+    }
+    status.matched+=matched.size;
+    const insertedBefore=engineStatus.feedTable.inserted;
+    await pushFeedRows([...matched.values()]);
+    status.inserted+=engineStatus.feedTable.inserted-insertedBefore;
+    if(page>1){
+      state.officialMonthlyNextPage=official.length&&page<10000?page+1:2;
+      status.nextPage=state.officialMonthlyNextPage;
+    }
+    if(!official.length)break;
+    page=state.officialMonthlyNextPage??2;
+  }
+}
+
+async function backfillSome({ monthlyOnly = false, loadCompanies = allCompanySymbols } = {}) {
   const st = engineStatus.backfill;
   st.inserted = 0; st.downloaded = 0; st.parseFailed = 0; st.skippedCovered = 0; st.symbols = [];
 
-  const queue = await allCompanySymbols();
+  const queue = await loadCompanies();
   st.queueSize = queue.length;
   if (!queue.length) return;
 
@@ -555,17 +593,19 @@ async function backfillSome({ monthlyOnly = false } = {}) {
 }
 
 /* ── اجرای یک چرخهٔ کامل موتور ─────────────────────────────────────────────── */
-async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBounds=null,limit,attempted=new Set(),knownBySymbol=new Map()}) {
+async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBounds=null,limit,attempted=new Set(),knownBySymbol=new Map(),freshHead=false}) {
   const st=interimWindow ? engineStatus.interimRecovery : monthlyBounds ? engineStatus.recentMonthlyRecovery : engineStatus.storedRecovery;
   const cursorKey=interimWindow ? "interimRecoveryCursor" : monthlyBounds ? "recentMonthlyRecoveryCursor"
     : monthlyOnly ? "monthlyRecoveryCursor" : "storedFeedCursor";
   if (limit <= 0) return;
+  let cursor=freshHead?null:state[cursorKey]??null;
+  const advance=next=>{cursor=next;if(!freshHead)state[cursorKey]=next;};
   // Share the existing backfill download allocation. Only two stored pages are
   // read per cycle; an empty page, not a short server-capped page, ends the scan.
-  for(let page=0;page<2;page++){
-    const rows=await readStoredAnnouncements(state[cursorKey] ?? null,{baseUrl:SUPABASE_URL,headers:SB_HDRS(),
+  for(let page=0;page<(freshHead?1:2);page++){
+    const rows=await readStoredAnnouncements(cursor,{baseUrl:SUPABASE_URL,headers:SB_HDRS(),
       monthlyOnly,interimSince:interimWindow?.startIso ?? null,monthlyBounds});
-    if(!rows.length){state[cursorKey]=null;st.reachedEnd=true;break;}
+    if(!rows.length){advance(null);if(!freshHead)st.reachedEnd=true;break;}
     for(const row of rows){
       const a=row.announcement,classified=a && classifyAnnouncement(a);
       const kind=interimWindow
@@ -573,12 +613,12 @@ async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBound
         : monthlyOnly && classified !== "ن-۳۰" ? null : classified;
       if(a && kind && st.downloaded>=limit)return;
       st.scanned++;
-      if(!a || !kind){st.metadataSkipped++;state[cursorKey]=row.id;continue;}
-      if(attempted.has(a.link)){state[cursorKey]=row.id;continue;}
+      if(!a || !kind){st.metadataSkipped++;advance(row.id);continue;}
+      if(attempted.has(a.link)){advance(row.id);continue;}
       if(!knownBySymbol.has(a.l18))knownBySymbol.set(a.l18,await existingUrlsFor(a.l18));
       const known=knownBySymbol.get(a.l18);
-      if(known.has(a.link)){st.skippedKnown++;state[cursorKey]=row.id;continue;}
-      if(isBlocked(a.link,kind,a)){st.blocked++;state[cursorKey]=row.id;continue;}
+      if(known.has(a.link)){st.skippedKnown++;advance(row.id);continue;}
+      if(isBlocked(a.link,kind,a)){st.blocked++;advance(row.id);continue;}
       let stage='download',rejection=null;st.downloaded++;attempted.add(a.link);
       try {
         const data=await downloadAndParse(a,kind,()=>{stage='admission';},event=>{rejection??=admissionEvent(event,kind);});
@@ -593,12 +633,13 @@ async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBound
         if(isBrsLocalDeferral(error))throw error;
         st.parseFailed++;recordFailureDiagnostic(stage,'exception');recordFail(a.link,kind,a);
       }
-      state[cursorKey]=row.id;
+      advance(row.id);
     }
   }
 }
 
-export async function runEngineCycle({ allowBackground = true, monthlyOnly = false, recentInterimReports = false, prioritizeRecentMonthly = false } = {}) {
+export async function runEngineCycle({ allowBackground = true, monthlyOnly = false, recentInterimReports = false,
+  prioritizeRecentMonthly = false, officialMonthlyReconciliation = false } = {}) {
   const includeInterim = monthlyOnly && recentInterimReports && INTERIM_MAX_DL > 0;
   engineStatus.reportScope = includeInterim ? "monthly_and_recent_interim" : monthlyOnly ? "monthly_only" : "all_reports";
   engineStatus.ok = false;
@@ -618,11 +659,13 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
   const storedCursorBefore = state.storedFeedCursor;
   const monthlyCursorBefore = state.monthlyRecoveryCursor ?? null;
   const recentMonthlyCursorBefore = state.recentMonthlyRecoveryCursor ?? null;
+  const officialMonthlyPageBefore = state.officialMonthlyNextPage;
   const interimCursorBefore = state.interimRecoveryCursor ?? null;
   Object.assign(engineStatus.backfill, { inserted: 0, downloaded: 0, parseFailed: 0, symbols: [], skippedCovered: 0 });
   Object.assign(engineStatus.storedRecovery, recoveryCounts());
   const monthlyBounds=monthlyOnly&&prioritizeRecentMonthly ? recentMonthlyBounds(engineStatus.lastRun) : null;
   Object.assign(engineStatus.recentMonthlyRecovery,recoveryCounts(),{active:monthlyBounds!==null,readFailed:false});
+  Object.assign(engineStatus.officialMonthlyDiscovery,{pages:0,matched:0,inserted:0,nextPage:officialMonthlyPageBefore??2,failed:false});
   Object.assign(engineStatus.interimRecovery, recoveryCounts());
   const tehranOffset = (3 * 60 + 30) * 60 * 1000;
   const interimWindow = includeInterim ? {
@@ -632,6 +675,8 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
   } : null;
   let feedDeferred = false;
   const monthlyAttempts=monthlyBounds ? new Set() : null;
+  let companies;
+  const loadCompanies=()=>companies??=allCompanySymbols();
   const sourceHeld = codalAccess.snapshot() > Date.now();
   try {
     if (sourceHeld && process.env.CODAL_ANNOUNCEMENT_SOURCE === 'official') codalAccess.check();
@@ -645,6 +690,13 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
     engineStatus.lastError = `feed: ${e?.message ?? e}`;
     console.error("codal-engine feed error:", e?.message ?? e);
   }
+  if(monthlyBounds&&officialMonthlyReconciliation&&codalAccess.snapshot()<=Date.now()){
+    try{await reconcileOfficialMonthly(monthlyBounds,loadCompanies);}
+    catch{
+      engineStatus.officialMonthlyDiscovery.failed=true;
+      engineStatus.lastError=[engineStatus.lastError,"official monthly discovery failed"].filter(Boolean).join("; ");
+    }
+  }
   try {
     if ((allowBackground || monthlyOnly) && codalAccess.snapshot() <= Date.now()) {
       const remaining = FEED_MAX_DL - engineStatus.feed.downloaded;
@@ -655,6 +707,9 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
       if(monthlyBounds&&limit>0){
         try{
           // Share the current workbook cap with the persistent historical sweep.
+          if(engineStatus.officialMonthlyDiscovery.inserted>0){
+            await recoverStoredReports({monthlyOnly,monthlyBounds,limit:1,attempted,knownBySymbol,freshHead:true});
+          }
           await recoverStoredReports({monthlyOnly,monthlyBounds,limit:Math.ceil(limit/2),attempted,knownBySymbol});
         }catch(error){
           if(isBrsLocalDeferral(error))throw error;
@@ -664,7 +719,7 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
       }
       await recoverStoredReports({monthlyOnly,limit:limit-engineStatus.recentMonthlyRecovery.downloaded,attempted,knownBySymbol});
       if (interimRemaining > 0) await recoverStoredReports({monthlyOnly:false,interimWindow,limit:interimRemaining});
-      if (allowBackground && !feedDeferred) await backfillSome({monthlyOnly});
+      if (allowBackground && !feedDeferred) await backfillSome({monthlyOnly,loadCompanies});
     }
   } catch (e) {
     engineStatus.lastError = [engineStatus.lastError, `backfill: ${e?.message ?? e}`].filter(Boolean).join("; ");
@@ -685,6 +740,7 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
     state.storedFeedCursor = storedCursorBefore;
     state.monthlyRecoveryCursor = monthlyCursorBefore;
     state.recentMonthlyRecoveryCursor = recentMonthlyCursorBefore;
+    state.officialMonthlyNextPage = officialMonthlyPageBefore;
     state.interimRecoveryCursor = interimCursorBefore;
     engineStatus.feed.watermark = state.watermark?.key ?? null;
     engineStatus.lastError = [engineStatus.lastError, `state save: ${e?.message ?? e}`].filter(Boolean).join("; ");
