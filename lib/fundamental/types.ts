@@ -88,6 +88,8 @@ export const MONTHLY_MEASURE_LABELS = {
   service_recognized_income: "درآمد شناسایی‌شدهٔ خدمات و فروش",
   leasing_reported_income: "درآمدهای گزارش‌شدهٔ لیزینگ",
   real_estate_recognized_income: "درآمد محقق‌شدهٔ فعالیت ساختمانی",
+  agriculture_operating_income: "درآمدهای عملیاتی کشاورزی",
+  financing_service_income: "درآمد ارائهٔ خدمات تأمین سرمایه",
 } as const;
 
 export type MonthlyMeasure = keyof typeof MONTHLY_MEASURE_LABELS;
