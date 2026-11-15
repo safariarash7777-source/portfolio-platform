@@ -683,6 +683,21 @@ export function resolveAmountUnit(tables, products) {
   return { ...base, unit: null, basis: "unresolved" };
 }
 
+const compactProductColumns = ["تعداد تولید", "تعداد فروش", "نرخ فروش (ریال)", "مبلغ فروش (میلیون ریال)"].map(normLabel);
+
+function compactProductLayout(groups, columns, periodEnd) {
+  if (groups.length !== 5 || columns.length !== 14 || !periodEnd ||
+      normLabel(groups[0]) !== "شرح" || normLabel(groups[4]) !== normLabel("وضعیت محصول-واحد") ||
+      !normLabel(groups[1]).startsWith(normLabel("دوره یک ماهه منتهی به")) ||
+      ![2, 3].every(index => normLabel(groups[index]).startsWith(normLabel("از ابتدای سال مالی تا تاریخ"))) ||
+      jalaliStr(groups[1]) !== periodEnd || jalaliStr(groups[2]) !== periodEnd ||
+      normLabel(columns[0]) !== normLabel("نام محصول") || normLabel(columns[1]) !== "واحد" ||
+      !columns.slice(2).every((label, index) => normLabel(label) === compactProductColumns[index % 4])) return false;
+  const prior = jalaliStr(groups[3]);
+  return prior !== null && Number(prior.slice(0, 4)) + 1 === Number(periodEnd.slice(0, 4))
+    && prior.slice(5, 7) === periodEnd.slice(5, 7);
+}
+
 export function normalizeN30(tables, meta, onRejected) {
   const products = [];
   let supportedLayout = false;
@@ -709,12 +724,22 @@ export function normalizeN30(tables, meta, onRejected) {
     if (!h0.some((c) => c.includes("دوره یک ماهه") || c.includes("دوره یکماهه") || c.includes("ماهه منتهی"))) continue;
     supportedLayout = true;
 
-    // بلوک‌بندی ثابت طبق ساختار استاندارد ن-۳۰ (۲۶ ستون):
+    const compact = compactProductLayout(h0, t[h1Idx], meta.period_end);
+    // بلوک‌بندی قالب کامل ن-۳۰ (۲۶ ستون):
     //   2..5 تجمعی گزارش قبل | 6..8 اصلاحات | 9..12 تجمعی اصلاح‌شده
     //   13..16 دورهٔ یک‌ماههٔ جاری | 17..20 تجمعی تا پایان ماه جاری | 21..24 تجمعی سال قبل
-    const expectCols = 26;
-    const M = { prod: 13, qty: 14, rate: 15, amount: 16 };
-    const C = { qty: 18, amount: 20 };
+    // The compact layout starts directly with the current month and the fiscal
+    // cumulative; the optional final cell is product status, not a value.
+    const minimumColumns = compact ? 14 : 24;
+    const M = compact ? { prod: 2, qty: 3, rate: 4, amount: 5 } : { prod: 13, qty: 14, rate: 15, amount: 16 };
+    const C = { amount: compact ? 9 : 20 };
+    if (compact) {
+      const totals = t.slice(h1Idx + 1).filter(row => normLabel(row[0]) === "جمع");
+      if (totals.length !== 1 || ![cellNum(totals[0][M.amount]), cellNum(totals[0][C.amount])].every(Number.isSafeInteger)) {
+        skippedReasons.add("missing_sales");
+        continue;
+      }
+    }
 
     // Optional internal hand-off only. The current downloader does not yet
     // supply byte-bound origin metadata; absence must not certify a new unit.
@@ -744,13 +769,14 @@ export function normalizeN30(tables, meta, onRejected) {
           : section === normLabel("درآمد ارائه خدمات") ? "خدمات" : "نامشخص";
         continue;
       }
-      if (row.length < expectCols - 2) {
+      if (row.length < minimumColumns) {
         if (source && !name.includes("جمع")) source.rows.push({ rowIndex: h1Idx + 1 + offset, admitted: false,
           productName: name, market: sectionMarket, rawUnit: row[1]?.trim() || "",
           productionQty: cellNum(row[M.prod]), salesQty: cellNum(row[M.qty]) });
         skippedReasons.add("short_rows"); continue;
       } // سطرهای بخشی کوتاه‌ترند
       if (name.includes("جمع")) {
+        if (compact && normLabel(name) !== "جمع") continue;
         const vM = cellNum(row[M.amount]);
         const vC = cellNum(row[C.amount]);
         // «جمع کل» آخرین ردیف جمع است — مقدار آخر برنده می‌شود.

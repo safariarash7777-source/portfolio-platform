@@ -108,6 +108,28 @@ if (n30) {
 check("n30 null without product table",
   normalizeN30(parseHtmlTables(histTable), { symbol: "x", period_end: null }) === null);
 
+const compactGroups = ["شرح", "دوره یک ماهه منتهی به ۱۴۰۵/۰۷/۳۰",
+  "از ابتدای سال مالی تا تاریخ ۱۴۰۵/۰۷/۳۰", "از ابتدای سال مالی تا تاریخ ۱۴۰۴/۰۷/۳۰", "وضعیت محصول-واحد"];
+const compactValues = ["تعداد تولید", "تعداد فروش", "نرخ فروش (ریال)", "مبلغ فروش (میلیون ریال)"];
+const compactColumns = ["نام محصول", "واحد", ...compactValues, ...compactValues, ...compactValues];
+const compactProduct = ["محصول", "تن", "8", "10", "2000000", "20", "82", "84", "2000000", "168", "42", "44", "1000000", "44"];
+const compactTotal = ["جمع", "", "", "", "", "20", "", "", "", "168", "", "", "", "44"];
+const compactMeta = {symbol:"فلامی",period_end:"1405-07-30"};
+const compact = normalizeN30([[
+  compactGroups, compactColumns, ["فروش داخلی:"], compactProduct, compactTotal,
+]], compactMeta);
+check("compact N30 reads month and cumulative in publisher units", compact?.period_total_amount === 20 &&
+  compact?.fy_cumulative_amount === 168 && compact?.unit === "میلیون ریال" &&
+  compact.products[0].sales_qty === 10 && compact.products[0].production_qty === 8);
+check("compact N30 cannot assign totals to a different period",
+  normalizeN30([[compactGroups, compactColumns, compactProduct, compactTotal]],
+    {...compactMeta,period_end:"1405-06-31"}) === null);
+check("compact N30 cannot infer a missing official total",
+  normalizeN30([[compactGroups, compactColumns, compactProduct]], compactMeta) === null);
+const compactWrongUnit = compactColumns.map((label,index) => index === 5 ? "مبلغ فروش (هزار ریال)" : label);
+check("compact N30 rejects mismatched month units",
+  normalizeN30([[compactGroups, compactWrongUnit, compactProduct, compactTotal]], compactMeta) === null);
+
 
 /* ── بانک (T5): تطبیق عددی با اکسل واقعی کدال — ونوین FY1404 (فیکسچر کامل) ────
  * مرجع اعداد: صورت سود و زیان بانک در اکسل رسمی کدال (excel.codal.ir،
