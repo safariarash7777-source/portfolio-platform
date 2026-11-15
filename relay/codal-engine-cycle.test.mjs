@@ -32,7 +32,7 @@ const mockIncomeHtml = industrial({ period: "1404/12/29", months: 12, prior: fal
 
 async function fixture(options = {}) {
   let persisted = structuredClone(options.initialState ?? { watermark, backfillCursor: 0, fails: {} });
-  const calls = { pages: [], announcementCategories: [], coverageReads: [], feedWrites: [], reportWrites: [], saves: [], excel: [], existingFilters: [], confirmations: [], archiveSaves: [], storedReads: [], storedCategories: [], storedDates: [] };
+  const calls = { pages: [], announcementCategories: [], coverageReads: [], feedWrites: [], reportWrites: [], saves: [], excel: [], existingFilters: [], confirmations: [], archiveSaves: [], storedReads: [], storedCategories: [], storedDates: [], storedPublicationFilters: [] };
   const reports = new Map((options.initialReports ?? []).map(r => [r.source_url, r]));
   let rejectFeed = !!options.rejectFeed;
   let rejectSave = !!options.rejectSave;
@@ -80,6 +80,9 @@ async function fixture(options = {}) {
       const category = url.searchParams.get("category");
       calls.storedCategories.push(category);
       calls.storedDates.push(url.searchParams.get("created_at"));
+      const publicationFilter=url.searchParams.get("or");
+      calls.storedPublicationFilters.push(publicationFilter);
+      if(publicationFilter&&options.rejectMonthlyPublicationRead)return response({},503);
       const before = BigInt(url.searchParams.get("id")?.slice(3) ?? "9223372036854775807");
       return response((options.storedRows ?? []).filter(r => BigInt(r.id) < before && (!category || category === `eq.${r.category}`)).slice(0, options.storedPageSize ?? 100));
     }
@@ -1206,6 +1209,30 @@ test('monthly background and archive allocation do not request the financial cat
  await archive.runArchiveCycle({monthlyOnly:true});
  assert.equal(archive.archiveStatus.reportScope,'monthly_only');
  assert.deepEqual(f.calls.announcementCategories,[null,'3','3']);
+});
+
+test('recent monthly recovery uses the verified publication date and shares the previous workbook cap', async t => {
+ t.mock.method(Date,'now',()=>Date.parse("2026-11-15T16:30:00Z"));
+ const month=(id,publish_date)=>({...stored(id),symbol:'فولاد',title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',
+   report_code:'ن-۳۰',category:'ماهانه',publish_date});
+ const recent=Array.from({length:4},(_,i)=>month(40-i,"۱۴۰۵/۰۸/۲۴"));
+ const old=Array.from({length:6},(_,i)=>month(30-i,"۱۴۰۵/۰۶/۳۱"));
+ const excelHtml=readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
+ const f=await fixture({pages:[[]],storedRows:[month(41,"۱۴۰۵/۰۸/۲۵"),...recent,...old],
+   initialState:{watermark,fails:{},monthlyRecoveryCursor:'31'},excelHtml});
+ await f.engine.runEngineCycle({monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true});
+ assert.deepEqual(f.calls.excel,[40,39,38,30,29,28].map(id=>`/service/Excel/GetAll/serial${id}/0`));
+ assert.equal(f.calls.pages.length,1);
+ assert.equal(f.engine.engineStatus.recentMonthlyRecovery.inserted,3);
+ assert.equal(f.engine.engineStatus.recentMonthlyRecovery.metadataSkipped,1);
+ assert.equal(f.persisted.recentMonthlyRecoveryCursor,'38');
+ assert.equal(f.persisted.monthlyRecoveryCursor,'28');
+ const fallback=await fixture({pages:[[]],storedRows:old,initialState:{watermark,fails:{},monthlyRecoveryCursor:'31'},
+   excelHtml,rejectMonthlyPublicationRead:true});
+ await fallback.engine.runEngineCycle({monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true});
+ assert.equal(fallback.engine.engineStatus.recentMonthlyRecovery.readFailed,true);
+ assert.equal(fallback.engine.engineStatus.storedRecovery.inserted,6);
+ assert.equal(fallback.calls.excel.length,6);
 });
 
 test('the fast discovery cycle includes recent interim statements within the shared download allocation', async t => {

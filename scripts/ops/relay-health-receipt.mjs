@@ -71,6 +71,9 @@ function diagnostics(value, shape) {
 function codalDetails(engine, archive) {
   return {
     reportScope: choice(engine?.reportScope, ['monthly_only', 'monthly_and_recent_interim', 'all_reports']),
+    recentMonthlyRecovery: { ...integerCounts(engine?.recentMonthlyRecovery, ['scanned', 'downloaded', 'inserted', 'parseFailed', 'blocked', 'metadataSkipped']),
+      active:boolean(engine?.recentMonthlyRecovery?.active), readFailed:boolean(engine?.recentMonthlyRecovery?.readFailed),
+      reachedEnd:boolean(engine?.recentMonthlyRecovery?.reachedEnd) },
     interimRecovery: { ...integerCounts(engine?.interimRecovery, ['scanned', 'downloaded', 'inserted', 'parseFailed', 'blocked']),
       feedDownloads: integer(engine?.feed?.interimDownloads), reachedEnd: boolean(engine?.interimRecovery?.reachedEnd) },
     // Attempt clocks are not successful ingestion receipts.

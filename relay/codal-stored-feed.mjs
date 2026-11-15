@@ -5,6 +5,39 @@ export const validStoredCursor = value => value === null ||
 const identifier = value => typeof value === 'number' && Number.isSafeInteger(value) && value > 0
   ? String(value) : typeof value === 'string' && validStoredCursor(value) ? value : null;
 const text = (value,limit) => typeof value === 'string' && value.trim() && value.length <= limit ? value.trim() : null;
+const persianDateFormat = new Intl.DateTimeFormat('en-u-ca-persian-nu-latn', {
+  timeZone:'Asia/Tehran',year:'numeric',month:'2-digit',day:'2-digit',
+});
+const dateAlphabets = ['0123456789','۰۱۲۳۴۵۶۷۸۹','٠١٢٣٤٥٦٧٨٩'];
+const recentMonthlyDays = 35;
+
+function publicationDay(at) {
+  const parts=Object.fromEntries(persianDateFormat.formatToParts(at).map(({type,value})=>[type,value]));
+  return `${parts.year}/${parts.month}/${parts.day}`;
+}
+
+export function recentMonthlyBounds(now) {
+  if(!Number.isSafeInteger(now)||now<=0||now>8_640_000_000_000_000)return null;
+  return {since:publicationDay(now-recentMonthlyDays*86400000),until:publicationDay(now)};
+}
+
+function dateRangeFilter({since,until}) {
+  const ranges=[];
+  for(const alphabet of dateAlphabets) for(const separator of ['/','-']){
+    const encode = day => day.replaceAll('/',separator).replace(/\d/g,digit=>alphabet[Number(digit)]);
+    ranges.push(`and(publish_date.gte.${encode(since)},publish_date.lte.${encode(until)})`);
+  }
+  return `(${ranges.join(',')})`;
+}
+
+function publicationInRange(value,{since,until}) {
+  if(typeof value!=='string')return false;
+  const normalized=value.replace(/[۰-۹٠-٩]/g,digit=>String(Math.max(dateAlphabets[1].indexOf(digit),dateAlphabets[2].indexOf(digit))))
+    .replaceAll('-','/');
+  const parts=/^\d{4}\/(0[1-9]|1[0-2])\/(0[1-9]|[12]\d|3[01])$/.exec(normalized);
+  return !!parts&&Number(parts[2])<=(Number(parts[1])<=6?31:30)&&normalized>=since&&normalized<=until;
+}
+
 function announcement(row) {
   const symbol=text(row.symbol,120), company=text(row.company_name,500), title=text(row.title,5000);
   const link=text(row.link,4096), excel=text(row.link_excel,4096);
@@ -23,11 +56,12 @@ function announcement(row) {
   return {l18:symbol,l30:company,title,code:row.report_code,link,link_excel:excel,
     link_pdf:text(row.link_pdf,4096),date_send:row.sent_date,time_send:row.sent_time,date_publish:row.publish_date};
 }
-export async function readStoredAnnouncements(cursor,{baseUrl,headers,fetch:read=globalThis.fetch,monthlyOnly=false,interimSince=null}) {
+export async function readStoredAnnouncements(cursor,{baseUrl,headers,fetch:read=globalThis.fetch,monthlyOnly=false,interimSince=null,monthlyBounds=null}) {
   if(!validStoredCursor(cursor))throw Error('stored feed cursor invalid');
   const qs=new URLSearchParams({select:'id,symbol,company_name,title,report_code,link,link_excel,link_pdf,sent_date,sent_time,publish_date',
     order:'id.desc',limit:'100'});
   if(monthlyOnly)qs.set('category','eq.ماهانه');
+  if(monthlyBounds!==null)qs.set('or',dateRangeFilter(monthlyBounds));
   if(interimSince!==null){
     qs.set('category','eq.صورت مالی');
     qs.set('created_at',`gte.${interimSince}`);
@@ -42,6 +76,6 @@ export async function readStoredAnnouncements(cursor,{baseUrl,headers,fetch:read
     const id=identifier(row?.id);
     if(!id || before!==null && BigInt(id)>=BigInt(before))throw Error('stored feed order invalid');
     before=id;
-    return {id,announcement:announcement(row)};
+    return {id,announcement:monthlyBounds!==null&&!publicationInRange(row.publish_date,monthlyBounds)?null:announcement(row)};
   });
 }
