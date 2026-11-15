@@ -63,7 +63,7 @@ export interface FundamentalReadOptions {
 
 export interface FundamentalRead {
   data: SymbolFundamentals | null;
-  state: "ready" | "empty" | "error";
+  state: "ready" | "partial" | "empty" | "error";
 }
 
 function env(environment: FundamentalReadOptions["environment"]): { url: string; anon: string } | null {
@@ -99,10 +99,10 @@ export function fetchQueries(symbol: string): Array<{ kind: keyof typeof FETCH_L
   }));
 }
 
-async function fetchRows(symbol: string, e: { url: string; anon: string }): Promise<CodalRow[] | null> {
-  try {
-    const parts = await Promise.all(
-      fetchQueries(symbol).map(async ({ kind, qs }) => {
+async function fetchRows(symbol: string, e: { url: string; anon: string }): Promise<{ rows: CodalRow[]; partial: boolean } | null> {
+  const parts = await Promise.all(
+    fetchQueries(symbol).map(async ({ kind, qs }) => {
+      try {
         const res = await fetchFundamentalRows(`${e.url}/rest/v1/codal_reports?${qs}`,
           { apikey: e.anon, Authorization: `Bearer ${e.anon}` });
         if (!res.ok) {
@@ -118,17 +118,20 @@ async function fetchRows(symbol: string, e: { url: string; anon: string }): Prom
           // برش رخ داد: قدیمی‌ترین دوره‌ها بیرون ماندند. بی‌صدا نباشد.
           console.warn(`codal_reports: ${kind} reached limit ${FETCH_LIMITS[kind]} — oldest periods truncated`);
         }
-        return rows;
-      }),
-    );
-    if (parts.some((p) => p === null)) return null;
-    return parts.flat() as CodalRow[];
-  } catch (error) {
-    const safeNames = ["AbortError", "TimeoutError", "TypeError", "SyntaxError"];
-    const reason = error instanceof Error && safeNames.includes(error.name) ? error.name : "read-error";
-    console.warn("fundamental_read_failed", { phase: "request-or-body", reason });
-    return null;
-  }
+        return { kind, rows };
+      } catch (error) {
+        const safeNames = ["AbortError", "TimeoutError", "TypeError", "SyntaxError"];
+        const reason = error instanceof Error && safeNames.includes(error.name) ? error.name : "read-error";
+        console.warn("fundamental_read_failed", { phase: "request-or-body", reason, kind });
+        return null;
+      }
+    }),
+  );
+  const monthly = parts.find(part => part?.kind === "ن-۳۰");
+  if (!monthly) return null;
+  const financial = parts.find(part => part?.kind === "ن-۱۰");
+  if (!financial) return { rows: monthly.rows, partial: true };
+  return { rows: [...financial.rows, ...monthly.rows], partial: false };
 }
 
 /** آدرس اطلاعیهٔ codal.ir بدون پسوند نسخهٔ پارسر. */
@@ -542,9 +545,12 @@ export async function readFundamentalsFromSupabase(symbol: string, options?: Fun
   const hit = activeBinding === binding ? cache.get(symbol) : undefined;
   const age = hit ? Date.now() - hit.at : -1;
   if (hit && age >= 0 && age < REVALIDATE_MS) return { data: hit.value, state: hit.value ? "ready" : "empty" };
-  const rows = await fetchRows(symbol, selected);
-  if (rows === null) return { data: null, state: "error" };
-  const value = rows && rows.length > 0 ? buildFundamentals(symbol, rows) : null;
+  const result = await fetchRows(symbol, selected);
+  if (result === null) return { data: null, state: "error" };
+  const value = result.rows.length > 0 ? buildFundamentals(symbol, result.rows) : null;
+  // A failed historical statement read must not hide genuine monthly charts.
+  // Do not cache the partial result or infer an empty historical statement set.
+  if (result.partial) return value ? { data: value, state: "partial" } : { data: null, state: "error" };
   // خطای شبکه (rows=null) کش نمی‌شود تا درخواست بعدی دوباره تلاش کند.
   if (activeBinding === binding && requestEpoch !== null && requestEpoch === cacheEpoch && (selected.expiresAt === undefined || selected.expiresAt > Date.now() / 1000)) cache.set(symbol, { at: Date.now(), value });
   return { data: value, state: value ? "ready" : "empty" };

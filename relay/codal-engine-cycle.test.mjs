@@ -2,6 +2,7 @@ process.env.RELAY_BACKGROUND_WINDOW_ENABLED = "0"; // deterministic existing fix
 // Deterministic integration mocks only: every unmatched fetch fails closed.
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { industrial, bank } from "./fixtures/n10-admission-fixtures.mjs";
 import { admissionCounts, admissionEvent } from "./codal-admission-diagnostics.mjs";
 
@@ -31,7 +32,7 @@ const mockIncomeHtml = industrial({ period: "1404/12/29", months: 12, prior: fal
 
 async function fixture(options = {}) {
   let persisted = structuredClone(options.initialState ?? { watermark, backfillCursor: 0, fails: {} });
-  const calls = { pages: [], coverageReads: [], feedWrites: [], reportWrites: [], saves: [], excel: [], existingFilters: [], confirmations: [], archiveSaves: [], storedReads: [] };
+  const calls = { pages: [], announcementCategories: [], coverageReads: [], feedWrites: [], reportWrites: [], saves: [], excel: [], existingFilters: [], confirmations: [], archiveSaves: [], storedReads: [], storedCategories: [] };
   const reports = new Map((options.initialReports ?? []).map(r => [r.source_url, r]));
   let rejectFeed = !!options.rejectFeed;
   let rejectSave = !!options.rejectSave;
@@ -39,6 +40,7 @@ async function fixture(options = {}) {
   codal.setCodalBudgetPorts({ client: { request: async (job) => {
     budgetJobs.push({ producer: job.producer, budgetClass: job.budgetClass });
     calls.pages.push(Number(job.params.page));
+    calls.announcementCategories.push(job.params.category ?? null);
     if (options.announcementErrorCode) throw Object.assign(new Error(options.announcementErrorCode), { code: options.announcementErrorCode });
     if (!job.params.l18 && Number(job.params.page) === options.deferBudgetOnPage) {
       throw Object.assign(new Error('internal allocation exhausted'), { name: 'LegacyBudgetError' });
@@ -55,7 +57,7 @@ async function fixture(options = {}) {
       calls.excel.push(url.pathname);
       if (options.excelErrorCode) throw Object.assign(new Error(options.excelErrorCode), { code: options.excelErrorCode });
       if (options.excelError) throw new Error(options.excelError);
-      return new Response(options.excelHtml ?? mockIncomeHtml);
+      return new Response(options.excelBodies?.[url.pathname] ?? options.excelHtml ?? mockIncomeHtml);
     }
     assert.equal(url.hostname, "storage.invalid", `Unmocked network request: ${url.hostname}`);
     if (url.pathname.endsWith("/codal_feed") && init.method === "POST") {
@@ -66,8 +68,10 @@ async function fixture(options = {}) {
     }
     if (url.pathname.endsWith("/codal_feed") && !init.method) {
       calls.storedReads.push(url.searchParams.get("id"));
+      const category = url.searchParams.get("category");
+      calls.storedCategories.push(category);
       const before = BigInt(url.searchParams.get("id")?.slice(3) ?? "9223372036854775807");
-      return response((options.storedRows ?? []).filter(r => BigInt(r.id) < before).slice(0, options.storedPageSize ?? 100));
+      return response((options.storedRows ?? []).filter(r => BigInt(r.id) < before && (!category || category === `eq.${r.category}`)).slice(0, options.storedPageSize ?? 100));
     }
     if (url.pathname.endsWith("/codal_reports") && init.method === "POST") {
       const rows = JSON.parse(init.body);
@@ -975,6 +979,48 @@ test('a budget stop on page two saves verified announcement metadata without adv
  assert.equal(f.persisted.metadataWatermark,undefined);
  assert.equal(f.engine.engineStatus.feed.incompleteReason,'local_deferred');
  assert.deepEqual(f.persisted.fails,{});
+});
+
+test('monthly-only cycle keeps public announcements and recovers a verified month within the fast cadence', async () => {
+ const old = stored(10);
+ const month = { ...stored(9), symbol:'فولاد', title:'گزارش فعالیت ماهانه منتهی به 1405/06/31', report_code:'ن-۳۰', category:'ماهانه' };
+ const html = readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
+ const f = await fixture({ pages:[[financial(2),boundary],[]],
+   initialState:{watermark,fails:{},storedFeedCursor:'2'},
+   storedRows:[{...old,category:'صورت مالی'},month], excelHtml:html });
+ await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true});
+ assert.equal(f.engine.engineStatus.reportScope,'monthly_only');
+ assert.equal(f.calls.feedWrites[0].rows[0].category,'صورت مالی');
+ assert.ok(f.calls.storedCategories.every(category=>category==='eq.ماهانه'));
+ assert.deepEqual(f.calls.excel,['/service/Excel/GetAll/serial9/0']);
+ assert.equal(f.calls.reportWrites.length,1);
+ const inserted=f.calls.reportWrites[0][0];
+ assert.equal(inserted.report_kind,'ن-۳۰');
+ assert.equal(inserted.data.period_end,'1405-06-31');
+ assert.equal(inserted.data.unit,'میلیون ریال');
+ assert.ok(inserted.data.period_total_amount>0);
+ assert.equal(f.persisted.storedFeedCursor,'2');
+});
+
+test('monthly discovery can advance past a rejected workbook once the announcement is durable', async () => {
+ const a=announcement(2,{code:'ن-۳۰',title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',link_excel:'https://excel.invalid/2'});
+ const f=await fixture({pages:[[a,boundary],[]],excelHtml:'<p>Unsupported worksheet</p>'});
+ await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true});
+ assert.equal(f.engine.engineStatus.ok,false);
+ assert.equal(f.engine.engineStatus.feed.incompleteReason,'report_failure');
+ assert.equal(f.calls.feedWrites[0].rows[0].link,a.link);
+ assert.equal(f.calls.reportWrites.length,0);
+ assert.equal(f.persisted.watermark.key,14050701000002);
+ assert.equal(f.persisted.fails[a.link],1);
+});
+
+test('monthly background and archive allocation do not request the financial category', async () => {
+ const f=await fixture({pages:[[]],backfillPages:[],marketBody:[{payload:{stocks:[{id:'نمونه'}]}}]});
+ await f.engine.runEngineCycle({monthlyOnly:true});
+ const archive=await import(`./codal-archive.mjs?mock=${++scenario}`);
+ await archive.runArchiveCycle({monthlyOnly:true});
+ assert.equal(archive.archiveStatus.reportScope,'monthly_only');
+ assert.deepEqual(f.calls.announcementCategories,[null,'3','3']);
 });
 
 test('publisher challenge keeps discovery available while file reads and archive remain paused', async () => {

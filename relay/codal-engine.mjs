@@ -81,6 +81,7 @@ const SB_HDRS = () => ({
 // وضعیت تشخیصی برای /debug
 export const engineStatus = {
   mode: "v3",
+  reportScope: null,
   ok: false,
   lastRun: 0,
   lastError: null,
@@ -119,6 +120,7 @@ async function loadState() {
       throw new Error("state watermark invalid schema");
     }
   }
+  if (!validStoredCursor(payload.monthlyRecoveryCursor ?? null)) throw new Error('monthly recovery cursor invalid');
   if ((payload.backfillCursor != null && (!Number.isInteger(payload.backfillCursor) || payload.backfillCursor < 0)) ||
       (payload.fails != null && (typeof payload.fails !== "object" || Array.isArray(payload.fails) ||
        Object.values(payload.fails).some(n => !Number.isInteger(n) || n < 0)))) {
@@ -286,7 +288,7 @@ async function fetchPageWithRetry(params) {
   }
 }
 
-async function pollGlobalFeed({ metadataOnly = false } = {}) {
+async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false } = {}) {
   const st = engineStatus.feed;
   st.pages = 0; st.seen = 0; st.matched = 0; st.downloaded = 0; st.inserted = 0; st.parseFailed = 0;
   st.complete = false; st.incompleteReason = "page_limit";
@@ -327,6 +329,7 @@ async function pollGlobalFeed({ metadataOnly = false } = {}) {
       else if (k === newestSeen.key) newestSeen.links.push(a.link);
       if (a.link) feedItems.push(a); // M4
       const kind = classifyAnnouncement(a);
+      if (monthlyOnly && kind !== "ن-۳۰") continue;
       if (!kind || !a.link || !a.link_excel) continue;
       st.matched++;
       candidates.push({ a, kind });
@@ -337,6 +340,7 @@ async function pollGlobalFeed({ metadataOnly = false } = {}) {
   try { await pushFeedRows(feedItems); }
   catch (e) { st.complete = false; st.incompleteReason = "feed_write_failure"; throw e; }
 
+  const discoveryComplete = st.complete;
   const metadataMark = state.metadataWatermark ?? state.watermark;
   if (st.complete && newestSeen.key > 0 && (!metadataMark || newestSeen.key >= metadataMark.key)) {
     state.metadataWatermark = { key: newestSeen.key, links: [...new Set([
@@ -390,7 +394,7 @@ async function pollGlobalFeed({ metadataOnly = false } = {}) {
   }
 
   // واترمارک فقط وقتی جلو می‌رود که چرخه سالم تمام شده باشد
-  if (st.complete && newestSeen.key > 0 && (!wm || newestSeen.key >= wm.key)) {
+  if ((st.complete || monthlyOnly && discoveryComplete) && newestSeen.key > 0 && (!wm || newestSeen.key >= wm.key)) {
     if (wm && newestSeen.key === wm.key) newestSeen.links.push(...wm.links);
     newestSeen.links = [...new Set(newestSeen.links)];
     state.watermark = newestSeen;
@@ -414,7 +418,7 @@ async function allCompanySymbols() {
   return companyUniverse(stocks);
 }
 
-async function backfillSome() {
+async function backfillSome({ monthlyOnly = false } = {}) {
   const st = engineStatus.backfill;
   st.inserted = 0; st.downloaded = 0; st.parseFailed = 0; st.skippedCovered = 0; st.symbols = [];
 
@@ -441,15 +445,16 @@ async function backfillSome() {
     processedSymbols++;
     st.symbols.push(sym);
     try {
-      const [fs, monthly] = await Promise.all([
-        fetchAnnouncementsPage({ l18: sym, category: 1 }),
-        fetchAnnouncementsPage({ l18: sym, category: 3 }),
-      ]);
+      const [fs, monthly] = monthlyOnly ? [[], await fetchAnnouncementsPage({ l18: sym, category: 3 })]
+        : await Promise.all([
+          fetchAnnouncementsPage({ l18: sym, category: 1 }),
+          fetchAnnouncementsPage({ l18: sym, category: 3 }),
+        ]);
       const known = await existingUrlsFor(sym);
       let dl = 0;
       for (const a of [...fs, ...monthly]) {
         const kind = classifyAnnouncement(a);
-        if (!kind || !a.link || !a.link_excel) continue;
+        if (!kind || monthlyOnly && kind !== "ن-۳۰" || !a.link || !a.link_excel) continue;
         if (known.has(a.link) || isBlocked(a.link, kind, a)) continue;
         if (dl >= BACKFILL_MAX_DL || remainingDownloads <= 0) break;
         dl++; remainingDownloads--; st.downloaded++;
@@ -490,24 +495,28 @@ async function backfillSome() {
 }
 
 /* ── اجرای یک چرخهٔ کامل موتور ─────────────────────────────────────────────── */
-async function recoverStoredReports() {
+async function recoverStoredReports({ monthlyOnly = false } = {}) {
   const st=engineStatus.storedRecovery;
   Object.assign(st,{scanned:0,downloaded:0,inserted:0,parseFailed:0,blocked:0,skippedKnown:0,metadataSkipped:0,reachedEnd:false});
   const knownBySymbol=new Map();
+  const cursorKey = monthlyOnly ? "monthlyRecoveryCursor" : "storedFeedCursor";
+  const limit = monthlyOnly ? Math.max(0, Math.min(BACKFILL_MAX_DL, FEED_MAX_DL - engineStatus.feed.downloaded)) : BACKFILL_MAX_DL;
+  if (limit === 0) return;
   // Share the existing backfill download allocation. Only two stored pages are
   // read per cycle; an empty page, not a short server-capped page, ends the scan.
   for(let page=0;page<2;page++){
-    const rows=await readStoredAnnouncements(state.storedFeedCursor,{baseUrl:SUPABASE_URL,headers:SB_HDRS()});
-    if(!rows.length){state.storedFeedCursor=null;st.reachedEnd=true;break;}
+    const rows=await readStoredAnnouncements(state[cursorKey] ?? null,{baseUrl:SUPABASE_URL,headers:SB_HDRS(),monthlyOnly});
+    if(!rows.length){state[cursorKey]=null;st.reachedEnd=true;break;}
     for(const row of rows){
-      const a=row.announcement,kind=a && classifyAnnouncement(a);
-      if(a && kind && st.downloaded>=BACKFILL_MAX_DL)return;
+      const a=row.announcement,classified=a && classifyAnnouncement(a);
+      const kind=monthlyOnly && classified !== "ن-۳۰" ? null : classified;
+      if(a && kind && st.downloaded>=limit)return;
       st.scanned++;
-      if(!a || !kind){st.metadataSkipped++;state.storedFeedCursor=row.id;continue;}
+      if(!a || !kind){st.metadataSkipped++;state[cursorKey]=row.id;continue;}
       if(!knownBySymbol.has(a.l18))knownBySymbol.set(a.l18,await existingUrlsFor(a.l18));
       const known=knownBySymbol.get(a.l18);
-      if(known.has(a.link)){st.skippedKnown++;state.storedFeedCursor=row.id;continue;}
-      if(isBlocked(a.link,kind,a)){st.blocked++;state.storedFeedCursor=row.id;continue;}
+      if(known.has(a.link)){st.skippedKnown++;state[cursorKey]=row.id;continue;}
+      if(isBlocked(a.link,kind,a)){st.blocked++;state[cursorKey]=row.id;continue;}
       let stage='download',rejection=null;st.downloaded++;
       try {
         const data=await downloadAndParse(a,kind,()=>{stage='admission';},event=>{rejection??=admissionEvent(event,kind);});
@@ -522,12 +531,13 @@ async function recoverStoredReports() {
         if(isBrsLocalDeferral(error))throw error;
         st.parseFailed++;recordFailureDiagnostic(stage,'exception');recordFail(a.link,kind,a);
       }
-      state.storedFeedCursor=row.id;
+      state[cursorKey]=row.id;
     }
   }
 }
 
-export async function runEngineCycle({ allowBackground = true } = {}) {
+export async function runEngineCycle({ allowBackground = true, monthlyOnly = false } = {}) {
+  engineStatus.reportScope = monthlyOnly ? "monthly_only" : "all_reports";
   engineStatus.ok = false;
   engineStatus.lastError = null;
   engineStatus.lastRun = Date.now();
@@ -543,13 +553,14 @@ export async function runEngineCycle({ allowBackground = true } = {}) {
   const watermarkBefore = state.watermark;
   const metadataBefore = state.metadataWatermark ?? null;
   const storedCursorBefore = state.storedFeedCursor;
+  const monthlyCursorBefore = state.monthlyRecoveryCursor ?? null;
   Object.assign(engineStatus.backfill, { inserted: 0, downloaded: 0, parseFailed: 0, symbols: [], skippedCovered: 0 });
   Object.assign(engineStatus.storedRecovery, { scanned: 0, downloaded: 0, inserted: 0, parseFailed: 0, blocked: 0, skippedKnown: 0, metadataSkipped: 0, reachedEnd: false });
   let feedDeferred = false;
   const sourceHeld = codalAccess.snapshot() > Date.now();
   try {
     if (sourceHeld && process.env.CODAL_ANNOUNCEMENT_SOURCE === 'official') codalAccess.check();
-    await pollGlobalFeed({ metadataOnly: sourceHeld });
+    await pollGlobalFeed({ metadataOnly: sourceHeld, monthlyOnly });
     if (sourceHeld) codalAccess.check();
   } catch (e) {
     engineStatus.feed.complete = false;
@@ -560,9 +571,9 @@ export async function runEngineCycle({ allowBackground = true } = {}) {
     console.error("codal-engine feed error:", e?.message ?? e);
   }
   try {
-    if (allowBackground && codalAccess.snapshot() <= Date.now()) {
-      await recoverStoredReports();
-      if (!feedDeferred) await backfillSome();
+    if ((allowBackground || monthlyOnly) && codalAccess.snapshot() <= Date.now()) {
+      await recoverStoredReports({monthlyOnly});
+      if (allowBackground && !feedDeferred) await backfillSome({monthlyOnly});
     }
   } catch (e) {
     engineStatus.lastError = [engineStatus.lastError, `backfill: ${e?.message ?? e}`].filter(Boolean).join("; ");
@@ -580,6 +591,7 @@ export async function runEngineCycle({ allowBackground = true } = {}) {
     state.watermark = watermarkBefore;
     state.metadataWatermark = metadataBefore;
     state.storedFeedCursor = storedCursorBefore;
+    state.monthlyRecoveryCursor = monthlyCursorBefore;
     engineStatus.feed.watermark = state.watermark?.key ?? null;
     engineStatus.lastError = [engineStatus.lastError, `state save: ${e?.message ?? e}`].filter(Boolean).join("; ");
   }
