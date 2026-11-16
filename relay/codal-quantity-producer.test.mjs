@@ -80,11 +80,10 @@ test("a redirected, absent or different response reference cannot create a new q
 test("announcement claims cannot replace the response bytes or the source document's monthly period", async () => {
   const f = fixture();
   const a = { ...f.announcement, date_title: "1405/05/31", quantity_source: { htmlSha256: "0".repeat(64) } };
-  const data = await f.parser.downloadAndParse(a, "ن-۳۰");
-  assert.equal(data.quantity_source, null);
-  await f.parser.insertParsedReport(a, "ن-۳۰", data);
-  assert.equal(f.calls.writes[0].raw.quantity_capture, undefined);
-  assert.equal(f.calls.writes[0].raw.parser_version, 2);
+  const rejections = [];
+  assert.equal(await f.parser.downloadAndParse(a, "ن-۳۰", undefined, event => rejections.push(event)), null);
+  assert.deepEqual(rejections, [{ kind: "ن-۳۰", reason: "period_unverified" }]);
+  assert.deepEqual(f.calls.writes, []);
 });
 
 test("quantity proof requires the existing official download route while legacy parsing still preserves money", async () => {

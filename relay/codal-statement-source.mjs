@@ -399,14 +399,16 @@ export async function loadMonthlyDecision(announcement, meta, {fetchImpl=globalT
  if(original.hostname==='www.codal.ir')original.hostname='codal.ir';
  const serial=reportSerial(original.href,true);
  const type=original.searchParams.get('rt');
- if(original.searchParams.get('let')!=='58'||!['8','9'].includes(type))return null;
+ if(original.searchParams.get('let')!=='58'||!['0','8','9'].includes(type))return null;
  const capture=await captureDecision(original.href,fetchImpl,{},MONTHLY_PATH);
  try{
-  if(reportSerial(capture.url,true,MONTHLY_PATH)!==serial)return null;
+  const capturedPath=new URL(capture.url).pathname;
+  const viewPath=type==='0'&&capturedPath===DECISION_PATH ? DECISION_PATH : MONTHLY_PATH;
+  if(reportSerial(capture.url,true,viewPath)!==serial)return null;
   const html=sourceText(capture,MAX_DECISION);
   const form=element(html,'form','aspnetForm');
   const action=new URL(attr(form.slice(0,form.indexOf('>')+1),'action'),capture.url);
-  if(action.origin!==new URL(capture.url).origin||reportSerial(action.href,true,MONTHLY_PATH)!==serial)return null;
+  if(action.origin!==new URL(capture.url).origin||reportSerial(action.href,true,viewPath)!==serial)return null;
   const field=id=>text(element(html,'span',id));
   const symbols=['ctl00_lblDisplaySymbol','ctl00_txbSymbol']
    .map(id=>norm(text(element(html,'span',id,{optional:true}))))
