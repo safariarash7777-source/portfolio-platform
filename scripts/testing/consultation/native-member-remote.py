@@ -7,6 +7,7 @@ Existing Auth keys and native sessions stay in server memory; only safe results
 are returned. The historical two-account acceptance helpers remain untouched.
 """
 import base64
+import ipaddress
 import json
 import re
 import subprocess
@@ -15,12 +16,14 @@ import urllib.parse
 import urllib.request
 
 ALLOWED_MARKERS = frozenset(('consultation-20261024-owner', 'consultation-20261024-a', 'consultation-20261024-b', 'consultation-20261024-admin'))
+ACTIVE_MARKERS = ALLOWED_MARKERS
 MARKER = "consultation-20261024-a"
 EMAIL = MARKER + "-a@example.invalid"
 ORIGIN = "https://portfolio-platform-fawn.vercel.app"
 BACKEND = "https://62.60.191.24/liara-preview"
 DB = "portfolio-stage-db-1"
 AUTH = "portfolio-stage-auth-1"
+AUTH_NETWORK = "portfolio-stage_verify"
 GATEWAY = "portfolio-stage-gateway-1"
 ADMIN = "http://172.19.0.4:9999"
 
@@ -28,6 +31,29 @@ ADMIN = "http://172.19.0.4:9999"
 def check(condition, code):
     if not condition:
         raise ValueError(code)
+
+
+def markers_for_config(cfg):
+    run_id = cfg.get("qaRunId")
+    if run_id is None:
+        check("qaPurpose" not in cfg, "acceptance_scope_invalid")
+        return ALLOWED_MARKERS
+    check(isinstance(run_id, str) and re.fullmatch(r"[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}", run_id)
+          and cfg.get("qaPurpose") == "consultation-reader", "acceptance_scope_invalid")
+    return frozenset("consultation-reader-" + run_id.replace("-", "") + "-" + actor for actor in ("a", "b"))
+
+
+def auth_admin_base(value):
+    check(isinstance(value, str), "auth_admin_url_invalid")
+    match = re.fullmatch(r"http://([0-9.]+):9999", value)
+    check(match is not None, "auth_admin_url_invalid")
+    try:
+        address = ipaddress.IPv4Address(match.group(1))
+    except ipaddress.AddressValueError:
+        raise ValueError("auth_admin_url_invalid") from None
+    check(any(address in ipaddress.IPv4Network(cidr) for cidr in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"))
+          and value == "http://" + str(address) + ":9999", "auth_admin_url_invalid")
+    return value
 
 
 def command(args, source=None):
@@ -74,8 +100,9 @@ def keys():
 
 def channel():
     current = inspect(AUTH)
-    ips = {network.get("IPAddress") for network in current["NetworkSettings"]["Networks"].values()}
-    check(urllib.parse.urlsplit(ADMIN).hostname in ips, "auth_admin_endpoint_changed")
+    network = current["NetworkSettings"]["Networks"].get(AUTH_NETWORK)
+    check(isinstance(network, dict) and urllib.parse.urlsplit(auth_admin_base(ADMIN)).hostname == network.get("IPAddress"),
+          "auth_admin_endpoint_changed")
     return current
 
 
@@ -117,7 +144,7 @@ def ledger(uid):
         "'cashFlowVersions',coalesce((SELECT json_agg(v ORDER BY period_start,period_end,version) FROM public.member_cash_flow_versions v WHERE user_id='" + uid + "'),'[]'::json),"
         "'cashFlowEntries',coalesce((SELECT json_agg(e ORDER BY version_id,entry_key) FROM public.member_cash_flow_entries e WHERE version_id IN (SELECT id FROM public.member_cash_flow_versions WHERE user_id='" + uid + "')),'[]'::json))")
 
-    markers = ",".join("'" + marker + "'" for marker in sorted(ALLOWED_MARKERS))
+    markers = ",".join("'" + marker + "'" for marker in sorted(ACTIVE_MARKERS))
     prefix = ("WITH synthetic AS (SELECT id FROM auth.users WHERE raw_app_meta_data->>'acceptance_run' IN (" + markers + ") "
         "AND lower(email)=(raw_app_meta_data->>'acceptance_run')||'-a@example.invalid'), "
         "relations AS (SELECT r.id FROM public.consultation_relationships r "
@@ -146,14 +173,17 @@ def session_counts(uid):
 
 
 def execute(request):
-    global MARKER, EMAIL
+    global MARKER, EMAIL, ACTIVE_MARKERS, ADMIN
     cfg = request["config"]
-    check(cfg.get("marker") in ALLOWED_MARKERS, "consultation_marker_not_approved")
+    markers = markers_for_config(cfg)
+    check(cfg.get("marker") in markers, "consultation_marker_not_approved")
+    ACTIVE_MARKERS = markers
     MARKER = cfg["marker"]
     EMAIL = MARKER + "-a@example.invalid"
     check(cfg.get("marker") == MARKER and cfg.get("origin") == ORIGIN and cfg.get("backend") == BACKEND,
         "destination_or_marker_mismatch")
-    check(cfg.get("dbContainer") == DB and cfg.get("authAdminBase") == ADMIN, "approved_channel_mismatch")
+    check(cfg.get("dbContainer") == DB, "approved_channel_mismatch")
+    ADMIN = auth_admin_base(cfg.get("authAdminBase"))
     action = request["action"]
     if action == "preflight":
         db, auth_container = inspect(DB), channel()
@@ -171,11 +201,19 @@ def execute(request):
         result.update({"dbContainer": DB, "dbContainerId": db["Id"], "authContainerId": auth_container["Id"],
             "authAdminBase": ADMIN, "existingKeyRolesVerified": True, "controlledCount": len(owned()), "writes": False})
         return result
-    check(action in ("provision", "readback", "session", "retire"), "unsupported_action")
+    check(action in ("provision", "reconcile-provision", "readback", "session", "retire"), "unsupported_action")
+    if action == "reconcile-provision":
+        check(cfg.get("qaRunId") is not None, "provision_reconciliation_scope")
+        rows = owned()
+        if not rows:
+            return {"state": "absent", "writes": False, "retryAllowed": False}
+        check(len(rows) == 1 and rows[0]["role"] == "user" and not rows[0]["banned"], "native_profile_not_active_member")
+        return {"state": "confirmed", "id": rows[0]["id"], "writes": False, "retryAllowed": False}
     if action == "provision":
         check(cfg.get("soleWriter") is True and cfg.get("writeApprovalMarker") == MARKER,
             "provision_not_coordinated")
         rows = owned()
+        check(cfg.get("qaRunId") is None or not rows, "existing_account_requires_reconciliation")
         reused = bool(rows)
         if not rows:
             password = request.get("password", "")
