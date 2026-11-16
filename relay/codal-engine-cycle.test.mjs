@@ -81,7 +81,7 @@ async function fixture(options = {}) {
       const rows = JSON.parse(init.body);
       calls.feedWrites.push({ rows, prefer: init.headers.Prefer });
       if (rejectFeed) return response({ error: "mock failure" }, 503);
-      if(options.monthlyOfficialPages){
+      if(options.monthlyOfficialPages||options.persistFeedRows){
         for(const row of rows)if(!storedRows.some(old=>old.link===row.link))storedRows.unshift({...row,id:100000+storedRows.length});
       }
       return response(options.feedBody ?? rows);
@@ -1267,6 +1267,63 @@ test('monthly background and archive allocation do not request the financial cat
  await archive.runArchiveCycle({monthlyOnly:true});
  assert.equal(archive.archiveStatus.reportScope,'monthly_only');
  assert.deepEqual(f.calls.announcementCategories,[null,'3','3']);
+});
+
+test('saturated monthly feed preserves recovery progress and durable deferred notices within the total cap', async t => {
+ t.mock.method(Date,'now',()=>Date.parse('2026-11-15T16:30:00Z'));
+ const month=(id,publish_date)=>({...stored(id),symbol:'فولاد',title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',
+   report_code:'ن-۳۰',category:'ماهانه',publish_date});
+ const fresh=base=>Array.from({length:10},(_,i)=>{
+   const row=month(base-i,'۱۴۰۵/۰۸/۲۴');
+   return announcement(base-i,{l18:row.symbol,l30:row.company_name,title:row.title,code:row.report_code,
+     link:row.link,link_excel:row.link_excel,date_publish:row.publish_date});
+ });
+ const first=fresh(110),second=fresh(210);
+ const options={pages:[[...first,boundary],[]],persistFeedRows:true,
+   storedRows:[month(90,'۱۴۰۵/۰۸/۲۴'),month(89,'۱۴۰۵/۰۸/۲۴'),month(70,'۱۴۰۵/۰۶/۳۱'),month(69,'۱۴۰۵/۰۶/۳۱')],
+   initialState:{watermark,fails:{},recentMonthlyRecoveryCursor:'91',monthlyRecoveryCursor:'71'},
+   excelHtml:readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8')};
+ const f=await fixture(options);
+ const run={monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true};
+ await f.engine.runEngineCycle(run);
+ assert.equal(f.engine.engineStatus.feed.downloaded,7);
+ assert.equal(f.engine.engineStatus.feed.complete,false);
+ assert.equal(f.engine.engineStatus.feed.incompleteReason,'download_limit');
+ assert.equal(f.calls.excel.length,10);
+ assert.equal(f.persisted.recentMonthlyRecoveryCursor,'90');
+ assert.equal(f.persisted.monthlyRecoveryCursor,'70');
+ assert.equal(f.calls.feedWrites[0].rows.filter(r=>first.some(a=>a.link===r.link)).length,10);
+ assert.equal(f.persisted.watermark.key,14050701000150);
+ options.pages=[[...second,first[0],boundary],[]];
+ await f.engine.runEngineCycle(run);
+ assert.equal(f.engine.engineStatus.feed.downloaded,7);
+ assert.equal(f.engine.engineStatus.feed.complete,false);
+ assert.equal(f.calls.excel.length,20);
+ assert.equal(f.persisted.recentMonthlyRecoveryCursor,null,'recent sweep reached the end');
+ assert.equal(f.persisted.monthlyRecoveryCursor,null,'historical sweep reached the end');
+ for(const id of [89,69])assert.ok(f.calls.reportWrites.flat().some(r=>r.source_url===month(id,'').link+'#pv2'));
+ // A discovery checkpoint may advance after durable metadata. Deferred files
+ // must still be recovered from that ledger after the burst has ended.
+ options.pages=[[]];
+ await f.engine.runEngineCycle(run);
+ await f.engine.runEngineCycle(run);
+ const written=new Set(f.calls.reportWrites.flat().map(r=>r.source_url));
+ for(const a of [...first,...second])assert.ok(written.has(a.link+'#pv2'));
+ assert.equal(f.calls.excel.length,new Set(f.calls.excel).size,'no successful workbook downloaded twice');
+});
+
+test('feed allocation is unchanged outside standalone recent monthly recovery', async () => {
+ const entries=Array.from({length:10},(_,i)=>announcement(20-i,{code:'ن-۳۰',
+   title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',link_excel:`https://excel.invalid/${20-i}`}));
+ const excelHtml=readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
+ for(const [run,expected] of [[{monthlyOnly:true},10],[{prioritizeRecentMonthly:true},10],
+   [{monthlyOnly:true,prioritizeRecentMonthly:true,recentInterimReports:true},8]]){
+   const f=await fixture({pages:[[...entries,boundary],[]],excelHtml,marketBody:[{payload:{stocks:[{id:'نمونه'}]}}]});
+   await f.engine.runEngineCycle({...run,allowBackground:false});
+   assert.equal(f.engine.engineStatus.feed.downloaded,expected);
+   assert.equal(f.calls.excel.length,expected);
+   assert.equal(f.engine.engineStatus.feed.complete,expected===10);
+ }
 });
 
 test('recent monthly recovery uses the verified publication date and shares the previous workbook cap', async t => {
