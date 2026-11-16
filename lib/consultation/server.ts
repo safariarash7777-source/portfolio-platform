@@ -96,7 +96,10 @@ export async function getConsultation(request: Request, connect: () => Promise<C
         if (result.error.code === "P0002") throw new Failure("NOT_FOUND");
         throw new Failure("READ_UNAVAILABLE");
       }
-      return json(validateConsultationRead(result.data, { relationshipId, actorId, ...(startOn && endOn ? { period: { startOn, endOn } } : {}) }));
+      const validated = validateConsultationRead(result.data, { relationshipId, actorId, ...(startOn && endOn ? { period: { startOn, endOn } } : {}) });
+      // This release installs the compatible reader only. A later independently
+      // accepted writer rollout must explicitly change this capability.
+      return json({ ...validated, capabilities: { extendedFeedbackWrite: false } });
     }, 10_000);
   } catch (error) { return fail(error, "READ_UNAVAILABLE"); }
 }

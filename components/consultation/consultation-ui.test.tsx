@@ -16,6 +16,18 @@ const body: RecommendationBody = { topic: "موضوع مصنوعی", goal: "هد
 const session: ConsultationSession = { id: sessionId, relationshipId: relationId, sessionKey: sessionId, version: 1, createdAt: "2026-10-23T12:00:00Z", actorId: actor, contentHash: "a".repeat(64), body, state: "draft", approval: null };
 const data: ConsultationRead = { contractVersion: "consultation-read.v1", actor: { id: actor, isAdvisor: true, isOwner: true }, advisors: [{ id: actor, displayName: "مشاور مصنوعی", isOwner: true }], relationships: [{ id: relationId, advisorId: actor, clientId: member, clientLabel: "عضو مصنوعی", createdAt: "2026-10-23T12:00:00Z", revoked: false }], selected: null, dossier: { basis, holdings: null, cashFlow: null, goals: null }, sessions: [session], notes: [{ sessionId, note: "یادداشت خصوصی" }], events: [], actions: [] };
 data.selected = data.relationships[0];
+
+test("stored extended feedback renders its label and explanation without new write controls", () => {
+  const actionKey = relationId;
+  const published: ConsultationSession = { ...session, state: "published", approval: { actorId: actor, createdAt: session.createdAt }, body: { ...body, actions: [{ actionKey, title: "اقدام ساختگی", dueOn: "2027-01-01", responsible: "member" }] } };
+  for (const [status, label] of [["partial", "بخشی انجام‌شده طبق اعلام"], ["not_done", "انجام‌نشده طبق اعلام"]] as const) {
+    const html = renderToStaticMarkup(<SessionCard session={published} latest advisor={false} owner={false} revoked={false} basis={basis} feedback={[{ id: relationId, sessionId, actionKey, version: 1, status, text: "توضیح ساختگی عضو", actorId: member, createdAt: session.createdAt }]} locked={false} onCommand={async () => { throw new Error("render must not write"); }} onEdit={() => {}} onDirty={() => {}} />);
+    assert.ok(html.includes(label));
+    assert.ok(html.includes("توضیح ساختگی عضو"));
+    assert.ok(!html.includes("بخشی انجام دادم"));
+    assert.ok(!html.includes("انجام ندادم"));
+  }
+});
 const receipt: ConsultationReceipt = { contractVersion: "consultation-write.v1", actorId: actor, clientToken: "test", command: { kind: "save", relationshipId: relationId, sessionKey: sessionId, baseVersion: 0, body, privateNote: "یادداشت خصوصی" }, id: sessionId, version: 1, reused: false, canonicalContentHash: "b".repeat(64) };
 
 test("draft preserves exact selected financial basis, normalizes Persian dates, keeps private note outside body", () => {
