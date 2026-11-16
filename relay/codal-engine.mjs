@@ -349,7 +349,7 @@ async function fetchPageWithRetry(params) {
   }
 }
 
-async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false, interimWindow = null, monthlyAttempts = null } = {}) {
+async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false, interimWindow = null, monthlyAttempts = null, recoveryReserve = 0 } = {}) {
   const st = engineStatus.feed;
   st.pages = 0; st.seen = 0; st.matched = 0; st.downloaded = 0; st.interimDownloads = 0; st.inserted = 0; st.parseFailed = 0;
   st.complete = false; st.incompleteReason = "page_limit";
@@ -440,7 +440,7 @@ async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false, inter
     const known = await existingUrlsFor(a.l18);
     if (known.has(a.link)) { clearFailure(a, kind); continue; }
     if (isBlocked(a.link, kind, a)) { st.complete = false; st.incompleteReason = "blocked_report"; continue; }
-    if (dl >= FEED_MAX_DL) { st.complete = false; st.incompleteReason = "download_limit"; break; }
+    if (dl >= FEED_MAX_DL - recoveryReserve) { st.complete = false; st.incompleteReason = "download_limit"; break; }
     if (interimWindow && (kind === "ن-۱۰" ? st.interimDownloads >= INTERIM_MAX_DL : dl - st.interimDownloads >= FEED_MAX_DL - INTERIM_MAX_DL)) {
       st.complete = false; st.incompleteReason = "download_limit";
       continue;
@@ -780,7 +780,11 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
   const sourceHeld = codalAccess.snapshot() > Date.now();
   try {
     if (sourceHeld && process.env.CODAL_ANNOUNCEMENT_SOURCE === 'official') codalAccess.check();
-    await pollGlobalFeed({ metadataOnly: sourceHeld, monthlyOnly, interimWindow, monthlyAttempts });
+    // Reserve within the existing total, so continuous new notices cannot starve
+    // the saved recent sweep, period repair and historical recovery. Keep at
+    // least one feed slot even with a smaller configured total.
+    const recoveryReserve = monthlyBounds && !interimWindow ? Math.min(3, Math.max(0, FEED_MAX_DL - 1)) : 0;
+    await pollGlobalFeed({ metadataOnly: sourceHeld, monthlyOnly, interimWindow, monthlyAttempts, recoveryReserve });
     if (sourceHeld) codalAccess.check();
   } catch (e) {
     engineStatus.feed.complete = false;
