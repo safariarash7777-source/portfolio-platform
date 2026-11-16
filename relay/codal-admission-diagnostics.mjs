@@ -6,7 +6,7 @@ export const ADMISSION_REASONS = Object.freeze({
     "statement_ambiguous", "unit_unverified", "values_unobserved", "period_unverified", "arithmetic_mismatch",
     "capital_unverified", "normalized_identity_mismatch", "eps_unverified", "internal_exception", "unspecified"]),
   "ن-۳۰": Object.freeze(["unsupported_layout", "short_rows", "missing_sales", "zero_sales_only",
-    "arithmetic_mismatch", "mixed_rows", "no_product_rows", "unspecified"]),
+    "arithmetic_mismatch", "period_unverified", "mixed_rows", "no_product_rows", "unspecified"]),
 });
 
 export function admissionCounts() {

@@ -121,6 +121,11 @@ async function fixture(options = {}) {
       }
       const dataFilter = url.searchParams.get("data");
       const stored = [...reports.values()].filter(r => dataFilter !== "not.is.null" || r.data != null);
+      if (url.searchParams.get("select") === "source_url,symbol,period:data->>period_end") {
+        const links = new Set(JSON.parse("[" + url.searchParams.get("source_url").slice(4, -1) + "]"));
+        return response(stored.filter(r => links.has(r.source_url)).map(
+          r => ({ source_url: r.source_url, symbol: r.symbol, period: r.data.period_end })));
+      }
       if (url.searchParams.has("source_url")) {
         const identity = { source_url: url.searchParams.get("source_url"), symbol: url.searchParams.get("symbol"), data: dataFilter };
         calls.confirmations.push(identity);
@@ -1388,6 +1393,52 @@ test('the fast discovery cycle includes recent interim statements within the sha
  assert.equal(f.engine.engineStatus.feed.interimDownloads,2);
  assert.equal(f.calls.feedWrites[0].rows.length,5);
  assert.equal(f.calls.feedWrites[0].rows[0].symbol,fund.l18);
+});
+
+test('the official sweep repairs a conflicting industrial period once using only the validated publisher grid', async () => {
+ const date = "1405/07/30";
+ const today = new Intl.DateTimeFormat("fa-IR-u-nu-latn", {
+   timeZone:"Asia/Tehran",year:"numeric",month:"2-digit",day:"2-digit",
+ }).format(new Date());
+ const url = "/Reports/Decision.aspx?LetterSerial=repair1&rt=0&let=58";
+ const link = "https://codal.ir" + url;
+ const official = {TracingNo:1,Symbol:"نمونه",Title:`گزارش فعالیت ماهانه منتهی به ${date}`,
+   CompanyName:"نمونه",LetterCode:"ن-۳۰",Url:url,ExcelUrl:"https://excel.codal.ir/service/Excel/GetAll/repair1/0",
+   SentDateTime:`${today} 10:00:00`,PublishDateTime:`${today} 11:00:00`};
+ const groups = {0:"شرح",13:`دوره یک ماهه منتهی به ${date}`,17:`از ابتدای سال مالی تا تاریخ ${date}`};
+ const cols = {0:"نام محصول",1:"واحد",13:"تعداد تولید",14:"تعداد فروش",
+   15:"نرخ فروش (ریال)",16:"مبلغ فروش (میلیون ریال)",20:"مبلغ فروش (میلیون ریال)"};
+ const rows = [groups,cols,{0:"فروش داخلی:"},{0:"محصول",1:"دست",13:4,14:4,15:3000000,16:12,20:32},{0:"جمع",16:12,20:32}];
+ const cells = rows.flatMap((row,index) => Object.entries(row).map(([column,value]) => ({
+   address:String.fromCharCode(65+Number(column))+(index+1),rowSequence:index+1,columnSequence:Number(column)+1,
+   isVisible:true,value,metaTableId:18,metaTableCode:1197,
+ })));
+ const table = {code:1197,metaTableId:18,sheetCode:1000000,aliasName:"ProductionAndSales",
+   description:"کلیه مبالغ به میلیون ریال است",cells};
+ const source = {type:58,period:1,periodEndToDate:date,tracingNo:1,isConsolidated:false,
+   sheets:[{code:1000000,aliasName:"MonthlyActivity",tables:[table]}]};
+ const html = `<form id="aspnetForm" action="">
+   <span id="ctl00_lblReportName">گزارش فعالیت ماهانه</span>
+   <span id="ctl00_lblPeriod">1 ماهه</span><span id="ctl00_txbSymbol">نمونه</span>
+   <span id="ctl00_lblPeriodEndToDate">${date}</span><script>var datasource = ${JSON.stringify(source)};</script>
+   </form>`;
+ const old = {symbol:"نمونه",source_url:link+"#pv2",data:{period_end:"1405-07-01"}};
+ const f = await fixture({pages:[[]],marketBody:[{payload:{stocks:[{id:"نمونه"}]}}],officialBody:html,
+   initialReports:[old],monthlyOfficialPages:{1:[official],2:[]},initialState:{watermark,fails:{}}});
+ const options = {monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true,officialMonthlyReconciliation:true};
+ await f.engine.runEngineCycle(options);
+ assert.deepEqual(f.engine.engineStatus.officialMonthlyRepair,{attempted:1,inserted:1,failed:false});
+ const repaired = f.calls.reportWrites[0][0];
+ assert.equal(repaired.source_url,link+"#pv3");
+ assert.equal(repaired.raw.parser_version,3);
+ assert.equal(repaired.data.period_end,"1405-07-30");
+ assert.equal(repaired.data.period_total_amount,12);
+ assert.equal(repaired.data.fy_cumulative_amount,32);
+ assert.equal(repaired.data.monthly_source.tracing_no,1);
+ assert.deepEqual(f.calls.excel,[]);
+ await f.engine.runEngineCycle(options);
+ assert.deepEqual(f.engine.engineStatus.officialMonthlyRepair,{attempted:0,inserted:0,failed:false});
+ assert.equal(f.calls.reportWrites.length,1);
 });
 
 test('interim recovery uses stored fresh announcements, with its own cursor and without annual or old downloads', async t => {

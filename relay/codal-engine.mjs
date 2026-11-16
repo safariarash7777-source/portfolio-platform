@@ -23,7 +23,8 @@
 import {
   classifyAnnouncement, fetchAnnouncementsPage, fetchOfficialMonthlyPage, downloadAndParse,
   insertParsedReport, existingUrlsFor, faToEn, codalEnv, monthlySectorProfile, monthlyWorkbookType,
-  jalaliYmdToGregorian, metaFromAnnouncement,
+  jalaliYmdToGregorian, metaFromAnnouncement, isIndustrialMonthlyWorkbook, readIndustrialMonthlyDecision,
+  PARSER_VERSION, MONTHLY_PERIOD_REPAIR_VERSION,
 } from "./codal.mjs";
 import { backgroundWorkWindow } from "./background-work-window.mjs";
 import { companyUniverse } from "./codal-coverage.mjs";
@@ -97,6 +98,7 @@ export const engineStatus = {
   storedRecovery: recoveryCounts(),
   recentMonthlyRecovery: { ...recoveryCounts(), active: false, readFailed: false },
   officialMonthlyDiscovery: { pages:0, matched:0, inserted:0, nextPage:null, failed:false },
+  officialMonthlyRepair: { attempted:0, inserted:0, failed:false },
   interimRecovery: recoveryCounts(),
   ledgerSize: 0,
   failureDiagnostics: readFailureDiagnostics(),
@@ -503,6 +505,7 @@ async function allCompanySymbols() {
 
 async function reconcileOfficialMonthly(bounds,loadCompanies) {
   const status=engineStatus.officialMonthlyDiscovery;
+  let conflict = null;
   const symbols=new Map();
   for(const name of await loadCompanies()){
     const key=canonicalMarketSymbol(name);
@@ -526,12 +529,68 @@ async function reconcileOfficialMonthly(bounds,loadCompanies) {
     const insertedBefore=engineStatus.feedTable.inserted;
     await pushFeedRows([...matched.values()]);
     status.inserted+=engineStatus.feedTable.inserted-insertedBefore;
+    if (!conflict && !engineStatus.officialMonthlyRepair.failed) {
+      try {
+        conflict = await findOfficialMonthlyConflict([...matched.values()]);
+      } catch {
+        engineStatus.officialMonthlyRepair.failed = true;
+      }
+    }
     if(page>1){
       state.officialMonthlyNextPage=official.length&&page<10000?page+1:2;
       status.nextPage=state.officialMonthlyNextPage;
     }
     if(!official.length)break;
     page=state.officialMonthlyNextPage??2;
+  }
+  return conflict;
+}
+
+function monthlyRepairKey(a) {
+  return `${a.link}#pv${MONTHLY_PERIOD_REPAIR_VERSION}`;
+}
+
+async function findOfficialMonthlyConflict(announcements) {
+  const candidates = announcements.filter(a => isIndustrialMonthlyWorkbook(a) &&
+    metaFromAnnouncement(a, "ن-۳۰").period_end && (state.fails[monthlyRepairKey(a)] ?? 0) < MAX_FAILS);
+  if (!candidates.length) return null;
+  const urls = candidates.flatMap(a => [`${a.link}#pv${PARSER_VERSION}`, monthlyRepairKey(a)]);
+  const qs = new URLSearchParams({
+    select: "source_url,symbol,period:data->>period_end",
+    source_url: `in.(${urls.map(url => JSON.stringify(url)).join(",")})`,
+    report_kind: "eq.ن-۳۰", data: "not.is.null", limit: String(urls.length),
+  });
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/codal_reports?${qs}`, {
+    headers: SB_HDRS(), signal: AbortSignal.timeout(5000),
+  });
+  if (!response.ok) throw new Error("official monthly period read failed");
+  const rows = await response.json();
+  const known = new Set(urls);
+  if (!Array.isArray(rows) || rows.length > urls.length ||
+      rows.some(row => !known.has(row?.source_url) || typeof row.symbol !== "string")) {
+    throw new Error("official monthly period response invalid");
+  }
+  const stored = new Map(rows.map(row => [row.source_url, row]));
+  return candidates.find(a => {
+    const previous = stored.get(`${a.link}#pv${PARSER_VERSION}`);
+    return previous?.symbol === a.l18 && /^14\d{2}-\d{2}-\d{2}$/.test(previous.period) &&
+      previous.period !== metaFromAnnouncement(a, "ن-۳۰").period_end && !stored.has(monthlyRepairKey(a));
+  }) ?? null;
+}
+
+async function repairOfficialMonthlyConflict(a) {
+  const status = engineStatus.officialMonthlyRepair;
+  const key = monthlyRepairKey(a);
+  status.attempted++;
+  try {
+    const data = await readIndustrialMonthlyDecision(a);
+    if (!data) throw new Error("official monthly repair rejected");
+    status.inserted += await insertParsedReport(a, "ن-۳۰", data);
+    delete state.fails[key];
+  } catch (error) {
+    if (isBrsLocalDeferral(error)) throw error;
+    status.failed = true;
+    state.fails[key] = (state.fails[key] ?? 0) + 1;
   }
 }
 
@@ -696,6 +755,7 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
   const monthlyBounds=monthlyOnly&&prioritizeRecentMonthly ? recentMonthlyBounds(engineStatus.lastRun) : null;
   Object.assign(engineStatus.recentMonthlyRecovery,recoveryCounts(),{active:monthlyBounds!==null,readFailed:false});
   Object.assign(engineStatus.officialMonthlyDiscovery,{pages:0,matched:0,inserted:0,nextPage:officialMonthlyPageBefore??2,failed:false});
+  Object.assign(engineStatus.officialMonthlyRepair,{attempted:0,inserted:0,failed:false});
   Object.assign(engineStatus.interimRecovery, recoveryCounts());
   let feedDeferred = false;
   const monthlyAttempts=monthlyBounds ? new Set() : null;
@@ -730,8 +790,9 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
     engineStatus.lastError = [engineStatus.lastError, `feed: ${e?.message ?? e}`].filter(Boolean).join("; ");
     console.error("codal-engine feed error:", e?.message ?? e);
   }
+  let periodConflict = null;
   if(monthlyBounds&&officialMonthlyReconciliation&&codalAccess.snapshot()<=Date.now()){
-    try{await reconcileOfficialMonthly(monthlyBounds,loadCompanies);}
+    try{periodConflict = await reconcileOfficialMonthly(monthlyBounds,loadCompanies);}
     catch{
       engineStatus.officialMonthlyDiscovery.failed=true;
       engineStatus.lastError=[engineStatus.lastError,"official monthly discovery failed"].filter(Boolean).join("; ");
@@ -743,7 +804,11 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
       const interimRemaining = interimWindow ? Math.min(remaining, INTERIM_MAX_DL - engineStatus.feed.interimDownloads) : 0;
       // A monthly-focused cycle can use the unused interim file slots.
       const recoveryLimit=monthlyBounds&&!interimWindow ? BACKFILL_MAX_DL+INTERIM_MAX_DL : BACKFILL_MAX_DL;
-      const limit = monthlyOnly ? Math.min(recoveryLimit, remaining - interimRemaining) : BACKFILL_MAX_DL;
+      let limit = monthlyOnly ? Math.min(recoveryLimit, remaining - interimRemaining) : BACKFILL_MAX_DL;
+      if (periodConflict && limit > 2) {
+        await repairOfficialMonthlyConflict(periodConflict);
+        limit--;
+      }
       const attempted=monthlyAttempts ?? new Set();
       const knownBySymbol=new Map();
       if(monthlyBounds&&limit>0){

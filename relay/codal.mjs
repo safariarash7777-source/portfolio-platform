@@ -741,6 +741,10 @@ export function normalizeN30(tables, meta, onRejected) {
     if (h1Idx < 0) continue;
     const h0 = t[h1Idx - 1] ?? [];
     if (!h0.some((c) => c.includes("دوره یک ماهه") || c.includes("دوره یکماهه") || c.includes("ماهه منتهی"))) continue;
+    if (meta.period_end && h0.some(c => normLabel(c).startsWith(normLabel("دوره یک ماهه منتهی به")) &&
+        jalaliStr(c) && jalaliStr(c) !== meta.period_end)) {
+      return notifyAdmissionRejection(onRejected, "ن-۳۰", "period_unverified");
+    }
     supportedLayout = true;
 
     const compact = compactProductLayout(h0, t[h1Idx], meta.period_end);
@@ -901,7 +905,9 @@ export function codalBudgetPorts() { return budgetPorts; }
 // Lazy construction keeps existing parser-only/offline callers independent.
 let officialAnnouncements;
 async function readOfficialAnnouncements(params) {
-  officialAnnouncements ??= import('./codal-direct.mjs').then(m => m.createOfficialAnnouncements());
+  officialAnnouncements ??= import('./codal-direct.mjs').then(m => m.createOfficialAnnouncements({
+    fetchImpl: (...args) => fetch(...args),
+  }));
   return (await officialAnnouncements)(params);
 }
 
@@ -993,9 +999,10 @@ const SB_HDRS = () => ({
  * ردیف جدید با source_url پسونددار (#pv2) درج می‌شود و لایهٔ خواندن باید
  * بالاترین parser_version برای هر اطلاعیه را بخواند (raw.parser_version). */
 export const PARSER_VERSION = 2;
+export const MONTHLY_PERIOD_REPAIR_VERSION = 3;
 
 /** کلید درج برای نسخهٔ فعلی پارسر — نسخهٔ ۱ بدون پسوند بود. */
-const versionedUrl = (link) => (PARSER_VERSION === 1 ? link : `${link}#pv${PARSER_VERSION}`);
+const versionedUrl = (link, version = PARSER_VERSION) => version === 1 ? link : `${link}#pv${version}`;
 
 /** source_urlهای موجود برای نماد — تا اطلاعیهٔ تکراری دوباره دانلود نشود.
  * فقط ردیف‌های نسخهٔ فعلی ملاک‌اند (پسوند #pv جدا می‌شود). */
@@ -1157,6 +1164,7 @@ export async function fetchAnnouncementsPage({ l18, category, page = 1, date_sta
 // into the existing insert path. A copied or caller-authored hash is not a receipt.
 /** @type {WeakMap<object, {dataJson: string, receipt: import('../lib/core/monthly-quantity').MonthlyQuantityCaptureReceipt}>} */
 const monthlyQuantityCaptures = new WeakMap();
+const industrialMonthlyDecisions = new WeakMap();
 
 function sameQuantityResponseSource(sourceRef, responseUrl) {
   try {
@@ -1458,6 +1466,38 @@ function normalizeMonthlyDecision(source,meta,profile) {
   }};
 }
 
+export async function readIndustrialMonthlyDecision(a) {
+  if (!isIndustrialMonthlyWorkbook(a)) return null;
+  const meta = metaFrom(a, "ن-۳۰");
+  if (meta.period_months !== 1 || !meta.period_end) return null;
+  const source = await loadMonthlyDecision(a, meta);
+  if (!source) return null;
+  const tables = source.sheet.tables.filter(t => t?.code === 1197 && t.aliasName === "ProductionAndSales");
+  if (tables.length !== 1) return null;
+  const [table] = tables;
+  if (table.sheetCode !== source.sheet.code ||
+      normLabel(table.description) !== normLabel("کلیه مبالغ به میلیون ریال است")) return null;
+  const rows = gridRows(table, 26);
+  if (!rows) return null;
+  const [groups, columns, ...details] = rows;
+  if (!groups || !columns || normLabel(groups[0]) !== "شرح" || normLabel(columns[0]) !== normLabel("نام محصول") ||
+      !normLabel(groups[13]).startsWith(normLabel("دوره یک ماهه منتهی به")) ||
+      !normLabel(groups[17]).startsWith(normLabel("از ابتدای سال مالی تا تاریخ")) ||
+      ![13, 17].every(i => jalaliStr(groups[i]) === meta.period_end) ||
+      ![16, 20].every(i => normLabel(columns[i]) === normLabel("مبلغ فروش (میلیون ریال)"))) return null;
+  const total = details.filter(row => normLabel(row[0]) === "جمع");
+  if (total.length !== 1 || total[0] !== details.at(-1) ||
+      ![16, 20].every(i => Number.isSafeInteger(cellNum(total[0][i])))) return null;
+  const data = normalizeN30([rows], meta);
+  if (data?.unit !== "میلیون ریال" || data.period_total_amount !== cellNum(total[0][16]) ||
+      data.fy_cumulative_amount !== cellNum(total[0][20])) return null;
+  data.monthly_source = {
+    url: source.url, sha256: source.sha256, tracing_no: source.tracingNo, sheet_code: source.sheet.code, table_code: table.code,
+  };
+  industrialMonthlyDecisions.set(data, { link: a.link, symbol: a.l18, period: meta.period_end, json: JSON.stringify(data) });
+  return data;
+}
+
 /** دانلود اکسل اطلاعیه و نرمال‌سازی — null یعنی پارس ناموفق (درج نکنید). */
 export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejected) {
   const sector=kind==="ن-۳۰" ? monthlySectorProfile(a) : null;
@@ -1502,7 +1542,13 @@ export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejec
     const sectorData = source ? normalizeSectorN30(html, meta, sector) : null;
     return sectorData ?? notifyAdmissionRejection(onRejected, kind, "unsupported_layout");
   }
-  const data = normalizeN30(parseHtmlTables(html), { ...meta, quantity_source: source }, onRejected);
+  let rejection;
+  const data = normalizeN30(parseHtmlTables(html), { ...meta, quantity_source: source }, event => { rejection = event; });
+  if (!data && rejection?.reason === "period_unverified" && source && isIndustrialMonthlyWorkbook(a)) {
+    const verified = await readIndustrialMonthlyDecision(a);
+    if (verified) return verified;
+  }
+  if (!data) return notifyAdmissionRejection(onRejected, kind, rejection?.reason ?? "unspecified");
   if (data?.sales_zero_reported && (!source || !isIndustrialMonthlyWorkbook(a))) {
     return notifyAdmissionRejection(onRejected,kind,"zero_sales_only");
   }
@@ -1523,6 +1569,10 @@ export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejec
  * caller can clear its failure ledger or mark the URL as known. */
 export async function insertParsedReport(a, kind, data) {
   const meta = metaFrom(a, kind);
+  const decision = kind === "ن-۳۰" && industrialMonthlyDecisions.get(data);
+  const parserVersion = decision && decision.link === a.link && decision.symbol === a.l18 &&
+      decision.period === meta.period_end && decision.json === JSON.stringify(data)
+    ? MONTHLY_PERIOD_REPAIR_VERSION : PARSER_VERSION;
   const captured = data && typeof data === "object" ? monthlyQuantityCaptures.get(data) : null;
   const quantityCapture = kind === "ن-۳۰" && captured && captured.dataJson === JSON.stringify(data)
     && captured.receipt.symbol === a.l18 && captured.receipt.announcement_link === a.link
@@ -1535,7 +1585,7 @@ export async function insertParsedReport(a, kind, data) {
     report_kind: kind,
     period_end: jalaliStrToGregorian(meta.period_end),
     title: a.title || null,
-    source_url: versionedUrl(a.link),
+    source_url: versionedUrl(a.link, parserVersion),
     published_at: null,
     data,
     raw: {
@@ -1547,7 +1597,7 @@ export async function insertParsedReport(a, kind, data) {
       period_end_jalali: meta.period_end,
       audited: meta.audited,
       period_months: meta.period_months,
-      parser_version: PARSER_VERSION,
+      parser_version: parserVersion,
       announcement_link: a.link,
       discovered_by: "engine-v3",
       ...(quantityCapture ? { quantity_capture: quantityCapture } : {}),

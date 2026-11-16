@@ -334,7 +334,7 @@ process.exitCode = failed === 0 ? 0 : 1;
   const shortResult = synthetic(short);
   check("a short physical product row remains an explicit unadmitted coverage observation", shortResult.quantity_source.rows.some(row => row.rowIndex === 5 && row.productName === "محصولات گرم" && row.admitted === false));
   const wrongPeriod = fixture.parser.normalizeN30(fixture.tables, { ...fixture.meta, period_end: "1405-05-31", quantity_source: { ...fixture.origin, periodEnd: "1405-05-31" } });
-  check("a claimed period cannot replace the actual monthly header", wrongPeriod.quantity_source === null);
+  check("a claimed period cannot replace the actual monthly header", wrongPeriod === null);
   const unknown = structuredClone(fixture.tables);unknown[0][2] = ["بخش ناشناخته:"];
   const unknownParsed = fixture.parser.normalizeN30(unknown, fixture.meta);
   check("unknown section cannot inherit a domestic market", unknownParsed.products[0].market === "نامشخص" && unknownParsed.products[0].market_basis === "unknown");
