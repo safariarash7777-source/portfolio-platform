@@ -7,6 +7,7 @@ Existing Auth keys and native sessions stay in server memory; only safe results
 are returned. The historical two-account acceptance helpers remain untouched.
 """
 import base64
+import ipaddress
 import json
 import re
 import subprocess
@@ -22,6 +23,7 @@ ORIGIN = "https://portfolio-platform-fawn.vercel.app"
 BACKEND = "https://62.60.191.24/liara-preview"
 DB = "portfolio-stage-db-1"
 AUTH = "portfolio-stage-auth-1"
+AUTH_NETWORK = "portfolio-stage_verify"
 GATEWAY = "portfolio-stage-gateway-1"
 ADMIN = "http://172.19.0.4:9999"
 
@@ -39,6 +41,19 @@ def markers_for_config(cfg):
     check(isinstance(run_id, str) and re.fullmatch(r"[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}", run_id)
           and cfg.get("qaPurpose") == "consultation-reader", "acceptance_scope_invalid")
     return frozenset("consultation-reader-" + run_id.replace("-", "") + "-" + actor for actor in ("a", "b"))
+
+
+def auth_admin_base(value):
+    check(isinstance(value, str), "auth_admin_url_invalid")
+    match = re.fullmatch(r"http://([0-9.]+):9999", value)
+    check(match is not None, "auth_admin_url_invalid")
+    try:
+        address = ipaddress.IPv4Address(match.group(1))
+    except ipaddress.AddressValueError:
+        raise ValueError("auth_admin_url_invalid") from None
+    check(any(address in ipaddress.IPv4Network(cidr) for cidr in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"))
+          and value == "http://" + str(address) + ":9999", "auth_admin_url_invalid")
+    return value
 
 
 def command(args, source=None):
@@ -85,8 +100,9 @@ def keys():
 
 def channel():
     current = inspect(AUTH)
-    ips = {network.get("IPAddress") for network in current["NetworkSettings"]["Networks"].values()}
-    check(urllib.parse.urlsplit(ADMIN).hostname in ips, "auth_admin_endpoint_changed")
+    network = current["NetworkSettings"]["Networks"].get(AUTH_NETWORK)
+    check(isinstance(network, dict) and urllib.parse.urlsplit(auth_admin_base(ADMIN)).hostname == network.get("IPAddress"),
+          "auth_admin_endpoint_changed")
     return current
 
 
@@ -157,7 +173,7 @@ def session_counts(uid):
 
 
 def execute(request):
-    global MARKER, EMAIL, ACTIVE_MARKERS
+    global MARKER, EMAIL, ACTIVE_MARKERS, ADMIN
     cfg = request["config"]
     markers = markers_for_config(cfg)
     check(cfg.get("marker") in markers, "consultation_marker_not_approved")
@@ -166,7 +182,8 @@ def execute(request):
     EMAIL = MARKER + "-a@example.invalid"
     check(cfg.get("marker") == MARKER and cfg.get("origin") == ORIGIN and cfg.get("backend") == BACKEND,
         "destination_or_marker_mismatch")
-    check(cfg.get("dbContainer") == DB and cfg.get("authAdminBase") == ADMIN, "approved_channel_mismatch")
+    check(cfg.get("dbContainer") == DB, "approved_channel_mismatch")
+    ADMIN = auth_admin_base(cfg.get("authAdminBase"))
     action = request["action"]
     if action == "preflight":
         db, auth_container = inspect(DB), channel()

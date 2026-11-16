@@ -6,6 +6,7 @@ Browser login/save/read/logout is a separate coordinator-owned CUA sequence.
 """
 import datetime
 import getpass
+import ipaddress
 import json
 import os
 from pathlib import Path
@@ -37,6 +38,19 @@ def markers_for_config(cfg):
     check(isinstance(run_id, str) and re.fullmatch(r"[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}", run_id)
           and cfg.get("qaPurpose") == "consultation-reader", "acceptance_scope_invalid")
     return frozenset("consultation-reader-" + run_id.replace("-", "") + "-" + actor for actor in ("a", "b"))
+
+
+def auth_admin_base(value):
+    check(isinstance(value, str), "auth_admin_url_invalid")
+    match = re.fullmatch(r"http://([0-9.]+):9999", value)
+    check(match is not None, "auth_admin_url_invalid")
+    try:
+        address = ipaddress.IPv4Address(match.group(1))
+    except ipaddress.AddressValueError:
+        raise ValueError("auth_admin_url_invalid") from None
+    check(any(address in ipaddress.IPv4Network(cidr) for cidr in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"))
+          and value == "http://" + str(address) + ":9999", "auth_admin_url_invalid")
+    return value
 
 
 def record_attempt(cfg, action):
@@ -82,8 +96,8 @@ def config_at(path):
     STATE = PRIVATE / "state.json"
     check(cfg.get("marker") == MARKER and cfg.get("origin") == ORIGIN and cfg.get("backend") == BACKEND,
         "destination_or_marker_mismatch")
-    check(cfg.get("sshTarget") == "root@62.60.191.24" and cfg.get("dbContainer") == "portfolio-stage-db-1"
-        and cfg.get("authAdminBase") == "http://172.19.0.4:9999", "channel_mismatch")
+    check(cfg.get("sshTarget") == "root@62.60.191.24" and cfg.get("dbContainer") == "portfolio-stage-db-1", "channel_mismatch")
+    auth_admin_base(cfg.get("authAdminBase"))
     return cfg
 
 

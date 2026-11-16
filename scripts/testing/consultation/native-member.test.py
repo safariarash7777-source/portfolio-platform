@@ -71,6 +71,38 @@ class ScopeTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "provision_not_coordinated"):
                 self.remote.execute({"config": self.cfg, "action": "provision"})
 
+    def test_admin_url_allows_only_canonical_private_ipv4_port(self):
+        for module in (self.local, self.remote):
+            self.assertEqual(module.auth_admin_base("http://172.19.0.5:9999"), "http://172.19.0.5:9999")
+            for url in (None, "http://example.com:9999", "https://172.19.0.5:9999", "http://8.8.8.8:9999",
+                        "http://127.0.0.1:9999", "http://169.254.169.254:9999", "http://192.0.2.1:9999",
+                        "http://172.19.0.5:80", "http://172.19.0.5:9999/", "http://172.19.0.5:9999?x=1",
+                        "http://172.19.0.5:9999#x", "http://user:pass@172.19.0.5:9999",
+                        "http://172.019.0.5:9999", "http://[::1]:9999", "http://172.19.0.5:9999\n"):
+                with self.assertRaisesRegex(ValueError, "auth_admin_url_invalid"):
+                    module.auth_admin_base(url)
+
+    def test_admin_channel_matches_exact_current_approved_container_network(self):
+        current = {"NetworkSettings": {"Networks": {"portfolio-stage_verify": {"IPAddress": "172.19.0.5"}}}}
+        with patch.object(self.remote, "inspect", return_value=current) as inspect:
+            with patch.object(self.remote, "ADMIN", "http://172.19.0.5:9999"):
+                self.assertEqual(self.remote.channel(), current)
+                inspect.assert_called_once_with("portfolio-stage-auth-1")
+            for stale in ("http://172.19.0.4:9999", "http://172.19.0.6:9999"):
+                with patch.object(self.remote, "ADMIN", stale), \
+                     patch.object(self.remote.urllib.request, "build_opener", side_effect=AssertionError("HTTP forbidden")):
+                    with self.assertRaisesRegex(ValueError, "auth_admin_endpoint_changed"):
+                        self.remote.http(stale + "/admin/users", "POST", {})
+        with patch.object(self.remote, "inspect", return_value={"NetworkSettings": {"Networks": {"other": {"IPAddress": "172.19.0.5"}}}}), \
+             patch.object(self.remote, "ADMIN", "http://172.19.0.5:9999"):
+            with self.assertRaisesRegex(ValueError, "auth_admin_endpoint_changed"):
+                self.remote.channel()
+
+    def test_external_admin_config_fails_before_remote_io(self):
+        with patch.object(self.remote, "inspect", side_effect=AssertionError("IO forbidden")):
+            with self.assertRaisesRegex(ValueError, "auth_admin_url_invalid"):
+                self.remote.execute({"config": {**self.cfg, "authAdminBase": "http://8.8.8.8:9999"}, "action": "preflight"})
+
     def reader_cfg(self):
         run_id = "11111111-1111-4111-8111-111111111111"
         return {**self.cfg, "qaRunId": run_id, "qaPurpose": "consultation-reader",
