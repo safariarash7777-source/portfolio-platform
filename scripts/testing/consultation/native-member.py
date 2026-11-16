@@ -29,6 +29,30 @@ def check(condition, code):
         raise ValueError(code)
 
 
+def markers_for_config(cfg):
+    run_id = cfg.get("qaRunId")
+    if run_id is None:
+        check("qaPurpose" not in cfg, "acceptance_scope_invalid")
+        return ALLOWED_MARKERS
+    check(isinstance(run_id, str) and re.fullmatch(r"[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}", run_id)
+          and cfg.get("qaPurpose") == "consultation-reader", "acceptance_scope_invalid")
+    return frozenset("consultation-reader-" + run_id.replace("-", "") + "-" + actor for actor in ("a", "b"))
+
+
+def record_attempt(cfg, action):
+    if cfg.get("qaRunId") is None:
+        return
+    target = PRIVATE / (action + "-intent.json")
+    try:
+        with target.open("x", encoding="utf-8") as handle:
+            json.dump({"marker": MARKER, "qaRunId": cfg["qaRunId"], "action": action,
+                       "at": datetime.datetime.now(datetime.timezone.utc).isoformat()}, handle)
+            handle.flush()
+            os.fsync(handle.fileno())
+    except FileExistsError:
+        raise ValueError("prior_attempt_requires_readback") from None
+
+
 def private_directory():
     PRIVATE.mkdir(parents=True, exist_ok=True)
     if os.name == "nt":
@@ -52,7 +76,7 @@ def private_json(path, value):
 def config_at(path):
     global MARKER, PRIVATE, STATE
     cfg = json.loads(Path(path).resolve().read_text(encoding="utf-8-sig"))
-    check(cfg.get("marker") in ALLOWED_MARKERS, "consultation_marker_not_approved")
+    check(cfg.get("marker") in markers_for_config(cfg), "consultation_marker_not_approved")
     MARKER = cfg["marker"]
     PRIVATE = ROOT / "scripts/isolated-e2e/.local-goals-members" / MARKER
     STATE = PRIVATE / "state.json"
@@ -66,6 +90,8 @@ def config_at(path):
 def remote(cfg, action, **payload):
     selected = {key: cfg.get(key) for key in ("marker", "origin", "backend", "dbContainer", "authAdminBase",
         "soleWriter", "writeApprovalMarker", "retireApprovalMarker")}
+    if cfg.get("qaRunId") is not None:
+        selected.update(qaRunId=cfg["qaRunId"], qaPurpose=cfg["qaPurpose"])
     request = {"config": selected, "action": action, **payload}
     source = REMOTE.read_text(encoding="utf-8") + "\nmain(json.loads(" + repr(json.dumps(request)) + "))\n"
     args = ["ssh", "-T", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=yes", "-o", "ConnectTimeout=15",
@@ -77,9 +103,9 @@ def remote(cfg, action, **payload):
     return response["result"]
 
 
-def run(action, path):
+def run_locked(action, path):
     cfg = config_at(path)
-    check(action in ("preflight", "provision", "readback", "session", "retire"), "unsupported_action")
+    check(action in ("preflight", "provision", "reconcile-provision", "readback", "session", "retire"), "unsupported_action")
     if action == "preflight":
         result = remote(cfg, action)
     else:
@@ -94,10 +120,23 @@ def run(action, path):
                 check(remote(cfg, "preflight")["controlledCount"] == 0, "existing_state_unavailable")
                 state = {"marker": MARKER, "email": MARKER + "-a@example.invalid", "password": secrets.token_urlsafe(36)}
                 private_json(STATE, state)  # Before native create, for unknown-response recovery.
+            record_attempt(cfg, action)
             result = remote(cfg, action, password=state["password"])
             check(not state.get("id") or state["id"] == result["id"], "private_state_uuid_changed")
             state["id"] = result["id"]
             private_json(STATE, state)
+        elif action == "reconcile-provision":
+            check(cfg.get("qaRunId") is not None and state and "retiredAt" not in state, "provision_reconciliation_scope")
+            intent = json.loads((PRIVATE / "provision-intent.json").read_text(encoding="utf-8"))
+            check(intent.get("marker") == MARKER and intent.get("qaRunId") == cfg["qaRunId"]
+                  and intent.get("action") == "provision", "provision_intent_mismatch")
+            result = remote(cfg, action)
+            if result.get("state") == "confirmed":
+                check(not state.get("id") or state["id"] == result["id"], "private_state_uuid_changed")
+                state["id"] = result["id"]
+                private_json(STATE, state)
+            else:
+                check(result.get("state") == "absent", "provision_reconciliation_invalid")
         else:
             check(state and state.get("id"), "owned_state_missing")
             if action == "session":
@@ -105,6 +144,8 @@ def run(action, path):
             if action == "retire":
                 check(cfg.get("soleWriter") is True and cfg.get("retireApprovalMarker") == MARKER,
                     "retirement_not_coordinated")
+            if action in ("session", "retire"):
+                record_attempt(cfg, action)
             result = remote(cfg, action, id=state["id"], **({"password": state["password"]} if action in ("retire", "session") else {}))
             if action == "retire":
                 state["retiredAt"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
@@ -123,6 +164,28 @@ def run(action, path):
     counts = {key: len(value) for key, value in result.get("ledger", {}).items()}
     print(json.dumps({"status": "PASS", "action": action, "marker": MARKER,
         "financialWrites": 0, "counts": counts, "credentials": "private_file_only"}))
+
+
+def run(action, path):
+    cfg = config_at(path)
+    if cfg.get("qaRunId") is None or action == "preflight":
+        return run_locked(action, path)
+    check(action in ("provision", "reconcile-provision", "readback", "session", "retire"), "unsupported_action")
+    check(not PRIVATE.is_symlink(), "private_path_redirect")
+    private_directory()
+    lock_path = PRIVATE / "worker.lock"
+    try:
+        lock = lock_path.open("x", encoding="utf-8")
+    except FileExistsError:
+        raise ValueError("acceptance_lock_requires_review") from None
+    try:
+        with lock:
+            json.dump({"pid": os.getpid(), "qaRunId": cfg["qaRunId"]}, lock)
+            lock.flush()
+            os.fsync(lock.fileno())
+            return run_locked(action, path)
+    finally:
+        lock_path.unlink()
 
 
 if __name__ == "__main__":

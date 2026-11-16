@@ -164,6 +164,9 @@ jobs:
       - name: Native recovery ACL guard (offline)
         run: python3 docs/ops/recovery-01/p01-scripts/test_bounded_acl.py
 
+      - name: Consultation acceptance scope and unknown-result guards (offline)
+        run: python3 scripts/testing/consultation/native-member.test.py
+
   # ── ۴) رفتارِ واقعیِ RLS، گرنت و یکپارچگیِ دیتابیس ─────────────────────────
   # چرا جدا از `quality`: این تنها jobی است که یک Postgres لازم دارد.
   #
