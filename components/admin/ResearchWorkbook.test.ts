@@ -550,3 +550,25 @@ test('lost second-version receipt recovers exact saved version without losing ne
    assert.equal(fixture.snapshot().versions[2].title,'Synthetic later edit');
  }finally{restore();}
 });
+
+
+test('definite later-version conflict preserves editable draft and permits opening current server version',async()=>{
+ const restore=workbookBrowserFixture(),fixture=createP07WorkflowFixture();let raced=false;
+ const transport:WorkbookTransport=async(path,init)=>{
+  if(init?.method==='POST'){
+   const payload=JSON.parse(String(init.body));
+   if(payload.baseVersion===1&&!raced){raced=true;await fixture.transport(path,{...init,body:JSON.stringify({...payload,workbook:{...payload.workbook,title:'Concurrent version'}})});}
+  }
+  return fixture.transport(path,init);
+ };
+ try{
+  const ui=mountComponent('components/admin/ResearchWorkbook.tsx',{transport,initialWorkbook:p07FixtureWorkbook()});await ui.settle();
+  await ui.click('ذخیرهٔ نسخهٔ');
+  (ui.find('input',e=>e.props.id==='title').props.onChange as (e:unknown)=>void)({target:{value:'My preserved draft'}});await ui.settle();
+  await ui.click('ذخیره به‌عنوان');
+  assert.equal(ui.find('input',e=>e.props.id==='title').props.value,'My preserved draft');
+  assert.equal(ui.find('input',e=>e.props.id==='title').props.disabled,false);
+  assert.equal(ui.button('تازه').props.disabled,false);
+  assert.equal(fixture.snapshot().versions.length,2);
+ }finally{restore();}
+});

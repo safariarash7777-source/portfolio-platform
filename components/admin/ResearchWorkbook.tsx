@@ -120,7 +120,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
         void refreshList();
       } else {
         if (attempt) {
-          if (!unknownCreation.current && [400, 401, 403, 413, 422].includes(r.status)) pendingCreation.current = null;
+          if (!unknownCreation.current && ([400, 401, 403, 413, 422].includes(r.status) || attempt.version > 1 && r.status === 409)) pendingCreation.current = null;
           else { unknownCreation.current = true; setUncertainCreation(true); }
         }
         if (r.body.unavailable) setServer('unavailable');
