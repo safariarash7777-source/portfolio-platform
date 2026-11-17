@@ -44,6 +44,7 @@ export default async function HoldingsPage({
 
       <nav aria-label="بخش‌های پروندهٔ مالی" className="flex flex-wrap gap-2">
         <a href="#asset-editor" className="btn btn-gold min-h-11">ثبت دارایی</a>
+        <Link href="/dashboard/consultation" className="btn btn-outline min-h-11">درخواست مشاوره از پرونده</Link>
         <a href="#debt-editor" className="btn btn-outline min-h-11">ثبت بدهی</a>
         <a href="#investment-scope" className="btn btn-outline min-h-11">محدودهٔ سبد</a>
         <Link href="/dashboard" className="btn btn-outline min-h-11">بازگشت به داشبورد</Link>
