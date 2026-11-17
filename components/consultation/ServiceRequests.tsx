@@ -85,6 +85,17 @@ export default function ServiceRequests({ actor, advisor, locked, selected, onSe
       <p className="font-bold">{row.subject}</p><p>{row.title} · {formatJalali(row.created)} · نسخهٔ مالی هنگام درخواست {toPersianDigits(row.basisVersion)} · {row.active ? "فعال" : "پایان دسترسی"}</p>
       {selected !== row.relation && <button type="button" className="btn btn-outline" disabled={busy || locked} onClick={()=>onSelect(row.relation)}>بازکردن پرونده</button>}
     </article>)}
+    <button type="button" disabled={busy || locked || Boolean(subject.trim())} className="btn btn-outline" onClick={async () => {
+      if (sending.current) return;
+      sending.current = true; setBusy(true);
+      try {
+        const { error } = await createClient().auth.signOut({ scope: "local" });
+        if (error) { setMessage("خروج انجام نشد. دوباره تلاش کنید."); return; }
+        const path = advisor ? "/admin/consultation" : "/dashboard/consultation";
+        window.location.assign("/login?next=" + encodeURIComponent(selected ? path + "?relation=" + selected : path));
+      } catch { setMessage("خروج انجام نشد. دوباره تلاش کنید."); }
+      finally { sending.current = false; setBusy(false); }
+    }}>خروج از حساب</button>
     <button type="button" disabled={busy || locked} className="btn btn-outline" onClick={()=>setRevision(v=>v+1)}>بازخوانی درخواست‌ها</button>
   </section>;
 }
