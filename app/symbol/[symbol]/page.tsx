@@ -8,6 +8,7 @@ import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FundamentalCharts from "@/components/symbol/FundamentalCharts";
+import CompanyReportReview from "@/components/symbol/CompanyReportReview";
 import MonthlySalesCharts from "@/components/symbol/MonthlySalesCharts";
 import QuarterlyCharts from "@/components/symbol/QuarterlyCharts";
 import HistoryChart, { type HistoryPoint } from "@/components/terminal/HistoryChart";
@@ -302,6 +303,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
   // T6: محتوای تب بنیادی (T1 + T3 + WP4 + کارت بنیادی WP-F + کارت امتیاز آتی)
   const fundamentalTab = (
     <>
+      {fundamentals && <CompanyReportReview fundamentals={fundamentals} />}
       {/* WP-F — کارت بنیادی سه‌لایه: روایت یک‌خطی + روند + دادهٔ خام (قبل از نمودارها) */}
       {fundamentalCard && fundamentalCard.narrative ? (
         <SymbolFundamentalCard card={fundamentalCard} />

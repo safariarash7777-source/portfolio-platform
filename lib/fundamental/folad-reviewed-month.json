@@ -1,0 +1,110 @@
+{
+  "symbol": "فولاد",
+  "period": "1405-06-31",
+  "record": 11653,
+  "source": "https://codal.ir/Reports/Decision.aspx?LetterSerial=UF9BctCE5jV6HYNuyA8yYA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+  "workbook": "https://excel.codal.ir/service/Excel/GetAll/UF9BctCE5jV6HYNuyA8yYA%3d%3d/0",
+  "sha256": "11c089fae22de79e4986b37677e3ce2af3f594642cff0f546b2bc0feb84c2a62",
+  "total": 639418160,
+  "table": 1,
+  "quantityColumn": "O",
+  "amountColumn": "Q",
+  "rows": [
+    {
+      "product": "محصولات سرد",
+      "market": "داخلی",
+      "unit": "هزار تن",
+      "quantity": 138,
+      "amount": 149710887,
+      "row": 4
+    },
+    {
+      "product": "محصولات گرم",
+      "market": "داخلی",
+      "unit": "هزار تن",
+      "quantity": 238,
+      "amount": 219259044,
+      "row": 5
+    },
+    {
+      "product": "محصولات پوشش دار",
+      "market": "داخلی",
+      "unit": "هزار تن",
+      "quantity": 22,
+      "amount": 38831143,
+      "row": 6
+    },
+    {
+      "product": "تختال",
+      "market": "داخلی",
+      "unit": "هزار تن",
+      "quantity": 22,
+      "amount": 14526886,
+      "row": 7
+    },
+    {
+      "product": "گندله",
+      "market": "داخلی",
+      "unit": "هزار تن",
+      "quantity": 110,
+      "amount": 10203405,
+      "row": 8
+    },
+    {
+      "product": "آهن اسفنجي",
+      "market": "داخلی",
+      "unit": "هزار تن",
+      "quantity": 0,
+      "amount": 0,
+      "row": 9
+    },
+    {
+      "product": "محصولات پوشش دار",
+      "market": "صادراتی",
+      "unit": "هزار تن",
+      "quantity": 2,
+      "amount": 1901474,
+      "row": 12
+    },
+    {
+      "product": "محصولات گرم",
+      "market": "صادراتی",
+      "unit": "هزار تن",
+      "quantity": 66,
+      "amount": 52649439,
+      "row": 13
+    },
+    {
+      "product": "محصولات سرد",
+      "market": "صادراتی",
+      "unit": "هزار تن",
+      "quantity": 3,
+      "amount": 2344744,
+      "row": 14
+    },
+    {
+      "product": "تختال",
+      "market": "صادراتی",
+      "unit": "هزار تن",
+      "quantity": 31,
+      "amount": 22235016,
+      "row": 15
+    },
+    {
+      "product": "گندله",
+      "market": "صادراتی",
+      "unit": "هزار تن",
+      "quantity": 0,
+      "amount": 0,
+      "row": 16
+    },
+    {
+      "product": "آهن اسفنجي",
+      "market": "صادراتی",
+      "unit": "هزار تن",
+      "quantity": 0,
+      "amount": 0,
+      "row": 17
+    }
+  ]
+}
