@@ -36,7 +36,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { codalTest, codalRawExcel, codalDebugDump, CODAL_INTERVAL_MS, fetchAnnouncementsPage } from "./codal.mjs";
 import { runEngineCycle, engineStatus } from "./codal-engine.mjs";
-import { createCompanyWorkScheduler } from "./company-work-scheduler.mjs";
+import { createCompanyWorkScheduler, scheduledCompanyCycleOptions } from "./company-work-scheduler.mjs";
 import { runArchiveCycle, archiveStatus } from "./codal-archive.mjs";
 import { fetchOptions, optionsStatus } from "./options.mjs";
 import { runCandleBackfill, candleStatus } from "./candle-backfill.mjs";
@@ -1570,8 +1570,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   // مسیر legacy نمادبه‌نماد در پاک‌سازی C3 حذف شد (موتور v3 از ۱۶ تیر سالم، ۱۶۵ گزارش).
   if (process.env.CODAL_ENABLED === "1") {
     const scheduler = createCompanyWorkScheduler({
-      job: options => runEngineCycle({ ...options, monthlyOnly: true,
-        prioritizeRecentMonthly: true, officialMonthlyReconciliation: true }),
+      job: options => runEngineCycle(scheduledCompanyCycleOptions(options)),
       regularIntervalMs: CODAL_INTERVAL_MS,
       discoveryIntervalMs: 15 * 60 * 1000,
       overnightEnabled: process.env.RELAY_BACKGROUND_WINDOW_ENABLED !== "0" });
