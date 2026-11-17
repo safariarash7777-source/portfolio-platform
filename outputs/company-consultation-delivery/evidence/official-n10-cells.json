@@ -1,0 +1,118 @@
+[
+  {
+    "symbol": "شپدیس",
+    "report": "اطلاعات و صورت‌های مالی میاندوره‌ای  دوره ۹ ماهه منتهی به  ۱۴۰۵/۰۳/۳۱ (حسابرسی نشده)(اصلاحیه)",
+    "storeId": 10182,
+    "reportUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=v507ZobTY8MGqDoGeQQQaQQQhbUw%3d%3d&rt=0&let=6&ct=0&ft=-1&sheetId=1",
+    "tracking": 1600697,
+    "officialPublish": "1405/07/05 17:44:49",
+    "unit": "میلیون ریال",
+    "periodMonths": 9,
+    "sheet": "صورت سود و زیان",
+    "headers": {
+      "B2": "حسابرسی نشده",
+      "C2": "حسابرسی نشده"
+    },
+    "selected": {
+      "revenue": {
+        "label": "درآمدهاي عملياتي",
+        "current": {
+          "cell": "B4",
+          "value": 660734280
+        },
+        "prior": {
+          "cell": "C4",
+          "value": 383436648
+        }
+      },
+      "net_profit": {
+        "label": "سود(زيان) خالص عمليات در حال تداوم",
+        "current": {
+          "cell": "B18",
+          "value": 301556831
+        },
+        "prior": {
+          "cell": "C18",
+          "value": 159190217
+        }
+      },
+      "gross_profit": {
+        "label": "سود(زيان) ناخالص",
+        "current": {
+          "cell": "B6",
+          "value": 321742791
+        },
+        "prior": {
+          "cell": "C6",
+          "value": 169958330
+        }
+      }
+    },
+    "netMarginPercent": {
+      "current": 45.63965275117858,
+      "prior": 41.516693260890385
+    },
+    "grossMarginPercent": {
+      "current": 48.694732623831776,
+      "prior": 44.32500932983328
+    }
+  },
+  {
+    "symbol": "فولاد",
+    "report": "اطلاعات و صورت‌های مالی میاندوره‌ای  دوره ۳ ماهه منتهی به  ۱۴۰۵/۰۳/۳۱ (حسابرسی نشده)(اصلاحیه)",
+    "storeId": 4047,
+    "reportUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d&rt=0&let=6&ct=0&ft=-1&sheetId=1",
+    "tracking": 1575370,
+    "officialPublish": "1405/05/03 16:54:53",
+    "unit": "میلیون ریال",
+    "periodMonths": 3,
+    "sheet": "صورت سود و زیان",
+    "headers": {
+      "B2": "حسابرسی نشده",
+      "C2": "حسابرسی نشده"
+    },
+    "selected": {
+      "revenue": {
+        "label": "درآمدهاي عملياتي",
+        "current": {
+          "cell": "B4",
+          "value": 834166799
+        },
+        "prior": {
+          "cell": "C4",
+          "value": 847715717
+        }
+      },
+      "net_profit": {
+        "label": "سود(زيان) خالص عمليات در حال تداوم",
+        "current": {
+          "cell": "B18",
+          "value": 120356493
+        },
+        "prior": {
+          "cell": "C18",
+          "value": 161823705
+        }
+      },
+      "gross_profit": {
+        "label": "سود(زيان) ناخالص",
+        "current": {
+          "cell": "B6",
+          "value": 232658542
+        },
+        "prior": {
+          "cell": "C6",
+          "value": 265756797
+        }
+      }
+    },
+    "netMarginPercent": {
+      "current": 14.428348520257996,
+      "prior": 19.08938359343879
+    },
+    "grossMarginPercent": {
+      "current": 27.89112948140723,
+      "prior": 31.349754601754068
+    }
+  }
+]
