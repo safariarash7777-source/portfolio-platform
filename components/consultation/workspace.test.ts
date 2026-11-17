@@ -38,7 +38,7 @@ function mount(reads: unknown[], writes: unknown[], initialRelationshipId?: stri
   const panel = () => { const item = nodes(tree).find(node => node.type === "test-panel"); assert.ok(item); return item; };
   const button = (label: string) => { const item = nodes(tree).find(node => node.type === "button" && text(node).includes(label)); assert.ok(item, label); return item; };
   render();
-  return { text: () => text(tree), panel, render, flush, attempts, writeCalls, readCalls, button,
+  return { text: () => text(tree), panel, panelKey: () => nodes(tree).find(node => typeof node.type === "function" && node.props.onCommand)?.key, render, flush, attempts, writeCalls, readCalls, button,
     async auth(event = "INITIAL_SESSION", id: string | null = actor) { callback(event, id ? { user: { id } } : null); render(); await flush(); },
     send() { (panel().props.onCommand as (command: ConsultationCommand) => unknown)(command); render(); },
     async click(label: string) { const item = button(label); assert.ok(!item.props.disabled); (item.props.onClick as () => unknown)(); render(); await flush(); },
@@ -134,4 +134,30 @@ test("invalid period cannot clear the current dossier or trigger a stuck invalid
  assert.equal(view.readCalls.length,2);assert.equal(view.writeCalls.length,0);
  assert.equal((view.readCalls[1] as {startOn:string}).startOn,'2024-01-02');
  view.unmount();
+});
+
+
+const discardLabel="کنارگذاشتن تغییرات ثبت‌نشدهٔ فرم‌ها";
+test("member can abandon an unsent question and unlock selection and consent controls without a write",async()=>{
+ const data=readback();data.selected=data.relationships[0];
+ const view=mount([result(data)],[]);await view.auth();
+ const key=view.panelKey();
+ (view.panel().props.onDirty as ()=>void)();await view.flush();
+ assert.equal(view.panel().props.selectionLocked,true);
+ await view.click(discardLabel);
+ assert.equal(view.panel().props.selectionLocked,false);assert.notEqual(view.panelKey(),key);
+ assert.equal(view.writeCalls.length,0);assert.equal(view.readCalls.length,1);
+ assert.equal(view.panel().props.data,data);view.unmount();
+});
+test("captured discard cannot clear an in-flight or uncertain attempt or cross an identity change",async()=>{
+ const delayed=deferred<unknown>();const view=mount([result()], [delayed.promise]);await view.auth();
+ (view.panel().props.onDirty as ()=>void)();await view.flush();
+ const discard=view.button(discardLabel).props.onClick as ()=>void;
+ const key=view.panelKey();view.send();discard();await view.flush();
+ assert.equal(view.panelKey(),key);assert.equal(view.panel().props.selectionLocked,true);
+ delayed.done({status:'uncertain'});await view.flush();discard();await view.flush();
+ assert.equal(view.panelKey(),key);assert.equal(view.attempts.length,1);assert.equal(view.writeCalls.length,1);
+ assert.doesNotMatch(view.text(),/کنارگذاشتن تغییرات ثبت‌نشدهٔ فرم‌ها/);
+ await view.auth('SIGNED_OUT',null);discard();await view.flush();
+ assert.match(view.text(),/حساب یا نشست تغییر کرد/);assert.equal(view.readCalls.length,1);view.unmount();
 });
