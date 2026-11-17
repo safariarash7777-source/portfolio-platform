@@ -1312,18 +1312,60 @@ test('saturated monthly feed preserves recovery progress and durable deferred no
  assert.equal(f.calls.excel.length,new Set(f.calls.excel).size,'no successful workbook downloaded twice');
 });
 
-test('feed allocation is unchanged outside standalone recent monthly recovery', async () => {
+test('feed allocation reserves recovery in mixed mode and is unchanged outside recent monthly recovery', async () => {
  const entries=Array.from({length:10},(_,i)=>announcement(20-i,{code:'ن-۳۰',
    title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',link_excel:`https://excel.invalid/${20-i}`}));
  const excelHtml=readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
  for(const [run,expected] of [[{monthlyOnly:true},10],[{prioritizeRecentMonthly:true},10],
-   [{monthlyOnly:true,prioritizeRecentMonthly:true,recentInterimReports:true},8]]){
+   [{monthlyOnly:true,prioritizeRecentMonthly:true,recentInterimReports:true},5]]){
    const f=await fixture({pages:[[...entries,boundary],[]],excelHtml,marketBody:[{payload:{stocks:[{id:'نمونه'}]}}]});
    await f.engine.runEngineCycle({...run,allowBackground:false});
    assert.equal(f.engine.engineStatus.feed.downloaded,expected);
    assert.equal(f.calls.excel.length,expected);
    assert.equal(f.engine.engineStatus.feed.complete,expected===10);
  }
+});
+
+test('opted-in mixed cycles recover recent monthly and interim reports during a saturated monthly feed', async t => {
+ t.mock.method(Date,'now',()=>Date.parse('2026-11-15T15:30:00Z'));
+ const prior=process.env.CODAL_RECENT_INTERIM_ENABLED;
+ process.env.CODAL_RECENT_INTERIM_ENABLED='1';
+ try {
+  const monthlyHtml=readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
+  const feed=Array.from({length:10},(_,i)=>announcement(100-i,{code:'ن-۳۰',l18:'فولاد',
+   title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',date_send:'1405/08/24',link_excel:`https://excel.invalid/${100-i}`}));
+  const month=id=>({...stored(id),symbol:'فولاد',category:'ماهانه',report_code:'ن-۳۰',publish_date:'1405/08/24',
+   title:'گزارش فعالیت ماهانه منتهی به 1405/06/31'});
+  const interim=id=>({...stored(id),category:'صورت مالی',sent_date:'1405/08/24',
+   title:'اطلاعات و صورت‌های مالی دوره ۶ ماهه منتهی به ۱۴۰۵/۰۶/۳۱'});
+  const f=await fixture({pages:[[...feed,boundary],[]],storedRows:[month(30),month(29),month(28),interim(20),interim(19)],
+   marketBody:[{payload:{stocks:[{id:'فولاد'},{id:'نمونه'}]}}],excelHtml:monthlyHtml,
+   excelBodies:Object.fromEntries([20,19].map(id=>[`/service/Excel/GetAll/serial${id}/0`,industrial({period:'1405/06/31',months:6,prior:false})])),
+   initialState:{watermark,fails:{}}});
+  await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true,prioritizeRecentMonthly:true});
+  assert.equal(f.engine.engineStatus.reportScope,'monthly_and_recent_interim');
+  assert.equal(f.engine.engineStatus.feed.downloaded,5);
+  assert.equal(f.engine.engineStatus.interimRecovery.inserted,2);
+  assert.ok(f.engine.engineStatus.recentMonthlyRecovery.inserted>=2);
+  assert.equal(f.calls.excel.length,10,'all families share the same existing file allocation');
+  assert.ok(f.calls.reportWrites.flat().some(row=>row.report_kind==='ن-۱۰'));
+  assert.ok(f.calls.reportWrites.flat().some(row=>row.report_kind==='ن-۳۰'));
+  assert.equal(f.calls.feedWrites[0].rows.length,10,'deferred feed metadata remains durable');
+ } finally { if(prior===undefined)delete process.env.CODAL_RECENT_INTERIM_ENABLED;else process.env.CODAL_RECENT_INTERIM_ENABLED=prior; }
+});
+
+test('recent interim environment opt-in rejects ambiguous values and respects explicit false', async t => {
+ t.mock.method(Date,'now',()=>Date.parse('2026-11-15T15:30:00Z'));
+ const prior=process.env.CODAL_RECENT_INTERIM_ENABLED;
+ try {
+  for(const [value,override] of [[undefined,{}],['0',{}],['true',{}],['1',{recentInterimReports:false}]]){
+   if(value===undefined)delete process.env.CODAL_RECENT_INTERIM_ENABLED;else process.env.CODAL_RECENT_INTERIM_ENABLED=value;
+   const f=await fixture({pages:[[{...financial(9),date_send:'1405/08/24',title:'صورت‌های مالی دوره ۶ ماهه منتهی به ۱۴۰۵/۰۶/۳۱'},boundary],[]]});
+   await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true,prioritizeRecentMonthly:true,...override});
+   assert.equal(f.engine.engineStatus.reportScope,'monthly_only');
+   assert.deepEqual(f.calls.excel,[]);
+  }
+ } finally { if(prior===undefined)delete process.env.CODAL_RECENT_INTERIM_ENABLED;else process.env.CODAL_RECENT_INTERIM_ENABLED=prior; }
 });
 
 test('recent monthly recovery uses the verified publication date and shares the previous workbook cap', async t => {

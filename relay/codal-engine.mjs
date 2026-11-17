@@ -727,7 +727,7 @@ async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBound
   }
 }
 
-export async function runEngineCycle({ allowBackground = true, monthlyOnly = false, recentInterimReports = false,
+export async function runEngineCycle({ allowBackground = true, monthlyOnly = false, recentInterimReports = process.env.CODAL_RECENT_INTERIM_ENABLED === "1",
   prioritizeRecentMonthly = false, officialMonthlyReconciliation = false } = {}) {
   const includeInterim = monthlyOnly && recentInterimReports && INTERIM_MAX_DL > 0;
   engineStatus.reportScope = includeInterim ? "monthly_and_recent_interim" : monthlyOnly ? "monthly_only" : "all_reports";
@@ -783,7 +783,7 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
     // Reserve within the existing total, so continuous new notices cannot starve
     // the saved recent sweep, period repair and historical recovery. Keep at
     // least one feed slot even with a smaller configured total.
-    const recoveryReserve = monthlyBounds && !interimWindow ? Math.min(3, Math.max(0, FEED_MAX_DL - 1)) : 0;
+    const recoveryReserve = monthlyBounds ? Math.min(3 + (interimWindow ? INTERIM_MAX_DL : 0), Math.max(0, FEED_MAX_DL - 1)) : 0;
     await pollGlobalFeed({ metadataOnly: sourceHeld, monthlyOnly, interimWindow, monthlyAttempts, recoveryReserve });
     if (sourceHeld) codalAccess.check();
   } catch (e) {
