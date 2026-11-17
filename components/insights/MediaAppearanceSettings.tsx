@@ -12,6 +12,7 @@ import {
 import { isMediaLayout } from "@/lib/media/layout-setting";
 import { toPersianDigits as fa } from "@/lib/format";
 import styles from "./MediaHub.module.css";
+import { withDeadline } from "@/lib/deadline";
 import {
   SITE_APPEARANCE_PATHS,
   sitePreviewHref,
@@ -55,11 +56,13 @@ export default function MediaAppearanceSettings({
       setReadFailed(false);
       if (clearMessage) setMessage("");
       try {
-        const response = await fetch("/api/admin/content/appearance", {
-          cache: "no-store",
-          signal: controller.signal,
-        });
-        const body = await response.json();
+        const { response, body } = await withDeadline(async (signal) => {
+          const response = await fetch("/api/admin/content/appearance", {
+            cache: "no-store",
+            signal,
+          });
+          return { response, body: await response.json() };
+        }, 10_000, controller.signal);
         if (!mounted.current || sequence !== readSequence.current) return null;
         if (!response.ok || !isMediaLayout(body.media_layout))
           throw new Error("read");
@@ -108,13 +111,16 @@ export default function MediaAppearanceSettings({
     cancelRequests();
     const operation = ++saveSequence.current;
     try {
-      const response = await fetch("/api/admin/content/appearance", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ media_layout: draft.layout }),
-        cache: "no-store",
-      });
-      const body = await response.json();
+      const { response, body } = await withDeadline(async (signal) => {
+        const response = await fetch("/api/admin/content/appearance", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ media_layout: draft.layout }),
+          cache: "no-store",
+          signal,
+        });
+        return { response, body: await response.json() };
+      }, 15_000);
       if (!mounted.current || operation !== saveSequence.current) return;
       if (!response.ok || body.media_layout !== draft.layout)
         throw new Error("save");
@@ -134,10 +140,12 @@ export default function MediaAppearanceSettings({
         }
       }
     } catch {
-      if (mounted.current && operation === saveSequence.current)
+      if (mounted.current && operation === saveSequence.current) {
+        setReadFailed(true);
         setMessage(
           "ذخیره تأیید نشد. تنظیم ذخیره‌شده را دوباره بخوانید؛ ممکن است درخواست به سرور رسیده باشد.",
         );
+      }
     } finally {
       pending.current = false;
       if (mounted.current && operation === saveSequence.current) setBusy(false);
