@@ -122,3 +122,16 @@ test("unknown write never offers list recovery or drops the frozen attempt", asy
   await view.click("بررسی دوبارهٔ همین ثبت");
   assert.equal(view.attempts.length, 1); assert.equal(view.writeCalls[0][0], view.writeCalls[1][0]); view.unmount();
 });
+
+
+test("invalid period cannot clear the current dossier or trigger a stuck invalid read",async()=>{
+ const dossier=readback();dossier.selected=dossier.relationships[0];dossier.dossier={basis:{holdingsVersionId:null,cashFlowVersionId:null,goalsVersionId:null,cashFlowPeriod:{startOn:"2026-10-01",endOn:"2026-10-31"}},holdings:null,cashFlow:null,goals:null};
+ const view=mount([result(dossier),result(dossier)],[]);await view.auth();
+ const previous=view.panel().props.data;
+ (view.panel().props.onPeriod as (period:unknown)=>void)({startOn:'2024-01-01',endOn:'2025-01-01'});await view.flush();
+ assert.equal(view.readCalls.length,1);assert.equal(view.panel().props.data,previous);assert.equal(view.panel().props.locked,false);assert.match(view.text(),/پروندهٔ فعلی حفظ شد/);
+ (view.panel().props.onPeriod as (period:unknown)=>void)({startOn:'2024-01-02',endOn:'2025-01-01'});await view.flush();
+ assert.equal(view.readCalls.length,2);assert.equal(view.writeCalls.length,0);
+ assert.equal((view.readCalls[1] as {startOn:string}).startOn,'2024-01-02');
+ view.unmount();
+});
