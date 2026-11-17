@@ -270,3 +270,24 @@
     transition: none;
   }
 }
+
+.quoteFocus {
+  display: grid;
+  gap: .25rem;
+  padding: .85rem 1.3rem;
+  border-inline-start: 3px solid #b8860b;
+  border-radius: 14px;
+  background: #0d1f4a;
+  color: #fff;
+  font-size: .8rem;
+}
+.quoteFocus strong {
+  color: #f5d07a;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.35;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 640px) {
+  .quoteFocus { flex: 1 1 10rem; }
+}

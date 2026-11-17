@@ -395,7 +395,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
           {/* سرصفحهٔ نماد */}
           <header className={`flex flex-wrap items-end justify-between gap-3 ${styles.header}`}>
             <div>
-              <p className="text-xs font-bold" style={{ color: "var(--gold-ink)" }}>{isFund ? "پروندهٔ صندوق" : "پروندهٔ نماد"}</p>
+              <p className="text-xs font-bold" style={{ color: "var(--gold-ink)" }}>{isFund ? "صندوق" : "سهام"}</p>
               <h1 className="mt-1 font-display text-3xl font-extrabold" style={{ color: "var(--heading)" }}>
                 {sym}
               </h1>
@@ -404,6 +404,11 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
                 {quote?.industry ? ` · ${quote.industry}` : ""}
                 {isFund && quote?.type ? ` · ${quote.type}` : ""}
               </p>
+            </div>
+            <div className={styles.quoteFocus}>
+              <span>قیمت پایانی</span>
+              <strong>{priceTomanNow != null ? formatToman(priceTomanNow) : "—"}</strong>
+              <span>تغییر روز　<b>{pct != null ? formatSignedPercent(pct) : "—"}</b></span>
             </div>
             <div className={`flex flex-wrap items-center gap-2 ${styles.headerActions}`}>
               <a
@@ -445,102 +450,6 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
               </div>
             </section>
           ) : null}
-
-          {/* آمار روز — بدون فید، «—» (هیچ عدد ساختگی) */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Stat
-              label="قیمت پایانی"
-              value={
-                num(quote?.closingPrice) != null
-                  ? formatToman(quote!.closingPrice as number)
-                  : num(quote?.price) != null
-                  ? formatToman(quote!.price)
-                  : "—"
-              }
-            />
-            <Stat
-              label="تغییر روز"
-              value={pct != null ? formatSignedPercent(pct) : "—"}
-              color={pct != null ? deltaColor(pct) : undefined}
-            />
-            <Stat
-              label="ارزش معاملات"
-              value={formatRialAsToman(quote?.value)}
-            />
-            <Stat
-              label="ورود پول حقیقی (امروز)"
-              value={flow != null ? formatTomanShort(flow) : "—"}
-              color={flow != null ? deltaColor(flow) : undefined}
-            />
-          </div>
-
-          {isFund ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Stat
-                label="NAV ابطال"
-                value={num(quote?.nav) != null ? formatToman(quote!.nav as number) : "—"}
-                note={fundNavNote}
-              />
-              <Stat
-                label="NAV صدور"
-                value={num(quote?.navIssue) != null ? formatToman(quote!.navIssue as number) : "—"}
-                note={fundNavNote}
-              />
-              {/* ── حباب: یک عدد، یک موتور ────────────────────────────────
-                  این کارت تا امروز `quote.bubblePercent` را نشان می‌داد — عددی
-                  که **رله** خودش حساب کرده — در حالی که پنلِ تحلیلِ پایینِ همین
-                  صفحه از `liveBubble()` استفاده می‌کرد. دو محاسبهٔ متفاوت روی
-                  یک صفحه، هر دو با برچسبِ «حباب»: یکی ٪−۲٫۹ و دیگری ٪−۲٫۵۰.
-                  حالا هر دو از همان `fundLive` می‌خوانند.
-
-                  رنگ هم عوض شد: `deltaColor` حبابِ منفی را سبز می‌کرد، یعنی
-                  «زیرِ NAV = مطلوب» — قضاوتی که سامانه اجازهٔ بیانش را ندارد. */}
-              <Stat
-                label="حباب"
-                value={
-                  fundLive.bubblePercent != null
-                    ? formatSignedPercent(fundLive.bubblePercent)
-                    : "—"
-                }
-                color={fundLive.bubblePercent != null ? "var(--gold-ink)" : undefined}
-                note={fundNavNote}
-              />
-              <Stat label="تاریخ NAV" value={quote?.navDate ? toPersianDigits(quote.navDate) : "—"} />
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Stat
-                label="P/E"
-                value={num(quote?.pe) != null ? toPersianDigits((quote!.pe as number).toFixed(1)) : "—"}
-              />
-              <Stat
-                label="EPS (ریال)"
-                value={
-                  num(quote?.eps) != null
-                    ? toPersianDigits(Math.round(quote!.eps as number).toLocaleString("en-US")).replace(/,/g, "٬")
-                    : reportEps !== null
-                      ? toPersianDigits(
-                          reportEps.toLocaleString("en-US")
-                        ).replace(/,/g, "٬")
-                      : "—"
-                }
-              />
-              <Stat
-                label="ارزش بازار"
-                value={
-                  formatRialAsToman(quote?.marketValue)
-                }
-              />
-              <Stat
-                label="حجم معاملات"
-                value={
-                  num(quote?.volume) != null
-                    ? toPersianDigits(Math.round(quote!.volume as number).toLocaleString("en-US")).replace(/,/g, "٬")
-                    : "—"
-                }
-              />
-            </div>
-          )}
 
           {/* T6 — هاب نماد با تب‌ها: نمای کلی · بنیادی · گزارش‌ها · مجامع */}
           <SymbolTabs
@@ -586,6 +495,83 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
                     </div>
                   )}
                 </section>
+
+                <div className="grid grid-cols-2 gap-3">            <Stat
+                    label="ارزش معاملات"
+                    value={formatRialAsToman(quote?.value)}
+                  />
+                  <Stat
+                    label="ورود پول حقیقی (امروز)"
+                    value={flow != null ? formatTomanShort(flow) : "—"}
+                    color={flow != null ? deltaColor(flow) : undefined}
+                  />
+                </div>
+                {isFund ? (
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <Stat
+                      label="NAV ابطال"
+                      value={num(quote?.nav) != null ? formatToman(quote!.nav as number) : "—"}
+                      note={fundNavNote}
+                    />
+                    <Stat
+                      label="NAV صدور"
+                      value={num(quote?.navIssue) != null ? formatToman(quote!.navIssue as number) : "—"}
+                      note={fundNavNote}
+                    />
+                    {/* ── حباب: یک عدد، یک موتور ────────────────────────────────
+                        این کارت تا امروز `quote.bubblePercent` را نشان می‌داد — عددی
+                        که **رله** خودش حساب کرده — در حالی که پنلِ تحلیلِ پایینِ همین
+                        صفحه از `liveBubble()` استفاده می‌کرد. دو محاسبهٔ متفاوت روی
+                        یک صفحه، هر دو با برچسبِ «حباب»: یکی ٪−۲٫۹ و دیگری ٪−۲٫۵۰.
+                        حالا هر دو از همان `fundLive` می‌خوانند.
+                        رنگ هم عوض شد: `deltaColor` حبابِ منفی را سبز می‌کرد، یعنی
+                        «زیرِ NAV = مطلوب» — قضاوتی که سامانه اجازهٔ بیانش را ندارد. */}
+                    <Stat
+                      label="حباب"
+                      value={
+                        fundLive.bubblePercent != null
+                          ? formatSignedPercent(fundLive.bubblePercent)
+                          : "—"
+                      }
+                      color={fundLive.bubblePercent != null ? "var(--gold-ink)" : undefined}
+                      note={fundNavNote}
+                    />
+                    <Stat label="تاریخ NAV" value={quote?.navDate ? toPersianDigits(quote.navDate) : "—"} />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <Stat
+                      label="P/E"
+                      value={num(quote?.pe) != null ? toPersianDigits((quote!.pe as number).toFixed(1)) : "—"}
+                    />
+                    <Stat
+                      label="EPS (ریال)"
+                      value={
+                        num(quote?.eps) != null
+                          ? toPersianDigits(Math.round(quote!.eps as number).toLocaleString("en-US")).replace(/,/g, "٬")
+                          : reportEps !== null
+                            ? toPersianDigits(
+                                reportEps.toLocaleString("en-US")
+                              ).replace(/,/g, "٬")
+                            : "—"
+                      }
+                    />
+                    <Stat
+                      label="ارزش بازار"
+                      value={
+                        formatRialAsToman(quote?.marketValue)
+                      }
+                    />
+                    <Stat
+                      label="حجم معاملات"
+                      value={
+                        num(quote?.volume) != null
+                          ? toPersianDigits(Math.round(quote!.volume as number).toLocaleString("en-US")).replace(/,/g, "٬")
+                          : "—"
+                      }
+                    />
+                  </div>
+                )}
 
                 {/* T5-1 — دادهٔ زنده: عمق ۵سطحی، جریان حقیقی/حقوقی، کارت‌های ارزش‌گذاری */}
                 {!isFund && (

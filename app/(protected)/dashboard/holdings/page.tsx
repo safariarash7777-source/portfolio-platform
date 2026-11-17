@@ -40,28 +40,15 @@ export default async function HoldingsPage({
         <h1 className="font-display text-2xl md:text-3xl font-bold mt-1" style={{ color: "var(--navy-deep)" }}>
           دارایی، بدهی و خالص ثروت
         </h1>
-        <p className="text-sm mt-2" style={{ color: "var(--text-2)" }}>
-          چه دارید، چقدر بدهکارید و تفاوت آن‌ها در اطلاعات ثبت‌شده چقدر است؟ دارایی و بدهی را ثبت یا اصلاح کنید و سابقهٔ هر نسخه را دوباره ببینید.
-        </p>
       </header>
 
-      <Link href="/dashboard" className="btn btn-outline">بازگشت به داشبورد</Link>
-      <p className="text-sm leading-7" style={{ color: "var(--text-2)" }}>این صفحه فقط ثبت‌های نسخه‌دار دارایی و بدهی را نشان می‌دهد. سوابق سبد قبلی و الگوهای تخصیص در <Link href="/dashboard" className="underline">داشبورد قبلی</Link> محفوظ‌اند؛ به این فهرست تبدیل یا منتقل نشده‌اند. برای جلوگیری از محاسبهٔ حدسی، مقدار بدون واحد، مالکیت یا منبع معتبر را جدا بررسی و ثبت کنید.</p>
       <nav aria-label="بخش‌های پروندهٔ مالی" className="flex flex-wrap gap-2">
-        <a href="#asset-editor" className="btn btn-outline min-h-11">ثبت دارایی</a>
+        <a href="#asset-editor" className="btn btn-gold min-h-11">ثبت دارایی</a>
         <a href="#debt-editor" className="btn btn-outline min-h-11">ثبت بدهی</a>
         <a href="#investment-scope" className="btn btn-outline min-h-11">محدودهٔ سبد</a>
+        <Link href="/dashboard" className="btn btn-outline min-h-11">بازگشت به داشبورد</Link>
       </nav>
       <FinancialEditors key={`financial-editors-${snapshot.holdings?.id ?? "new"}`}>
-      <BalanceSheetSummary sheet={sheet} version={snapshot.holdings?.version ?? null} />
-      <DebtSchedule debts={debts.debts} ready={snapshot.ready && debts.ready} version={snapshot.holdings?.version ?? null} referenceDay={paymentReferenceDay(new Date())} historical={snapshot.holdings !== null && snapshot.history.length > 0 && snapshot.holdings.version !== snapshot.history[0].version} />
-      {snapshot.ready ? <HoldingsSummary valuation={valuePositions(snapshot.holdings?.positions ?? [], prices.data ?? [], new Date())} version={snapshot.holdings?.version ?? null} pricesFailed={prices.status === "error"} /> : <ReadError label={snapshot.holdingsState === "not_found" ? "نسخهٔ انتخابی؛ در دسترس حساب شما نیست" : "دارایی‌ها"} code="PORTFOLIO_READ" />}
-      {snapshot.targetState === "error" && <ReadError label="سبد هدف؛ دارایی شما مستقل از هدف قابل مشاهده است" code="PORTFOLIO_TARGET" />}
-      <section id="investment-scope" tabIndex={-1} className="scroll-mt-24 min-w-0" aria-label="محدودهٔ سبد سرمایه‌گذاری">
-      {!snapshot.ready && <p role="alert" className="card p-5 text-sm leading-7">دارایی‌های این نسخه خوانده نشدند؛ محدودهٔ سبد در دسترس نیست و خالی بودن آن تأیید نمی‌شود.</p>}
-      {snapshot.ready && !snapshot.holdings && <p className="card p-5 text-sm leading-7">برای تعیین محدودهٔ سبد، ابتدا <a href="#asset-editor" className="underline">دارایی‌های خود را ثبت کنید</a>. نبود ثبت به معنی نداشتن سرمایه‌گذاری نیست.</p>}
-      {snapshot.ready && snapshot.holdings && <InvestmentScopeWorkbench key={`scope-${snapshot.holdings.id}-${scopeState.review?.id ?? scopeState.status}`} holdings={snapshot.holdings} scopeState={scopeState} editable={snapshot.holdings.version === snapshot.history[0]?.version} storedTarget={snapshot.storedTarget} priceRows={prices.data ?? []} pricesFailed={prices.status === "error"} />}
-      </section>
       <section id="asset-editor" tabIndex={-1} className="scroll-mt-24 min-w-0" aria-label="ثبت و مشاهدهٔ دارایی">
       <HoldingsWorkbench
         key={snapshot.holdings?.id ?? "new"}
@@ -80,8 +67,18 @@ export default async function HoldingsPage({
         showImport={false}
       />
       </section>
+      <BalanceSheetSummary sheet={sheet} version={snapshot.holdings?.version ?? null} />
+      <DebtSchedule debts={debts.debts} ready={snapshot.ready && debts.ready} version={snapshot.holdings?.version ?? null} referenceDay={paymentReferenceDay(new Date())} historical={snapshot.holdings !== null && snapshot.history.length > 0 && snapshot.holdings.version !== snapshot.history[0].version} />
+      {snapshot.ready ? <HoldingsSummary valuation={valuePositions(snapshot.holdings?.positions ?? [], prices.data ?? [], new Date())} version={snapshot.holdings?.version ?? null} pricesFailed={prices.status === "error"} /> : <ReadError label={snapshot.holdingsState === "not_found" ? "نسخهٔ انتخابی؛ در دسترس حساب شما نیست" : "دارایی‌ها"} code="PORTFOLIO_READ" />}
+      {snapshot.targetState === "error" && <ReadError label="سبد هدف؛ دارایی شما مستقل از هدف قابل مشاهده است" code="PORTFOLIO_TARGET" />}
+      <section id="investment-scope" tabIndex={-1} className="scroll-mt-24 min-w-0" aria-label="محدودهٔ سبد سرمایه‌گذاری">
+      {!snapshot.ready && <p role="alert" className="card p-5 text-sm leading-7">دارایی‌های این نسخه خوانده نشدند؛ محدودهٔ سبد در دسترس نیست و خالی بودن آن تأیید نمی‌شود.</p>}
+      {snapshot.ready && !snapshot.holdings && <p className="card p-5 text-sm leading-7">برای تعیین محدودهٔ سبد، ابتدا <a href="#asset-editor" className="underline">دارایی‌های خود را ثبت کنید</a>. نبود ثبت به معنی نداشتن سرمایه‌گذاری نیست.</p>}
+      {snapshot.ready && snapshot.holdings && <InvestmentScopeWorkbench key={`scope-${snapshot.holdings.id}-${scopeState.review?.id ?? scopeState.status}`} holdings={snapshot.holdings} scopeState={scopeState} editable={snapshot.holdings.version === snapshot.history[0]?.version} storedTarget={snapshot.storedTarget} priceRows={prices.data ?? []} pricesFailed={prices.status === "error"} />}
+      </section>
       <section id="debt-editor" tabIndex={-1} className="scroll-mt-24 min-w-0" aria-label="ثبت و مشاهدهٔ بدهی"><DebtsWorkbench key={`debts-${snapshot.holdings?.id ?? "new"}`} debts={debts.debts} ready={snapshot.ready && debts.ready} activeVersion={snapshot.holdings?.version ?? null} latestVersion={snapshot.history[0]?.version ?? 0} /></section>
       </FinancialEditors>
+      <details className="card p-4 text-sm"><summary className="cursor-pointer">سوابق سبد قبلی</summary><Link className="underline" href="/dashboard">مشاهده سوابق و الگوهای تخصیص در داشبورد</Link></details>
     </main><Footer /></>
   );
 }
