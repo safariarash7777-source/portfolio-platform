@@ -1,7 +1,8 @@
 /** Local subscription worker. No general SSH key, API key or admin JWT needed. */
 import { execFile } from 'node:child_process';
 import { reconcileResearchState } from './research-reconcile';
-import { readFile, writeFile, rename, mkdir, open, unlink } from 'node:fs/promises';
+import { withResearchLock } from './research-lock';
+import { readFile, writeFile, rename, mkdir } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { prepareResearchPacket, RESEARCH_INSTRUCTIONS, type ResearchDraft } from '../../lib/intelligence/research-agent';
 import { prepareCodalResearchInputs, DEFAULT_REPORT_MAX_AGE_MS, type StoredResearchCodalRow, type ResearchProvenance } from '../../lib/intelligence/research-inputs';
@@ -37,19 +38,7 @@ async function main() {
   }
   await mkdir(root, { recursive: true });
   const lockPath = join(root, 'worker.lock');
-  let lock;
-  try { lock = await open(lockPath, 'wx'); }
-  catch {
-    // Do not reclaim a stale/partial lock automatically: competing reclaimers
-    // could delete a new lock and duplicate inference. Recovery is explicit.
-    let previous: { pid: number };
-    try { previous = JSON.parse(await readFile(lockPath, 'utf8')); }
-    catch { throw new Error('worker_lock_requires_review'); }
-    try { process.kill(previous.pid, 0); console.log(JSON.stringify({ status: 'already_running' })); return; }
-    catch { throw new Error('worker_lock_requires_review'); }
-  }
-  await lock.writeFile(JSON.stringify({ pid: process.pid }));
-  try {
+  const ran = await withResearchLock(lockPath, async () => {
     const now = Date.now();
     const input = await bridge<{ rows: StoredResearchCodalRow[]; symbols: string[]; readAt: string; feedStateAt: string }>({ action: 'read' });
     if (!Number.isFinite(Date.parse(input.readAt)) || Math.abs(now - Date.parse(input.readAt)) > 120000) throw new Error('source_clock_invalid');
@@ -113,7 +102,8 @@ async function main() {
     await atomic('state.json', state);
     await atomic('last-run.json', { at: new Date().toISOString(), status: 'stored', id: saved.id, ...summary });
     console.log(JSON.stringify({ status: 'stored', id: saved.id, provider: 'openai-codex', model: RESEARCH_MODEL, published: false, ...summary }));
-  } finally { await lock.close(); await unlink(lockPath); }
+  });
+  if (!ran) console.log(JSON.stringify({ status: 'already_running' }));
 }
 main().catch(async (error: unknown) => {
   const message = error instanceof Error ? error.message : '';
