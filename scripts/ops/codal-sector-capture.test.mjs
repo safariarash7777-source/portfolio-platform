@@ -1,11 +1,47 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {deflateRawSync,inflateRawSync} from 'node:zlib';
-import {TARGETS,SOURCE_SETS,sameReport,collect,command,parse,failureReceipt} from './codal-sector-capture.mjs';
+import {TARGETS,SOURCE_SETS,sameReport,sourceHoldGuard,collect,command,parse,failureReceipt} from './codal-sector-capture.mjs';
 import vm from 'node:vm';
 import * as zlib from 'node:zlib';
 const pause=async()=>{};
 const marker=p=>'SECTOR_CAPTURE='+deflateRawSync(Buffer.from(JSON.stringify(p))).toString('base64');
+
+test('remaining monthly profile reads both existing holds and refuses unknown or active guards',async()=>{
+ const env={SUPABASE_URL:'https://62.60.191.24/liara-preview',SUPABASE_SERVICE_ROLE_KEY:'synthetic-only'};
+ const rows=['codal_engine_state','codal_archive_state'].map(key=>({key,payload:{sourceHoldUntil:0}}));
+ const calls=[];await sourceHoldGuard(async(url,options)=>{calls.push({url,options});return Response.json(rows);},env,1000);
+ assert.equal(calls.length,1);assert.match(calls[0].url,/ir_market_snapshots/);assert.equal(calls[0].options.method,undefined);
+ for(const data of [[],rows.slice(0,1),[rows[0],rows[0]],rows.map(r=>({...r,payload:{}}))])
+  await assert.rejects(sourceHoldGuard(async()=>Response.json(data),env,1000),/source_guard_unavailable/);
+ await assert.rejects(sourceHoldGuard(async()=>Response.json([rows[0],{...rows[1],payload:{sourceHoldUntil:1001}}]),env,1000),/source_hold/);
+ await assert.rejects(sourceHoldGuard(async()=>{throw Error('must not fetch');},{...env,SUPABASE_URL:'https://other.test'},1000),/source_guard_unavailable/);
+});
+
+test('guarded capture stops before sources on hold and after first challenge without saving challenge bytes',async()=>{
+ const targets=SOURCE_SETS['monthly-remaining-20261117'];assert.equal(targets.length,2);
+ let calls=0;
+ const held=await collect(targets,sameReport,async()=>{calls++;throw Error('must not fetch');},pause,async()=>{throw Error('source_hold');});
+ assert.equal(calls,0);assert.deepEqual(parse(marker(held),0,'monthly-remaining-20261117').map(d=>d.status),['source_hold','not_attempted']);
+ const challenge=await collect(targets,sameReport,async()=>{calls++;return new Response('<input id="captchaCode"><img id="captchaImage">');},pause,async()=>{});
+ assert.equal(calls,1);assert.deepEqual(parse(marker(challenge),0,'monthly-remaining-20261117').map(d=>d.status),['source_challenge','not_attempted']);
+ assert.ok(challenge.documents.every(d=>!d.body));
+});
+
+test('embedded guarded command checks storage before each exact public document and emits no credential',async()=>{
+ const cmd=decodeURIComponent(command('monthly-remaining-20261117'));
+ const encoded=cmd.match(/Buffer.from\(\/([^/]+)\//)[1],source=inflateRawSync(Buffer.from(encoded,'base64url')).toString();
+ const lines=[],calls=[];const env={SUPABASE_URL:'https://62.60.191.24/liara-preview',SUPABASE_SERVICE_ROLE_KEY:'synthetic-only'};
+ const context={Buffer,URL,AbortSignal,Date,process:{exitCode:0,env},setTimeout:fn=>fn(),fetch:async(url,options)=>{
+  calls.push(url);if(url.includes('/rest/v1/'))return Response.json(['codal_engine_state','codal_archive_state'].map(key=>({key,payload:{sourceHoldUntil:0}})));
+  assert.equal(options.headers.Authorization,undefined);return new Response('<html>official document</html>');
+ },require:()=>zlib,console:{log:line=>lines.push(line)}};
+ await vm.runInNewContext(source,context);
+ assert.equal(calls.length,4);assert.ok(calls[0].includes('/rest/v1/'));assert.ok(calls[2].includes('/rest/v1/'));
+ assert.deepEqual([calls[1],calls[3]],SOURCE_SETS['monthly-remaining-20261117'].map(t=>t.url));
+ assert.equal(parse(lines.join('\n'),0,'monthly-remaining-20261117').length,2);
+ assert.doesNotMatch(JSON.stringify(lines),/synthetic-only|Authorization|apikey/);
+});
 test('supplemental profile requests only the three advertised official sheets',async()=>{
  const targets=SOURCE_SETS['industrial-20261114'];assert.equal(targets.length,3);
  assert.deepEqual(targets.map(t=>t.id),['29700-equity','29245-income','29245-equity']);

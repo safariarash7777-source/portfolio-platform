@@ -1,4 +1,5 @@
-// Fixed public publisher documents only. No database, credentials or BRSAPI calls.
+// Fixed public publisher documents only. The remaining-monthly profile reads
+// existing source holds privately; no database writes or BRSAPI calls.
 import { createHash } from 'node:crypto';
 import { deflateRawSync, inflateRawSync } from 'node:zlib';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
@@ -15,7 +16,25 @@ export const SOURCE_SETS=Object.freeze({sectors:TARGETS,'industrial-20261114':Ob
   Object.freeze({id:'29700-equity',url:TARGETS[2].url+'&sheetId=1060'}),
   Object.freeze({id:'29245-income',url:TARGETS[4].url+'&sheetId=1'}),
   Object.freeze({id:'29245-equity',url:TARGETS[4].url+'&sheetId=1060'}),
+]),'monthly-remaining-20261117':Object.freeze([
+  Object.freeze({id:'sharak-14050730',url:'https://codal.ir/Reports/Decision.aspx?LetterSerial=QAAcU9Oqtba24Avhcy9Yew%3d%3d&rt=0&let=58&ct=0&ft=-1'}),
+  Object.freeze({id:'farak-14050730-amended',url:'https://codal.ir/Reports/Decision.aspx?LetterSerial=OBS5yuOOObOOOkJK1I9G6vOLwtPw%3d%3d&rt=5&let=58&ct=0&ft=-1'}),
 ])});
+export async function sourceHoldGuard(fetchImpl=fetch,env=process.env,now=Date.now()){
+  const base=env.SUPABASE_URL?.replace(/\/+$/,'');
+  if(base!=='https://62.60.191.24/liara-preview'||!env.SUPABASE_SERVICE_ROLE_KEY)throw Error('source_guard_unavailable');
+  const response=await fetchImpl(base+'/rest/v1/ir_market_snapshots?select=key,payload&key=in.(codal_engine_state,codal_archive_state)',{
+    redirect:'error',signal:AbortSignal.timeout(10000),headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,Authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY}});
+  if(!response.ok)throw Error('source_guard_unavailable');
+  const text=await response.text();if(text.length>1024*1024)throw Error('source_guard_unavailable');
+  const rows=JSON.parse(text),keys=['codal_engine_state','codal_archive_state'];
+  if(!Array.isArray(rows)||rows.length!==2||!keys.every(key=>rows.filter(row=>row?.key===key).length===1))throw Error('source_guard_unavailable');
+  for(const row of rows){
+    const hold=row.payload?.sourceHoldUntil;
+    if(!Number.isSafeInteger(hold)||hold<0)throw Error('source_guard_unavailable');
+    if(hold>now)throw Error('source_hold');
+  }
+}
 function targetsFor(profile){if(!Object.hasOwn(SOURCE_SETS,profile))throw Error('profile_invalid');return SOURCE_SETS[profile];}
 export function sameReport(url, source) {
   try {
@@ -25,13 +44,15 @@ export function sameReport(url, source) {
       ['/Reports/Decision.aspx','/Reports/InterimStatement.aspx'].includes(u.pathname) && serial(u)!==null && serial(u)===serial(original);
   } catch { return false; }
 }
-export async function collect(targets, allowed, fetchImpl=fetch, delay=ms=>new Promise(r=>setTimeout(r,ms))) {
-  const documents=[];
+export async function collect(targets, allowed, fetchImpl=fetch, delay=ms=>new Promise(r=>setTimeout(r,ms)), guard=null) {
+  const documents=[];let stopped=false;
   for(const target of targets){
     const entry={id:target.id,sourceUrl:target.url,status:'unknown',capturedAt:new Date().toISOString()};
     documents.push(entry);
+    if(stopped){entry.status='not_attempted';continue;}
     let response;
     try {
+      if(guard)try{await guard();}catch(error){entry.status=error.message==='source_hold'?'source_hold':'source_guard_unavailable';stopped=true;continue;}
       if(!allowed(target.url,target.url))throw Error('identity');
       response=await fetchImpl(target.url,{redirect:'manual',signal:AbortSignal.timeout(20000),headers:{'User-Agent':'Mozilla/5.0',Accept:'text/html'}});
       let finalUrl=target.url;
@@ -51,6 +72,10 @@ export async function collect(targets, allowed, fetchImpl=fetch, delay=ms=>new P
       try{for(;;){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>2*1024*1024)throw Error('body_limit');chunks.push(Buffer.from(value));}}
       finally{await reader.cancel().catch(()=>{});reader.releaseLock();}
       if(!size)throw Error('body_missing');
+      const text=Buffer.concat(chunks).toString('utf8');
+      if(guard&&/id=["']captchaCode/i.test(text)&&/id=["']captchaImage/i.test(text)){
+        entry.status='source_challenge';stopped=true;continue;
+      }
       Object.assign(entry,{status:'retrieved',responseUrl:response.url||finalUrl,body:Buffer.concat(chunks).toString('base64')});
     }catch(error){entry.status=['identity','body_limit','body_missing'].includes(error.message)?error.message:error.name==='TimeoutError'?'timeout':'transport_failed';}
     finally{if(response?.body&&!response.body.locked)await response.body.cancel().catch(()=>{});await delay(2100);}
@@ -58,7 +83,8 @@ export async function collect(targets, allowed, fetchImpl=fetch, delay=ms=>new P
   return {schemaVersion:1,documents};
 }
 export function command(profile='sectors'){
-  const code=`(${collect.toString()})(${JSON.stringify(targetsFor(profile))},${sameReport.toString()}).then(p=>{const text=require('node:zlib').deflateRawSync(Buffer.from(JSON.stringify(p))).toString('base64');const parts=text.match(/.{1,2000}/g);for(let i=0;i<parts.length;i++)console.log('SECTOR_PART='+i+'/'+parts.length+':'+parts[i]);console.log('SECTOR_DONE='+parts.length)}).catch(()=>{console.log('sector_capture_failed');process.exitCode=1})`;
+  const guarded=profile==='monthly-remaining-20261117'?`,fetch,ms=>new Promise(r=>setTimeout(r,ms)),${sourceHoldGuard.toString()}`:'';
+  const code=`(${collect.toString()})(${JSON.stringify(targetsFor(profile))},${sameReport.toString()}${guarded}).then(p=>{const text=require('node:zlib').deflateRawSync(Buffer.from(JSON.stringify(p))).toString('base64');const parts=text.match(/.{1,2000}/g);for(let i=0;i<parts.length;i++)console.log('SECTOR_PART='+i+'/'+parts.length+':'+parts[i]);console.log('SECTOR_DONE='+parts.length)}).catch(()=>{console.log('sector_capture_failed');process.exitCode=1})`;
   const cmd=encodeURIComponent(`node -e eval(require(/node:zlib/.source).inflateRawSync(Buffer.from(/${deflateRawSync(code).toString('base64url')}/.source,/base64url/.source)).toString())`);
   if(cmd.length>6000)throw Error('command_limit');return cmd;
 }
@@ -89,7 +115,7 @@ export function parse(raw,exitCode,profile='sectors'){
       const bytes=Buffer.from(d.body,'base64');if(!bytes.length||bytes.length>2*1024*1024)throw Error('capture_body');
       return {...result,responseUrl:d.responseUrl,sha256:createHash('sha256').update(bytes).digest('hex'),bytes};
     }
-    if(!['http_error','identity','body_limit','body_missing','timeout','transport_failed'].includes(d.status))throw Error('capture_status');
+    if(!['http_error','identity','body_limit','body_missing','timeout','transport_failed','source_hold','source_guard_unavailable','source_challenge','not_attempted'].includes(d.status))throw Error('capture_status');
     return {...result,httpStatus:d.status==='http_error'&&Number.isInteger(d.httpStatus)?d.httpStatus:null};
   });
 }
