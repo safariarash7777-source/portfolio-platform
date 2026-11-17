@@ -289,10 +289,10 @@ export default function HoldingsWorkbench({
             <fieldset key={i} className="rounded-xl border p-4 space-y-3" style={{ borderColor: "var(--line)" }}>
             <legend className="text-sm font-bold">دارایی {toPersianDigits(i + 1)}</legend>
             <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end">
-              <div className="md:col-span-2 space-y-1">
-                <label className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>
+              <label className="md:col-span-2 space-y-1">
+                <span className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>
                   {r.kind === "symbol" ? "نماد" : "برچسب دستی"}
-                </label>
+                </span>
                 <input
                   className="input"
                   value={r.label}
@@ -301,17 +301,17 @@ export default function HoldingsWorkbench({
                   dir="rtl"
                   aria-label={r.kind === "symbol" ? "نماد دارایی" : "عنوان دارایی دستی"}
                 />
-              </div>
-              <div className="space-y-1">
-                <label className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>نوع</label>
+              </label>
+              <label className="space-y-1">
+                <span className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>نوع</span>
                 <select className="input" value={r.kind} disabled={editingLocked}
                   aria-label="نوع ثبت دارایی" onChange={(e) => patch(i, { kind: e.target.value as Row["kind"], valuationMode: e.target.value === "manual" ? "unpriced" : "market" })}>
                   <option value="symbol">نماد واقعی</option>
                   <option value="manual">دارایی دستی</option>
                 </select>
-              </div>
-              <div className="space-y-1">
-                <label className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>دسته</label>
+              </label>
+              <label className="space-y-1">
+                <span className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>دسته</span>
                 <select className="input" value={r.assetClass} disabled={editingLocked}
                   aria-label="دستهٔ دارایی"
                   onChange={(e) => patch(i, { assetClass: e.target.value })}>
@@ -320,12 +320,12 @@ export default function HoldingsWorkbench({
                     <option key={c} value={c}>{ASSET_LABEL[c]}</option>
                   ))}
                 </select>
-              </div>
-              <div className="space-y-1">
-                <label className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>مقدار</label>
+              </label>
+              <label className="space-y-1">
+                <span className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>مقدار</span>
                 <input className="input" value={r.qty} inputMode="decimal" disabled={editingLocked} aria-label="مقدار کل دارایی"
                   onChange={(e) => patch(i, { qty: e.target.value })} />
-              </div>
+              </label>
               <div className="flex gap-2">
                 <input className="input" value={r.unit} disabled={editingLocked}
                   aria-label="واحد"
