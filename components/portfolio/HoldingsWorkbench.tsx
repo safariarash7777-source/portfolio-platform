@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFinancialEditor } from "./FinancialEditors";
+import { paymentReferenceDay } from "@/lib/portfolio/paymentSchedule";
 import { Plus, Trash2, Save, AlertCircle, CheckCircle2, History, Info } from "lucide-react";
 import { toPersianDigits, toLatinDigits, formatToman, formatJalali } from "@/lib/format";
 import type { AssetClassRow, CoverageGap, HoldingPosition } from "@/lib/portfolio/contracts";
@@ -71,7 +72,9 @@ function assetLabel(assetClass: string): string {
   return ASSET_LABEL[assetClass] ?? `«${assetClass}» (دستهٔ ناشناخته)`;
 }
 
-const blank = (): Row => ({
+const blank = (): Row => {
+  const day = paymentReferenceDay(new Date()) ?? "";
+  return {
   positionKey: "",
   label: "",
   kind: "symbol",
@@ -79,9 +82,10 @@ const blank = (): Row => ({
   qty: "",
   unit: "عدد",
   costBasis: "",
-  asOf: new Date().toISOString().slice(0, 10),
-  title: "", ownershipPct: "100", valuationMode: "market", declaredValue: "", currency: "IRT", valuationSource: "", valuationAsOf: new Date().toISOString().slice(0, 10), valuationStatus: "estimated",
-});
+  asOf: day,
+  title: "", ownershipPct: "100", valuationMode: "market", declaredValue: "", currency: "IRT", valuationSource: "", valuationAsOf: day, valuationStatus: "estimated",
+  };
+};
 
 export default function HoldingsWorkbench({
   ready,
