@@ -230,6 +230,16 @@ jobs:
           PGUSER: postgres
           PGPASSWORD: postgres
 
+      - name: Installment payment allocation SQL and API contracts
+        run: |
+          node scripts/testing/installment-payments.mjs
+          node --import tsx --test lib/portfolio/installmentPayments.test.ts
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: "5433"
+          PGUSER: postgres
+          PGPASSWORD: postgres
+
       - name: Profile role guard and member ledger regression
         run: |
           python3 scripts/testing/profile-member-access-regression.py
