@@ -281,7 +281,10 @@ export default function HoldingsWorkbench({
         <h3 className="font-display font-bold text-lg" style={{ color: "var(--navy-deep)" }}>
           ثبت و اصلاح دارایی
         </h3>
-        <p className="text-sm leading-7">مقدار و ارزش اظهارشده، مربوط به کل قلم پیش از سهم مالکیت است. مثلاً دارایی ۱۰۰ میلیون تومانی با مالکیت ۵۰ درصد، ۵۰ میلیون تومان برای شما محاسبه می‌شود. برای ثبت فقط ارزش، روش «ارزش اظهارشده» را انتخاب و مقدار را خالی بگذارید. اصلاح، یک نسخهٔ تازه از دارایی و بدهی با هم می‌سازد.</p>
+        <details className="text-sm">
+          <summary className="cursor-pointer">راهنمای مقدار و مالکیت</summary>
+          <p className="text-sm leading-7">مقدار و ارزش اظهارشده، مربوط به کل قلم پیش از سهم مالکیت است. مثلاً دارایی ۱۰۰ میلیون تومانی با مالکیت ۵۰ درصد، ۵۰ میلیون تومان برای شما محاسبه می‌شود. برای ثبت فقط ارزش، روش «ارزش اظهارشده» را انتخاب و مقدار را خالی بگذارید. اصلاح، یک نسخهٔ تازه از دارایی و بدهی با هم می‌سازد.</p>
+        </details>
         {activeVersion !== null && activeVersion !== latestVersion && <p role="alert">در حال مشاهدهٔ سابقه هستید؛ برای اصلاح، <a className="underline" href="/dashboard/holdings">آخرین نسخه</a> را باز کنید.</p>}
 
         <div className="space-y-3">
@@ -338,7 +341,9 @@ export default function HoldingsWorkbench({
                 </button>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <details className="rounded-lg border p-3" open={r.valuationMode === "declared" || undefined}>
+              <summary className="cursor-pointer text-sm font-bold">مالکیت، تاریخ و ارزش‌گذاری</summary>
+              <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
               <label className="space-y-1"><span className="text-xs">عنوان اختیاری دارایی</span><input className="input w-full" value={r.title} disabled={editingLocked} maxLength={300} onChange={e => patch(i, { title: e.target.value })} /></label>
               <label className="space-y-1"><span className="text-xs">سهم مالکیت شما (درصد)</span><input className="input w-full" inputMode="decimal" value={r.ownershipPct} disabled={editingLocked} onChange={e => patch(i, { ownershipPct: e.target.value })} /></label>
               <label className="space-y-1"><span className="text-xs">تاریخ ثبت مقدار (میلادی)</span><input type="date" className="input w-full" value={r.asOf} disabled={editingLocked} onChange={e => patch(i, { asOf: e.target.value })} /></label>
@@ -350,7 +355,8 @@ export default function HoldingsWorkbench({
                 <label className="space-y-1"><span className="text-xs">تاریخ ارزش‌گذاری (میلادی)</span><input type="date" className="input w-full" value={r.valuationAsOf} disabled={editingLocked} onChange={e => patch(i, { valuationAsOf: e.target.value })} /></label>
                 <label className="space-y-1"><span className="text-xs">وضعیت ارزش اظهارشده</span><select className="input w-full" value={r.valuationStatus} disabled={editingLocked} onChange={e => patch(i, { valuationStatus: e.target.value as Row["valuationStatus"] })}><option value="estimated">تخمینی</option><option value="valid">معتبر طبق منبع ثبت‌شده</option></select></label>
               </>}
-            </div>
+              </div>
+            </details>
             </fieldset>
           ))}
         </div>
