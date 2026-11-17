@@ -1,0 +1,32 @@
+{
+  "steps": [
+    "Request and consent from the financial file; server committed, browser reply intentionally dropped",
+    "Reload recovered same request; dossier contains asset and nonzero debt",
+    "Private first draft invisible to member; revised into version 2",
+    "Owner approved and published exact revision; member saw only published text",
+    "Sign out and fresh login recovered approved revision and follow-up; action did not mutate holdings",
+    "Second authenticated member denied in page and API",
+    "Independent consent control opened",
+    "Revoked consent prevents advisor opening financial dossier",
+    "After a real edit the dashboard advanced to holdings version 3; approved answer still refers to version 2 and prior follow-up",
+    "Member B with expired entitlement saved a labeled 3 gram asset in the basic portfolio and read it back after reload"
+  ],
+  "relation": "a0756084-8d6d-4174-9306-8ba9e1716a24",
+  "basis": "c7925b9a-d908-4e27-a8e5-10fe301d2e2a",
+  "financeVersion": 2,
+  "session": "b77e467d-d3be-4dca-92c1-10a0858d4ec9",
+  "responseVersion": 2,
+  "followUp": "af63dd7a-0d55-407f-bff3-76e61fcdf36e",
+  "revocationRelation": "476978c5-ed17-4d46-9899-6c43df6cda07",
+  "latestHoldings": {
+    "id": "2426ee8d-0354-4459-b051-1033d8cd12af",
+    "version": 3
+  },
+  "environment": {
+    "app": "http://localhost:32192",
+    "auth": "isolated GoTrue",
+    "data": "isolated PostgreSQL via PostgREST",
+    "sessions": "Chromium desktop and mobile viewport; synthetic ordinary members and registered synthetic owner",
+    "production": false
+  }
+}
