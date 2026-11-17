@@ -9,9 +9,9 @@ import { p07FixtureWorkbook } from '../../../../../lib/intelligence/p07-workflow
 
 const id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const privateBody={...p07FixtureWorkbook(),privatePreparation:{contract:'p07.private-preparation.v1',intake:{kind:'text',text:'PRIVATE_ROUTE_ORIGINAL',transcriptConfirmed:false,claims:[],ambiguities:[]}}};
-interface Options { user?: boolean; sessionError?: unknown; sessionThrows?: boolean; role?: string|null; roleError?: boolean; roleThrows?: boolean; clientThrows?: boolean; queryThrows?: boolean }
+interface Options { recoveryFixture?: boolean; user?: boolean; sessionError?: unknown; sessionThrows?: boolean; role?: string|null; roleError?: boolean; roleThrows?: boolean; clientThrows?: boolean; queryThrows?: boolean }
 function route(options:Options={}) {
-  let roleQueries=0,storeQueries=0;
+  let roleQueries=0,storeQueries=0,inserts=0;
   const client={auth:{getUser:async()=>{if(options.sessionThrows)throw new Error('RAW_PRIVATE_SESSION');return{data:{user:options.user===false?null:{id}},error:options.sessionError??null};}},
     from(table:string){
       if(table==='profiles'){
@@ -20,9 +20,9 @@ function route(options:Options={}) {
         return profile;
       }
       storeQueries++;if(options.queryThrows)throw new Error('RAW_PRIVATE_STORE');
-      let rows:unknown=[{id,workbook_id:id,version:1,title:'Private workbook',body:privateBody,created_at:'2026-10-03T10:00:00Z'}];
+      let rows:unknown=[{id,workbook_id:id,version:options.recoveryFixture?2:1,title:'Private workbook',body:options.recoveryFixture?p07FixtureWorkbook():privateBody,created_by:id,created_at:'2026-10-03T10:00:00Z'}];
       const chain={select:()=>chain,eq:()=>chain,order:()=>chain,limit:()=>chain,
-        in:()=>{rows=[];return chain;},insert:()=>chain,
+        in:()=>{rows=[];return chain;},insert:()=>{inserts++;return chain;},
         single:async()=>({data:(rows as unknown[])[0],error:null}),
         then:(success:(value:unknown)=>unknown)=>Promise.resolve({data:rows,error:null}).then(success)};
       return chain;
@@ -32,7 +32,7 @@ function route(options:Options={}) {
   const taskModule={exports:{} as {GET:(r:Request)=>Promise<Response>;POST:(r:Request)=>Promise<Response>}};
   const load=(name:string)=>name==='@/lib/supabase/server'?{createClient:async()=>{if(options.clientThrows)throw new Error('RAW_PRIVATE_CLIENT');return client;}}:localRequire(name.startsWith('@/')?resolve(name.slice(2)):name);
   new Function('require','module','exports',compiled)(load,taskModule,taskModule.exports);
-  return{...taskModule.exports,roleQueries:()=>roleQueries,storeQueries:()=>storeQueries};
+  return{...taskModule.exports,roleQueries:()=>roleQueries,storeQueries:()=>storeQueries,inserts:()=>inserts};
 }
 const request=(body:unknown)=>new Request('https://example.invalid/api/admin/intelligence/workbooks',{method:'POST',body:JSON.stringify(body)});
 async function verify(response:Response,status:number){
@@ -77,4 +77,14 @@ test('actual private reads, save receipts, validation and infrastructure errors 
   const previous=process.env.P07_PRIVATE_PREPARATION_ENABLED;process.env.P07_PRIVATE_PREPARATION_ENABLED='false';
   try{await verify(await api.POST(request({action:'save',baseVersion:0,workbook:privateBody})),503);}
   finally{if(previous===undefined)delete process.env.P07_PRIVATE_PREPARATION_ENABLED;else process.env.P07_PRIVATE_PREPARATION_ENABLED=previous;}
+});
+
+
+test('actual route forwards later-version recovery and returns original receipt without insertion',async()=>{
+ const api=route({recoveryFixture:true});
+ const body=await verify(await api.POST(request({action:'save',workbookId:id,baseVersion:1,recoverVersion:true,workbook:p07FixtureWorkbook()})),200);
+ assert.equal(body.reused,true);assert.equal(body.version,2);assert.equal(body.workbookId,id);
+ assert.equal(body.savedAt,'2026-10-03T10:00:00Z');assert.equal(api.inserts(),0);
+ await verify(await api.POST(request({action:'save',workbookId:id,baseVersion:1,recoverVersion:true,workbook:{...p07FixtureWorkbook(),title:'different'}})),409);
+ assert.equal(api.inserts(),0);
 });
