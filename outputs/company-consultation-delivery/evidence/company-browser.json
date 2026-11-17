@@ -1,0 +1,66 @@
+{
+  "url": "http://localhost:32192/symbol/%D9%81%D9%88%D9%84%D8%A7%D8%AF#fundamental",
+  "at": "2026-11-17T20:07:45.707Z",
+  "views": {
+    "390": {
+      "priorHref": "https://codal.ir/Reports/Decision.aspx?LetterSerial=5nKO45yY4Zr5NLhxicMKgA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+      "financialHref": "https://codal.ir/Reports/Decision.aspx?LetterSerial=yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d&rt=0&let=6&ct=0&ft=-1",
+      "readback": "محصولات گرم · داخلی\nدوره\tمبلغ (میلیون ریال)\tمقدار\tنرخ ضمنی (ریال بر واحد)\n۱۴۰۵-۰۷\t۲۵۸٬۰۸۵٬۴۱۶\t۲۶۷ هزار تن\t۹۶۶٬۶۱۲٬۰۴۴٬۹۴۳٫۸۲\n۱۴۰۴-۰۷\t۹۹٬۴۵۰٬۹۵۰\t۲۶۲ هزار تن\t۳۷۹٬۵۸۳٬۷۷۸٬۶۲۵٫۹۵",
+      "width": 390,
+      "summary": "تغییر فروش محصولات گرم · داخلی در ۱۴۰۵-۰۷ نسبت به ۱۴۰۴-۰۷، ۱۵۸٬۶۳۴٬۴۶۶ میلیون ریال است. تغییر نسبی ۱۵۹٫۵۱٪."
+    },
+    "1280": {
+      "priorHref": "https://codal.ir/Reports/Decision.aspx?LetterSerial=5nKO45yY4Zr5NLhxicMKgA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+      "financialHref": "https://codal.ir/Reports/Decision.aspx?LetterSerial=yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d&rt=0&let=6&ct=0&ft=-1",
+      "readback": "محصولات گرم · داخلی\nدوره\tمبلغ (میلیون ریال)\tمقدار\tنرخ ضمنی (ریال بر واحد)\n۱۴۰۵-۰۷\t۲۵۸٬۰۸۵٬۴۱۶\t۲۶۷ هزار تن\t۹۶۶٬۶۱۲٬۰۴۴٬۹۴۳٫۸۲\n۱۴۰۴-۰۷\t۹۹٬۴۵۰٬۹۵۰\t۲۶۲ هزار تن\t۳۷۹٬۵۸۳٬۷۷۸٬۶۲۵٫۹۵",
+      "width": 1280,
+      "summary": "تغییر فروش محصولات گرم · داخلی در ۱۴۰۵-۰۷ نسبت به ۱۴۰۴-۰۷، ۱۵۸٬۶۳۴٬۴۶۶ میلیون ریال است. تغییر نسبی ۱۵۹٫۵۱٪."
+    }
+  },
+  "n10": {
+    "id": 4047,
+    "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d&rt=0&let=6&ct=0&ft=-1",
+    "storedPeriodEnd": "2026-06-21",
+    "financialPeriodEnd": "1405-03-31",
+    "publishedAt": "1405/05/03 16:54:53",
+    "publishedDateRaw": "۱۴۰۵/۰۵/۰۳",
+    "publishedTimeRaw": "۱۶:۵۴:۵۳",
+    "publishedAtUtc": null,
+    "publicationUtcConfidence": "unknown",
+    "capturedAtRaw": "2026-08-12T23:10:45.09058+00:00",
+    "capturedAt": "2026-08-12T23:10:45.090Z",
+    "parserVersion": 2,
+    "parserVersionSource": "raw",
+    "amendment": true
+  },
+  "monthly": {
+    "id": 13719,
+    "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=LyQnlYP7OOObOOOIDLto8TGJDkDQ%3d%3d&rt=0&let=58&ct=0&ft=-1",
+    "storedPeriodEnd": "2026-10-22",
+    "financialPeriodEnd": "1405-07-30",
+    "publishedAt": null,
+    "publishedDateRaw": "1405/08/06",
+    "publishedTimeRaw": null,
+    "publishedAtUtc": null,
+    "publicationUtcConfidence": "unknown",
+    "capturedAtRaw": "2026-11-17T12:37:22.482262+00:00",
+    "capturedAt": "2026-11-17T12:37:22.482Z",
+    "parserVersion": 2,
+    "parserVersionSource": "raw",
+    "amendment": false
+  },
+  "reviewed": [
+    {
+      "id": 11653,
+      "sha": "11c089fae22de79e4986b37677e3ce2af3f594642cff0f546b2bc0feb84c2a62",
+      "url": "https://excel.codal.ir/service/Excel/GetAll/UF9BctCE5jV6HYNuyA8yYA%3d%3d/0"
+    },
+    {
+      "id": 93,
+      "sha": "2fa968d278c7c8f6c895f72d91c55b1f10d48a8f14765c48db741221ca2340c5",
+      "url": "https://excel.codal.ir/service/Excel/GetAll/5nKO45yY4Zr5NLhxicMKgA%3d%3d/0"
+    }
+  ],
+  "openedFinancialOfficial": "https://codal.ir/Reports/InterimStatement.aspx?LetterSerial=yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d",
+  "requestedFinancialOfficial": "https://codal.ir/Reports/Decision.aspx?LetterSerial=yC2oQqrZ3w8Q8FsnnWQQBw%3d%3d&rt=0&let=6&ct=0&ft=-1"
+}
