@@ -1,5 +1,37 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import vm from "node:vm";
+import ts from "typescript";
+
+test("market health timestamp excludes fresh operational snapshots", async () => {
+  const source = readFileSync(new URL("../../app/api/admin/health/route.ts", import.meta.url), "utf8");
+  const exported: { latestTimestamp: (db: unknown, table: string, column: string, key?: string) => Promise<{at: string | null}> } = {} as never;
+  vm.runInNewContext(ts.transpileModule(source + "\nexport { latestTimestamp };", {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText, { exports: exported, require: () => ({}) });
+  const rows = [
+    { key: "codal_engine_state", updated_at: "2026-11-17T07:00:00Z" },
+    { key: "latest", updated_at: "2026-11-15T07:00:00Z" },
+  ];
+  const db = { from(table: string) {
+    assert.equal(table, "ir_market_snapshots");
+    let selected = rows;
+    const query = {
+      select: () => query, order: () => query, limit: () => query,
+      eq(column: string, value: string) {
+        assert.equal(column, "key"); selected = selected.filter(row => row.key === value); return query;
+      },
+      maybeSingle: async () => ({ data: selected[0] ?? null, error: null }),
+    };
+    return query;
+  } };
+  assert.equal((await exported.latestTimestamp(db, "ir_market_snapshots", "updated_at", "latest")).at, rows[1].updated_at);
+  rows.splice(1, 1);
+  assert.equal((await exported.latestTimestamp(db, "ir_market_snapshots", "updated_at", "latest")).at, null);
+  // The actual health route must request the same producer-owned key.
+  assert.match(source, /هیچ اسنپ‌شات بازاری ثبت نشده", now, "latest"/);
+});
 import {
   ageMinutes,
   classifyFreshness,
