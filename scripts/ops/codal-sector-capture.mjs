@@ -1,5 +1,6 @@
 // Fixed public publisher documents only. The remaining-monthly profile reads
 // existing source holds privately; no database writes or BRSAPI calls.
+import { isCodalChallengeHtml } from '../../relay/codal-source-access.mjs';
 import { createHash } from 'node:crypto';
 import { deflateRawSync, inflateRawSync } from 'node:zlib';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
@@ -22,9 +23,10 @@ export const SOURCE_SETS=Object.freeze({sectors:TARGETS,'industrial-20261114':Ob
 ])});
 export async function sourceHoldGuard(fetchImpl=fetch,env=process.env,now=Date.now()){
   const base=env.SUPABASE_URL?.replace(/\/+$/,'');
-  if(base!=='https://62.60.191.24/liara-preview'||!env.SUPABASE_SERVICE_ROLE_KEY)throw Error('source_guard_unavailable');
+  const key=env.SUPABASE_ANON_KEY||env.NEXT_PUBLIC_SUPABASE_ANON_KEY||env.SUPABASE_SERVICE_ROLE_KEY;
+  if(base!=='https://62.60.191.24/liara-preview'||!key)throw Error('source_guard_unavailable');
   const response=await fetchImpl(base+'/rest/v1/ir_market_snapshots?select=key,payload&key=in.(codal_engine_state,codal_archive_state)',{
-    redirect:'error',signal:AbortSignal.timeout(10000),headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,Authorization:'Bearer '+env.SUPABASE_SERVICE_ROLE_KEY}});
+    redirect:'error',signal:AbortSignal.timeout(10000),headers:{apikey:key,Authorization:'Bearer '+key}});
   if(!response.ok)throw Error('source_guard_unavailable');
   const text=await response.text();if(text.length>1024*1024)throw Error('source_guard_unavailable');
   const rows=JSON.parse(text),keys=['codal_engine_state','codal_archive_state'];
@@ -65,7 +67,7 @@ export async function collect(targets, allowed, fetchImpl=fetch, delay=ms=>new P
         await delay(2100);
         response=await fetchImpl(finalUrl,{redirect:'error',signal:AbortSignal.timeout(20000),headers:{'User-Agent':'Mozilla/5.0',Accept:'text/html'}});
       }
-      if(!response.ok){entry.status='http_error';entry.httpStatus=response.status;continue;}
+      if(!response.ok){entry.status='http_error';entry.httpStatus=response.status;if(guard&&[403,429].includes(response.status))stopped=true;continue;}
       if(response.url && !allowed(response.url,target.url))throw Error('identity');
       const reader=response.body?.getReader();if(!reader)throw Error('body_missing');
       const chunks=[];let size=0;
@@ -73,7 +75,7 @@ export async function collect(targets, allowed, fetchImpl=fetch, delay=ms=>new P
       finally{await reader.cancel().catch(()=>{});reader.releaseLock();}
       if(!size)throw Error('body_missing');
       const text=Buffer.concat(chunks).toString('utf8');
-      if(guard&&/id=["']captchaCode/i.test(text)&&/id=["']captchaImage/i.test(text)){
+      if(guard&&(isCodalChallengeHtml(text)||/captchaCode|captchaImage|g-recaptcha|h-captcha|cf-chl-/i.test(text))){
         entry.status='source_challenge';stopped=true;continue;
       }
       Object.assign(entry,{status:'retrieved',responseUrl:response.url||finalUrl,body:Buffer.concat(chunks).toString('base64')});
@@ -84,7 +86,7 @@ export async function collect(targets, allowed, fetchImpl=fetch, delay=ms=>new P
 }
 export function command(profile='sectors'){
   const guarded=profile==='monthly-remaining-20261117'?`,fetch,ms=>new Promise(r=>setTimeout(r,ms)),${sourceHoldGuard.toString()}`:'';
-  const code=`(${collect.toString()})(${JSON.stringify(targetsFor(profile))},${sameReport.toString()}${guarded}).then(p=>{const text=require('node:zlib').deflateRawSync(Buffer.from(JSON.stringify(p))).toString('base64');const parts=text.match(/.{1,2000}/g);for(let i=0;i<parts.length;i++)console.log('SECTOR_PART='+i+'/'+parts.length+':'+parts[i]);console.log('SECTOR_DONE='+parts.length)}).catch(()=>{console.log('sector_capture_failed');process.exitCode=1})`;
+  const code=`${isCodalChallengeHtml.toString()};(${collect.toString()})(${JSON.stringify(targetsFor(profile))},${sameReport.toString()}${guarded}).then(p=>{const text=require('node:zlib').deflateRawSync(Buffer.from(JSON.stringify(p))).toString('base64');const parts=text.match(/.{1,2000}/g);for(let i=0;i<parts.length;i++)console.log('SECTOR_PART='+i+'/'+parts.length+':'+parts[i]);console.log('SECTOR_DONE='+parts.length)}).catch(()=>{console.log('sector_capture_failed');process.exitCode=1})`;
   const cmd=encodeURIComponent(`node -e eval(require(/node:zlib/.source).inflateRawSync(Buffer.from(/${deflateRawSync(code).toString('base64url')}/.source,/base64url/.source)).toString())`);
   if(cmd.length>6000)throw Error('command_limit');return cmd;
 }

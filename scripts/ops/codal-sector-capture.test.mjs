@@ -113,3 +113,18 @@ test('failure receipt preserves bounded diagnostic classes without reflecting pr
   assert.equal(failureReceipt('',0,new Error('capture_decode')).stage,'capture_decode');
   assert.equal(failureReceipt('',0,new Error('secret text')).stage,'local_io_or_unknown');
 });
+
+test('guarded capture stops on single challenge markers and HTTP403/429 before a second notice',async()=>{
+ for(const response of [new Response('<input id = "captchaCode">'),new Response('<div class="cf-chl-container">'),new Response('denied',{status:403}),new Response('limited',{status:429})]){
+  let calls=0;
+  const packet=await collect(SOURCE_SETS['monthly-remaining-20261117'],sameReport,async()=>{calls++;return response;},pause,async()=>{});
+  assert.equal(calls,1);assert.equal(packet.documents[1].status,'not_attempted');assert.ok(packet.documents.every(d=>!d.body));
+  assert.equal(parse(marker(packet),0,'monthly-remaining-20261117').length,2);
+ }
+});
+test('hold reads prefer existing public credentials over privileged credentials',async()=>{
+ await sourceHoldGuard(async(url,options)=>{
+  assert.equal(options.headers.apikey,'public-only');assert.equal(options.headers.Authorization,'Bearer public-only');
+  return Response.json(['codal_engine_state','codal_archive_state'].map(key=>({key,payload:{sourceHoldUntil:0}})));
+ },{SUPABASE_URL:'https://62.60.191.24/liara-preview',SUPABASE_ANON_KEY:'public-only',SUPABASE_SERVICE_ROLE_KEY:'must-not-use'},1000);
+});
