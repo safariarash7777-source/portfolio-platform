@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { createConsultationAttempt, readConsultation, sendConsultationAttempt } from "@/lib/consultation/request";
+import { validateCashFlowPeriod } from "@/lib/portfolio/cashFlowApiContract";
 import ConsultationPanel from "./ConsultationPanel";
 import { receiptVisible } from "./readback";
 import type { ConsultationReceipt } from "@/lib/consultation/contracts";
@@ -105,6 +106,6 @@ export default function ConsultationWorkspace({ expectedActorId, initialRelation
     {uncertain && <section className="card space-y-3 p-5"><p>تا تعیین تکلیف، ویرایش و تغییر پرونده بسته است؛ توکن و محتوای همان تلاش حفظ شده‌اند.</p><button className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" disabled={saving || reading} onClick={() => void send()}>بررسی دوبارهٔ همین ثبت</button></section>}
     {confirmed && !readbackVerified && !error && !reading && <section className="card space-y-3 p-4"><p role="status">رسید ثبت محفوظ است؛ بازخوانی مستقل همان اثر هنوز تأیید نشده است. ثبت دوباره انجام نمی‌شود.</p><button className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" disabled={saving} onClick={() => void load(selected.current)}>دوباره خواندن پرونده</button></section>}
     {confirmed && readbackVerified && !error && !reading && <button className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" disabled={saving} onClick={() => { if (!live.current || revoked.current || !readbackVerified) return; receiptRef.current = null; setConfirmed(false); setReadbackVerified(false); setMessage(""); }}>ادامه با پروندهٔ بازخوانی‌شده</button>}
-    {data && <ConsultationPanel key={revision} data={data} locked={locked} onDirty={() => { if (!locked) setDirty(true); }} onCommand={command => send(command)} onSelect={relationshipId => { if (!locked && !dirty) { setData(null); setMessage(""); void load(relationshipId); } }} selectionLocked={locked || dirty} onPeriod={next => { if (!locked && !dirty) { period.current = next; setData(null); void load(selected.current); } }} onDiscard={() => { if (!locked) { setDirty(false); setRevision(value => value + 1); } }} />}
+    {data && <ConsultationPanel key={revision} data={data} locked={locked} onDirty={() => { if (!locked) setDirty(true); }} onCommand={command => send(command)} onSelect={relationshipId => { if (!locked && !dirty) { setData(null); setMessage(""); void load(relationshipId); } }} selectionLocked={locked || dirty} onPeriod={next => { if (!locked && !dirty) { try { period.current = validateCashFlowPeriod(next); } catch { setMessage("دوره معتبر نیست؛ پروندهٔ فعلی حفظ شد. فاصلهٔ شروع و پایان حداکثر ۳۶۵ روز باشد."); return; } setMessage(""); setData(null); void load(selected.current); } }} onDiscard={() => { if (!locked) { setDirty(false); setRevision(value => value + 1); } }} />}
   </div>;
 }

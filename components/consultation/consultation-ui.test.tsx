@@ -8,6 +8,8 @@ import { receiptVisible } from "./readback";
 import RecommendationEditor from "./RecommendationEditor";
 import Dossier from "./Dossier";
 import SessionCard from "./SessionCard";
+import { mountComponent } from "../admin/p07-component-test-host";
+import Field from "./Field";
 import ConsultationPanel from "./ConsultationPanel";
 
 const actor = "11111111-1111-4111-8111-111111111111", relationId = "22222222-2222-4222-8222-222222222222", sessionId = "33333333-3333-4333-8333-333333333333", member = "44444444-4444-4444-8444-444444444444";
@@ -87,4 +89,18 @@ test("consent form hides for existing active current-owner relation and returns 
   const unavailable = render({ ...memberData, advisors: [] });
   assert.match(unavailable, /دسترسی آرش برای این محیط هنوز/);
   assert.match(unavailable, /aria-label="رضایت و دسترسی مشاور"/);
+});
+
+
+test("period form rejects 366 days locally and remains editable for a valid 365-day period",async()=>{
+ const periods:unknown[]=[];
+ const ui=mountComponent('components/consultation/ConsultationPanel.tsx',{data,locked:false,selectionLocked:false,onCommand:async()=>{throw Error('no write');},onSelect:()=>{},onDirty:()=>{},onPeriod:(period:unknown)=>periods.push(period),onDiscard:()=>{}});
+ await ui.settle();
+ const edit=async(label:string,value:string)=>{(ui.find(Field,e=>e.props.label===label).props.onChange as (value:string)=>void)(value);await ui.settle();};
+ const submit=async()=>{(ui.find('form',e=>e.props['aria-label']==='دورهٔ پروندهٔ مالی').props.onSubmit as (event:unknown)=>void)({preventDefault(){}});await ui.settle();};
+ await edit('شروع دوره (میلادی)','2024-01-01');await edit('پایان دوره (میلادی)','2025-01-01');await submit();
+ assert.equal(periods.length,0);assert.match(String(ui.find('p',e=>e.props.role==='alert').props.children),/۳۶۵/);
+ assert.equal(ui.find(Field,e=>e.props.label==='شروع دوره (میلادی)').props.value,'2024-01-01');
+ await edit('شروع دوره (میلادی)','2024-01-02');await submit();
+ assert.deepEqual(periods,[{startOn:'2024-01-02',endOn:'2025-01-01'}]);
 });
