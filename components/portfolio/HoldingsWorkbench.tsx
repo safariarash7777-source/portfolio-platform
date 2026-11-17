@@ -329,10 +329,11 @@ export default function HoldingsWorkbench({
                 <input className="input" value={r.qty} inputMode="decimal" disabled={editingLocked} aria-label="مقدار کل دارایی"
                   onChange={(e) => patch(i, { qty: e.target.value })} />
               </label>
-              <div className="flex gap-2">
+              <div className="flex items-end gap-2">
+                <label className="min-w-0 flex-1 space-y-1"><span className="block text-xs font-bold">واحد</span>
                 <input className="input" value={r.unit} disabled={editingLocked}
                   aria-label="واحد"
-                  onChange={(e) => patch(i, { unit: e.target.value })} />
+                  onChange={(e) => patch(i, { unit: e.target.value })} /></label>
                 <button type="button" aria-label="حذف قلم از نسخهٔ تازه" disabled={editingLocked}
                   onClick={() => editRows((rs) => rs.filter((_, j) => j !== i))}
                   className="px-2 rounded-lg disabled:opacity-40"
