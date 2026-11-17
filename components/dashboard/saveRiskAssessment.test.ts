@@ -296,7 +296,7 @@ test('canonical-only v2 is visible before legacy records with three real existin
   assert.match(html, /نسخهٔ ۲/); assert.match(html, /۱ قلم در آخرین نسخه ثبت شده است/);
   assert.doesNotMatch(html, /هنوز نسخه‌ای از دارایی‌ها ثبت نکرده‌اید/);
   assert.ok(html.indexOf('دارایی، بدهی و سبد من') < html.indexOf('سوابق قبلی سبد'));
-  for (const label of ['مشاهده و ثبت دارایی', 'مشاهده و ثبت بدهی', 'بررسی محدودهٔ سبد']) assert.match(html, new RegExp(`href="/dashboard/holdings"[^>]*>${label}`));
+  for (const [label, anchor] of [['مشاهده و ثبت دارایی', 'asset-editor'], ['مشاهده و ثبت بدهی', 'debt-editor'], ['بررسی محدودهٔ سبد', 'investment-scope']]) assert.match(html, new RegExp(`href="/dashboard/holdings#${anchor}"[^>]*>${label}`));
   assert.ok(queries.some(q => q.table === 'member_holding_versions' && q.filters.some(([key, value]) => key === 'user_id' && value === 'member')));
 });
 
@@ -434,7 +434,7 @@ test('canonical readers follow each authenticated session and only the chosen ow
 
 
 function assertBaseLedgerRoutes(html: string) {
-  for (const href of ['/dashboard/holdings','/dashboard/cashflow','/dashboard/cashflow#period-budget','/dashboard/goals']) {
+  for (const href of ['/dashboard/holdings#asset-editor','/dashboard/holdings#debt-editor','/dashboard/holdings#investment-scope','/dashboard/cashflow','/dashboard/cashflow#period-budget','/dashboard/goals']) {
     assert.ok(html.includes(`href="${href}"`), `base ledger route missing: ${href}`);
   }
 }

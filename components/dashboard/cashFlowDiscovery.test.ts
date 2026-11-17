@@ -38,5 +38,9 @@ test("ordinary-member dashboard exposes the real independent cash-flow route wit
   assert.match(html, /نبود ثبت، درآمد یا هزینهٔ صفر را تأیید نمی‌کند/);
   assert.match(html, /دارایی و قسط خودکار به این دفتر منتقل نمی‌شوند/);
   assert.doesNotMatch(html, /آرش سفری|آرش سفاری|href="\/admin/);
-  for (const label of ["مشاهده و ثبت دارایی", "مشاهده و ثبت بدهی", "بررسی محدودهٔ سبد"]) assert.match(html, new RegExp(`href="/dashboard/holdings"[^>]*>${label}`));
+  for (const [label, anchor] of [["مشاهده و ثبت دارایی", "asset-editor"], ["مشاهده و ثبت بدهی", "debt-editor"], ["بررسی محدودهٔ سبد", "investment-scope"]]) {
+    assert.match(html, new RegExp(`href="/dashboard/holdings#${anchor}"[^>]*>${label}`));
+    const destination = readFileSync(new URL("../../app/(protected)/dashboard/holdings/page.tsx", import.meta.url), "utf8");
+    assert.match(destination, new RegExp(`id="${anchor}"`));
+  }
 });
