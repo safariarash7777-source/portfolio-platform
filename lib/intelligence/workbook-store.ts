@@ -202,7 +202,7 @@ export async function openWorkbook(
 
 export async function saveWorkbook(
   gateway: WorkbookGateway,
-  payload: { workbookId?: unknown; creationId?: unknown; baseVersion?: unknown; workbook?: unknown },
+  payload: { workbookId?: unknown; creationId?: unknown; recoverVersion?: unknown; baseVersion?: unknown; workbook?: unknown },
 ): Promise<StoreResult> {
   const denied = await authorize(gateway);
   if (denied) return denied;
@@ -219,6 +219,9 @@ export async function saveWorkbook(
   if (typeof base !== "number" || !Number.isInteger(base) || base < 0 || (isNew ? base !== 0 : base < 1)) {
     return { status: 400, body: { error: "نسخهٔ پایه نامعتبر است" } };
   }
+  if (payload.recoverVersion !== undefined && (payload.recoverVersion !== true || isNew)) {
+    return { status: 400, body: { error: "درخواست بازیابی نسخه نامعتبر است" } };
+  }
   const clean = sanitize(payload.workbook);
   if (typeof clean === "string") return { status: 400, body: { error: clean } };
   if (clean.privatePreparation && gateway.privatePreparationWritable !== true) {
@@ -231,11 +234,11 @@ export async function saveWorkbook(
   try {
     const workbookId = isNew ? (typeof creationId === "string" ? creationId.toLowerCase() : gateway.newId()) : (payload.workbookId as string);
     const store = gateway.createStore();
-    // Stable creation UUID + existing UNIQUE(workbook_id,version) is the
-    // idempotency key. Replay is bound to the native author and exact content.
+    // The stable workbook UUID and target version use the existing UNIQUE key.
+    // Opt-in replay (creation or later save) is bound to author and exact content.
     const replay = async (): Promise<StoreResult | null> => {
-      if (creationId === undefined) return null;
-      const prior = (await store.versions(workbookId)).find(row => row.version === 1);
+      if (creationId === undefined && payload.recoverVersion !== true) return null;
+      const prior = (await store.versions(workbookId)).find(row => row.version === base + 1);
       if (!prior) return null;
       const actor = await gateway.getUser();
       const stored = sanitize(prior.body);
