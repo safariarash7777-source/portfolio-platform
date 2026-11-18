@@ -146,10 +146,13 @@ test('official audited mixed workbook follows advertised income sheet after audi
 test('verified OTC and listed funds-company templates bind both sheets and visible issuer', () => {
   const template = (html, name) => editRoot(html, root => { root.title_En = name; });
   const otc = html => template(html, 'FinancialStatement-OTC-Product-V9');
+  const registered = html => template(html, 'FinancialStatement-Registered-Product-V9');
   const fund = html => template(html, 'Financial Statement - FundsCompany - Listed - V2')
     .replace(/<span id="ctl00_lblDisplaySymbol"[^>]*><\/span>/, '')
     .replace('id="ctl00_txbSymbol"', 'id="ctl00_lblDisplaySymbol"');
   assert.ok(parse(otc(income), otc(equity)).data);
+  assert.ok(parse(registered(income), registered(equity)).data);
+  assert.equal(parse(registered(income), otc(equity)).data, null);
   assert.ok(parse(fund(income), fund(equity)).data);
   assert.equal(parse(fund(income), otc(equity)).data, null);
   assert.equal(parse(fund(income).replace('ctl00_lblDisplaySymbol', 'ctl00_other'), fund(equity)).data, null);

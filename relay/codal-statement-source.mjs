@@ -153,6 +153,7 @@ const number = value => {
 };
 
 const OTC_PRODUCT = 'FinancialStatement-OTC-Product-V9';
+const REGISTERED_PRODUCT = 'FinancialStatement-Registered-Product-V9';
 const LISTED_FUNDS_COMPANY = 'Financial Statement - FundsCompany - Listed - V2';
 
 function document(source,meta,announcement,alias,interim=false) {
@@ -167,6 +168,7 @@ function document(source,meta,announcement,alias,interim=false) {
     root.type!==6 || typeof root.isAudited!=='boolean' || root.periodExtraDay!==0 ||
     ![3,6,9,12].includes(root.period) || (!mixed && !(/FinancialStatement-Listed-Product/.test(root.title_En??'') ||
       root.title_En === OTC_PRODUCT ||
+      root.title_En === REGISTERED_PRODUCT ||
       root.title_En === LISTED_FUNDS_COMPANY)))fail('scope_unsupported');
  if(root.period!==meta.period_months || day(root.periodEndToDate)!==meta.period_end || root.isAudited!==meta.audited ||
     day(root.yearEndToDate)<meta.period_end)fail('period_mismatch');
