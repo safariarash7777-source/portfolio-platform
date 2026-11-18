@@ -23,7 +23,7 @@
 import {
   classifyAnnouncement, fetchAnnouncementsPage, fetchOfficialMonthlyPage, downloadAndParse,
   insertParsedReport, existingUrlsFor, faToEn, codalEnv, monthlySectorProfile, monthlyWorkbookType,
-  jalaliYmdToGregorian, metaFromAnnouncement, isIndustrialMonthlyWorkbook, readIndustrialMonthlyDecision,
+  jalaliYmdToGregorian, metaFromAnnouncement, isIndustrialMonthlyWorkbook, readIndustrialMonthlyDecision, readServiceMonthlyDecision,
   PARSER_VERSION, MONTHLY_PERIOD_REPAIR_VERSION,
 } from "./codal.mjs";
 import { backgroundWorkWindow } from "./background-work-window.mjs";
@@ -227,7 +227,7 @@ const auditedEligible = (url, kind, announcement) => interimEligible(url,kind,an
 const failureKey = (url, kind, announcement) => kind === "ن-۳۰" && monthlySectorProfile(announcement)
   ? `monthly-sector-v1:${url}` : url;
 const monthlyRetryPrefixes = new Map([
-  ['0','monthly-industrial-v1'], ['1','monthly-real-estate-v1'],
+  ['5','monthly-service-decision-v1'], ['0','monthly-industrial-v1'], ['1','monthly-real-estate-v1'],
   ['8','monthly-decision-symbol-v1'], ['9','monthly-decision-symbol-v1'],
 ]);
 function monthlyRetryKey(url, kind, announcement) {
@@ -258,7 +258,7 @@ function recordFail(url, kind, announcement, replay=false) {
   const key = failureKey(url, kind, announcement);
   state.fails[key] = (state.fails[key] || 0) + 1;
   const monthlyRetry=monthlyRetryKey(url,kind,announcement);
-  if(monthlyRetry&&(replay||state.fails[key]>=MAX_FAILS))state.fails[monthlyRetry]=1;
+  if(monthlyRetry&&(replay||(monthlyWorkbookType(announcement)!=="5" && state.fails[key]>=MAX_FAILS)))state.fails[monthlyRetry]=1;
   if (kind === 'ن-۱۰' && supportsDecisionUrl(url)) state.decisionStatementV1Attempts[url] = 1;
   if (interimEligible(url,kind,announcement)) state.interimStatementV1Attempts[url] = 1;
   if (auditedEligible(url,kind,announcement)) state.auditedStatementV1Attempts[url] = 1;
@@ -275,7 +275,7 @@ function clearFailure(a, kind) {
 function isBlocked(url,kind,announcement) {
   if((state.fails[failureKey(url,kind,announcement)]||0)<MAX_FAILS)return false;
   const monthlyRetry=monthlyRetryKey(url,kind,announcement);
-  if(monthlyRetry&&!state.fails[monthlyRetry])return false;
+  if(monthlyRetry && monthlyWorkbookType(announcement)!=="5" && !state.fails[monthlyRetry])return false;
   return !(kind==='ن-۱۰'&&supportsDecisionUrl(url)&&!state.decisionStatementV1Attempts[url]) &&
     !(interimEligible(url,kind,announcement)&&!state.interimStatementV1Attempts[url]) &&
     !(auditedEligible(url,kind,announcement)&&!state.auditedStatementV1Attempts[url]);
@@ -714,11 +714,12 @@ async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBound
         if(replay)clearFailure(a,kind);
         advance(row.id);continue;
       }
-      if(!decisionKey && isBlocked(a.link,kind,a)){st.blocked++;advance(row.id);continue;}
+      if(!decisionKey && !(replay && monthlyWorkbookType(a)==="5") && isBlocked(a.link,kind,a)){st.blocked++;advance(row.id);continue;}
       let stage='download',rejection=null;st.downloaded++;attempted.add(a.link);
       try {
-        const data = decisionKey
-          ? await readIndustrialMonthlyDecision(a)
+        const useServiceDecision = replay && monthlyWorkbookType(a)==='5';
+        const data = decisionKey ? await readIndustrialMonthlyDecision(a)
+          : useServiceDecision ? await readServiceMonthlyDecision(a)
           : await downloadAndParse(a,kind,()=>{stage='admission';},event=>{rejection??=admissionEvent(event,kind);});
         if(decisionKey && !data)state.fails[decisionKey]=1;
         if(data){

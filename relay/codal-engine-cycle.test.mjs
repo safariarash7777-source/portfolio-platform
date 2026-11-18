@@ -1607,3 +1607,19 @@ test('publisher challenge keeps discovery available while file reads and archive
  assert.equal(archive.archiveStatus.lastError,'codal_source_challenge');
  assert.equal(resumed.calls.archiveSaves.at(-1).sourceHoldUntil,f.persisted.sourceHoldUntil);
 });
+
+test('published service decision checks both declared columns and their totals', async () => {
+ const {readServiceDecisionRows}=await import('./codal.mjs');
+ const date='1405/07/30';
+ const cells=(columns)=>Object.assign(Array(10).fill(''),columns);
+ const rows=[cells({0:'شرح خدمات یا فروش',3:'درآمد شناسایی شده'}),
+  cells({6:'درآمد شناساسی شده طی دوره یک ماهه منتهی به '+date,7:'درآمد شناساسی شده از اول سال مالی تا پایان دوره مالی منتهی به '+date}),
+  cells({0:'خدمات',6:'۸',7:'۱۲'}),cells({6:'0',7:'0'}),cells({0:'جمع',6:'8',7:'12'})];
+ assert.deepEqual(readServiceDecisionRows(rows,'1405-07-30'),{amount:8,cumulative:12});
+ assert.equal(readServiceDecisionRows(rows,'1405-06-31'),null);
+ for(const invalid of ['', '9.9','19']){
+  const bad=structuredClone(rows);bad[2][6]=invalid;
+  assert.equal(readServiceDecisionRows(bad,'1405-07-30'),null);
+ }
+ const unnamed=structuredClone(rows);unnamed[2][0]='';assert.equal(readServiceDecisionRows(unnamed,'1405-07-30'),null);
+});
