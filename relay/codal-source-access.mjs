@@ -3,14 +3,17 @@
 // cycle state; no credential, CAPTCHA submission or alternate route is used.
 const HOLD_MS = 6 * 60 * 60 * 1000;
 export const isCodalSourceDeferred = error => error?.code === 'codal_source_challenge';
+export function isCodalChallengeHtml(html) {
+  return /id\s*=\s*["']captchaCode["']/i.test(html) && /id\s*=\s*["']captchaImage["']/i.test(html)
+    && /کد امنیتی|تأیید کاربر/.test(html);
+}
 export function createCodalAccessGuard({ now = Date.now } = {}) {
   let until = 0;
   const error = () => Object.assign(new Error('codal_source_challenge'), { code: 'codal_source_challenge', noRetry: true });
   return {
     check() { if (until > now()) throw error(); },
     inspect(html) {
-      if (/id\s*=\s*["']captchaCode["']/i.test(html) && /id\s*=\s*["']captchaImage["']/i.test(html)
-        && /کد امنیتی|تأیید کاربر/.test(html)) {
+      if (isCodalChallengeHtml(html)) {
         until = Math.max(until, now() + HOLD_MS);
         throw error();
       }

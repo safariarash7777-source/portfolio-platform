@@ -5,7 +5,7 @@ on:
       profile:
         description: Fixed reviewed publisher context
         type: choice
-        options: [sectors, industrial-20261114]
+        options: [sectors, industrial-20261114, monthly-remaining-20261117]
         default: sectors
         required: true
 permissions:
