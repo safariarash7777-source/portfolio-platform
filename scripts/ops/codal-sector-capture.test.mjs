@@ -126,5 +126,5 @@ test('hold reads prefer existing public credentials over privileged credentials'
  await sourceHoldGuard(async(url,options)=>{
   assert.equal(options.headers.apikey,'public-only');assert.equal(options.headers.Authorization,'Bearer public-only');
   return Response.json(['codal_engine_state','codal_archive_state'].map(key=>({key,payload:{sourceHoldUntil:0}})));
- },{SUPABASE_URL:'https://62.60.191.24/liara-preview',SUPABASE_ANON_KEY:'public-only',SUPABASE_SERVICE_ROLE_KEY:'must-not-use'},1000);
+ },{SUPABASE_URL:'https://62.60.191.24/liara-preview',SUPABASE_ANON_KEY:'public-only',SUPABASE_SERVICE_ROLE_KEY:'dummy-unused'},1000);
 });
