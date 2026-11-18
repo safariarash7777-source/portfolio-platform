@@ -8,7 +8,7 @@ const pause=async()=>{};
 const marker=p=>'SECTOR_CAPTURE='+deflateRawSync(Buffer.from(JSON.stringify(p))).toString('base64');
 
 test('remaining monthly profile reads both existing holds and refuses unknown or active guards',async()=>{
- const env={SUPABASE_URL:'https://62.60.191.24/liara-preview',SUPABASE_SERVICE_ROLE_KEY:'synthetic-only'};
+ const env={SUPABASE_URL:'https://62.60.191.24/liara-preview',SUPABASE_SERVICE_ROLE_KEY:'dummy-capture-key'};
  const rows=['codal_engine_state','codal_archive_state'].map(key=>({key,payload:{sourceHoldUntil:0}}));
  const calls=[];await sourceHoldGuard(async(url,options)=>{calls.push({url,options});return Response.json(rows);},env,1000);
  assert.equal(calls.length,1);assert.match(calls[0].url,/ir_market_snapshots/);assert.equal(calls[0].options.method,undefined);
@@ -31,7 +31,7 @@ test('guarded capture stops before sources on hold and after first challenge wit
 test('embedded guarded command checks storage before each exact public document and emits no credential',async()=>{
  const cmd=decodeURIComponent(command('monthly-remaining-20261117'));
  const encoded=cmd.match(/Buffer.from\(\/([^/]+)\//)[1],source=inflateRawSync(Buffer.from(encoded,'base64url')).toString();
- const lines=[],calls=[];const env={SUPABASE_URL:'https://62.60.191.24/liara-preview',SUPABASE_SERVICE_ROLE_KEY:'synthetic-only'};
+ const lines=[],calls=[];const env={SUPABASE_URL:'https://62.60.191.24/liara-preview',SUPABASE_SERVICE_ROLE_KEY:'dummy-capture-key'};
  const context={Buffer,URL,AbortSignal,Date,process:{exitCode:0,env},setTimeout:fn=>fn(),fetch:async(url,options)=>{
   calls.push(url);if(url.includes('/rest/v1/'))return Response.json(['codal_engine_state','codal_archive_state'].map(key=>({key,payload:{sourceHoldUntil:0}})));
   assert.equal(options.headers.Authorization,undefined);return new Response('<html>official document</html>');
@@ -40,7 +40,7 @@ test('embedded guarded command checks storage before each exact public document 
  assert.equal(calls.length,4);assert.ok(calls[0].includes('/rest/v1/'));assert.ok(calls[2].includes('/rest/v1/'));
  assert.deepEqual([calls[1],calls[3]],SOURCE_SETS['monthly-remaining-20261117'].map(t=>t.url));
  assert.equal(parse(lines.join('\n'),0,'monthly-remaining-20261117').length,2);
- assert.doesNotMatch(JSON.stringify(lines),/synthetic-only|Authorization|apikey/);
+ assert.doesNotMatch(JSON.stringify(lines),/dummy-capture-key|Authorization|apikey/);
 });
 test('supplemental profile requests only the three advertised official sheets',async()=>{
  const targets=SOURCE_SETS['industrial-20261114'];assert.equal(targets.length,3);
