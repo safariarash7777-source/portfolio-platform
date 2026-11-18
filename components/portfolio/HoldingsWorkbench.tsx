@@ -290,21 +290,8 @@ export default function HoldingsWorkbench({
         <div className="space-y-3">
           {rows.map((r, i) => (
             <fieldset key={i} className="rounded-xl border p-4 space-y-3" style={{ borderColor: "var(--line)" }}>
-            <legend className="text-sm font-bold">دارایی {toPersianDigits(i + 1)}</legend>
+            <legend className="text-sm font-bold">دارایی {toPersianDigits(i + 1)}{r.label.trim() && <span className="asset-row-name"> · {r.label}</span>}</legend>
             <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end">
-              <label className="md:col-span-2 space-y-1">
-                <span className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>
-                  {r.kind === "symbol" ? "نماد" : "برچسب دستی"}
-                </span>
-                <input
-                  className="input"
-                  value={r.label}
-                  onChange={(e) => patch(i, { label: e.target.value })}
-                  disabled={editingLocked}
-                  dir="rtl"
-                  aria-label={r.kind === "symbol" ? "نماد دارایی" : "عنوان دارایی دستی"}
-                />
-              </label>
               <label className="space-y-1">
                 <span className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>نوع</span>
                 <select className="input" value={r.kind} disabled={editingLocked}
@@ -312,6 +299,20 @@ export default function HoldingsWorkbench({
                   <option value="symbol">نماد واقعی</option>
                   <option value="manual">دارایی دستی</option>
                 </select>
+              </label>
+              <label className="md:col-span-2 space-y-1">
+                <span className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>
+                  {r.kind === "symbol" ? "نماد" : "نام دارایی"}
+                </span>
+                <input
+                  className="input"
+                  value={r.label}
+                  placeholder={r.kind === "symbol" ? "مثلاً فولاد" : "مثلاً طلای شخصی"}
+                  onChange={(e) => patch(i, { label: e.target.value })}
+                  disabled={editingLocked}
+                  dir="rtl"
+                  aria-label={r.kind === "symbol" ? "نماد دارایی" : "عنوان دارایی دستی"}
+                />
               </label>
               <label className="space-y-1">
                 <span className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>دسته</span>

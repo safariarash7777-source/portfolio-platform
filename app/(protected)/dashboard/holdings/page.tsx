@@ -41,7 +41,7 @@ export default async function HoldingsPage({
         <h1 className="font-display">دارایی، بدهی و خالص ثروت</h1>
       </header>
 
-      <nav aria-label="بخش‌های پروندهٔ مالی" className="flex flex-wrap gap-2">
+      <nav aria-label="بخش‌های پروندهٔ مالی" className="member-jumps">
         <a href="#asset-editor" className="btn btn-gold min-h-11">ثبت دارایی</a>
         <Link href="/dashboard/consultation" className="btn btn-outline min-h-11">درخواست مشاوره از پرونده</Link>
         <a href="#debt-editor" className="btn btn-outline min-h-11">ثبت بدهی</a>

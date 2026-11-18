@@ -1,3 +1,4 @@
+import { Goal } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
@@ -21,11 +22,8 @@ export default async function GoalsPage({ searchParams }: { searchParams: Promis
   } catch { unavailable = true; }
   if (!unavailable && !ownerId) redirect("/login");
   return <><Navbar /><main id="main-content" dir="rtl" className="mx-auto w-full max-w-6xl space-y-6 px-5 py-8">
-    <header className="space-y-2"><span className="eyebrow">فضای مالی شخصی · آرش صفری</span>
-      <h1 className="font-display text-2xl font-bold md:text-3xl" style={{ color: "var(--navy-deep)" }}>هدف‌های مالی</h1>
-      <p className="text-sm leading-7" style={{ color: "var(--text-2)" }}>برای هر هدف مبلغ و موعد مشخص کنید و مبلغ کنارگذاشته‌شده را با منبع و تاریخ ثبت کنید.</p>
-    </header>
-    <nav aria-label="مسیرهای مالی عضو" className="flex flex-wrap gap-3"><Link href="/dashboard" className="btn btn-outline">داشبورد</Link><Link href="/dashboard/cashflow" className="btn btn-outline">جریان نقد و بودجه</Link><Link href="/dashboard/holdings" className="btn btn-outline">دارایی و بدهی</Link></nav>
+    <header className="arash-workspace-heading"><Goal size={34} strokeWidth={1.5} aria-hidden="true" /><h1 className="font-display">هدف‌های مالی</h1></header>
+    <nav aria-label="مسیرهای مالی عضو" className="member-jumps"><Link href="/dashboard" className="btn btn-outline">داشبورد</Link><Link href="/dashboard/cashflow" className="btn btn-outline">جریان نقد و بودجه</Link><Link href="/dashboard/holdings" className="btn btn-outline">دارایی و بدهی</Link></nav>
     <p className="text-sm leading-7">مبالغ کنارگذاشته‌شده اظهار شما هستند؛ این صفحه موجودی بانکی را تأیید نمی‌کند و بازده آینده فرض نمی‌کند. ثبت هدف، وجهی را منتقل یا از دارایی و جریان نقد کم نمی‌کند.</p>
     {unavailable || !ownerId ? <ReadError label="نشستِ هدف‌های مالی؛ ورود شما هنوز بررسی نشده است" code="GOALS_AUTH" />
       : <GoalsWorkspace key={`${ownerId}:${selected.version ?? ""}`} expectedOwnerId={ownerId} initialVersion={selected.version} />}

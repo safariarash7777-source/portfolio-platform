@@ -490,3 +490,27 @@ summary:focus-visible {
 #asset-editor fieldset { background:var(--surface-2); min-inline-size:0; }
 #asset-editor input,#asset-editor select { min-height:44px; max-width:100%; }
 #asset-editor summary { cursor:pointer; min-height:44px; align-content:center; }
+
+.member-overview-heading { padding:clamp(1.25rem,3vw,2.4rem); border-radius:1.3rem; color:#fff; background:#0d1f4a; border-inline-start:4px solid #b8860b; }
+.member-overview-heading h2 { color:#fff; font-size:clamp(1.35rem,3vw,2rem); }
+.member-overview-heading p { color:#e6e6e2; }
+.member-card-title { display:flex; gap:.7rem; align-items:center; font-weight:750; color:var(--heading); }
+.member-card-title svg { color:var(--gold-ink); flex:none; }
+.member-overview .card { display:flex; flex-direction:column; align-items:stretch; padding:clamp(1rem,2.4vw,1.65rem); }
+.member-overview .card > a:last-child { margin-block-start:auto; align-self:flex-start; }
+.member-jumps { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
+.member-jumps a { display:inline-flex; align-items:center; min-height:44px; padding:.5rem .9rem; border:1px solid var(--line); border-radius:2rem; background:var(--surface); color:var(--heading); font-weight:650; font-size:.86rem; }
+.member-jumps a:hover,.member-jumps a:focus-visible { border-color:var(--gold); background:var(--surface-2); }
+.member-jumps a.btn-gold { background:var(--gold-light); color:#0d1f4a; }
+.member-overview [id] { scroll-margin-top:6rem; }
+.member-overview :target,#asset-editor:target,#debt-editor:target,#investment-scope:target { outline:2px solid var(--gold); outline-offset:4px; border-radius:1rem; }
+.market-reading-header { background:var(--surface); border:1px solid var(--line); border-inline-start:4px solid var(--gold); border-radius:1.25rem; padding:clamp(1rem,2.5vw,2rem); }
+.market-section-nav a { min-height:44px; }
+@media(prefers-reduced-motion:no-preference) {
+  .member-jumps a,.member-overview .card { transition:border-color .18s,background-color .18s; }
+  .member-overview .card:focus-within { border-color:var(--gold); }
+}
+.asset-row-name { color:var(--text-2); font-weight:500; overflow-wrap:anywhere; }
+#debt-editor fieldset { min-width:0; border-radius:1rem; background:var(--surface-2); }
+#debt-editor legend { padding-inline:.5rem; color:var(--heading); font-weight:700; }
+#debt-editor :is(input,select,button),#asset-editor button { min-height:44px; }
