@@ -42,8 +42,9 @@ export function sameReport(url, source) {
   try {
     const u=new URL(url), original=new URL(source);
     const serial=x=>{const p=x.search.slice(1).split('&').filter(s=>s.startsWith('LetterSerial='));return p.length===1?decodeURIComponent(p[0].slice(13)):null;};
+    const view=original.searchParams.get('let')==='58'?'/Reports/MonthlyActivity.aspx':'/Reports/InterimStatement.aspx';
     return u.protocol==='https:' && ['codal.ir','www.codal.ir'].includes(u.hostname) && !u.username && !u.password && !u.port && !u.hash &&
-      ['/Reports/Decision.aspx','/Reports/InterimStatement.aspx'].includes(u.pathname) && serial(u)!==null && serial(u)===serial(original);
+      ['/Reports/Decision.aspx',view].includes(u.pathname) && serial(u)!==null && serial(u)===serial(original);
   } catch { return false; }
 }
 export async function collect(targets, allowed, fetchImpl=fetch, delay=ms=>new Promise(r=>setTimeout(r,ms)), guard=null) {

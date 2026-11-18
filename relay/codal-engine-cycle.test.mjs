@@ -1440,7 +1440,14 @@ test('recovery replays one previously rejected monthly file per corrected reader
  assert.equal(f.persisted.fails[marker],1);
  await f.engine.runEngineCycle(run);
  assert.equal(f.calls.excel.filter(path=>path===excelPath(69)).length,1);
- assert.deepEqual(f.calls.excel.slice(16),[78,27,26,25,24,23,22,18].map(excelPath));
+ // The corrected decision reader uses an existing recovery slot instead of
+ // rerequesting the rejected workbook or adding an extra file to the cycle.
+ assert.deepEqual(f.calls.excel.slice(16),[78,27,26,25,24,23,18].map(excelPath));
+ const decisionMarker='monthly-industrial-decision-v1:'+rejected.link;
+ assert.equal(f.persisted.fails[decisionMarker],1);
+ const failures=f.persisted.fails[rejected.link];
+ await f.engine.runEngineCycle(run);
+ assert.equal(f.persisted.fails[rejected.link],failures);
 });
 
 test('official monthly reconciliation fills a missing listed report through the existing recovery, preserving page and download bounds',async t=>{

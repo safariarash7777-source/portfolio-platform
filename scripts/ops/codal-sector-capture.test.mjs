@@ -128,3 +128,10 @@ test('hold reads prefer existing public credentials over privileged credentials'
   return Response.json(['codal_engine_state','codal_archive_state'].map(key=>({key,payload:{sourceHoldUntil:0}})));
  },{SUPABASE_URL:'https://62.60.191.24/liara-preview',SUPABASE_ANON_KEY:'public-only',SUPABASE_SERVICE_ROLE_KEY:'dummy-unused'},1000);
 });
+
+test('monthly capture allows only the corresponding monthly viewer and same report serial',()=>{
+ const source='https://codal.ir/Reports/Decision.aspx?LetterSerial=testA&let=58';
+ assert.equal(sameReport('https://codal.ir/Reports/MonthlyActivity.aspx?LetterSerial=testA',source),true);
+ assert.equal(sameReport('https://codal.ir/Reports/MonthlyActivity.aspx?LetterSerial=testB',source),false);
+ assert.equal(sameReport('https://codal.ir/Reports/InterimStatement.aspx?LetterSerial=testA',source),false);
+});

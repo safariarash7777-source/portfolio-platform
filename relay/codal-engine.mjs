@@ -235,6 +235,11 @@ function monthlyRetryKey(url, kind, announcement) {
   const prefix=monthlyRetryPrefixes.get(monthlyWorkbookType(announcement));
   return prefix ? `${prefix}:${url}` : null;
 }
+// Failed industrial workbooks can have a complete, independently dated official
+// decision table. Use one existing replay slot for that different document.
+function industrialDecisionReplayKey(link) {
+  return state.fails['monthly-industrial-v1:'+link] ? 'monthly-industrial-decision-v1:'+link : null;
+}
 function pendingMonthlyReplayLinks() {
   const links=new Set();
   for(const [key,count] of Object.entries(state.fails).reverse()){
@@ -242,7 +247,8 @@ function pendingMonthlyReplayLinks() {
     if(!count||link.length>240||!supportsDecisionUrl(link))continue;
     const query=new URL(link).searchParams;
     const prefix=monthlyRetryPrefixes.get(query.get('rt'));
-    if(query.get('let')!=='58'||!prefix||state.fails[`${prefix}:${link}`])continue;
+    const keyForReplay=(query.get('rt')==='0' && industrialDecisionReplayKey(link)) || prefix+':'+link;
+    if(query.get('let')!=='58'||!prefix||state.fails[keyForReplay])continue;
     links.add(link);
     if(links.size===20)break;
   }
@@ -696,8 +702,9 @@ async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBound
       st.scanned++;
       if(!a || !kind){st.metadataSkipped++;advance(row.id);continue;}
       if(attempted.has(a.link)){advance(row.id);continue;}
+      const decisionKey = replay && kind === "ن-۳۰" && isIndustrialMonthlyWorkbook(a) ? industrialDecisionReplayKey(a.link) : null;
       if(replay){
-        const retryKey=monthlyRetryKey(a.link,kind,a);
+        const retryKey=decisionKey || monthlyRetryKey(a.link,kind,a);
         if(!retryKey||state.fails[retryKey]||!(state.fails[failureKey(a.link,kind,a)]||state.fails[a.link]))continue;
       }
       if(!knownBySymbol.has(a.l18))knownBySymbol.set(a.l18,await existingUrlsFor(a.l18));
@@ -707,10 +714,13 @@ async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBound
         if(replay)clearFailure(a,kind);
         advance(row.id);continue;
       }
-      if(isBlocked(a.link,kind,a)){st.blocked++;advance(row.id);continue;}
+      if(!decisionKey && isBlocked(a.link,kind,a)){st.blocked++;advance(row.id);continue;}
       let stage='download',rejection=null;st.downloaded++;attempted.add(a.link);
       try {
-        const data=await downloadAndParse(a,kind,()=>{stage='admission';},event=>{rejection??=admissionEvent(event,kind);});
+        const data = decisionKey
+          ? await readIndustrialMonthlyDecision(a)
+          : await downloadAndParse(a,kind,()=>{stage='admission';},event=>{rejection??=admissionEvent(event,kind);});
+        if(decisionKey && !data)state.fails[decisionKey]=1;
         if(data){
           stage='persistence';st.inserted+=await insertParsedReport(a,kind,data);
           known.add(a.link);clearFailure(a, kind);
@@ -720,6 +730,7 @@ async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBound
         }
       } catch(error) {
         if(isBrsLocalDeferral(error))throw error;
+        if(decisionKey && stage!=='persistence' && !isCodalSourceDeferred(error))state.fails[decisionKey]=1;
         st.parseFailed++;recordFailureDiagnostic(stage,'exception');recordFail(a.link,kind,a,replay);
       }
       advance(row.id);
