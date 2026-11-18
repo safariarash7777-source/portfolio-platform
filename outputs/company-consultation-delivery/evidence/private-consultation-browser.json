@@ -9,17 +9,18 @@
     "Independent consent control opened",
     "Revoked consent prevents advisor opening financial dossier",
     "After a real edit the dashboard advanced to holdings version 3; approved answer still refers to version 2 and prior follow-up",
-    "Member B with expired entitlement saved a labeled 3 gram asset in the basic portfolio and read it back after reload"
+    "Member B with expired entitlement saved a labeled 3 gram asset in the basic portfolio and read it back after reload",
+    "After final legacy compatibility installation both fresh browser logins recovered the same published answer, question and original basis; revoked dossier remains forbidden"
   ],
-  "relation": "a0756084-8d6d-4174-9306-8ba9e1716a24",
-  "basis": "c7925b9a-d908-4e27-a8e5-10fe301d2e2a",
+  "relation": "6aff90fb-07ba-4810-aa1b-3549827de4b0",
+  "basis": "030b4590-23f1-46c6-b145-3e71ed90ff80",
   "financeVersion": 2,
-  "session": "b77e467d-d3be-4dca-92c1-10a0858d4ec9",
+  "session": "c2cac76e-0150-4940-94c6-6ccd0b138333",
   "responseVersion": 2,
-  "followUp": "af63dd7a-0d55-407f-bff3-76e61fcdf36e",
-  "revocationRelation": "476978c5-ed17-4d46-9899-6c43df6cda07",
+  "followUp": "517f14e6-7980-4f72-a41a-48a97d667dda",
+  "revocationRelation": "385e967c-c79a-427d-9f6f-5817199bb7a0",
   "latestHoldings": {
-    "id": "2426ee8d-0354-4459-b051-1033d8cd12af",
+    "id": "d2970bda-d18b-437f-89a8-a5023d09df72",
     "version": 3
   },
   "environment": {
@@ -28,5 +29,7 @@
     "data": "isolated PostgreSQL via PostgREST",
     "sessions": "Chromium desktop and mobile viewport; synthetic ordinary members and registered synthetic owner",
     "production": false
-  }
+  },
+  "verifiedAt": "2026-11-18T05:24:33.555Z",
+  "serviceSqlSha256": "8abfd68a13f8f3ee13703830e3a3aef700843eefd24687710c21c216637c8b49"
 }
