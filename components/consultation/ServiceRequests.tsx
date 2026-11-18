@@ -71,18 +71,18 @@ export default function ServiceRequests({ actor, advisor, locked, selected, onSe
     finally { sending.current = false; setBusy(false); }
   }
 
-  return <section className="card space-y-4 p-4 sm:p-5" aria-label="درخواست‌های خدمت مشاوره">
+  return <section className="card arash-request-panel space-y-4 p-4 sm:p-6" aria-label="درخواست‌های خدمت مشاوره">
     <h2 className="font-display text-xl font-bold">{advisor ? "درخواست‌های اعضا" : "درخواست از پرونده مالی"}</h2>
     {message && <p role="status">{message}</p>}
-    {!advisor && ledger && (eligible.length ? <form className="grid gap-3" onSubmit={submit}>
+    {!advisor && ledger && (eligible.length ? <form className="arash-request-form" onSubmit={submit}>
       <label>خدمت<select className="input w-full" disabled={busy || locked} value={chosen} onChange={e=>setRight(e.target.value)}>
         {eligible.map(o=><option key={o.id} value={o.id}>{o.title} · تا {formatJalali(o.ends)} · {toPersianDigits(o.remaining)} درخواست باقی‌مانده</option>)}</select></label>
       <label>موضوع درخواست<input required maxLength={120} className="input w-full" disabled={busy || locked} value={subject} onChange={e=>setSubject(e.target.value)} /></label>
-      <label><input required type="checkbox" disabled={busy || locked} checked={consent} onChange={e=>setConsent(e.target.checked)} /> اجازه می‌دهم آرش صفری برای پاسخ به این درخواست پروندهٔ مالی من را بررسی کند.</label>
+      <label className="arash-consent"><input required type="checkbox" disabled={busy || locked} checked={consent} onChange={e=>setConsent(e.target.checked)} /> اجازه می‌دهم آرش صفری برای پاسخ به این درخواست پروندهٔ مالی من را بررسی کند.</label>
       <button className="btn btn-gold" disabled={busy || locked || !consent || !subject.trim()}>ثبت درخواست مشاوره</button>
     </form> : <p>خدمت مشاوره با سهمیهٔ قابل استفاده در پروندهٔ شما ثبت نشده است.</p>)}
-    {ledger?.requests.map(row=><article key={row.relation} className="rounded-lg border p-3">
-      <p className="font-bold">{row.subject}</p><p>{row.title} · {formatJalali(row.created)} · نسخهٔ مالی هنگام درخواست {toPersianDigits(row.basisVersion)} · {row.active ? "فعال" : "پایان دسترسی"}</p>
+    {ledger?.requests.map(row=><article key={row.relation} className="arash-case-row">
+      <div><h3 className="font-bold">{row.subject}</h3><p className="text-sm">{row.title} · {formatJalali(row.created)}</p><p className="text-sm">نسخهٔ مالی هنگام درخواست {toPersianDigits(row.basisVersion)}</p></div><span className="arash-case-status">{row.active ? "فعال" : "پایان دسترسی"}</span>
       {selected !== row.relation && <button type="button" className="btn btn-outline" disabled={busy || locked} onClick={()=>onSelect(row.relation)}>بازکردن پرونده</button>}
     </article>)}
     <button type="button" disabled={busy || locked || Boolean(subject.trim())} className="btn btn-outline" onClick={async () => {

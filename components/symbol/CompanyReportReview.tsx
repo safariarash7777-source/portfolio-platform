@@ -71,14 +71,21 @@ export default function CompanyReportReview({fundamentals}: {fundamentals: Symbo
   return <section id="company-report-review" className="card space-y-5 p-4 sm:p-6 scroll-mt-24">
     <h2 className="font-display text-xl font-bold">تغییر عملکرد شرکت</h2>
     {!!options.length && <>
-      <div className="flex flex-wrap gap-3">
+      <div className="arash-analysis-controls">
         <label>محصول و بازار<select aria-label="محصول و بازار" className="input block" value={key} onChange={e=>setChosen(e.target.value)}>{options.map(([v,label])=><option key={v} value={v}>{label}</option>)}</select></label>
         <label>ماه<select aria-label="ماه" className="input block" value={period} onChange={e=>setSelected(e.target.value)}>{months.map(m=><option key={m} value={m}>{fa(m)}</option>)}</select></label>
         <label>مقایسه با<select aria-label="مقایسه با" className="input block" value={basis} onChange={e=>setBasis(e.target.value)}><option value="previous">ماه قبل</option><option value="year">همان ماه سال قبل</option></select></label>
         <label>نمای نمودار<select aria-label="نمای نمودار" className="input block" value={metric} onChange={e=>setMetric(e.target.value as Metric)}>{Object.entries(nameOf).map(([v,label])=><option value={v} key={v}>{label}</option>)}</select></label>
       </div>
-      <p aria-live="polite" className="text-base font-bold">{change ? "تغییر فروش "+model?.options.get(key)+" در "+fa(period)+" نسبت به "+fa(priorKey)+"، "+fmt(change.delta)+" میلیون ریال است."+(growth==null?"":" تغییر نسبی "+fmt(growth)+"٪.") : "برای این مقایسه مبلغ فروش هر دو دوره در دسترس نیست."}</p>
-      <p className="text-sm">اثر نرخ {fmt(change?.rateEffect)} میلیون ریال{effectShare(change?.rateEffect)} · اثر مقدار {fmt(change?.quantityEffect)} میلیون ریال{effectShare(change?.quantityEffect)}. اثر مشترک نرخ و مقدار به‌طور مساوی تقسیم شده است. اثر ترکیب محصولات از یک قلم قابل تعیین نیست.</p>
+      <section aria-live="polite" className="arash-analysis-result">
+        <h3>{model?.options.get(key)} · {fa(period)} نسبت به {fa(priorKey)}</h3>
+        <dl className="arash-metric-grid">
+          <div><dt>تغییر فروش</dt><dd>{growth == null ? "نامعلوم" : fmt(growth)+"٪"}</dd><small>{fmt(change?.delta)} میلیون ریال</small></div>
+          <div><dt>اثر نرخ</dt><dd>{fmt(change?.rateEffect)}</dd><small>میلیون ریال{effectShare(change?.rateEffect)}</small></div>
+          <div><dt>اثر مقدار</dt><dd>{fmt(change?.quantityEffect)}</dd><small>میلیون ریال{effectShare(change?.quantityEffect)}</small></div>
+        </dl>
+      </section>
+      <details className="text-sm"><summary>روش تفکیک تغییر فروش</summary><p>اثر مشترک نرخ و مقدار به‌طور مساوی تقسیم شده است. اثر ترکیب محصولات از یک قلم قابل تعیین نیست.</p></details>
       <figure><figcaption>{nameOf[metric]} ({unit})</figcaption>
         <div className="overflow-x-auto"><div dir="ltr" className="flex gap-1 items-stretch py-2" style={{minWidth:months.length*36}}>
         {months.map((month,i)=><button type="button" key={month} onClick={()=>setSelected(month)} aria-pressed={month===period} title={fa(month)+" · "+fmt(values[i])+" "+unit} aria-label={fa(month)+" · "+fmt(values[i])+" "+unit}

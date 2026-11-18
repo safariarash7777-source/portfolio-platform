@@ -453,3 +453,40 @@ summary:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* Shared reading and entry surfaces for the financial workspace. */
+.arash-workspace-heading,.arash-analysis-result {
+  border-radius: 1.25rem;
+  background: #0d1f4a;
+  color: #fff;
+  padding: clamp(1.25rem, 3vw, 2.25rem);
+  border-inline-start: 4px solid #b8860b;
+}
+.arash-workspace-heading { display:flex; align-items:center; gap:1rem; }
+.arash-workspace-heading svg { flex:none; color:#f5d07a; }
+.arash-workspace-heading h1 { color:inherit; font-size:clamp(1.35rem, 3vw, 2rem); line-height:1.6; }
+.arash-analysis-controls,.arash-request-form { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr)); gap:1rem; align-items:end; }
+.arash-analysis-controls label,.arash-request-form label { min-width:0; font-size:.875rem; }
+.arash-analysis-controls select,.arash-request-form .input { width:100%; margin-top:.35rem; min-height:44px; }
+.arash-consent { grid-column:1/-1; padding:.85rem; border-radius:.75rem; background:var(--surface-2); }
+.arash-request-form button { justify-self:start; min-height:44px; }
+.arash-case-row { display:flex; flex-wrap:wrap; align-items:center; gap:1rem; padding:1rem; border:1px solid var(--line); border-radius:1rem; }
+.arash-case-row > div { flex:1 1 12rem; overflow-wrap:anywhere; }
+.arash-case-row p { color:var(--text-2); line-height:1.85; }
+.arash-case-status { background:var(--surface-2); border-radius:2rem; padding:.25rem .75rem; font-size:.8rem; }
+.arash-analysis-result h3 { color:#fff; font-size:1rem; }
+.arash-metric-grid { margin-top:1rem; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1rem; }
+.arash-metric-grid dd { color:#f5d07a; font-weight:800; font-size:clamp(1.25rem,2.5vw,2rem); font-variant-numeric:tabular-nums; }
+.arash-metric-grid small { color:#eee9de; }
+#company-report-review figcaption,#company-report-review summary { font-weight:650; padding-block:.65rem; }
+#company-report-review td,#company-report-review th { white-space:nowrap; padding:.7rem; border-bottom:1px solid var(--line); }
+@media(max-width:600px){
+  .arash-metric-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .arash-metric-grid > :first-child { grid-column:1/-1; border-bottom:1px solid #ffffff38; padding-bottom:.75rem; }
+  .arash-analysis-controls { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+.arash-login-panel { border-block-start:3px solid var(--gold); }
+#asset-editor legend { padding-inline:.5rem; color:var(--heading); }
+#asset-editor fieldset { background:var(--surface-2); min-inline-size:0; }
+#asset-editor input,#asset-editor select { min-height:44px; max-width:100%; }
+#asset-editor summary { cursor:pointer; min-height:44px; align-content:center; }
