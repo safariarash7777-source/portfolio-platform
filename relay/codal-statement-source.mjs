@@ -404,7 +404,7 @@ export async function loadMonthlyDecision(announcement, meta, {fetchImpl=globalT
  const capture=await captureDecision(original.href,fetchImpl,{},MONTHLY_PATH);
  try{
   const capturedPath=new URL(capture.url).pathname;
-  const viewPath=['0','1','6'].includes(type)&&capturedPath===DECISION_PATH ? DECISION_PATH : MONTHLY_PATH;
+  const viewPath=['0','1','5','6'].includes(type)&&capturedPath===DECISION_PATH ? DECISION_PATH : MONTHLY_PATH;
   if(reportSerial(capture.url,true,viewPath)!==serial)return null;
   const html=sourceText(capture,MAX_DECISION);
   const form=element(html,'form','aspnetForm');
