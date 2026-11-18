@@ -1446,6 +1446,44 @@ function readFinancingDecision(rows, periodEnd) {
   return readIncomeTotal(items,8,1);
 }
 
+// Service v3 shows recognized income directly, including an empty input row.
+export function readServiceDecisionRows(rows, periodEnd) {
+  const [group, header, ...items] = rows;
+  const label = text => normLabel(text).replace("شناساسی", "شناسایی");
+  if (normLabel(group?.[0]) !== normLabel("شرح خدمات یا فروش") ||
+      normLabel(group?.[3]) !== normLabel("درآمد شناسایی شده") ||
+      !label(header?.[6]).startsWith(normLabel("درآمد شناسایی شده طی دوره یک ماهه منتهی به")) ||
+      !label(header?.[7]).startsWith(normLabel("درآمد شناسایی شده از اول سال مالی تا پایان دوره مالی منتهی به")) ||
+      ![6,7].every(i => jalaliStr(header[i]) === periodEnd)) return null;
+  const total = items.pop();
+  if (normLabel(total?.[0]) !== "جمع" || !items.some(row => normLabel(row[0]))) return null;
+  const sums = [0,0];
+  for (const row of items) {
+    const amounts = [cellNum(row[6]),cellNum(row[7])];
+    if (normLabel(row[0]) === "جمع" || !amounts.every(Number.isSafeInteger) ||
+        (!normLabel(row[0]) && amounts.some(n => n !== 0))) return null;
+    for (let i=0;i<2;i++) sums[i]+=amounts[i];
+  }
+  const totals=[cellNum(total[6]),cellNum(total[7])];
+  if(!totals.every((n,i)=>Number.isSafeInteger(n)&&Number.isSafeInteger(sums[i])&&Math.abs(n-sums[i])<=1)) return null;
+  return {amount:totals[0],cumulative:totals[1]};
+}
+export async function readServiceMonthlyDecision(a) {
+  const meta=metaFrom(a,"ن-۳۰");
+  if(monthlyWorkbookType(a)!=="5" || meta.period_months!==1 || !meta.period_end)return null;
+  const source=await loadMonthlyDecision(a,meta);
+  if(!source)return null;
+  const tables=source.sheet.tables.filter(t=>t.code===1704&&t.aliasName==="ServicesAndSale");
+  if(tables.length!==1)return null;
+  const [table]=tables;
+  if(table.sheetCode!==source.sheet.code || normLabel(table.description)!==normLabel("کلیه مبالغ درج شده به میلیون ریال می باشد"))return null;
+  const rows=gridRows(table,10);
+  const total=rows&&readServiceDecisionRows(rows,meta.period_end);
+  if(!total)return null;
+  return {...sectorMonthlyData(meta,"service_recognized_income",total),monthly_source:{
+    url:source.url,sha256:source.sha256,tracing_no:source.tracingNo,sheet_code:source.sheet.code,table_code:table.code
+  }};
+}
 const monthlyDecisionTables = new Map([
   ["agriculture_operating_income",{code:1197,alias:"MonthlyOperatingRevenues",width:26,read:readAgricultureDecision}],
   ["financing_service_income",{code:2162,alias:"RevenuesServiceDeliveryRealized",width:8,read:readFinancingDecision}],

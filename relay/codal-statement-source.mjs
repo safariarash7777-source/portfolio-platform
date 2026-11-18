@@ -399,7 +399,7 @@ export async function loadMonthlyDecision(announcement, meta, {fetchImpl=globalT
  if(original.hostname==='www.codal.ir')original.hostname='codal.ir';
  const serial=reportSerial(original.href,true);
  const type=original.searchParams.get('rt');
- if(original.searchParams.get('let')!=='58'||!['0','8','9'].includes(type))return null;
+ if(original.searchParams.get('let')!=='58'||!['0','5','8','9'].includes(type))return null;
  const capture=await captureDecision(original.href,fetchImpl,{},MONTHLY_PATH);
  try{
   const capturedPath=new URL(capture.url).pathname;
