@@ -242,3 +242,14 @@ export function formatRialAsToman(rial: number | null | undefined): string {
   if (typeof rial !== "number" || !isFinite(rial)) return "—";
   return formatTomanShort(rialToToman(rial));
 }
+
+/** Display aliases only. Valuation and persisted quantities keep their original units. */
+const holdingUnitLabels: ReadonlyMap<string, string> = new Map([
+  ["item","عدد"], ["items","عدد"], ["gram","گرم"], ["grams","گرم"], ["kg","کیلوگرم"],
+  ["share","سهم"], ["shares","سهم"], ["unit","واحد"], ["units","واحد"],
+  ["irr","ریال"], ["irt","تومان"], ["rial","ریال"], ["toman","تومان"],
+  ["usd","دلار آمریکا"], ["eur","یورو"],
+]);
+export function holdingUnitLabel(unit: string): string {
+  return holdingUnitLabels.get(unit.trim().toLowerCase()) ?? unit;
+}

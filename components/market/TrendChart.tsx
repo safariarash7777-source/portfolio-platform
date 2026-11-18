@@ -11,7 +11,7 @@ import {
 } from "lightweight-charts";
 import { useThemeToken, readChartPalette, chartThemeOptions } from "@/lib/useChartTheme";
 import type { TrendSeries } from "@/lib/core/trend";
-import { toPersianDigits } from "@/lib/format";
+import { chartAxisDateLabel, chartTooltipDateLabel } from "../symbol/chartDate";
 
 const SERIES_COLOR_KEY: Record<string, "gold" | "navy"> = {
   IR_GOLD_18K: "gold",
@@ -37,11 +37,12 @@ export default function TrendChart({ series }: { series: TrendSeries[] }) {
       layout: { background: { color: p.bg }, textColor: p.text },
       grid: { vertLines: { color: p.line }, horzLines: { color: p.line } },
       rightPriceScale: { borderColor: p.line },
-      timeScale: { borderColor: p.line },
+      timeScale: { borderColor: p.line, tickMarkFormatter: chartAxisDateLabel },
       autoSize: true,
       height: 280,
       localization: {
-        priceFormatter: (v: number) => toPersianDigits(Math.round(v).toLocaleString("en-US")),
+        locale: "fa-IR", timeFormatter: chartTooltipDateLabel,
+        priceFormatter: (v: number) => Math.round(v).toLocaleString("fa-IR"),
       },
     });
     const line = chart.addSeries(LineSeries, { color, lineWidth: 2 });

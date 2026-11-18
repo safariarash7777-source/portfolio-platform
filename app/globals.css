@@ -514,3 +514,17 @@ summary:focus-visible {
 #debt-editor fieldset { min-width:0; border-radius:1rem; background:var(--surface-2); }
 #debt-editor legend { padding-inline:.5rem; color:var(--heading); font-weight:700; }
 #debt-editor :is(input,select,button),#asset-editor button { min-height:44px; }
+
+.holding-presets { display:flex; flex-wrap:wrap; gap:.55rem; }
+.holding-presets button { min-height:44px; display:inline-flex; align-items:baseline; gap:.45rem; }
+.holding-presets small { color:var(--text-3); font-weight:400; }
+:where(button,a,input,select,summary,textarea):focus-visible { outline:2px solid var(--gold-ink); outline-offset:3px; }
+@media (pointer:coarse) {
+  main :is(input:not([type=checkbox]):not([type=radio]),select,textarea) { font-size:max(16px,1rem); }
+  :is(button,summary,.btn) { touch-action:manipulation; }
+}
+
+.holding-presets { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,8.5rem),1fr)); }
+.holding-presets .btn { justify-content:space-between; padding:.65rem .8rem; }
+.holding-presets .btn small { border-inline-start:1px solid var(--line); padding-inline-start:.45rem; }
+#asset-editor input { scroll-margin-block:6rem; }
