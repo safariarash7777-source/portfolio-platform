@@ -1623,3 +1623,20 @@ test('published service decision checks both declared columns and their totals',
  }
  const unnamed=structuredClone(rows);unnamed[2][0]='';assert.equal(readServiceDecisionRows(unnamed,'1405-07-30'),null);
 });
+
+test('decision income and premiums require exact period, measure, unit and arithmetic',async()=>{
+ const {readEstateDecision,readInsuranceDecision}=await import('./codal.mjs');
+ const cells=(values)=>Object.assign(Array(19).fill(''),values);
+ const date='1405/07/30',end='1405-07-30',premium='حق بیمه صادره (شامل قبولی اتکایی)',unit='مبلغ (میلیون ریال)';
+ const estate=[cells({0:'شرح',4:'درآمد محقق شده طی دوره یک ماهه منتهی به '+date,5:'جمع درآمد محقق شده از ابتدای سال مالی تا '+date}),
+  cells({0:'فروش',4:'12',5:'20'}),cells({0:'جمع',4:'12',5:'20'})];
+ assert.deepEqual(readEstateDecision(estate,end),{amount:12,cumulative:20});
+ estate[1][4]='';assert.equal(readEstateDecision(estate,end),null);
+ const insurance=[cells({11:'دوره یک ماهه منتهی به '+date,15:'از ابتدای سال مالی تا پایان مورخ '+date}),
+  cells({11:premium,15:premium}),cells({11:unit,15:unit}),cells({0:'آتش سوزی',11:'7',15:'11'}),cells({0:'جمع',11:'7',15:'11'})];
+ assert.deepEqual(readInsuranceDecision(insurance,end),{amount:7,cumulative:11});
+ assert.equal(readInsuranceDecision(insurance,'1405-06-31'),null);
+ for(const [i,j,value] of [[1,11,'خسارت پرداختی'],[2,15,'درصد'],[4,15,'20']]){
+  const bad=structuredClone(insurance);bad[i][j]=value;assert.equal(readInsuranceDecision(bad,end),null);
+ }
+});
