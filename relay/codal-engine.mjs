@@ -23,7 +23,7 @@
 import {
   classifyAnnouncement, fetchAnnouncementsPage, fetchOfficialMonthlyPage, downloadAndParse,
   insertParsedReport, existingUrlsFor, faToEn, codalEnv, monthlySectorProfile, monthlyWorkbookType,
-  jalaliYmdToGregorian, metaFromAnnouncement, isIndustrialMonthlyWorkbook, readIndustrialMonthlyDecision, readServiceMonthlyDecision,
+  jalaliYmdToGregorian, metaFromAnnouncement, isIndustrialMonthlyWorkbook, readIndustrialMonthlyDecision, readSupplementalMonthlyDecision,
   PARSER_VERSION, MONTHLY_PERIOD_REPAIR_VERSION,
 } from "./codal.mjs";
 import { backgroundWorkWindow } from "./background-work-window.mjs";
@@ -227,7 +227,7 @@ const auditedEligible = (url, kind, announcement) => interimEligible(url,kind,an
 const failureKey = (url, kind, announcement) => kind === "ن-۳۰" && monthlySectorProfile(announcement)
   ? `monthly-sector-v1:${url}` : url;
 const monthlyRetryPrefixes = new Map([
-  ['5','monthly-service-decision-v1'], ['0','monthly-industrial-v1'], ['1','monthly-real-estate-v1'],
+  ['6','monthly-premium-decision-v1'], ['5','monthly-service-decision-v1'], ['0','monthly-industrial-v1'], ['1','monthly-real-estate-v1'],
   ['8','monthly-decision-symbol-v1'], ['9','monthly-decision-symbol-v1'],
 ]);
 function monthlyRetryKey(url, kind, announcement) {
@@ -237,8 +237,11 @@ function monthlyRetryKey(url, kind, announcement) {
 }
 // Failed industrial workbooks can have a complete, independently dated official
 // decision table. Use one existing replay slot for that different document.
-function industrialDecisionReplayKey(link) {
-  return state.fails['monthly-industrial-v1:'+link] ? 'monthly-industrial-decision-v1:'+link : null;
+function supplementalReplayKey(link) {
+  const type=new URL(link).searchParams.get('rt');
+  const previous=monthlyRetryPrefixes.get(type);
+  const adapter={'0':'monthly-industrial-decision-v1','1':'monthly-estate-decision-v2','9':'monthly-financing-compacted-v2'}[type];
+  return adapter && state.fails[previous+':'+link] ? adapter+':'+link : null;
 }
 function pendingMonthlyReplayLinks() {
   const links=new Set();
@@ -247,7 +250,7 @@ function pendingMonthlyReplayLinks() {
     if(!count||link.length>240||!supportsDecisionUrl(link))continue;
     const query=new URL(link).searchParams;
     const prefix=monthlyRetryPrefixes.get(query.get('rt'));
-    const keyForReplay=(query.get('rt')==='0' && industrialDecisionReplayKey(link)) || prefix+':'+link;
+    const keyForReplay=supplementalReplayKey(link) || prefix+':'+link;
     if(query.get('let')!=='58'||!prefix||state.fails[keyForReplay])continue;
     links.add(link);
     if(links.size===20)break;
@@ -258,7 +261,7 @@ function recordFail(url, kind, announcement, replay=false) {
   const key = failureKey(url, kind, announcement);
   state.fails[key] = (state.fails[key] || 0) + 1;
   const monthlyRetry=monthlyRetryKey(url,kind,announcement);
-  if(monthlyRetry&&(replay||(monthlyWorkbookType(announcement)!=="5" && state.fails[key]>=MAX_FAILS)))state.fails[monthlyRetry]=1;
+  if(monthlyRetry&&(replay||(!["5","6"].includes(monthlyWorkbookType(announcement)) && state.fails[key]>=MAX_FAILS)))state.fails[monthlyRetry]=1;
   if (kind === 'ن-۱۰' && supportsDecisionUrl(url)) state.decisionStatementV1Attempts[url] = 1;
   if (interimEligible(url,kind,announcement)) state.interimStatementV1Attempts[url] = 1;
   if (auditedEligible(url,kind,announcement)) state.auditedStatementV1Attempts[url] = 1;
@@ -275,7 +278,7 @@ function clearFailure(a, kind) {
 function isBlocked(url,kind,announcement) {
   if((state.fails[failureKey(url,kind,announcement)]||0)<MAX_FAILS)return false;
   const monthlyRetry=monthlyRetryKey(url,kind,announcement);
-  if(monthlyRetry && monthlyWorkbookType(announcement)!=="5" && !state.fails[monthlyRetry])return false;
+  if(monthlyRetry && !["5","6"].includes(monthlyWorkbookType(announcement)) && !state.fails[monthlyRetry])return false;
   return !(kind==='ن-۱۰'&&supportsDecisionUrl(url)&&!state.decisionStatementV1Attempts[url]) &&
     !(interimEligible(url,kind,announcement)&&!state.interimStatementV1Attempts[url]) &&
     !(auditedEligible(url,kind,announcement)&&!state.auditedStatementV1Attempts[url]);
@@ -702,7 +705,7 @@ async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBound
       st.scanned++;
       if(!a || !kind){st.metadataSkipped++;advance(row.id);continue;}
       if(attempted.has(a.link)){advance(row.id);continue;}
-      const decisionKey = replay && kind === "ن-۳۰" && isIndustrialMonthlyWorkbook(a) ? industrialDecisionReplayKey(a.link) : null;
+      const decisionKey = replay && kind === "ن-۳۰" && monthlyWorkbookType(a) ? supplementalReplayKey(a.link) : null;
       if(replay){
         const retryKey=decisionKey || monthlyRetryKey(a.link,kind,a);
         if(!retryKey||state.fails[retryKey]||!(state.fails[failureKey(a.link,kind,a)]||state.fails[a.link]))continue;
@@ -714,12 +717,13 @@ async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBound
         if(replay)clearFailure(a,kind);
         advance(row.id);continue;
       }
-      if(!decisionKey && !(replay && monthlyWorkbookType(a)==="5") && isBlocked(a.link,kind,a)){st.blocked++;advance(row.id);continue;}
+      if(!decisionKey && !(replay && ["5","6"].includes(monthlyWorkbookType(a))) && isBlocked(a.link,kind,a)){st.blocked++;advance(row.id);continue;}
       let stage='download',rejection=null;st.downloaded++;attempted.add(a.link);
       try {
-        const useServiceDecision = replay && monthlyWorkbookType(a)==='5';
-        const data = decisionKey ? await readIndustrialMonthlyDecision(a)
-          : useServiceDecision ? await readServiceMonthlyDecision(a)
+        const type=monthlyWorkbookType(a);
+        const useSupplementalDecision = replay && (['5','6'].includes(type) || (type==='1' && decisionKey));
+        const data = decisionKey && type==='0' ? await readIndustrialMonthlyDecision(a)
+          : useSupplementalDecision ? await readSupplementalMonthlyDecision(a)
           : await downloadAndParse(a,kind,()=>{stage='admission';},event=>{rejection??=admissionEvent(event,kind);});
         if(decisionKey && !data)state.fails[decisionKey]=1;
         if(data){

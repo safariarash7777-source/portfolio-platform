@@ -406,11 +406,11 @@ export async function loadMonthlyDecision(announcement, meta, {fetchImpl=globalT
  if(original.hostname==='www.codal.ir')original.hostname='codal.ir';
  const serial=reportSerial(original.href,true);
  const type=original.searchParams.get('rt');
- if(original.searchParams.get('let')!=='58'||!['0','5','8','9'].includes(type))return null;
+ if(original.searchParams.get('let')!=='58'||!['0','1','5','6','8','9'].includes(type))return null;
  const capture=await captureDecision(original.href,fetchImpl,{},MONTHLY_PATH);
  try{
   const capturedPath=new URL(capture.url).pathname;
-  const viewPath=type==='0'&&capturedPath===DECISION_PATH ? DECISION_PATH : MONTHLY_PATH;
+  const viewPath=['0','1','6'].includes(type)&&capturedPath===DECISION_PATH ? DECISION_PATH : MONTHLY_PATH;
   if(reportSerial(capture.url,true,viewPath)!==serial)return null;
   const html=sourceText(capture,MAX_DECISION);
   const form=element(html,'form','aspnetForm');

@@ -1435,15 +1435,47 @@ function readAgricultureDecision(rows, periodEnd) {
   return result.every(Number.isSafeInteger) ? {amount:result[0],cumulative:result[1]} : null;
 }
 
+// Some first-period reports omit prior-period and correction columns.
+function sumDeclaredColumns(items, month, cumulative) {
+  const total=items.at(-1);
+  if(items.length<2 || normLabel(total?.[0])!=="جمع")return null;
+  const names=new Set(), sums=[0,0];
+  for(const row of items.slice(0,-1)){
+    const name=normLabel(row[0]), values=[cellNum(row[month]),cellNum(row[cumulative])];
+    if(!name || name==="جمع" || names.has(name) || !values.every(Number.isSafeInteger))return null;
+    names.add(name);
+    for(let i=0;i<2;i++)sums[i]+=values[i];
+  }
+  const reported=[cellNum(total[month]),cellNum(total[cumulative])];
+  if(!reported.every((v,i)=>Number.isSafeInteger(v)&&Number.isSafeInteger(sums[i])&&Math.abs(v-sums[i])<=1))return null;
+  return {amount:reported[0],cumulative:reported[1]};
+}
+export function readEstateDecision(rows,end) {
+  const [h,...items]=rows;
+  if(normLabel(h?.[0])!=="شرح" || !normLabel(h[4]).startsWith(normLabel("درآمد محقق شده طی دوره یک ماهه منتهی به")) ||
+     !normLabel(h[5]).startsWith(normLabel("جمع درآمد محقق شده از ابتدای سال مالی تا")) ||
+     ![4,5].every(i=>jalaliStr(h[i])===end))return null;
+  return sumDeclaredColumns(items,4,5);
+}
+export function readInsuranceDecision(rows,end) {
+  const [dates,measure,unit,...items]=rows;
+  if(!normLabel(dates?.[11]).startsWith(normLabel("دوره یک ماهه منتهی به")) ||
+     !normLabel(dates?.[15]).startsWith(normLabel("از ابتدای سال مالی تا پایان")) ||
+     ![11,15].every(i=>jalaliStr(dates[i])===end && normLabel(measure?.[i])===normLabel("حق بیمه صادره (شامل قبولی اتکایی)") &&
+       normLabel(unit?.[i])===normLabel("مبلغ (میلیون ریال)")))return null;
+  return sumDeclaredColumns(items,11,15);
+}
 function readFinancingDecision(rows, periodEnd) {
   const [header,...items]=rows;
   const labels=items.map(row=>normLabel(row[0]));
-  if (!header || normLabel(header[0])!=="شرح" || normLabel(header[2])!=="اصلاحات" ||
+  if (!header || normLabel(header[0])!=="شرح" ||
       !normLabel(header[4]).startsWith(normLabel("درآمد محقق شده طی دوره یک ماهه منتهی به")) ||
       !normLabel(header[5]).startsWith(normLabel("جمع درآمد محقق شده از ابتدای سال مالی تا پایان")) ||
       jalaliStr(header[4])!==periodEnd||jalaliStr(header[5])!==periodEnd||
       !labels.includes(normLabel("درآمد بازارگردانی"))||!labels.includes(normLabel("درآمد تعهد پذیره نویسی"))) return null;
-  return readIncomeTotal(items,8,1);
+  if(normLabel(header[2])==="اصلاحات")return readIncomeTotal(items,8,1);
+  if(![header,...items].every(row=>[1,2,3].every(i=>!normLabel(row[i]))))return null;
+  return sumDeclaredColumns(items,4,5);
 }
 
 // Service v3 shows recognized income directly, including an empty input row.
@@ -1468,19 +1500,25 @@ export function readServiceDecisionRows(rows, periodEnd) {
   if(!totals.every((n,i)=>Number.isSafeInteger(n)&&Number.isSafeInteger(sums[i])&&Math.abs(n-sums[i])<=1)) return null;
   return {amount:totals[0],cumulative:totals[1]};
 }
-export async function readServiceMonthlyDecision(a) {
+const supplementalDecisionProfiles=new Map([
+  ['5',{code:1704,alias:'ServicesAndSale',unit:'کلیه مبالغ درج شده به میلیون ریال می باشد',width:10,read:readServiceDecisionRows}],
+  ['1',{code:3145,alias:'RealizedOperatingIncome',unit:'کلیه مبالغ به میلیون ریال است',width:6,read:readEstateDecision}],
+  ['6',{code:2639,alias:'MonthlyPerformance',unit:'کلیه مبالغ درج شده به میلیون ریال می باشد.',width:19,read:readInsuranceDecision}],
+]);
+export async function readSupplementalMonthlyDecision(a) {
   const meta=metaFrom(a,"ن-۳۰");
-  if(monthlyWorkbookType(a)!=="5" || meta.period_months!==1 || !meta.period_end)return null;
+  const p=supplementalDecisionProfiles.get(monthlyWorkbookType(a));
+  if(!p || meta.period_months!==1 || !meta.period_end)return null;
   const source=await loadMonthlyDecision(a,meta);
   if(!source)return null;
-  const tables=source.sheet.tables.filter(t=>t.code===1704&&t.aliasName==="ServicesAndSale");
+  const tables=source.sheet.tables.filter(t=>t.code===p.code&&t.aliasName===p.alias);
   if(tables.length!==1)return null;
   const [table]=tables;
-  if(table.sheetCode!==source.sheet.code || normLabel(table.description)!==normLabel("کلیه مبالغ درج شده به میلیون ریال می باشد"))return null;
-  const rows=gridRows(table,10);
-  const total=rows&&readServiceDecisionRows(rows,meta.period_end);
+  if(table.sheetCode!==source.sheet.code || normLabel(table.description)!==normLabel(p.unit))return null;
+  const rows=gridRows(table,p.width);
+  const total=rows&&p.read(rows,meta.period_end);
   if(!total)return null;
-  return {...sectorMonthlyData(meta,"service_recognized_income",total),monthly_source:{
+  return {...sectorMonthlyData(meta,monthlySectorProfile(a),total),monthly_source:{
     url:source.url,sha256:source.sha256,tracing_no:source.tracingNo,sheet_code:source.sheet.code,table_code:table.code
   }};
 }
