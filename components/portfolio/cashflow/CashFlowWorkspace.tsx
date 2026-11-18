@@ -7,6 +7,7 @@ import { dateInput } from "@/lib/portfolio/financialInput";
 import { formatJalali, toPersianDigits } from "@/lib/format";
 import CashFlowSummary from "./CashFlowSummary";
 import CashFlowEditor from "./CashFlowEditor";
+import InstallmentPayments from "./InstallmentPayments";
 import BudgetPanel from "../budget/BudgetPanel";
 import { cashFlowDraft, draftPayload, type CashFlowDraft } from "./draft";
 
@@ -184,6 +185,7 @@ export default function CashFlowWorkspace({ expectedOwnerId, initialPeriod, init
       {message && <p role="alert" className="card p-4 text-sm leading-7">{message}</p>}
       {saving && <p role="status">{receipt ? "رسید ثبت دریافت شد؛ در حال بازخوانی همان نسخه هستیم." : "در حال ارسال همان تلاش ثبت؛ هنوز موفقیت تأیید نشده است."}</p>}
       {(uncertain || conflict) && <section className="card space-y-3 p-5"><p className="text-sm leading-7">ویرایش و تغییر دوره قفل است. شناسه، نسخهٔ پایه و محتوای همان درخواست حفظ شده‌اند؛ درخواست تازه‌ای ساخته نمی‌شود.</p>{!conflict && <button type="button" className="btn btn-gold" disabled={saving || reading} onClick={() => void save()}>بررسی دوبارهٔ همین ثبت</button>}<a className="btn btn-outline" href={url(data.period)} target="_blank" rel="noopener noreferrer">بررسی آخرین نسخه در صفحهٔ جدا</a></section>}
+      {data?.snapshot && <InstallmentPayments key={data.ownerId} data={data} disabled={locked || dirty || !editable} />}
       {draft && <section id="cashflow-editor" className="scroll-mt-6 space-y-4"><p className="text-sm leading-7">خلاصهٔ بالا فقط نسخهٔ خوانده‌شده است؛ تغییرات فرم، عدد ذخیره‌شده را عوض نمی‌کند. دورهٔ فرم: <bdi>{toPersianDigits(draft.period.startOn)} — {toPersianDigits(draft.period.endOn)}</bdi>.</p><CashFlowEditor draft={draft} locked={locked} onChange={next => { if (!locked && live.current) { setDraft(next); setDirty(true); setMessage(""); } }} onSave={() => void save()} onCancel={() => { if (!locked && data) { setDraft(cashFlowDraft(data.period, data.snapshot?.payload)); setDirty(false); setMessage(""); } }} /></section>}
     </>}
   </div>;
