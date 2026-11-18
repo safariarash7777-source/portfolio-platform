@@ -152,6 +152,9 @@ const number = value => {
  return Number(signed);
 };
 
+const OTC_PRODUCT = 'FinancialStatement-OTC-Product-V9';
+const LISTED_FUNDS_COMPANY = 'Financial Statement - FundsCompany - Listed - V2';
+
 function document(source,meta,announcement,alias,interim=false) {
  const serial=reportSerial(source.url,true,interim ? INTERIM_PATH : DECISION_PATH);
  if(serial!==reportSerial(announcement.link,true))fail('source_identity');
@@ -162,12 +165,15 @@ function document(source,meta,announcement,alias,interim=false) {
  const mixed=root.isConsolidated===true && /^FinancialStatement-Consolidated-Listed-Product-V\d+$/.test(root.title_En??'');
  if((root.isConsolidated!==false && !mixed) || !Number.isSafeInteger(root.tracingNo) || root.tracingNo<=0 ||
     root.type!==6 || typeof root.isAudited!=='boolean' || root.periodExtraDay!==0 ||
-    ![3,6,9,12].includes(root.period) || (!mixed && !/FinancialStatement-Listed-Product/.test(root.title_En??'')))fail('scope_unsupported');
+    ![3,6,9,12].includes(root.period) || (!mixed && !(/FinancialStatement-Listed-Product/.test(root.title_En??'') ||
+      root.title_En === OTC_PRODUCT ||
+      root.title_En === LISTED_FUNDS_COMPANY)))fail('scope_unsupported');
  if(root.period!==meta.period_months || day(root.periodEndToDate)!==meta.period_end || root.isAudited!==meta.audited ||
     day(root.yearEndToDate)<meta.period_end)fail('period_mismatch');
  const visible=html.replace(/<!--[\s\S]*?-->/g,'').replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
  const label=id=>text(element(visible,'span',id));
- if(norm(label('ctl00_txbSymbol'))!==norm(meta.symbol) || !norm(meta.symbol) ||
+ const symbolHeader = root.title_En === LISTED_FUNDS_COMPANY ? 'ctl00_lblDisplaySymbol' : 'ctl00_txbSymbol';
+ if(norm(label(symbolHeader))!==norm(meta.symbol) || !norm(meta.symbol) ||
     norm(label('ctl00_txbCompanyName'))!==norm(meta.company_name) || !norm(meta.company_name) ||
     day(label('ctl00_lblPeriodEndToDate'))!==meta.period_end ||
     norm(label('ctl00_lblPeriod'))!==`${root.period}ماهه` ||
@@ -224,7 +230,7 @@ function admitStatement(income,equity,meta,announcement,interim=false){
  try{
   const inc=document(income,meta,announcement,'IncomeStatement',interim);
   const eq=document(equity,meta,announcement,'ChangesInPropertyRights',interim);
-  if(inc.root.tracingNo!==eq.root.tracingNo || inc.root.yearEndToDate!==eq.root.yearEndToDate || inc.root.isConsolidated!==eq.root.isConsolidated)fail('source_identity');
+  if(inc.root.title_En!==eq.root.title_En || inc.root.tracingNo!==eq.root.tracingNo || inc.root.yearEndToDate!==eq.root.yearEndToDate || inc.root.isConsolidated!==eq.root.isConsolidated)fail('source_identity');
   const cell=(doc,address,group)=>{
    const c=doc.cells.get(address);
    if(!c||!c.isVisible||c.cellGroupName!==group||c.colSpan!==1||c.rowSpan!==1)fail('cell_unobserved');

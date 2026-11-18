@@ -142,3 +142,17 @@ test('official audited mixed workbook follows advertised income sheet after audi
  assert.equal(parse(inc,editRoot(eq,r=>{r.tracingNo++;})).data,null);
  assert.equal(parse().data.statement_provenance.priorAccepted,false);
 });
+
+test('verified OTC and listed funds-company templates bind both sheets and visible issuer', () => {
+  const template = (html, name) => editRoot(html, root => { root.title_En = name; });
+  const otc = html => template(html, 'FinancialStatement-OTC-Product-V9');
+  const fund = html => template(html, 'Financial Statement - FundsCompany - Listed - V2')
+    .replace(/<span id="ctl00_lblDisplaySymbol"[^>]*><\/span>/, '')
+    .replace('id="ctl00_txbSymbol"', 'id="ctl00_lblDisplaySymbol"');
+  assert.ok(parse(otc(income), otc(equity)).data);
+  assert.ok(parse(fund(income), fund(equity)).data);
+  assert.equal(parse(fund(income), otc(equity)).data, null);
+  assert.equal(parse(fund(income).replace('ctl00_lblDisplaySymbol', 'ctl00_other'), fund(equity)).data, null);
+  assert.equal(parse(otc(income), otc(equity), { ...meta, symbol: 'other' }).data, null);
+  assert.equal(parse(editRoot(otc(income), root => { root.isConsolidated = true; }), otc(equity)).data, null);
+});
