@@ -161,3 +161,20 @@ test("captured discard cannot clear an in-flight or uncertain attempt or cross a
  await view.auth('SIGNED_OUT',null);discard();await view.flush();
  assert.match(view.text(),/حساب یا نشست تغییر کرد/);assert.equal(view.readCalls.length,1);view.unmount();
 });
+
+test("failed read after session recovery allows discarding an unsent draft and retrying the read", async () => {
+  const data = readback();
+  const view = mount([result(data), {status: "error", httpStatus: 503, error: {code: "READ_UNAVAILABLE"}}, result(data)], []);
+  await view.auth();
+  (view.panel().props.onDirty as () => void)();
+  await view.flush();
+  await view.auth("TOKEN_REFRESHED", null);
+  await view.auth("SIGNED_IN");
+  assert.equal(view.button("دوباره خواندن پرونده").props.disabled, true);
+  await view.click(discardLabel);
+  assert.equal(view.button("دوباره خواندن پرونده").props.disabled, false);
+  await view.click("دوباره خواندن پرونده");
+  assert.equal(view.readCalls.length, 3);
+  assert.equal(view.writeCalls.length, 0);
+  view.unmount();
+});
