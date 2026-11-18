@@ -1,7 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createCompanyWorkScheduler} from './company-work-scheduler.mjs';
+import {createCompanyWorkScheduler,scheduledCompanyCycleOptions} from './company-work-scheduler.mjs';
 const at=t=>Date.parse(`2026-11-14T${t}:00+03:30`);
+
+test('scheduled worker explicitly enables bounded interim coverage with a fail-closed rollback', async()=>{
+ for(const [env,enabled] of [[{},true],[{CODAL_RECENT_INTERIM_ENABLED:'1'},true],
+  [{CODAL_RECENT_INTERIM_ENABLED:'0'},false],[{CODAL_RECENT_INTERIM_ENABLED:'true'},false],[{CODAL_RECENT_INTERIM_ENABLED:''},false]]){
+  let clock=at('09:00');const calls=[];
+  const s=createCompanyWorkScheduler({job:async options=>calls.push(scheduledCompanyCycleOptions(options,env)),now:()=>clock,discoveryIntervalMs:15*60000});
+  await s.run({initial:true});clock=at('09:15');await s.run();
+  assert.deepEqual(calls,[true,false].map(allowBackground=>({allowBackground,monthlyOnly:true,
+   prioritizeRecentMonthly:true,officialMonthlyReconciliation:true,recentInterimReports:enabled})));
+ }
+});
 test('night cadence increases opportunities without changing daytime or starting before startup delay',async()=>{
  let clock=at('19:40'),calls=0;const s=createCompanyWorkScheduler({job:async()=>calls++,now:()=>clock});
  assert.equal(await s.run(),false);assert.equal(await s.run({initial:true}),true);

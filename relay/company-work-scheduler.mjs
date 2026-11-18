@@ -1,5 +1,13 @@
 import { backgroundWorkWindow } from './background-work-window.mjs';
 
+// Reviewed worker policy: bounded interim coverage is on unless explicitly
+// disabled. Unknown configured values fail closed; engine caps remain in force.
+export function scheduledCompanyCycleOptions(options, env = process.env) {
+  const interim = env.CODAL_RECENT_INTERIM_ENABLED;
+  return { ...options, monthlyOnly: true, prioritizeRecentMonthly: true,
+    officialMonthlyReconciliation: true, recentInterimReports: interim === undefined || interim === '1' };
+}
+
 // Cadence only: the existing engine owns persistent cursors and all request caps.
 // A completed/failed attempt is followed by a cooldown; slow attempts never overlap.
 export function createCompanyWorkScheduler({job,now=Date.now,regularIntervalMs=3*60*60*1000,overnightEnabled=true,discoveryIntervalMs=null}){
