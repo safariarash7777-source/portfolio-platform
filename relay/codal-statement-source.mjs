@@ -278,13 +278,14 @@ export const admitInterimStatement=(income,equity,meta,announcement)=>admitState
 // Serial requests to the official publisher, never the BRSAPI key endpoint.
 // The existing engine still owns discovery, per-cycle caps and persistence.
 let requestTail=Promise.resolve();
+// Request spacing measures elapsed time, independent of calendar-clock adjustments.
 let nextRequest=0;
 async function captureDecision(url,fetchImpl,request={},reportPath=INTERIM_PATH){
  const operation=async()=>{
   codalAccess.check();
-  await sleep(Math.max(0,nextRequest-Date.now()));
+  await sleep(Math.max(0,nextRequest-performance.now()));
   codalAccess.check();
-  nextRequest=Date.now()+2100;
+  nextRequest=performance.now()+2100;
   let response=await fetchImpl(url,{...request,redirect:'manual',signal:AbortSignal.timeout(15000)});
   if([301,302,307,308].includes(response.status)){
    const location=response.headers.get('location');
@@ -299,7 +300,7 @@ async function captureDecision(url,fetchImpl,request={},reportPath=INTERIM_PATH)
    if(!['codal.ir','www.codal.ir'].includes(redirect.hostname)||redirect.protocol!=='https:'||
       (!alternateView && redirect.pathname!==original.pathname)||!sameReport||redirect.username||redirect.password||redirect.port||redirect.hash)throw Error('codal_statement_redirect_unsupported');
    await response.body?.cancel();
-   await sleep(2100);nextRequest=Date.now()+2100;
+   await sleep(2100);nextRequest=performance.now()+2100;
    response=await fetchImpl(redirect.href,{redirect:'error',signal:AbortSignal.timeout(15000)});
    url=redirect.href;
   }
