@@ -85,6 +85,10 @@ function codalDetails(engine, archive) {
       ...integerCounts(engine?.schedule, ['regularIntervalMs', 'overnightIntervalMs']) },
     failureDiagnostics: diagnostics(engine?.failureDiagnostics, { download: ['exception'], admission: ['rejected', 'exception'], persistence: ['exception'] }),
     admissionDiagnostics: diagnostics(engine?.admissionDiagnostics, ADMISSION_REASONS),
+    lastDeferral: engine?.lastDeferral == null ? null : {
+      phase: choice(engine.lastDeferral.phase, ['announcement_search', 'feed_report', 'stored_report', 'issuer_backfill']),
+      reason: choice(engine.lastDeferral.reason, ['local_transport', 'internal_budget', 'official_source_hold']),
+    },
     archive: {
       reportScope: choice(archive?.reportScope, ['monthly_only', 'all_reports']),
       ok: boolean(archive?.ok), lastAttemptFinishedAt: clock(archive?.lastRun), error: errorCategory(archive?.lastError),

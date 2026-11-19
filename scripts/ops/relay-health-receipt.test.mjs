@@ -251,6 +251,14 @@ test('Codal diagnostics drop unknown versions, malformed counters and secret-bea
   assert.equal(sanitizeDebug({codalEngine:{failureDiagnostics:{version:2,totals:{download:{exception:0}}}}}).codal.failureDiagnostics.totals.download.exception,null);
 });
 
+test("ops receipt exposes the typed deferral only, not rejected filing identifiers or arbitrary fields", () => {
+  const engine={lastDeferral:{phase:"stored_report",reason:"official_source_hold",detail:secret},lastRejectedFilings:[{serial:secret}]};
+  const result=sanitizeDebug({codalEngine:engine}).codal;
+  assert.deepEqual(result.lastDeferral,{phase:"stored_report",reason:"official_source_hold"});
+  assert.equal(JSON.stringify(result).includes(secret),false);
+  assert.deepEqual(sanitizeDebug({codalEngine:{lastDeferral:{phase:secret,reason:secret}}}).codal.lastDeferral,{phase:null,reason:null});
+});
+
 test('HTTP and SQL details require fixed producer prefixes and exact code allowlists, never raw error scans', () => {
   const project = value => sanitizeDebug({brsapiLegacy:{budget:{store:{lastError:value}}}}).budget.legacy.budget.store;
   const known=project('rpc brsapi_budget_lease → 404: '+JSON.stringify({code:'PGRST202',message:secret,details:'https://private.invalid/'+secret}));
