@@ -31,6 +31,30 @@ import { companyUniverse } from "./codal-coverage.mjs";
 import { isBrsBudgetDeferral, isBrsLocalDeferral as isBrsDeferred } from "./brsapi-policy.mjs";
 import { codalAccess, isCodalSourceDeferred } from './codal-source-access.mjs';
 const isBrsLocalDeferral = error => isBrsDeferred(error) || isBrsBudgetDeferral(error) || isCodalSourceDeferred(error);
+// Fixed fields for the authenticated debug read and the sanitized ops receipt.
+function noteDeferral(error, phase) {
+  const reason = isBrsDeferred(error) ? "local_transport" :
+    isBrsBudgetDeferral(error) ? "internal_budget" :
+    isCodalSourceDeferred(error) ? "official_source_hold" : null;
+  if (reason && !engineStatus.lastDeferral) engineStatus.lastDeferral = { phase, reason };
+}
+
+function recordRejectedFiling(a, kind, event) {
+  recordAdmissionRejection(state.admissionDiagnostics, kind, event);
+  // Public Codal identifier only, in authenticated /debug. The Actions
+  // receipt intentionally does not copy this list or any announcement text.
+  const recent = engineStatus.lastRejectedFilings;
+  if (!event || recent.length >= 8 || !supportsDecisionUrl(a.link)) return;
+  try {
+    const pair = new URL(a.link).search.slice(1).split("&").find(x => x.startsWith("LetterSerial="));
+    const serial = decodeURIComponent(pair.slice("LetterSerial=".length));
+    if (!/^[A-Za-z0-9_+/-]{8,80}={0,2}$/.test(serial)) return;
+    if (!recent.some(x => x.serial === serial && x.kind === kind && x.reason === event.reason)) {
+      recent.push({ serial, kind, reason: event.reason });
+    }
+  } catch { /* Diagnostic only: never change report acceptance or retry. */ }
+}
+
 import { admissionCounts, admissionEvent, readAdmissionDiagnostics, recordAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 import { supportsDecisionUrl } from "./codal-statement-source.mjs";
 import { canonicalMarketSymbol, readStoredAnnouncements, recentMonthlyBounds, validStoredCursor,
@@ -103,6 +127,8 @@ export const engineStatus = {
   ledgerSize: 0,
   failureDiagnostics: readFailureDiagnostics(),
   admissionDiagnostics: readAdmissionDiagnostics(),
+  lastDeferral: null,
+  lastRejectedFilings: [],
 };
 
 /* ── وضعیت پایدار در Supabase ──────────────────────────────────────────────── */
@@ -369,7 +395,7 @@ async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false, inter
   const candidates = [];
   const feedItems = []; // M4: متادیتای همهٔ اطلاعیه‌های تازه، نه فقط ن-۱۰/ن-۳۰
   let previousKey = Infinity;
-  let pageDeferral = null;
+  let pageFailure = null;
   let unverifiedOrder = false;
   const seenLinks = new Set();
 
@@ -378,8 +404,10 @@ async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false, inter
     let items;
     try { items = await fetchPageWithRetry({ page, purpose: "current" }); }
     catch (error) {
-      if (!isBrsLocalDeferral(error)) throw error;
-      pageDeferral = error;
+      const deferred = isBrsLocalDeferral(error);
+      if (deferred) noteDeferral(error, "announcement_search");
+      st.incompleteReason = deferred ? "local_deferred" : "feed_failure";
+      pageFailure = error;
       break;
     }
     st.pages = page;
@@ -434,7 +462,8 @@ async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false, inter
       ...newestSeen.links, ...(newestSeen.key === metadataMark?.key ? metadataMark.links : []),
     ])] };
   }
-  if (pageDeferral) throw pageDeferral;
+  // Keep discovered metadata on a later-page failure, without advancing the watermark.
+  if (pageFailure) throw pageFailure;
   if (metadataOnly) {
     st.complete = false;
     st.incompleteReason ??= "local_deferred";
@@ -469,13 +498,14 @@ async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false, inter
         clearFailure(a, kind);
       } else {
         recordFailureDiagnostic("admission", "rejected");
-        recordAdmissionRejection(state.admissionDiagnostics, kind, rejection);
+        recordRejectedFiling(a, kind, rejection);
         st.parseFailed++;
         recordFail(a.link, kind, a);
         st.complete = false; st.incompleteReason = "report_failure";
       }
     } catch (e) {
       if (isBrsLocalDeferral(e)) {
+        noteDeferral(e, "feed_report");
         st.complete = false; st.incompleteReason = 'local_deferred';
         throw e;
       }
@@ -655,7 +685,7 @@ async function backfillSome({ monthlyOnly = false, loadCompanies = allCompanySym
             clearFailure(a, kind);
           } else {
             recordFailureDiagnostic("admission", "rejected");
-            recordAdmissionRejection(state.admissionDiagnostics, kind, rejection);
+            recordRejectedFiling(a, kind, rejection);
             st.parseFailed++;
             recordFail(a.link, kind, a);
           }
@@ -669,6 +699,7 @@ async function backfillSome({ monthlyOnly = false, loadCompanies = allCompanySym
       console.log(`codal-engine backfill ${sym}: inserted=${st.inserted} parseFailed=${st.parseFailed}`);
     } catch (e) {
       if (isBrsLocalDeferral(e)) {
+        noteDeferral(e, "issuer_backfill");
         state.backfillCursor = cursorBefore;
         st.cursor = cursorBefore;
         throw e;
@@ -731,10 +762,10 @@ async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBound
           known.add(a.link);clearFailure(a, kind);
         } else {
           st.parseFailed++;recordFailureDiagnostic('admission','rejected');
-          recordAdmissionRejection(state.admissionDiagnostics,kind,rejection);recordFail(a.link,kind,a,replay);
+          recordRejectedFiling(a,kind,rejection);recordFail(a.link,kind,a,replay);
         }
       } catch(error) {
-        if(isBrsLocalDeferral(error))throw error;
+        if(isBrsLocalDeferral(error)){ noteDeferral(error, 'stored_report'); throw error; }
         if(decisionKey && stage!=='persistence' && !isCodalSourceDeferred(error))state.fails[decisionKey]=1;
         st.parseFailed++;recordFailureDiagnostic(stage,'exception');recordFail(a.link,kind,a,replay);
       }
@@ -749,6 +780,8 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
   engineStatus.reportScope = includeInterim ? "monthly_and_recent_interim" : monthlyOnly ? "monthly_only" : "all_reports";
   engineStatus.ok = false;
   engineStatus.lastError = null;
+  engineStatus.lastDeferral = null;
+  engineStatus.lastRejectedFilings = [];
   engineStatus.lastRun = Date.now();
   Object.assign(engineStatus.feedTable, { attempted: 0, inserted: 0, duplicates: 0, lastError: null });
   if (!BRSAPI_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {

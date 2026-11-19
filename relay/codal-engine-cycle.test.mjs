@@ -43,6 +43,9 @@ async function fixture(options = {}) {
     budgetJobs.push({ producer: job.producer, budgetClass: job.budgetClass });
     calls.pages.push(Number(job.params.page));
     calls.announcementCategories.push(job.params.category ?? null);
+    if (!job.params.l18 && Number(job.params.page) === options.failSearchPage) {
+      throw Object.assign(new Error("429 provider fixture"), { noRetry: true });
+    }
     if (options.announcementErrorCode) throw Object.assign(new Error(options.announcementErrorCode), { code: options.announcementErrorCode });
     if (!job.params.l18 && Number(job.params.page) === options.deferBudgetOnPage) {
       throw Object.assign(new Error('internal allocation exhausted'), { name: 'LegacyBudgetError' });
@@ -238,11 +241,38 @@ test('invalid statement retry ledger is never cached as valid state on a later c
     assert.equal(f.calls.saves.length, 0);
   }
 });
+test('failed provider page retains discovered notices without falsely advancing the watermark', async () => {
+  const a=financial(1);
+  const f=await fixture({pages:[[a]],failSearchPage:2});
+  await f.engine.runEngineCycle();
+  assert.equal(f.engine.engineStatus.feed.pages,1);
+  assert.equal(f.engine.engineStatus.feed.incompleteReason,"feed_failure");
+  assert.equal(f.engine.engineStatus.lastDeferral,null,"a provider error is not a local deferral");
+  assert.deepEqual(f.persisted.watermark,watermark);
+  assert.deepEqual(f.calls.feedWrites.flatMap(x=>x.rows.map(r=>r.link)),[a.link]);
+  assert.deepEqual(f.calls.pages.slice(0,2),[1,2]);
+  const first=await fixture({failSearchPage:1});
+  await first.engine.runEngineCycle();
+  assert.equal(first.engine.engineStatus.feed.incompleteReason,"feed_failure");
+  assert.equal(first.engine.engineStatus.feed.pages,0);
+  assert.equal(first.calls.feedWrites.length,0);
+});
+
+test('authenticated diagnostic contains only an official rejected filing identifier', async () => {
+  const serial='Known+serial/1=';
+  const a={...financial(1),link:'https://codal.ir/Reports/Decision.aspx?LetterSerial='+encodeURIComponent(serial)+'&other=not-an-output'};
+  const f=await fixture({pages:[[a,boundary]],officialBody:"<html></html>",excelHtml:industrial({period:"1404/12/29",months:12,prior:false,scope:""})});
+  await f.engine.runEngineCycle();
+  assert.deepEqual(f.engine.engineStatus.lastRejectedFilings,[{serial,kind:"ن-۱۰",reason:"scope_unknown"}]);
+  assert.equal(f.persisted.lastRejectedFilings,undefined);
+});
+
 test('local announcement deferral keeps watermark and failure ledger and does not retry', async () => {
   const f = await fixture({ announcementErrorCode: 'brs_transport_queue_full' });
   await f.engine.runEngineCycle();
   assert.equal(f.calls.pages.length, 1); assert.equal(f.engine.engineStatus.feed.parseFailed, 0);
   assert.equal(f.engine.engineStatus.feed.incompleteReason, 'local_deferred');
+  assert.deepEqual(f.engine.engineStatus.lastDeferral,{phase:'announcement_search',reason:'local_transport'});
   assert.deepEqual(f.persisted.watermark, watermark); assert.deepEqual(f.persisted.fails, {});
 });
 test('local report deferral is not a parse failure or a blocked report', async () => {
@@ -922,6 +952,12 @@ test('stored report local deferral preserves cursor and does not charge a parse 
   assert.equal(f.persisted.storedFeedCursor,null);
   assert.deepEqual(f.persisted.fails,{});
   assert.equal(f.engine.engineStatus.storedRecovery.parseFailed,0);
+  assert.deepEqual(f.engine.engineStatus.lastDeferral,{phase:'stored_report',reason:'local_transport'});
+  const restarted=await fixture({storedRows:[stored(9)],initialState:f.persisted});
+  await restarted.engine.runEngineCycle();
+  assert.equal(restarted.engine.engineStatus.storedRecovery.inserted,1);
+  assert.equal(restarted.calls.reportWrites.length,1);
+  assert.equal(restarted.calls.excel.length,1);
 });
 
 test('audited mixed adapter receives one persisted retry with old counts intact',async()=>{
@@ -1352,6 +1388,27 @@ test('opted-in mixed cycles recover recent monthly and interim reports during a 
   assert.ok(f.calls.reportWrites.flat().some(row=>row.report_kind==='ن-۳۰'));
   assert.equal(f.calls.feedWrites[0].rows.length,10,'deferred feed metadata remains durable');
  } finally { if(prior===undefined)delete process.env.CODAL_RECENT_INTERIM_ENABLED;else process.env.CODAL_RECENT_INTERIM_ENABLED=prior; }
+});
+
+test('scheduled stored interim rejection records the official serial without weakening admission or changing persisted diagnostics',async t=>{
+ t.mock.method(Date,'now',()=>Date.parse('2026-11-15T15:30:00Z'));
+ const a={...stored(20),category:'صورت مالی',sent_date:'1405/08/24',
+  title:'اطلاعات و صورت‌های مالی دوره ۶ ماهه منتهی به ۱۴۰۵/۰۶/۳۱'};
+ const f=await fixture({pages:[[]],storedRows:[a],officialBody:'<html></html>',
+  marketBody:[{payload:{stocks:[{id:'نمونه'}]}}],
+  excelHtml:industrial({period:'1405/06/31',months:6,prior:false,scope:''})});
+ await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true,prioritizeRecentMonthly:true,recentInterimReports:true});
+ const state=f.engine.engineStatus;
+ assert.equal(state.feed.interimDownloads,0);
+ assert.equal(state.interimRecovery.downloaded,1);
+ assert.equal(state.interimRecovery.parseFailed,1);
+ assert.equal(state.interimRecovery.inserted,0);
+ assert.equal(f.calls.reportWrites.length,0);
+ assert.equal(f.persisted.fails[a.link],1);
+ assert.equal(f.persisted.admissionDiagnostics.lastCycle['ن-۱۰'].scope_unknown,1);
+ assert.equal(f.persisted.admissionDiagnostics.totals['ن-۱۰'].scope_unknown,1);
+ assert.deepEqual(state.lastRejectedFilings,[{serial:'serial20',kind:'ن-۱۰',reason:'scope_unknown'}]);
+ assert.equal(f.persisted.lastRejectedFilings,undefined);
 });
 
 test('recent interim environment opt-in rejects ambiguous values and respects explicit false', async t => {
