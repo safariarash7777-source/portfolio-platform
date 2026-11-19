@@ -53,3 +53,20 @@ test('recent monthly publication bounds use the Tehran day and retain only real 
  });
  assert.deepEqual(found.map(x=>x.announcement?.date_publish??null),[...dates.slice(0,3),null,null,null,null]);
 });
+
+
+test('official monthly Decision-only records admit only exact reviewed report families', async () => {
+  const link = "https://codal.ir/Reports/Decision.aspx?LetterSerial=abc%2B%3D&rt=0&let=58";
+  const base = { report_code:"ن-۳۰", link, link_excel:null };
+  for(const type of ["0","8","9"]){
+    const [valid]=await read([row(1,{...base,link:link.replace("rt=0","rt="+type)})]);
+    assert.equal(valid.announcement.link_excel,null);
+  }
+  for (const patch of [{link_excel:"https://excel.codal.ir/service/Excel/GetAll/other/0"},
+    {link_excel:" "},{report_code:"ن-۱۰"},{link:link+"&rt=9"},{link:link+"&let=6"},
+    {link:link.replace("rt=0","rt=5")},{link:link.replace("codal.ir","other.invalid")},
+    {link:link+"&LetterSerial=other"},{link:link+"#fragment"}]) {
+    const [invalid]=await read([row(1,{...base,...patch})]);
+    assert.equal(invalid.announcement,null);
+  }
+});

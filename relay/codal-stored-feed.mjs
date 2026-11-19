@@ -1,3 +1,5 @@
+import { monthlyDecisionTypeWithoutWorkbook } from "./codal-statement-source.mjs";
+
 // Resume processing from the existing announcement ledger. No provider search,
 // synthetic announcement date or separate queue/table is introduced.
 export const validStoredCursor = value => value === null ||
@@ -41,18 +43,23 @@ function publicationInRange(value,{since,until}) {
 function announcement(row) {
   const symbol=text(row.symbol,120), company=text(row.company_name,500), title=text(row.title,5000);
   const link=text(row.link,4096), excel=text(row.link_excel,4096);
-  if (!symbol || !company || !title || !link || !excel) return null;
-  try {
-    const a=new URL(link), b=new URL(excel);
-    if(a.protocol!=='https:' || !['codal.ir','www.codal.ir'].includes(a.hostname) ||
-       a.pathname!=='/Reports/Decision.aspx' || a.username || a.password || a.port || a.hash ||
-       b.protocol!=='https:' || b.hostname!=='excel.codal.ir' || b.username || b.password || b.port || b.search || b.hash) return null;
-    const pairs=a.search.slice(1).split('&').map(p=>p.split('='));
-    const serials=pairs.filter(p=>p[0]==='LetterSerial');
-    const path=/^\/service\/Excel\/GetAll\/([^/]+)\/0$/.exec(b.pathname);
-    if(serials.length!==1 || serials[0].length!==2 || !path ||
-       decodeURIComponent(serials[0][1])!==decodeURIComponent(path[1]))return null;
-  } catch {return null;}
+  if (!symbol || !company || !title || !link) return null;
+  if (!excel) {
+    if (!/^ن-[3۳٣][0۰٠]$/.test(String(row.report_code ?? "").trim()) ||
+        monthlyDecisionTypeWithoutWorkbook(link, row.link_excel) === null) return null;
+  } else {
+    try {
+      const a=new URL(link), b=new URL(excel);
+      if(a.protocol!=='https:' || !['codal.ir','www.codal.ir'].includes(a.hostname) ||
+         a.pathname!=='/Reports/Decision.aspx' || a.username || a.password || a.port || a.hash ||
+         b.protocol!=='https:' || b.hostname!=='excel.codal.ir' || b.username || b.password || b.port || b.search || b.hash) return null;
+      const pairs=a.search.slice(1).split('&').map(p=>p.split('='));
+      const serials=pairs.filter(p=>p[0]==='LetterSerial');
+      const path=/^\/service\/Excel\/GetAll\/([^/]+)\/0$/.exec(b.pathname);
+      if(serials.length!==1 || serials[0].length!==2 || !path ||
+         decodeURIComponent(serials[0][1])!==decodeURIComponent(path[1]))return null;
+    } catch {return null;}
+  }
   return {l18:symbol,l30:company,title,code:row.report_code,link,link_excel:excel,
     link_pdf:text(row.link_pdf,4096),date_send:row.sent_date,time_send:row.sent_time,date_publish:row.publish_date};
 }

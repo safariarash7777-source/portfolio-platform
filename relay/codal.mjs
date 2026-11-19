@@ -2,7 +2,7 @@ import { brsFetch as fetch } from "./brsapi-transport.mjs";
 import { isBrsLocalDeferral } from "./brsapi-policy.mjs";
 import { notifyAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 import { createHash } from "node:crypto";
-import { loadDecisionStatement, loadMonthlyDecision } from "./codal-statement-source.mjs";
+import { loadDecisionStatement, loadMonthlyDecision, monthlyDecisionTypeWithoutWorkbook } from "./codal-statement-source.mjs";
 import { codalAccess, isCodalSourceDeferred } from "./codal-source-access.mjs";
 // ماژول کدال — دریافت خودکار گزارش‌های بنیادی از وب‌سرویس کدالِ BrsApi.
 // چرا این‌جا (رله): excel.codal.ir و codal.ir به IP خارجی پاسخ نمی‌دهند؛
@@ -1179,6 +1179,8 @@ function sameQuantityResponseSource(sourceRef, responseUrl) {
 
 /** Identify the verified monthly workbook families by the linked Codal report. */
 export function monthlyWorkbookType(a) {
+  const direct = monthlyDecisionTypeWithoutWorkbook(a?.link, a?.link_excel);
+  if (direct !== null) return direct;
   try {
     const report = new URL(a.link);
     const serials = report.searchParams.getAll("LetterSerial");
@@ -1576,6 +1578,11 @@ export async function readIndustrialMonthlyDecision(a) {
 
 /** دانلود اکسل اطلاعیه و نرمال‌سازی — null یعنی پارس ناموفق (درج نکنید). */
 export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejected) {
+  if (kind === "ن-۳۰" && monthlyDecisionTypeWithoutWorkbook(a?.link, a?.link_excel) === "0") {
+    const data = await readIndustrialMonthlyDecision(a);
+    onDownloaded();
+    return data ?? notifyAdmissionRejection(onRejected, kind, "unsupported_layout");
+  }
   const sector=kind==="ن-۳۰" ? monthlySectorProfile(a) : null;
   if (monthlyDecisionTables.has(sector)) {
     const meta=metaFrom(a,kind);

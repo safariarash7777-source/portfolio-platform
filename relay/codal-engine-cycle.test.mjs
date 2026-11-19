@@ -1519,7 +1519,7 @@ test('official monthly reconciliation fills a missing listed report through the 
  const f=await fixture({pages:[[]],marketBody:[{payload:{stocks:[{id:"فولاد"}]}}],excelHtml,exactWorkbookResponse:true,
    initialState:{watermark,fails:{},officialMonthlyNextPage:5,recentMonthlyRecoveryCursor:"10"},
    monthlyOfficialPages:{
-     1:[expected[0],official(4,{Symbol:"خارج بازار"}),official(5,{LetterCode:"ن-۱۰"}),official(6,{ExcelUrl:null})],
+     1:[expected[0],official(4,{Symbol:"خارج بازار"}),official(5,{LetterCode:"ن-۱۰"}),official(6,{ExcelUrl:null,Url:"/Reports/Decision.aspx?LetterSerial=official6&rt=77&let=58"})],
      5:[expected[1]],
     ...Object.fromEntries([6,7,8,9,10,11].map(page=>[page,[official(20+page,{Symbol:'خارج بازار'})]])),
    }});
@@ -1556,6 +1556,65 @@ test('the fast discovery cycle includes recent interim statements within the sha
  assert.equal(f.engine.engineStatus.feed.interimDownloads,2);
  assert.equal(f.calls.feedWrites[0].rows.length,5);
  assert.equal(f.calls.feedWrites[0].rows[0].symbol,fund.l18);
+});
+
+test('exact official monthly Decision without Excel is processed through discovery, feed, archive, and stored recovery', async t => {
+ t.mock.method(Date,'now',()=>Date.parse("2026-11-16T16:30:00Z"));
+ const date = "1405/07/30";
+ const link = "https://codal.ir/Reports/Decision.aspx?LetterSerial=official-no-excel&rt=0&let=58";
+ const rows = [{0:"شرح",13:`دوره یک ماهه منتهی به ${date}`,17:`از ابتدای سال مالی تا تاریخ ${date}`},
+   {0:"نام محصول",1:"واحد",13:"تعداد تولید",14:"تعداد فروش",15:"نرخ فروش (ریال)",
+    16:"مبلغ فروش (میلیون ریال)",20:"مبلغ فروش (میلیون ریال)"},
+   {0:"فروش داخلی:"},{0:"محصول",1:"دست",13:4,14:4,15:3000000,16:12,20:32},{0:"جمع",16:12,20:32}];
+ const cells=rows.flatMap((row,index)=>Object.entries(row).map(([col,value])=>({
+   address:String.fromCharCode(65+Number(col))+(index+1),rowSequence:index+1,columnSequence:Number(col)+1,
+   isVisible:true,value,metaTableId:18,metaTableCode:1197,
+ })));
+ const source={type:58,period:1,periodEndToDate:date,tracingNo:123,isConsolidated:false,
+   sheets:[{code:1000000,aliasName:"MonthlyActivity",tables:[{code:1197,metaTableId:18,sheetCode:1000000,
+     aliasName:"ProductionAndSales",description:"کلیه مبالغ به میلیون ریال است",cells}]}]};
+ const html = `<form id="aspnetForm" action="">
+   <span id="ctl00_lblReportName">گزارش فعالیت ماهانه</span>
+   <span id="ctl00_lblPeriod">1 ماهه</span><span id="ctl00_txbSymbol">نمونه</span>
+   <span id="ctl00_lblPeriodEndToDate">${date}</span><script>var datasource = ${JSON.stringify(source)};</script>
+   </form>`;
+ const a=announcement(1,{code:"ن-۳۰",l30:"شرکت نمونه",link,date_title:date,
+   title:`گزارش فعالیت ماهانه منتهی به ${date}`});
+ const options={pages:[[a,boundary],[]],officialBody:html,marketBody:[{payload:{stocks:[{id:"نمونه"}]}}]};
+ for(const route of ["feed","archive","stored","official"]){
+  const rows=[{id:4,category:"ماهانه",symbol:"نمونه",company_name:a.l30,title:a.title,
+    report_code:a.code,link,link_excel:null}];
+  const discovery=route==="official";
+  const official={TracingNo:123,Symbol:a.l18,Title:a.title,CompanyName:a.l30,LetterCode:a.code,
+   Url:new URL(link).pathname+new URL(link).search,ExcelUrl:null,
+   SentDateTime:"1405/08/25 10:00:00",PublishDateTime:"1405/08/25 11:00:00"};
+  const f=await fixture(discovery ? {...options,pages:[[]],monthlyOfficialPages:{1:[official],2:[]}}
+    : route==="stored" ? {...options,pages:[[]],storedRows:rows} : options);
+  if(route==="archive"){
+   const archive=await import(`./codal-archive.mjs?mock=${++scenario}`);
+   await archive.runArchiveCycle({monthlyOnly:true});
+   assert.equal(archive.archiveStatus.lastCycle.downloaded,1);
+  }else{
+   await f.engine.runEngineCycle({monthlyOnly:true,allowBackground:false,
+    ...(discovery ? {prioritizeRecentMonthly:true,officialMonthlyReconciliation:true} : {})});
+   if(discovery){
+    assert.deepEqual(f.officialPages,[1,2]);
+    const [stored]=f.calls.feedWrites.flatMap(write=>write.rows);
+    assert.equal(stored.link,link);
+    assert.equal(stored.link_excel,null);
+    assert.equal(f.engine.engineStatus.officialMonthlyDiscovery.inserted,1);
+   }else{
+    assert.equal(route==="feed"?f.engine.engineStatus.feed.downloaded:f.engine.engineStatus.storedRecovery.downloaded,1);
+   }
+  }
+  assert.deepEqual(f.calls.excel,[]);
+  assert.equal(f.calls.reportWrites.length,1);
+  const [row]=f.calls.reportWrites[0];
+  assert.equal(row.source_url,link+"#pv3");
+  assert.equal(row.data.period_end,"1405-07-30");
+  assert.equal(row.data.period_total_amount,12);
+  assert.equal(row.data.monthly_source.tracing_no,123);
+ }
 });
 
 test('the official sweep repairs a conflicting industrial period once using only the validated publisher grid', async () => {
