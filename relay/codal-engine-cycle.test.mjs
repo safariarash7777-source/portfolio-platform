@@ -1390,6 +1390,27 @@ test('opted-in mixed cycles recover recent monthly and interim reports during a 
  } finally { if(prior===undefined)delete process.env.CODAL_RECENT_INTERIM_ENABLED;else process.env.CODAL_RECENT_INTERIM_ENABLED=prior; }
 });
 
+test('scheduled stored interim rejection records the official serial without weakening admission or changing persisted diagnostics',async t=>{
+ t.mock.method(Date,'now',()=>Date.parse('2026-11-15T15:30:00Z'));
+ const a={...stored(20),category:'صورت مالی',sent_date:'1405/08/24',
+  title:'اطلاعات و صورت‌های مالی دوره ۶ ماهه منتهی به ۱۴۰۵/۰۶/۳۱'};
+ const f=await fixture({pages:[[]],storedRows:[a],officialBody:'<html></html>',
+  marketBody:[{payload:{stocks:[{id:'نمونه'}]}}],
+  excelHtml:industrial({period:'1405/06/31',months:6,prior:false,scope:''})});
+ await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true,prioritizeRecentMonthly:true,recentInterimReports:true});
+ const state=f.engine.engineStatus;
+ assert.equal(state.feed.interimDownloads,0);
+ assert.equal(state.interimRecovery.downloaded,1);
+ assert.equal(state.interimRecovery.parseFailed,1);
+ assert.equal(state.interimRecovery.inserted,0);
+ assert.equal(f.calls.reportWrites.length,0);
+ assert.equal(f.persisted.fails[a.link],1);
+ assert.equal(f.persisted.admissionDiagnostics.lastCycle['ن-۱۰'].scope_unknown,1);
+ assert.equal(f.persisted.admissionDiagnostics.totals['ن-۱۰'].scope_unknown,1);
+ assert.deepEqual(state.lastRejectedFilings,[{serial:'serial20',kind:'ن-۱۰',reason:'scope_unknown'}]);
+ assert.equal(f.persisted.lastRejectedFilings,undefined);
+});
+
 test('recent interim environment opt-in rejects ambiguous values and respects explicit false', async t => {
  t.mock.method(Date,'now',()=>Date.parse('2026-11-15T15:30:00Z'));
  const prior=process.env.CODAL_RECENT_INTERIM_ENABLED;

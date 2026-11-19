@@ -762,7 +762,7 @@ async function recoverStoredReports({monthlyOnly,interimWindow=null,monthlyBound
           known.add(a.link);clearFailure(a, kind);
         } else {
           st.parseFailed++;recordFailureDiagnostic('admission','rejected');
-          recordAdmissionRejection(state.admissionDiagnostics,kind,rejection);recordFail(a.link,kind,a,replay);
+          recordRejectedFiling(a,kind,rejection);recordFail(a.link,kind,a,replay);
         }
       } catch(error) {
         if(isBrsLocalDeferral(error)){ noteDeferral(error, 'stored_report'); throw error; }
