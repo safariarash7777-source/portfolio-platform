@@ -15,6 +15,20 @@ export function supportsDecisionUrl(value){
  try{const u=new URL(value);if(u.hostname==='www.codal.ir')u.hostname='codal.ir';return !!reportSerial(u.href,true);}catch{return false;}
 }
 
+// Only already validated first-party monthly readers; no synthetic workbook URL.
+export function monthlyDecisionTypeWithoutWorkbook(link, workbook) {
+ if (workbook != null && workbook !== "") return null;
+ try {
+  if (typeof link !== "string" || !reportSerial(link, true)) return null;
+  const query = new URL(link).searchParams;
+  const type = query.getAll("rt");
+  const code = query.getAll("let");
+  return type.length === 1 && code.length === 1 && code[0] === "58" &&
+    ["0", "8", "9"].includes(type[0]) ? type[0] : null;
+ } catch { return null; }
+}
+
+
 /** Native JSON grammar plus a duplicate-key walk (including escaped keys).
  * Existing capitalization JSON deliberately uses last-key-wins and is not a
  * suitable parser for ownership evidence. Never evaluate an object expression. */

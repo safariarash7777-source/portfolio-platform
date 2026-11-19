@@ -19,6 +19,7 @@ import {
   classifyAnnouncement, fetchAnnouncementsPage, downloadAndParse,
   insertParsedReport, existingUrlsFor, faToEn, codalEnv, monthlySectorProfile,
 } from "./codal.mjs";
+import { monthlyDecisionTypeWithoutWorkbook } from "./codal-statement-source.mjs";
 import { companyUniverse, readStoredReportInventory, summarizeReportInventory } from "./codal-coverage.mjs";
 import { codalAccess, isCodalSourceDeferred } from './codal-source-access.mjs';
 
@@ -233,7 +234,8 @@ export async function runArchiveCycle({ monthlyOnly = false } = {}) {
               const k = jdateKey(a?.date_send);
               if (k !== null && k < boundary) { sawOlderThanBoundary = true; continue; }
               const kind = classifyAnnouncement(a);
-              if (!kind || monthlyOnly && kind !== "ن-۳۰" || !a.link || !a.link_excel) continue;
+              if (!kind || monthlyOnly && kind !== "ن-۳۰" || !a.link || (!a.link_excel &&
+            !(kind === "ن-۳۰" && monthlyDecisionTypeWithoutWorkbook(a.link, a.link_excel) !== null))) continue;
               const failure = kind === "ن-۳۰" && monthlySectorProfile(a) ? `monthly-sector-v1:${a.link}` : a.link;
               if (known.has(a.link) || isBlocked(failure)) continue;
               if (st.downloaded >= DL_PER_CYCLE || budgetLeft() <= 2) { pageComplete = false; break; }

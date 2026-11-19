@@ -56,7 +56,7 @@ function recordRejectedFiling(a, kind, event) {
 }
 
 import { admissionCounts, admissionEvent, readAdmissionDiagnostics, recordAdmissionRejection } from "./codal-admission-diagnostics.mjs";
-import { supportsDecisionUrl } from "./codal-statement-source.mjs";
+import { monthlyDecisionTypeWithoutWorkbook, supportsDecisionUrl } from "./codal-statement-source.mjs";
 import { canonicalMarketSymbol, readStoredAnnouncements, recentMonthlyBounds, validStoredCursor,
   verifiedMonthlyDiscovery } from "./codal-stored-feed.mjs";
 
@@ -442,7 +442,8 @@ async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false, inter
       const kind = classifyAnnouncement(a);
       if (monthlyOnly && kind !== "ن-۳۰" &&
           !(interimWindow && recentInterim(a, interimWindow))) continue;
-      if (!kind || !a.link || !a.link_excel) continue;
+      if (!kind || !a.link || (!a.link_excel &&
+            !(kind === "ن-۳۰" && monthlyDecisionTypeWithoutWorkbook(a.link, a.link_excel) !== null))) continue;
       st.matched++;
       candidates.push({ a, kind, k });
     }
@@ -670,7 +671,8 @@ async function backfillSome({ monthlyOnly = false, loadCompanies = allCompanySym
       let dl = 0;
       for (const a of [...fs, ...monthly]) {
         const kind = classifyAnnouncement(a);
-        if (!kind || monthlyOnly && kind !== "ن-۳۰" || !a.link || !a.link_excel) continue;
+        if (!kind || monthlyOnly && kind !== "ن-۳۰" || !a.link || (!a.link_excel &&
+            !(kind === "ن-۳۰" && monthlyDecisionTypeWithoutWorkbook(a.link, a.link_excel) !== null))) continue;
         if (known.has(a.link) || isBlocked(a.link, kind, a)) continue;
         if (dl >= BACKFILL_MAX_DL || remainingDownloads <= 0) break;
         dl++; remainingDownloads--; st.downloaded++;
