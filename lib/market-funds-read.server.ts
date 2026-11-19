@@ -36,7 +36,7 @@ function observeFailure(input: {
   } catch { /* Observation failure cannot alter availability or trigger a retry. */ }
 }
 
-/** Reuse the approved server selector, without installing configuration or changing legacy readers. */
+/** Reuse the approved server selector, without installing configuration or changing other market routes. */
 export async function readFundsMarket(options?: FundsMarketReadOptions): Promise<{ data: IrMarket | null; availability: SourceAvailability }> {
   let pair: ReturnType<typeof fundamentalReadPair>;
   let urlPresent: boolean | null = null, keyPresent: boolean | null = null;
@@ -45,13 +45,13 @@ export async function readFundsMarket(options?: FundsMarketReadOptions): Promise
     const captured = Object.freeze({ FUNDAMENTAL_READ_URL: environment.FUNDAMENTAL_READ_URL, FUNDAMENTAL_READ_ANON_KEY: environment.FUNDAMENTAL_READ_ANON_KEY });
     urlPresent = captured.FUNDAMENTAL_READ_URL !== undefined;
     keyPresent = captured.FUNDAMENTAL_READ_ANON_KEY !== undefined;
-    if (!urlPresent && !keyPresent) return readIranMarket().then(result => {
+    if (!urlPresent && !keyPresent) return readIranMarket("funds").then(result => {
       try {
         const { availability } = result;
         if (availability.reason === "read-error" || availability.reason === "read-timeout" || availability.state === "error" || availability.state === "timeout") {
           // This diagnostic is shared across legacy consumers, not request-local.
           observeFailure({ selector: "legacy", state: availability.state, reason: availability.reason,
-            status: getLastIrDiag()?.status, readAt: availability.readAt, urlPresent: false, keyPresent: false,
+            status: getLastIrDiag("funds")?.status, readAt: availability.readAt, urlPresent: false, keyPresent: false,
             selectedPair: false, data: result.data });
         }
       } catch { /* Keep even unexpected observation failures outside the read contract. */ }

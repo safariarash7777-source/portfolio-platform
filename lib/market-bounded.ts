@@ -1,5 +1,5 @@
 import { getMarketData, getCachedGlobalMarket, type MarketData } from "./market";
-import { getIrMarket, getCachedIrMarket, getLastIrDiag, type IrMarket } from "./market-ir";
+import { getIrMarket, getCachedIrMarket, getLastIrDiag, type IranMarketScope, type IrMarket } from "./market-ir";
 import { withDeadline } from "./deadline";
 import { iranReadQuality, failedIranReadQuality, validTimestamp, type IranReadQuality } from "./market-quality";
 
@@ -23,14 +23,14 @@ export async function readGlobalMarket(): Promise<{ data: MarketData; availabili
     return { data: { ...(previous ?? { crypto: [], goldGlobal: [], fetchedAt: 0 }), ok: false }, availability: { state: previous ? "stale" : "timeout", sourceAt: validTimestamp(previous?.fetchedAt), receivedAt: validTimestamp(previous?.fetchedAt), validAt: null, readAt: Date.now() } };
   }
 }
-export async function readIranMarket(): Promise<{ data: IrMarket | null; availability: SourceAvailability }> {
+export async function readIranMarket(scope: IranMarketScope = "market"): Promise<{ data: IrMarket | null; availability: SourceAvailability }> {
   try {
-    const data = await withDeadline(() => getIrMarket(), 5100);
-    const failed = getLastIrDiag()?.error;
+    const data = await withDeadline(() => getIrMarket(scope), 5100);
+    const failed = getLastIrDiag(scope)?.error;
     const readAt = Date.now(), quality = failed ? failedIranReadQuality(data, readAt) : iranReadQuality(data, readAt);
     return { data, availability: { ...quality, state: !data ? failed === "DeadlineError" ? "timeout" : "error" : failed ? "stale" : quality.state, reason: failed ? failed === "DeadlineError" ? "read-timeout" : "read-error" : quality.reason, sourceAt: quality.receivedAt, readAt } };
   } catch {
-    const data = getCachedIrMarket();
+    const data = getCachedIrMarket(scope);
     const readAt = Date.now(), quality = failedIranReadQuality(data, readAt);
     return { data, availability: { ...quality, state: data ? "stale" : "timeout", reason: "read-timeout", sourceAt: quality.receivedAt, readAt } };
   }
