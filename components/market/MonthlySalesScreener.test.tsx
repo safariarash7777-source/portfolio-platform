@@ -23,7 +23,7 @@ test("rolling comparison shows 12 aligned Jalali months and distinguishes zero, 
 
 test("source disclosure retains the official Persian publication date, period amount, gap and amendment status", () => {
   const row:ScreenRow={symbol:"نمونه",industry:null,eligible:true,growth:null,passed:null,reason:"فروش دوره پایه موجود نیست",current:point,previous:null};
-  const result:MonthlySalesScreen={period:"1405-01",previousPeriod:"1404-01",minGrowth:0,checkedAt:"2026-05-01T00:00:00Z",rows:[row],coverage:{universe:1,eligible:1,passed:0,calculable:0,excluded:{},universeSource:"تابلو",rosterUpdatedAt:null}};
+  const result:MonthlySalesScreen={period:"1405-01",previousPeriod:"1404-01",minGrowth:0,checkedAt:"2026-05-01T00:00:00Z",rows:[row],coverage:{universe:1,eligible:1,passed:0,calculable:0,excluded:{},universeSource:"تابلو",rosterUpdatedAt:null,outsideRoster:3}};
   const html=renderToStaticMarkup(React.createElement(GrowthEvidence,{row,result}));
   for (const text of ["۱۴۰۵/۰۲/۰۸", "۰ میلیون ریال", "۱۴۰۴-۰۱", "اصلاحیه", point.sourceUrl, "فروش دوره پایه موجود نیست"]) assert.ok(html.includes(text),text);
 });
@@ -34,9 +34,10 @@ test("return from issuer retains screener period and threshold", () => {
 });
 test("an incomplete issuer deep link expands its source disclosure outside the default passing list", () => {
   const row:ScreenRow={symbol:"نمونه",industry:null,eligible:true,growth:null,passed:null,reason:"گزارش ماه موجود نیست",current:point,previous:null};
-  const result:MonthlySalesScreen={period:"1405-01",previousPeriod:"1404-01",minGrowth:5,checkedAt:"2026-05-01T00:00:00Z",rows:[row],coverage:{universe:1,eligible:1,passed:0,calculable:0,excluded:{},universeSource:"تابلو",rosterUpdatedAt:null}};
+  const result:MonthlySalesScreen={period:"1405-01",previousPeriod:"1404-01",minGrowth:5,checkedAt:"2026-05-01T00:00:00Z",rows:[row],coverage:{universe:1,eligible:1,passed:0,calculable:0,excluded:{},universeSource:"تابلو",rosterUpdatedAt:null,outsideRoster:3}};
   const html=renderToStaticMarkup(React.createElement(SalesScreenResults,{result,symbol:"نمونه"}));
   assert.ok(html.includes('aria-expanded="true"'));
   assert.ok(html.includes("نمونه · مبنای محاسبه"));
   assert.ok(html.includes("پیوند این ردیف"));
+  assert.ok(html.includes("شمولشان جداگانه باید بررسی شود · ۳"));
 });
