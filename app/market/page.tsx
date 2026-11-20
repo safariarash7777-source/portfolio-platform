@@ -96,12 +96,17 @@ export default async function MarketPage({
     { data: ir, availability },
     access,
     appearance,
+    flowTrend, goldUsdSeries, indexSeries, reportRead,
   ] = await Promise.all([
     supabase.auth.getUser(),
     getMarketData(),
     readIranMarket(marketSource),
     getAccess(),
     readSiteAppearance(supabase, sp, publicMarketOverride()?.pair ? publicMarketClient() : supabase),
+    getFlowTrend(90, marketSource?.pair).catch(() => []),
+    getGoldUsdTrend(180, marketSource?.pair).catch(() => []),
+    getIndexTrend(180, marketSource?.pair).catch(() => []),
+    publicReports(() => publicMarketClient()),
   ]);
 
   let watchlist: string[] = [];
@@ -135,16 +140,6 @@ export default async function MarketPage({
 
   const stocks = ir?.stocks ?? [];
   const funds = ir?.funds ?? [];
-
-  // سری‌های تاریخی — همه best-effort؛ نبودشان صفحه را نمی‌شکند.
-  const [flowTrend, goldUsdSeries, indexSeries, reportRead] = await Promise.all(
-    [
-      getFlowTrend(90, marketSource?.pair).catch(() => []),
-      getGoldUsdTrend(180, marketSource?.pair).catch(() => []),
-      getIndexTrend(180, marketSource?.pair).catch(() => []),
-      publicReports(() => publicMarketClient()),
-    ],
-  );
 
   // ── محاسبهٔ یک‌باره ──────────────────────────────────────────────────────
   const headline = buildMarketHeadline({
