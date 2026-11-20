@@ -37,6 +37,8 @@ test("an incomplete issuer deep link expands its source disclosure outside the d
   const result:MonthlySalesScreen={period:"1405-01",previousPeriod:"1404-01",minGrowth:5,checkedAt:"2026-05-01T00:00:00Z",rows:[row],coverage:{universe:1,eligible:1,passed:0,calculable:0,excluded:{},universeSource:"تابلو",rosterUpdatedAt:null,outsideRoster:3}};
   const html=renderToStaticMarkup(React.createElement(SalesScreenResults,{result,symbol:"نمونه"}));
   assert.ok(html.includes('aria-expanded="true"'));
+  const headers = [...html.matchAll(/<th scope="col"[^>]*>([^<]+)<\/th>/g)].map(m => m[1]);
+  assert.deepEqual(headers.slice(0,3), ["مقایسه","نماد","رشد و مستندات"]);
   assert.ok(html.includes("نمونه · مبنای محاسبه"));
   assert.ok(html.includes("پیوند این ردیف"));
   assert.ok(html.includes("شمولشان جداگانه باید بررسی شود · ۳"));
