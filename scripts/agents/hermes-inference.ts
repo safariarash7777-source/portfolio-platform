@@ -11,7 +11,7 @@ export async function inferResearch(packet: ResearchPacket, metricContext = "") 
   const directory = await mkdtemp(join(tmpdir(), 'portfolio-hermes-research-'));
   try {
     const input = join(directory, 'prompt.txt');
-    await writeFile(input, `${RESEARCH_INSTRUCTIONS}\n${metricContext}\n${JSON.stringify(packet)}`, { mode: 0o600 });
+    await writeFile(input, `${RESEARCH_INSTRUCTIONS}${metricContext ? "\n" + metricContext : ""}\n${JSON.stringify(packet)}`, { mode: 0o600 });
     const executable = process.platform === 'win32' ? join(process.env.LOCALAPPDATA ?? '', 'hermes', 'bin', 'hermes.exe') : 'hermes';
     const env = { ...Object.fromEntries(Object.entries(process.env).filter(([key]) => !/KEY|TOKEN|SECRET|PASSWORD|SUPABASE/i.test(key))), NODE_ENV: process.env.NODE_ENV };
     const { stdout } = await promisify(execFile)(executable, [
@@ -27,4 +27,3 @@ export async function inferResearch(packet: ResearchPacket, metricContext = "") 
     await rm(directory, { recursive: true, force: true });
   }
 }
-
