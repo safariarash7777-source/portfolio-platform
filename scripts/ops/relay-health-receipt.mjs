@@ -3,7 +3,6 @@ import { appendFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import { ADMISSION_REASONS } from '../../relay/codal-admission-diagnostics.mjs';
 import { evaluateDebug } from '../deploy/relay-gate.mjs';
-import { observedBrsTransportPolicy } from '../../relay/brsapi-policy.mjs';
 
 const DEBUG = 'https://arsadata.liara.run/debug';
 const HEALTH = 'https://arsadata.liara.run/healthz';
@@ -29,7 +28,6 @@ export function transportError(error) {
 export function errorCategory(value) {
   if (value == null || value === '') return null;
   const text = typeof value === 'string' ? value.slice(0, 1000) : '';
-  if (/codal_source_challenge/.test(text)) return 'source_access_challenge';
   if (/timeout|timed out|aborted/i.test(text)) return 'timeout';
   if (/certificate|cert_|tls/i.test(text)) return 'tls';
   if (/\b(401|403)\b|unauthor|forbidden/i.test(text)) return 'authorization';
@@ -61,7 +59,7 @@ function safeErrorCodes(value) {
 }
 const integer = x => Number.isSafeInteger(x) && x >= 0 ? x : null;
 const integerCounts = (value, names) => Object.fromEntries(names.map(name => [name, integer(value?.[name])]));
-const incompleteReasons = ['page_limit', 'invalid_order_or_identity', 'feed_write_failure', 'blocked_report', 'download_limit', 'report_failure', 'feed_failure', 'local_deferred'];
+const incompleteReasons = ['page_limit', 'invalid_order_or_identity', 'feed_write_failure', 'blocked_report', 'download_limit', 'report_failure', 'feed_failure'];
 function diagnostics(value, shape) {
   const valid = value?.version === 1;
   const project = name => Object.fromEntries(Object.entries(shape).map(([group, names]) =>
@@ -70,37 +68,21 @@ function diagnostics(value, shape) {
 }
 function codalDetails(engine, archive) {
   return {
-    reportScope: choice(engine?.reportScope, ['monthly_only', 'monthly_and_recent_interim', 'all_reports']),
-    officialMonthlyDiscovery: { ...integerCounts(engine?.officialMonthlyDiscovery, ['pages','matched','inserted','nextPage']),
-      failed:boolean(engine?.officialMonthlyDiscovery?.failed) },
-    recentMonthlyRecovery: { ...integerCounts(engine?.recentMonthlyRecovery, ['scanned', 'downloaded', 'inserted', 'parseFailed', 'blocked', 'metadataSkipped']),
-      active:boolean(engine?.recentMonthlyRecovery?.active), readFailed:boolean(engine?.recentMonthlyRecovery?.readFailed),
-      reachedEnd:boolean(engine?.recentMonthlyRecovery?.reachedEnd) },
-    interimRecovery: { ...integerCounts(engine?.interimRecovery, ['scanned', 'downloaded', 'inserted', 'parseFailed', 'blocked']),
-      feedDownloads: integer(engine?.feed?.interimDownloads), reachedEnd: boolean(engine?.interimRecovery?.reachedEnd) },
     // Attempt clocks are not successful ingestion receipts.
     lastAttemptStartedAt: clock(engine?.lastRun),
-    schedule: { running: boolean(engine?.schedule?.running), started: boolean(engine?.schedule?.started),
-      lastStartedAt: clock(engine?.schedule?.lastStartedAt), lastCompletedAt: clock(engine?.schedule?.lastCompletedAt),
-      ...integerCounts(engine?.schedule, ['regularIntervalMs', 'overnightIntervalMs']) },
     failureDiagnostics: diagnostics(engine?.failureDiagnostics, { download: ['exception'], admission: ['rejected', 'exception'], persistence: ['exception'] }),
     admissionDiagnostics: diagnostics(engine?.admissionDiagnostics, ADMISSION_REASONS),
-    lastDeferral: engine?.lastDeferral == null ? null : {
-      phase: choice(engine.lastDeferral.phase, ['announcement_search', 'feed_report', 'stored_report', 'issuer_backfill']),
-      reason: choice(engine.lastDeferral.reason, ['local_transport', 'internal_budget', 'official_source_hold']),
-    },
     archive: {
-      reportScope: choice(archive?.reportScope, ['monthly_only', 'all_reports']),
       ok: boolean(archive?.ok), lastAttemptFinishedAt: clock(archive?.lastRun), error: errorCategory(archive?.lastError),
       budgetDate: date(archive?.budgetDate), ...integerCounts(archive, ['dailyCap', 'usedToday', 'cursor', 'queueSize', 'doneSymbols']),
       lastCycle: integerCounts(archive?.lastCycle, ['pages', 'downloaded', 'inserted', 'parseFailed', 'persistenceUnconfirmed']),
-      coverage: { ...integerCounts(archive?.coverage, ['n30Symbols', 'n10Symbols', 'universeSize', 'storedRows', 'universeMonthly', 'universeFinancial', 'withoutReports']), basis: choice(archive?.coverage?.basis, ['stored-presence-not-freshness']), error: choice(archive?.coverage?.error, ['inventory_read_failed']), lastChecked: clock(archive?.coverage?.lastChecked) },
+      coverage: { ...integerCounts(archive?.coverage, ['n30Symbols', 'n10Symbols']), lastChecked: clock(archive?.coverage?.lastChecked) },
     },
   };
 }
 
 const operation = x => ({ ok: boolean(x?.ok), lastRun: clock(x?.lastRun), lastDate: date(x?.lastDate ?? x?.lastJdate), rows: number(x?.rows), error: errorCategory(x?.error ?? x?.lastError), skipped: x?.skipped == null ? null : true });
-const budget = x => ({ accountingScope: 'internal_allocation_not_provider_usage', accountingState: choice(x?.accountingState, ['confirmed_internal_estimate', 'unknown']), available: boolean(x?.available), persistent: boolean(x?.persistent), day: date(x?.day), ...counts(x, ['softBudget', 'hardCeiling', 'used', 'remaining', 'rejectedByBudget']), softExhausted: boolean(x?.softExhausted), store: { healthy: boolean(x?.store?.healthy), errors: number(x?.store?.errors), error: errorCategory(x?.store?.lastError), ...safeErrorCodes(x?.store?.lastError) } });
+const budget = x => ({ available: boolean(x?.available), persistent: boolean(x?.persistent), day: date(x?.day), ...counts(x, ['softBudget', 'hardCeiling', 'used', 'remaining', 'rejectedByBudget']), softExhausted: boolean(x?.softExhausted), store: { healthy: boolean(x?.store?.healthy), errors: number(x?.store?.errors), error: errorCategory(x?.store?.lastError), ...safeErrorCodes(x?.store?.lastError) } });
 
 // IME scheduling days are Gregorian Tehran days, not timestamps. Target
 // disclosure dates are Jalali days. Preserve both precisions explicitly.
@@ -142,22 +124,11 @@ export function sanitizeDebug(d) {
     baseline: { state: choice(d?.baseline?.state, ['unknown', 'loaded', 'absent', 'failed']), error: errorCategory(d?.baseline?.error) },
     sources: Object.fromEntries(sources.map(k => [k, { ok: boolean(d?.sources?.[k]?.ok), ...counts(d?.sources?.[k], ['gold', 'currency', 'stocks', 'funds', 'cached', 'updated', 'failed']), error: errorCategory(d?.sources?.[k]?.error) }])),
     storage: { enabled: boolean(d?.supabase?.enabled), ok: boolean(d?.supabase?.ok), httpStatus: number(d?.supabase?.status), at: clock(d?.supabase?.at), error: errorCategory(d?.supabase?.error) },
-    codal: { ...operation(d?.codalEngine), ...codalDetails(d?.codalEngine, d?.codalArchive), feed: { ...counts(d?.codalEngine?.feed, ['pages', 'seen', 'matched', 'downloaded', 'inserted', 'parseFailed']), complete: boolean(d?.codalEngine?.feed?.complete), incompleteReason: errorCategory(d?.codalEngine?.feed?.incompleteReason), incompleteReasonCode: choice(d?.codalEngine?.feed?.incompleteReason, incompleteReasons) }, feedTable: { ...counts(d?.codalEngine?.feedTable, ['attempted', 'inserted', 'duplicates']), error: errorCategory(d?.codalEngine?.feedTable?.lastError), ...safeErrorCodes(d?.codalEngine?.feedTable?.lastError) }, backfill: { ...integerCounts(d?.codalEngine?.backfill, ['queueSize', 'inserted', 'downloaded', 'parseFailed', 'skippedCovered', 'cursor', 'symbolLimit']), workWindow: choice(d?.codalEngine?.backfill?.workWindow, ['overnight', 'regular']) }, storedRecovery: { ...counts(d?.codalEngine?.storedRecovery, ['scanned', 'downloaded', 'inserted', 'parseFailed', 'blocked', 'skippedKnown', 'metadataSkipped']), reachedEnd: boolean(d?.codalEngine?.storedRecovery?.reachedEnd) } },
+    codal: { ...operation(d?.codalEngine), ...codalDetails(d?.codalEngine, d?.codalArchive), feed: { ...counts(d?.codalEngine?.feed, ['pages', 'seen', 'matched', 'downloaded', 'inserted', 'parseFailed']), complete: boolean(d?.codalEngine?.feed?.complete), incompleteReason: errorCategory(d?.codalEngine?.feed?.incompleteReason), incompleteReasonCode: choice(d?.codalEngine?.feed?.incompleteReason, incompleteReasons) }, feedTable: { ...counts(d?.codalEngine?.feedTable, ['attempted', 'inserted', 'duplicates']), error: errorCategory(d?.codalEngine?.feedTable?.lastError), ...safeErrorCodes(d?.codalEngine?.feedTable?.lastError) }, backfill: counts(d?.codalEngine?.backfill, ['queueSize', 'inserted', 'parseFailed', 'skippedCovered']) },
     history: Object.fromEntries(['eodHistory', 'indexHistory', 'marketBreadth', 'historyPrune'].map(k => [k, operation(d?.[k])])),
     commodity: { enabled: boolean(d?.commodity?.enabled), ...counts(d?.commodity, ['rows', 'reqToday', 'dailyCap', 'remaining']), lastFetchAt: clock(d?.commodity?.lastFetchAt), counterScope: choice(d?.commodity?.counterScope, ['process']), dayKey: date(d?.commodity?.dayKey), error: errorCategory(d?.commodity?.lastError) },
     ime: imeReceipt(d?.ime),
-    mcpfarsiQuote: { enabled: boolean(d?.mcpfarsiQuote?.enabled), configured: boolean(d?.mcpfarsiQuote?.configured),
-      requests: integer(d?.mcpfarsiQuote?.requests), pendingPublication: boolean(d?.mcpfarsiQuote?.pendingPublication),
-      publication: choice(d?.mcpfarsiQuote?.publication, ['none', 'confirmed', 'unknown', 'pending_unconfirmed', 'superseded', 'conflict']),
-      error: choice(d?.mcpfarsiQuote?.lastError, ['mcpfarsi_quote_refresh_failed', 'mcpfarsi_publication_requires_readback']),
-      sourceDateRaw: date(d?.mcpfarsiQuote?.sourceDateRaw), sourceAtUtc: null },
-    transport: { enabled: boolean(d?.brsapiTransport?.enabled), scope: choice(d?.brsapiTransport?.scope, ['process']),
-      ...counts(d?.brsapiTransport, ['spacingMs', 'pending', 'sent', 'minStartGapMs', 'rollingWindowMs', 'rollingLimit', 'ipWindowMs', 'ipLimit']),
-      policy: choice(d?.brsapiTransport?.policy, ['conservative_unverified_plan']),
-      windowScope: choice(d?.brsapiTransport?.windowScope, ['process_lifetime']),
-      priorProcessWindow: choice(d?.brsapiTransport?.priorProcessWindow, ['unknown']),
-      coldStartPolicy: choice(d?.brsapiTransport?.coldStartPolicy, ['full_window_defer']),
-      globalEnforced: boolean(d?.brsapiTransport?.globalEnforced), clockValid: boolean(d?.brsapiTransport?.clockValid) },
+    transport: { enabled: boolean(d?.brsapiTransport?.enabled), scope: choice(d?.brsapiTransport?.scope, ['process']), ...counts(d?.brsapiTransport, ['spacingMs', 'pending', 'sent', 'minStartGapMs']) },
     budget: { providerAccountUsage: null, providerResetAt: null, liaraCost: null, clientEnabled: boolean(d?.brsapiClient?.enabled), client: budget(d?.brsapiClient?.budget), legacy: { enforced: boolean(d?.brsapiLegacy?.enforced), usedAggregate: sum(d?.brsapiLegacy?.used), rejectedAggregate: sum(d?.brsapiLegacy?.rejected), overBudgetPassedAggregate: sum(d?.brsapiLegacy?.overBudgetPassed), unmetered: number(d?.brsapiLegacy?.unmetered), budget: budget(d?.brsapiLegacy?.budget) }, stopped: boolean(d?.brsapiBudgetStop?.active), servedAgeMs: number(d?.brsapiBudgetStop?.servedAgeMs) },
   };
 }
@@ -182,25 +153,6 @@ const CONTROL_PROJECT = 'https://api.liara.ir/v1/projects/arsadata';
 const CONTROL_RELEASES = CONTROL_PROJECT + '/releases?page=1&count=100';
 const releaseId = x => typeof x === 'string' && /^[a-f0-9]{24}$/.test(x) ? x : null;
 const releaseState = x => choice(x, ['READY', 'FAILED', 'UNHEALTHY', 'CANCELED', 'TIMEDOUT', 'DEPLOYING', 'BUILDING', 'QUEUED']);
-// Single approved value inspection in RAM. No URL normalization is accepted as
-// an exact match: whitespace, trailing slash, port aliases and dot paths differ.
-function reviewedBackendBinding(envs, namesComplete) {
-  const result = { present: false, parseValid: false, noCredentialsQueryHash: false, exactReviewedBackendMatch: false, duplicateNameRejected: false, reason: 'invalid_env_schema' };
-  if (!namesComplete) return result;
-  const matches = envs.filter(e => e.key === 'SUPABASE_URL');
-  result.present = matches.length > 0;
-  if (matches.length > 1) return { ...result, duplicateNameRejected: true, reason: 'duplicate_name' };
-  if (!matches.length) return { ...result, reason: 'missing' };
-  const value = matches[0].value;
-  if (typeof value !== 'string' || value !== value.trim() || /[\u0000-\u0020\u007f]/.test(value)) return { ...result, reason: 'invalid_url' };
-  let parsed;
-  try { parsed = new URL(value); } catch { return { ...result, reason: 'invalid_url' }; }
-  result.parseValid = true;
-  result.noCredentialsQueryHash = !parsed.username && !parsed.password && !value.includes('?') && !value.includes('#') && !value.slice(value.indexOf('://') + 3).split('/')[0].includes('@');
-  if (!result.noCredentialsQueryHash) return { ...result, reason: 'credentials_query_or_hash' };
-  result.exactReviewedBackendMatch = value === 'https://62.60.191.24/liara-preview';
-  return { ...result, reason: result.exactReviewedBackendMatch ? 'exact_match' : 'different_url' };
-}
 function projectMetadata(body) {
   const p = body?.project;
   if (!p || p.project_id !== 'arsadata') throw new Error('invalid_schema');
@@ -208,11 +160,6 @@ function projectMetadata(body) {
   return { projectId: 'arsadata', status: choice(p.status, ['running', 'stopped', 'starting', 'stopping', 'ready', 'failed']),
     // No verified CPU/RAM response contract in the installed CLI.
     cpuLimit: null, ramLimit: null,
-    // CLI IProjectDetails declares these DETAIL fields, not running pod counts.
-    configuredScale: Number.isSafeInteger(p.scale) && p.scale > 0 ? p.scale : null,
-    configuredZeroDowntime: typeof p.zeroDowntime === 'boolean' ? p.zeroDowntime : null,
-    configuredNotActual: true,
-    reviewedBackendBinding: reviewedBackendBinding(p.envs, envNamesComplete),
     envNames: envNamesComplete ? [...new Set(p.envs.map(e => e.key))].sort() : null, envNamesComplete };
 }
 function releaseMetadata(body) {
@@ -249,10 +196,10 @@ export async function collectControlPlane({ token, fetchImpl = fetch, timeoutMs 
   };
   const [project, releases] = await Promise.all([request(CONTROL_PROJECT, true), request(CONTROL_RELEASES, false)]);
   return { project, releases, identity: project.status === 'read' && releases.status === 'read' && releases.data.match === 'exact' ? 'matched_control_plane_metadata' : 'unconfirmed',
-    limitations: ['Environment values arrive in API memory only; names and booleans for one reviewed backend URL comparison are emitted.', 'Control-plane metadata is not proof of running process code, collector exclusion, budget or ingestion success.'] };
+    limitations: ['Environment values arrive in API memory only; only validated names are emitted.', 'Control-plane metadata is not proof of running process code, collector exclusion, budget or ingestion success.'] };
 }
 
-export async function collectReceipt({ token, controlPlaneToken, phase28Applied = false, fetchImpl = fetch, now = () => new Date().toISOString() } = {}) {
+export async function collectReceipt({ token, controlPlaneToken, fetchImpl = fetch, now = () => new Date().toISOString() } = {}) {
   const request = async (url, kind) => {
     if (kind === 'debug' && !token) return { status: 'missing_credential', httpStatus: null, error: null };
     try {
@@ -272,8 +219,8 @@ export async function collectReceipt({ token, controlPlaneToken, phase28Applied 
           return { status: 'read', httpStatus, error: null, rowCount: d.data.length };
         }
         const t = d.brsapiTransport;
-        const spacingPassed = observedBrsTransportPolicy(t);
-        return { status: 'read', httpStatus, error: null, acceptance: evaluateDebug(raw, { phase28Applied }).ok ? 'passed' : 'failed', spacing: spacingPassed ? 'passed' : 'failed', data: sanitizeDebug(d) };
+        const spacingPassed = t?.enabled === true && t.scope === 'process' && t.spacingMs === 100 && Number.isSafeInteger(t.sent) && t.sent >= 2 && Number.isFinite(t.minStartGapMs) && t.minStartGapMs >= 100;
+        return { status: 'read', httpStatus, error: null, acceptance: evaluateDebug(raw, { phase28Applied: false }).ok ? 'passed' : 'failed', spacing: spacingPassed ? 'passed' : 'failed', data: sanitizeDebug(d) };
       } catch { return { status: 'invalid_response', httpStatus, error: kind === 'storedRead' ? 'invalid_stored_read_payload' : 'invalid_debug_payload' }; }
     } catch (error) { return { status: 'connection_error', httpStatus: null, error: transportError(error) }; }
   };
@@ -284,7 +231,7 @@ export async function collectReceipt({ token, controlPlaneToken, phase28Applied 
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
-    const receipt = await collectReceipt({ token: process.env.RELAY_TOKEN, controlPlaneToken: process.env.LIARA_API_TOKEN, phase28Applied: process.env.PHASE28_APPLIED === 'true' });
+    const receipt = await collectReceipt({ token: process.env.RELAY_TOKEN, controlPlaneToken: process.env.LIARA_API_TOKEN });
     await writeFile('relay-health-receipt.json', JSON.stringify(receipt, null, 2) + '\n', { mode: 0o600 });
     console.log(JSON.stringify(receipt));
     if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, '```json\n' + JSON.stringify(receipt, null, 2) + '\n```\n');

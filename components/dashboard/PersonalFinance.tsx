@@ -28,18 +28,18 @@ export default function PersonalFinance({ summary }: { summary?: MemberFinanceSu
       <div className="card p-4 space-y-3">
         <h3 className="font-bold">دارایی‌های من</h3>
         {assetsFailed ? <ReadError label="ثبت‌های دارایی" code="MEMBER_ASSETS" /> : <p className="text-sm leading-7">{summary.assetsState === "empty" ? "هنوز نسخه‌ای از دارایی‌ها ثبت نکرده‌اید." : `${toPersianDigits(summary.assetCount!)} قلم در آخرین نسخه ثبت شده است.`}</p>}
-        <Link href="/dashboard/holdings#asset-editor" className="btn btn-outline min-h-11 w-full">مشاهده و ثبت دارایی</Link>
+        <Link href="/dashboard/holdings" className="btn btn-outline min-h-11 w-full">مشاهده و ثبت دارایی</Link>
       </div>
       <div className="card p-4 space-y-3">
         <h3 className="font-bold">بدهی‌های من</h3>
         {!summary || summary.debtsState === "error" ? <ReadError label="بدهی‌های این نسخه" code="MEMBER_DEBTS" /> : <p className="text-sm leading-7">{summary.debtsState === "empty" ? "پس از اولین ثبت دارایی، بدهی‌های همان نسخه را ثبت کنید." : summary.debtCount === 0 ? "بدهی‌ای در این نسخه ثبت نشده است؛ این به معنی نداشتن بدهی نیست." : `${toPersianDigits(summary.debtCount!)} بدهی در این نسخه ثبت شده است.`}</p>}
-        <Link href="/dashboard/holdings#debt-editor" className="btn btn-outline min-h-11 w-full">مشاهده و ثبت بدهی</Link>
+        <Link href="/dashboard/holdings" className="btn btn-outline min-h-11 w-full">مشاهده و ثبت بدهی</Link>
       </div>
       <div className="card p-4 space-y-3">
         <h3 className="font-bold">سبد سرمایه‌گذاری من</h3>
         {!summary || summary.scopeState === "error" ? <ReadError label="محدودهٔ سبد این نسخه" code="MEMBER_SCOPE" /> : <p className="text-sm leading-7">{summary.scopeState === "empty" ? "برای تعیین اقلام سبد، ابتدا دارایی‌ها را ثبت کنید." : summary.scopeState === "confirmed" ? "محدودهٔ سرمایه‌گذاری این نسخه تأیید شده است." : "محدودهٔ سرمایه‌گذاری این نسخه هنوز تأیید نشده است."}</p>}
         {!summary || summary.targetState === "error" ? <ReadError label="هدف ثبت‌شدهٔ سبد" code="MEMBER_TARGET" /> : <p className="text-xs leading-6" style={{ color: "var(--text-3)" }}>{summary.targetState === "ready" ? "هدف ثبت‌شدهٔ حساب موجود است؛ مقایسه به اطلاعات معتبر نیاز دارد." : "هنوز هدفی در ثبت‌های نسخه‌دار حساب موجود نیست."}</p>}
-        <Link href="/dashboard/holdings#investment-scope" className="btn btn-outline min-h-11 w-full">بررسی محدودهٔ سبد</Link>
+        <Link href="/dashboard/holdings" className="btn btn-outline min-h-11 w-full">بررسی محدودهٔ سبد</Link>
       </div>
     </div>
     <div className="card p-4 space-y-3">

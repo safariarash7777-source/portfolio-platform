@@ -1,8 +1,6 @@
-process.env.RELAY_BACKGROUND_WINDOW_ENABLED = "0"; // deterministic existing fixtures; window boundaries tested separately
 // Deterministic integration mocks only: every unmatched fetch fails closed.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { industrial, bank } from "./fixtures/n10-admission-fixtures.mjs";
 import { admissionCounts, admissionEvent } from "./codal-admission-diagnostics.mjs";
 
@@ -32,24 +30,12 @@ const mockIncomeHtml = industrial({ period: "1404/12/29", months: 12, prior: fal
 
 async function fixture(options = {}) {
   let persisted = structuredClone(options.initialState ?? { watermark, backfillCursor: 0, fails: {} });
-  const calls = { pages: [], announcementCategories: [], coverageReads: [], feedWrites: [], reportWrites: [], saves: [], excel: [], existingFilters: [], confirmations: [], archiveSaves: [], storedReads: [], storedCategories: [], storedDates: [], storedPublicationFilters: [], storedPageSizes: [] };
+  const calls = { pages: [], coverageReads: [], feedWrites: [], reportWrites: [], saves: [], excel: [], existingFilters: [], confirmations: [], archiveSaves: [] };
   const reports = new Map((options.initialReports ?? []).map(r => [r.source_url, r]));
   let rejectFeed = !!options.rejectFeed;
   let rejectSave = !!options.rejectSave;
-  const budgetJobs = [];
-  const storedRows=[...(options.storedRows??[])];
-  const officialPages=[];
   codal.setCodalBudgetPorts({ client: { request: async (job) => {
-    budgetJobs.push({ producer: job.producer, budgetClass: job.budgetClass });
     calls.pages.push(Number(job.params.page));
-    calls.announcementCategories.push(job.params.category ?? null);
-    if (!job.params.l18 && Number(job.params.page) === options.failSearchPage) {
-      throw Object.assign(new Error("429 provider fixture"), { noRetry: true });
-    }
-    if (options.announcementErrorCode) throw Object.assign(new Error(options.announcementErrorCode), { code: options.announcementErrorCode });
-    if (!job.params.l18 && Number(job.params.page) === options.deferBudgetOnPage) {
-      throw Object.assign(new Error('internal allocation exhausted'), { name: 'LegacyBudgetError' });
-    }
     if (options.backfillPages && job.params.l18) {
       return { announcement: job.params.category === "1" ? options.backfillPages : [] };
     }
@@ -57,55 +43,17 @@ async function fixture(options = {}) {
   } } });
   globalThis.fetch = async (input, init = {}) => {
     const url = new URL(input);
-    if(url.hostname==="search.codal.ir"&&options.monthlyOfficialPages){
-      assert.equal(url.searchParams.get("Category"),"3");
-      officialPages.push(Number(url.searchParams.get("PageNumber")));
-      const entries=options.monthlyOfficialPages[officialPages.at(-1)];
-      return entries instanceof Array ? response({Total:100,Letters:entries}) : response({},503);
-    }
-    if (url.hostname === 'codal.ir' && options.monthlyDecision) {
-      if (url.pathname === '/Reports/Decision.aspx') return new Response(null,{status:302,
-        headers:{Location:`/Reports/MonthlyActivity.aspx?LetterSerial=${options.monthlyDecision.redirectSerial ?? url.searchParams.get('LetterSerial')}`}});
-      assert.equal(url.pathname,'/Reports/MonthlyActivity.aspx');
-      calls.excel.push('monthly-view');
-      return new Response(options.monthlyDecision.html);
-    }
-    if (url.hostname === 'codal.ir' && options.officialBody !== undefined) return new Response(options.officialBody);
-    if (["excel.invalid", "excel.codal.ir"].includes(url.hostname)) {
+    if (url.hostname === "excel.invalid") {
       calls.excel.push(url.pathname);
-      if (options.excelErrorCode) throw Object.assign(new Error(options.excelErrorCode), { code: options.excelErrorCode });
       if (options.excelError) throw new Error(options.excelError);
-      const workbook = new Response(options.excelBodies?.[url.pathname] ?? options.excelHtml ?? mockIncomeHtml);
-      if (options.exactWorkbookResponse) Object.defineProperty(workbook, "url", { value: url.href });
-      return workbook;
+      return new Response(options.excelHtml ?? mockIncomeHtml);
     }
     assert.equal(url.hostname, "storage.invalid", `Unmocked network request: ${url.hostname}`);
     if (url.pathname.endsWith("/codal_feed") && init.method === "POST") {
       const rows = JSON.parse(init.body);
       calls.feedWrites.push({ rows, prefer: init.headers.Prefer });
       if (rejectFeed) return response({ error: "mock failure" }, 503);
-      if(options.monthlyOfficialPages||options.persistFeedRows){
-        for(const row of rows)if(!storedRows.some(old=>old.link===row.link))storedRows.unshift({...row,id:100000+storedRows.length});
-      }
       return response(options.feedBody ?? rows);
-    }
-    if (url.pathname.endsWith("/codal_feed") && !init.method) {
-      calls.storedReads.push(url.searchParams.get("id"));
-      const category = url.searchParams.get("category");
-      const linkFilter=url.searchParams.get('link');
-      const requestedLinks=linkFilter ? new Set(JSON.parse('['+linkFilter.slice(4,-1)+']')) : null;
-      calls.storedCategories.push(category);
-      calls.storedDates.push(url.searchParams.get("created_at"));
-      const publicationFilter=url.searchParams.get("or");
-      calls.storedPublicationFilters.push(publicationFilter);
-      const requestedPageSize=Number(url.searchParams.get('limit') ?? 100);
-      calls.storedPageSizes.push(requestedPageSize);
-      if(publicationFilter&&(options.rejectMonthlyPublicationRead||
-         options.rejectMonthlyHeadRead&&!url.searchParams.has('id')))return response({},503);
-      const before = BigInt(url.searchParams.get("id")?.slice(3) ?? "9223372036854775807");
-      const pageSize = Math.min(requestedPageSize, options.storedPageSize ?? 100);
-      return response(storedRows.filter(r => BigInt(r.id) < before && (!category || category === `eq.${r.category}`)
-        && (!requestedLinks||requestedLinks.has(r.link))).slice(0,pageSize));
     }
     if (url.pathname.endsWith("/codal_reports") && init.method === "POST") {
       const rows = JSON.parse(init.body);
@@ -124,11 +72,6 @@ async function fixture(options = {}) {
       }
       const dataFilter = url.searchParams.get("data");
       const stored = [...reports.values()].filter(r => dataFilter !== "not.is.null" || r.data != null);
-      if (url.searchParams.get("select") === "source_url,symbol,period:data->>period_end") {
-        const links = new Set(JSON.parse("[" + url.searchParams.get("source_url").slice(4, -1) + "]"));
-        return response(stored.filter(r => links.has(r.source_url)).map(
-          r => ({ source_url: r.source_url, symbol: r.symbol, period: r.data.period_end })));
-      }
       if (url.searchParams.has("source_url")) {
         const identity = { source_url: url.searchParams.get("source_url"), symbol: url.searchParams.get("symbol"), data: dataFilter };
         calls.confirmations.push(identity);
@@ -154,8 +97,7 @@ async function fixture(options = {}) {
       return response(options.stateBody ?? [{ payload: persisted }]);
     }
     if (url.pathname.endsWith("/ir_market_snapshots") && url.searchParams.get("key") === "eq.codal_archive_state") {
-      if (options.archiveStateError) throw new Error('mock state network failure');
-      return response(options.archiveStateBody ?? [], options.archiveStateStatus ?? 200);
+      return response(options.archiveStateBody ?? []);
     }
     if (url.pathname.endsWith("/ir_market_snapshots") && url.searchParams.get("key") === "eq.latest") {
       return response(options.marketBody ?? [], options.marketStatus ?? 200);
@@ -164,7 +106,7 @@ async function fixture(options = {}) {
   };
   const engine = await import(`./codal-engine.mjs?mock=${++scenario}`);
   return {
-    engine, calls, budgetJobs, officialPages, get persisted() { return persisted; },
+    engine, calls, get persisted() { return persisted; },
     allowFeed: () => { rejectFeed = false; }, allowSave: () => { rejectSave = false; },
   };
 }
@@ -172,116 +114,6 @@ async function fixture(options = {}) {
 test.afterEach(() => {
   globalThis.fetch = originalFetch;
   codal.setCodalBudgetPorts(null);
-});
-
-test('archive cannot reset progress or spend on failed or malformed state reads', async () => {
-  for (const options of [
-    { archiveStateStatus: 503 }, { archiveStateError: true },
-    { archiveStateBody: {} }, { archiveStateBody: [{ payload: null }] },
-    { archiveStateBody: [{ payload: { cursor: 9, budget: { date: '2026-11-14', used: -1 }, perSymbol: {} } }] },
-    { archiveStateBody: [{ payload: { cursor: 9, budget: { date: '2026-02-31', used: 198 }, perSymbol: {} } }] },
-  ]) {
-    const f = await fixture(options);
-    const archive = await import(`./codal-archive.mjs?mock=${++scenario}`);
-    await archive.runArchiveCycle();
-    assert.equal(archive.archiveStatus.ok, false);
-    assert.equal(archive.archiveStatus.lastError, 'archive_state_read_failed');
-    assert.equal(f.budgetJobs.length, 0);
-    assert.equal(f.calls.archiveSaves.length, 0);
-  }
-});
-
-test('archive retries a failed read and preserves the recovered exhausted budget and cursor', async () => {
-  await fixture({ archiveStateStatus: 503 });
-  const archive = await import(`./codal-archive.mjs?mock=${++scenario}`);
-  await archive.runArchiveCycle();
-  const payload = { cursor: 234, budget: { date: new Date().toISOString().slice(0, 10), used: 198 },
-    perSymbol: { sample: { p1: 4, p3: 8, done1: false, done3: true } } };
-  const f = await fixture({ archiveStateBody: [{ payload }] });
-  await archive.runArchiveCycle();
-  assert.equal(f.budgetJobs.length, 0);
-  assert.deepEqual(f.calls.archiveSaves[0], { ...payload, sourceHoldUntil: 0 });
-  assert.equal(archive.archiveStatus.cursor, 234);
-  assert.equal(archive.archiveStatus.usedToday, 198);
-});
-
-test('archive cannot reset a future-day budget after a backward clock change', async () => {
-  const payload={cursor:234,budget:{date:'2999-01-01',used:198},perSymbol:{}};
-  const f=await fixture({archiveStateBody:[{payload}]});
-  const archive=await import(`./codal-archive.mjs?mock=${++scenario}`);
-  await archive.runArchiveCycle();
-  assert.equal(f.budgetJobs.length,0);
-  assert.equal(archive.archiveStatus.ok,false);
-  assert.match(archive.archiveStatus.lastError,/clock moved backwards/);
-  assert.deepEqual(f.calls.archiveSaves[0],{...payload,sourceHoldUntil:0});
-});
-
-test('unsupported explicit monthly code preserves feed metadata without parsing as N30', async () => {
-  const a = announcement(1, { code: "ن-۳۱", title: "گزارش فعالیت ماهانه", link_excel: "https://excel.invalid/1" });
-  const f = await fixture({ pages: [[a, boundary], []] });
-  await f.engine.runEngineCycle();
-  assert.equal(f.calls.excel.length, 0);
-  assert.equal(f.calls.reportWrites.length, 0);
-  assert.ok(f.calls.feedWrites.some(write => write.rows.some(row => row.link === a.link)));
-  assert.equal(f.engine.engineStatus.feed.parseFailed, 0);
-});
-
-test('scheduled global discovery explicitly uses the standard current-feed allocation', async () => {
-  const f = await fixture({ pages: [[]] });
-  await f.engine.runEngineCycle();
-  assert.deepEqual(f.budgetJobs, [{ producer: 'codal-list', budgetClass: 'standard' }]);
-});
-
-test('invalid statement retry ledger is never cached as valid state on a later cycle', async () => {
-  const f = await fixture({ pages: [[]], initialState: { watermark, fails: {}, decisionStatementV1Attempts: { bad: 2 } } });
-  for (let i = 0; i < 2; i++) {
-    await f.engine.runEngineCycle();
-    assert.equal(f.engine.engineStatus.ok, false);
-    assert.equal(f.calls.pages.length, 0);
-    assert.equal(f.calls.saves.length, 0);
-  }
-});
-test('failed provider page retains discovered notices without falsely advancing the watermark', async () => {
-  const a=financial(1);
-  const f=await fixture({pages:[[a]],failSearchPage:2});
-  await f.engine.runEngineCycle();
-  assert.equal(f.engine.engineStatus.feed.pages,1);
-  assert.equal(f.engine.engineStatus.feed.incompleteReason,"feed_failure");
-  assert.equal(f.engine.engineStatus.lastDeferral,null,"a provider error is not a local deferral");
-  assert.deepEqual(f.persisted.watermark,watermark);
-  assert.deepEqual(f.calls.feedWrites.flatMap(x=>x.rows.map(r=>r.link)),[a.link]);
-  assert.deepEqual(f.calls.pages.slice(0,2),[1,2]);
-  const first=await fixture({failSearchPage:1});
-  await first.engine.runEngineCycle();
-  assert.equal(first.engine.engineStatus.feed.incompleteReason,"feed_failure");
-  assert.equal(first.engine.engineStatus.feed.pages,0);
-  assert.equal(first.calls.feedWrites.length,0);
-});
-
-test('authenticated diagnostic contains only an official rejected filing identifier', async () => {
-  const serial='Known+serial/1=';
-  const a={...financial(1),link:'https://codal.ir/Reports/Decision.aspx?LetterSerial='+encodeURIComponent(serial)+'&other=not-an-output'};
-  const f=await fixture({pages:[[a,boundary]],officialBody:"<html></html>",excelHtml:industrial({period:"1404/12/29",months:12,prior:false,scope:""})});
-  await f.engine.runEngineCycle();
-  assert.deepEqual(f.engine.engineStatus.lastRejectedFilings,[{serial,kind:"ن-۱۰",reason:"scope_unknown"}]);
-  assert.equal(f.persisted.lastRejectedFilings,undefined);
-});
-
-test('local announcement deferral keeps watermark and failure ledger and does not retry', async () => {
-  const f = await fixture({ announcementErrorCode: 'brs_transport_queue_full' });
-  await f.engine.runEngineCycle();
-  assert.equal(f.calls.pages.length, 1); assert.equal(f.engine.engineStatus.feed.parseFailed, 0);
-  assert.equal(f.engine.engineStatus.feed.incompleteReason, 'local_deferred');
-  assert.deepEqual(f.engine.engineStatus.lastDeferral,{phase:'announcement_search',reason:'local_transport'});
-  assert.deepEqual(f.persisted.watermark, watermark); assert.deepEqual(f.persisted.fails, {});
-});
-test('local report deferral is not a parse failure or a blocked report', async () => {
-  const a = financial(1);
-  const f = await fixture({ pages: [[a, boundary], []], excelErrorCode: 'brs_transport_aborted' });
-  await f.engine.runEngineCycle();
-  assert.equal(f.calls.excel.length, 1); assert.equal(f.engine.engineStatus.feed.parseFailed, 0);
-  assert.equal(f.engine.engineStatus.feed.incompleteReason, 'local_deferred');
-  assert.deepEqual(f.persisted.watermark, watermark); assert.deepEqual(f.persisted.fails, {});
 });
 
 test("503 feed write keeps the watermark and retries the same announcement", async () => {
@@ -376,17 +208,6 @@ test("unorderable or unsorted announcements fail without acknowledging them", as
     assert.equal(f.engine.engineStatus.ok, false);
     assert.deepEqual(f.persisted.watermark, watermark);
   }
-});
-
-test('order failure stores only the verified prefix and keeps the resume watermark', async () => {
-  const good = announcement(3), bad = announcement(4), after = announcement(2);
-  const f = await fixture({ pages: [[good, bad, after]] });
-  await f.engine.runEngineCycle();
-  assert.equal(f.engine.engineStatus.ok, false);
-  assert.equal(f.engine.engineStatus.feed.incompleteReason, 'invalid_order_or_identity');
-  assert.deepEqual(f.calls.feedWrites[0].rows.map(r => r.link), [good.link]);
-  assert.deepEqual(f.persisted.watermark, watermark);
-  assert.deepEqual(f.persisted.fails, {});
 });
 
 test("state save failure rolls back the in-memory acknowledgement for retry", async () => {
@@ -495,39 +316,6 @@ test("metadata-only report cannot release a blocked ledger or advance watermark"
   assert.deepEqual(f.persisted.watermark, watermark);
   assert.equal(f.persisted.fails[a.link], 3);
   assert.equal(f.calls.excel.length, 0);
-});
-
-test('legacy mixed statements receive one persisted retry without reopening other failures', async()=>{
-  for (const mixed of [true,false]) {
-    const a={...financial(1),title:mixed?'صورت‌های مالی تلفیقی':'صورت‌های مالی',link:'https://codal.ir/Reports/Decision.aspx?LetterSerial=fixture'};
-    const options={pages:[[a,boundary],[]],excelHtml:'<table></table>',officialBody:'<html></html>'};
-    const f=await fixture({...options,initialState:{watermark,backfillCursor:0,fails:{[a.link]:4},decisionStatementV1Attempts:{[a.link]:1}}});
-    await f.engine.runEngineCycle();
-    assert.equal(f.calls.excel.length,mixed?1:0);
-    assert.equal(f.persisted.fails[a.link],mixed?5:4);
-    assert.equal(f.persisted.interimStatementV1Attempts[a.link],mixed?1:undefined);
-    assert.deepEqual(f.persisted.watermark,watermark);
-    const restarted=await fixture({...options,initialState:f.persisted});
-    await restarted.engine.runEngineCycle();assert.equal(restarted.calls.excel.length,0);
-  }
-});
-test('invalid legacy retry ledger stops before any source request',async()=>{
-  const f=await fixture({pages:[[]],initialState:{watermark,fails:{},interimStatementV1Attempts:{bad:2}}});
-  await f.engine.runEngineCycle();
-  assert.equal(f.engine.engineStatus.ok,false);assert.equal(f.calls.pages.length,0);assert.equal(f.calls.saves.length,0);
-});
-test('new statement adapter grants one bounded retry to an old official N10 failure and persists its use', async()=>{
-  const a={...financial(1),link:'https://codal.ir/Reports/Decision.aspx?LetterSerial=fixture'};
-  const options={pages:[[a,boundary],[]],excelHtml:'<table></table>',officialBody:'<html></html>'};
-  const f=await fixture({...options,initialState:{watermark,backfillCursor:0,fails:{[a.link]:3}}});
-  await f.engine.runEngineCycle();
-  assert.equal(f.calls.excel.length,1);assert.equal(f.persisted.fails[a.link],4);
-  assert.equal(f.persisted.decisionStatementV1Attempts[a.link],1);
-  assert.deepEqual(f.persisted.watermark,watermark);
-  await f.engine.runEngineCycle();assert.equal(f.calls.excel.length,1);
-  const restarted=await fixture({...options,initialState:f.persisted});
-  await restarted.engine.runEngineCycle();assert.equal(restarted.calls.excel.length,0);
-  assert.equal(restarted.persisted.fails[a.link],4);
 });
 
 test("archive duplicate response counts zero actual inserts", async () => {
@@ -652,35 +440,35 @@ test("N10 admission rejection keeps inserted zero, watermark and ledger", async 
   }
 });
 
-test("old stored row counts cannot exclude companies from current reconciliation", async () => {
+test("prospective N10 rejection preserves full paginated coverage without scheduling redundant backfill", async () => {
   const a = financial(1);
   const coverageRows = Array.from({ length: 1008 }, (_, n) => ({ id: 1008 - n, symbol: n < 1000 ? "الف" : "ب" }));
   const f = await fixture({ pages: [[a, boundary], []],
     excelHtml: industrial({ period: "1404/12/29", months: 12, prior: false, unit: "" }),
     marketBody: [{ payload: { stocks: [{ id: "الف", value: 2 }, { id: "ب", value: 1 }] } }],
-    coverageRows, backfillPages: [],
+    coverageRows,
   });
   await f.engine.runEngineCycle();
   assert.equal(f.engine.engineStatus.feed.parseFailed, 1);
   assert.equal(f.calls.reportWrites.length, 0);
   assert.deepEqual(f.persisted.watermark, watermark);
   assert.equal(f.persisted.fails[a.link], 1);
-  assert.deepEqual(f.calls.coverageReads, []);
-  assert.equal(f.engine.engineStatus.backfill.skippedCovered, 0);
-  assert.deepEqual(f.engine.engineStatus.backfill.symbols, ["الف", "ب"]);
-  assert.deepEqual(f.calls.pages, [1, 2, 1, 1, 1, 1]);
+  assert.deepEqual(f.calls.coverageReads, [null, "lt.509", "lt.9", "lt.1"]);
+  assert.equal(f.engine.engineStatus.backfill.skippedCovered, 2);
+  assert.deepEqual(f.engine.engineStatus.backfill.symbols, []);
+  assert.deepEqual(f.calls.pages, [1, 2]);
 });
 
-test("zero trading value issuers remain in bounded reconciliation without historical count reads", async () => {
-  const f = await fixture({ pages: [[]], failCoverageAfter: 1, backfillPages: [],
-    marketBody: [{ payload: { stocks: [{ id: "الف", value: 0 }, { id: "ب", value: null }] } }],
+test("a failed later coverage page stops backfill requests rather than using partial counts", async () => {
+  const coverageRows = Array.from({ length: 508 }, (_, n) => ({ id: 508 - n, symbol: n < 500 ? "الف" : "ب" }));
+  const f = await fixture({ pages: [[]], failCoverageAfter: 2, coverageRows,
+    marketBody: [{ payload: { stocks: [{ id: "الف", value: 2 }, { id: "ب", value: 1 }] } }],
   });
   await f.engine.runEngineCycle();
-  assert.equal(f.engine.engineStatus.ok, true);
-  assert.deepEqual(f.calls.coverageReads, []);
-  assert.deepEqual(f.engine.engineStatus.backfill.symbols, ["الف", "ب"]);
-  assert.equal(f.engine.engineStatus.backfill.queueSize, 2);
-  assert.deepEqual(f.calls.pages, [1, 1, 1, 1, 1]);
+  assert.equal(f.engine.engineStatus.ok, false);
+  assert.match(f.engine.engineStatus.lastError, /covered reports HTTP 503/);
+  assert.deepEqual(f.engine.engineStatus.backfill.symbols, []);
+  assert.deepEqual(f.calls.pages, [1]);
 });
 
 const zeroFailureCounts = () => ({ download: { exception: 0 }, admission: { rejected: 0, exception: 0 }, persistence: { exception: 0 } });
@@ -891,868 +679,4 @@ test("observed equity title with در retains engine write identity and request 
       assert.equal(f.persisted.admissionDiagnostics.lastCycle["ن-۱۰"].capital_unverified, 1);
     }
   });
-});
-
-const stored = id => ({ id, symbol: "نمونه", company_name: "شرکت نمونه", title: "صورت‌های مالی سال مالی منتهی به 1404/12/29", report_code: "ن-۱۰",
-  link: `https://codal.ir/Reports/Decision.aspx?LetterSerial=serial${id}`,
-  link_excel: `https://excel.codal.ir/service/Excel/GetAll/serial${id}/0` });
-
-test('stored recovery admits reports even when provider search is locally deferred', async () => {
-  const f = await fixture({ announcementErrorCode: 'brs_transport_queue_full', storedRows: [stored(9)] });
-  await f.engine.runEngineCycle();
-  assert.equal(f.calls.pages.length, 1);
-  assert.equal(f.calls.reportWrites.length, 1);
-  assert.equal(f.engine.engineStatus.storedRecovery.inserted, 1);
-  assert.equal(f.engine.engineStatus.storedRecovery.reachedEnd, true);
-  assert.equal(f.persisted.storedFeedCursor, null);
-});
-
-test('stored recovery keeps six-download bound and resumes without rediscovery', async () => {
-  const f = await fixture({ storedRows: Array.from({length: 8}, (_, i) => stored(10-i)) });
-  await f.engine.runEngineCycle();
-  assert.equal(f.calls.excel.length, 6);
-  assert.equal(f.persisted.storedFeedCursor, '5');
-  await f.engine.runEngineCycle();
-  assert.equal(f.calls.excel.length, 8);
-  assert.equal(f.calls.pages.length, 2);
-  assert.equal(f.engine.engineStatus.storedRecovery.reachedEnd, true);
-});
-
-test('stored recovery save failure restores scan position for the next attempt', async () => {
-  const f = await fixture({ storedRows: [stored(9),stored(8),stored(7)], storedPageSize: 1, rejectSave: true });
-  await f.engine.runEngineCycle();
-  f.allowSave();
-  await f.engine.runEngineCycle();
-  assert.equal(f.calls.storedReads[2], null);
-  assert.equal(f.engine.engineStatus.storedRecovery.skippedKnown, 2);
-  assert.equal(f.calls.excel.length, 2);
-});
-
-test('invalid saved recovery cursor stops before any provider request', async () => {
-  const f = await fixture({ initialState: { fails: {}, storedFeedCursor: 'NaN' } });
-  await f.engine.runEngineCycle();
-  assert.equal(f.calls.pages.length, 0);
-  assert.equal(f.calls.storedReads.length, 0);
-  assert.match(f.engine.engineStatus.lastError, /cursor invalid/);
-});
-
-test('stored recovery skips confirmed and blocked rows without retrying downloads', async () => {
-  const known=stored(9), blocked=stored(8);
-  const f=await fixture({storedRows:[known,blocked], initialReports:[{source_url:known.link+"#pv2",symbol:known.symbol,data:{valid:true}}],
-    initialState:{watermark,fails:{[blocked.link]:3},decisionStatementV1Attempts:{[blocked.link]:1}}});
-  await f.engine.runEngineCycle();
-  assert.equal(f.engine.engineStatus.storedRecovery.skippedKnown,1);
-  assert.equal(f.engine.engineStatus.storedRecovery.blocked,1);
-  assert.equal(f.calls.excel.length,0);
-});
-
-test('stored report local deferral preserves cursor and does not charge a parse failure', async () => {
-  const f=await fixture({storedRows:[stored(9)],excelErrorCode:'brs_transport_aborted'});
-  await f.engine.runEngineCycle();
-  assert.equal(f.persisted.storedFeedCursor,null);
-  assert.deepEqual(f.persisted.fails,{});
-  assert.equal(f.engine.engineStatus.storedRecovery.parseFailed,0);
-  assert.deepEqual(f.engine.engineStatus.lastDeferral,{phase:'stored_report',reason:'local_transport'});
-  const restarted=await fixture({storedRows:[stored(9)],initialState:f.persisted});
-  await restarted.engine.runEngineCycle();
-  assert.equal(restarted.engine.engineStatus.storedRecovery.inserted,1);
-  assert.equal(restarted.calls.reportWrites.length,1);
-  assert.equal(restarted.calls.excel.length,1);
-});
-
-test('audited mixed adapter receives one persisted retry with old counts intact',async()=>{
- for(const audited of [true,false]){
-  const a={...financial(1),title:`صورت‌های مالی تلفیقی (${audited?'حسابرسی شده':'حسابرسی نشده'})`,link:'https://codal.ir/Reports/Decision.aspx?LetterSerial=audited-fixture'};
-  const options={pages:[[a,boundary],[]],excelHtml:'<table></table>',officialBody:'<html></html>'};
-  const f=await fixture({...options,initialState:{watermark,backfillCursor:0,fails:{[a.link]:5},decisionStatementV1Attempts:{[a.link]:1},interimStatementV1Attempts:{[a.link]:1}}});
-  await f.engine.runEngineCycle();assert.equal(f.calls.excel.length,audited?1:0);
-  assert.equal(f.persisted.fails[a.link],audited?6:5);
-  assert.equal(f.persisted.auditedStatementV1Attempts[a.link],audited?1:undefined);
-  const restarted=await fixture({...options,initialState:f.persisted});
-  await restarted.engine.runEngineCycle();assert.equal(restarted.calls.excel.length,0);
- }
-});
-test('malformed audited attempt ledger stops before any source traffic',async()=>{
- const f=await fixture({pages:[[]],initialState:{watermark,fails:{},auditedStatementV1Attempts:{bad:2}}});
- await f.engine.runEngineCycle();assert.equal(f.engine.engineStatus.ok,false);assert.equal(f.calls.pages.length,0);
-});
-
-test('stored recovery does not starve issuer reconciliation and both share the existing download cap', async () => {
-  const f = await fixture({ pages:[[]], storedRows:Array.from({length:8},(_,i)=>stored(30-i)),
-    backfillPages:Array.from({length:10},(_,i)=>financial(100+i)),
-    marketBody:[{payload:{stocks:[{id:'نمونه',value:0}]}}] });
-  await f.engine.runEngineCycle();
-  assert.equal(f.engine.engineStatus.storedRecovery.downloaded,6);
-  assert.deepEqual(f.engine.engineStatus.backfill.symbols,['نمونه']);
-  assert.equal(f.calls.excel.length,12);
-  assert.equal(f.engine.engineStatus.backfill.queueSize,1);
-});
-
-test('stable reconciliation advances across cycles without resetting its durable cursor', async () => {
-  const f=await fixture({pages:[[]],backfillPages:[],marketBody:[{payload:{stocks:[{id:'پ',value:10},{id:'ب',value:0},{id:'الف',value:1}]}}]});
-  await f.engine.runEngineCycle();
-  assert.deepEqual(f.engine.engineStatus.backfill.symbols,['الف','ب']);
-  assert.equal(f.persisted.backfillCursor,2);
-  await f.engine.runEngineCycle();
-  assert.deepEqual(f.engine.engineStatus.backfill.symbols,['پ','الف']);
-  assert.equal(f.persisted.backfillCursor,4);
-});
-
-test('overnight reconciliation inspects eight issuers without raising the existing download allocation', async () => {
-  const originalNow=Date.now;
-  process.env.RELAY_BACKGROUND_WINDOW_ENABLED='1';
-  Date.now=()=>Date.parse('2026-11-14T21:00:00+03:30');
-  try {
-    const symbols=['الف','ب','پ','ت','ث','ج','چ','حس'];
-    const f=await fixture({pages:[[]],backfillPages:[],marketBody:[{payload:{stocks:symbols.map(id=>({id,value:0}))}}]});
-    await f.engine.runEngineCycle();
-    assert.equal(f.engine.engineStatus.backfill.symbols.length,8);
-    assert.equal(f.engine.engineStatus.backfill.symbolLimit,8);
-    assert.equal(f.engine.engineStatus.backfill.workWindow,'overnight');
-    assert.equal(f.calls.excel.length,0);
-    assert.equal(f.persisted.backfillCursor,8);
-  } finally { Date.now=originalNow;process.env.RELAY_BACKGROUND_WINDOW_ENABLED='0'; }
-});
-
-test('archive retains a partially downloaded page and resumes its unprocessed reports',async()=>{
- const items=Array.from({length:16},(_,i)=>financial(200+i));
- const f=await fixture({marketBody:[{payload:{stocks:[{id:'نمونه',value:0}]}}]});
- codal.setCodalBudgetPorts({client:{request:async job=>({announcement:job.params.category==='1' && job.params.page==='1'?items:[]})}});
- const archive=await import(`./codal-archive.mjs?mock=${++scenario}`);
- await archive.runArchiveCycle();
- assert.equal(f.calls.excel.length,14);
- assert.equal(f.calls.archiveSaves.at(-1).perSymbol['نمونه'].p1,1);
- assert.equal(f.calls.archiveSaves.at(-1).perSymbol['نمونه'].done1,false);
- await archive.runArchiveCycle();
- assert.equal(f.calls.excel.length,16);
- assert.equal(f.calls.reportWrites.length,16);
- assert.equal(f.calls.archiveSaves.at(-1).perSymbol['نمونه'].done1,true);
-});
-test('archive rejection does not advance its page or claim a successful cycle',async()=>{
- const a=financial(300);
- const f=await fixture({marketBody:[{payload:{stocks:[{id:'نمونه',value:0}]}}],excelHtml:industrial({period:'1404/12/29',months:12,prior:false,unit:''})});
- codal.setCodalBudgetPorts({client:{request:async job=>({announcement:job.params.category==='1' && job.params.page==='1'?[a]:[]})}});
- const archive=await import(`./codal-archive.mjs?mock=${++scenario}`);
- await archive.runArchiveCycle();
- assert.equal(archive.archiveStatus.ok,false);
- assert.equal(archive.archiveStatus.lastCycle.parseFailed,1);
- assert.equal(f.calls.archiveSaves.at(-1).perSymbol['نمونه'].p1,1);
- assert.equal(f.calls.reportWrites.length,0);
-});
-
-test('a budget stop on page two saves verified announcement metadata without advancing checkpoints', async () => {
- const a=financial(2);
- const f=await fixture({pages:[[a]],deferBudgetOnPage:2});
- await f.engine.runEngineCycle({allowBackground:false});
- assert.deepEqual(f.calls.pages,[1,2]);
- assert.deepEqual(f.calls.feedWrites[0].rows.map(row=>row.link),[a.link]);
- assert.equal(f.calls.excel.length,0);
- assert.deepEqual(f.persisted.watermark,watermark);
- assert.equal(f.persisted.metadataWatermark,undefined);
- assert.equal(f.engine.engineStatus.feed.incompleteReason,'local_deferred');
- assert.deepEqual(f.persisted.fails,{});
-});
-
-test('monthly-only cycle keeps public announcements and recovers a verified month within the fast cadence', async () => {
- const old = stored(10);
- const month = { ...stored(9), symbol:'فولاد', title:'گزارش فعالیت ماهانه منتهی به 1405/06/31', report_code:'ن-۳۰', category:'ماهانه' };
- const html = readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
- const f = await fixture({ pages:[[financial(2),boundary],[]],
-   initialState:{watermark,fails:{},storedFeedCursor:'2'},
-   storedRows:[{...old,category:'صورت مالی'},month], excelHtml:html });
- await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true});
- assert.equal(f.engine.engineStatus.reportScope,'monthly_only');
- assert.equal(f.calls.feedWrites[0].rows[0].category,'صورت مالی');
- assert.ok(f.calls.storedCategories.every(category=>category==='eq.ماهانه'));
- assert.deepEqual(f.calls.excel,['/service/Excel/GetAll/serial9/0']);
- assert.equal(f.calls.reportWrites.length,1);
- const inserted=f.calls.reportWrites[0][0];
- assert.equal(inserted.report_kind,'ن-۳۰');
- assert.equal(inserted.data.period_end,'1405-06-31');
- assert.equal(inserted.data.unit,'میلیون ریال');
- assert.ok(inserted.data.period_total_amount>0);
- assert.equal(f.persisted.storedFeedCursor,'2');
-});
-
-test('monthly discovery retains valid rows beyond an out-of-order boundary and holds the checkpoint', async () => {
-  const first = announcement(5);
-  const older = { ...announcement(1), date_send: "1405/06/30" };
-  const reordered = announcement(6);
-  const broken = { ...announcement(7), date_send: "bad" };
-  const fromNextPage = announcement(4);
-  const f = await fixture({pages:[[first, older, reordered, broken, reordered],[fromNextPage],[]]});
-  await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true});
-  assert.deepEqual(f.calls.feedWrites[0].rows.map(row=>row.link), [first.link,reordered.link,fromNextPage.link]);
-  assert.deepEqual(f.persisted.watermark,watermark);
-  assert.equal(f.engine.engineStatus.feed.incompleteReason,"invalid_order_or_identity");
-});
-
-test('monthly bank profile can retry pre-adapter rejects and verifies publisher table, unit and period', async () => {
-  const bankReport = {
-    ...stored(9), symbol:"وبملت", title:"گزارش فعالیت ماهانه دوره ۱ ماهه منتهی به ۱۴۰۵/۰۷/۳۰",
-    report_code:"ن-۳۰", category:"ماهانه",
-    link:"https://codal.ir/Reports/Decision.aspx?LetterSerial=serial9&rt=3&let=58",
-  };
-  const header=["شرح","ابتدای سال","اصلاحات","اصلاح شده",
-    "درآمد محقق شده طی دوره یک ماهه منتهی به ۱۴۰۵/۰۷/۳۰",
-    "جمع درآمد محقق شده از ابتدای سال مالی تا پایان ۱۴۰۵/۰۷/۳۰"];
-  const items=[
-    ["درآمد تسهیلات اعطایی",1816866984,0,1816866984,311887001,2128753985],
-    ["درآمد سپرده گذاری",185495292,0,185495292,17451513,202946805],
-    ["درآمد اوراق بدهی",137910183,0,137910183,24244406,162154589],
-    ["درآمد سرمایه گذاری ها",558091,0,558091,10001216,10559307],
-    ["درامد کارمزد",352564391,0,352564391,62474312,415038703],
-  ];
-  const table=[header,...items].map(row=>`<tr>${row.map(value=>`<td>${value}</td>`).join("")}</tr>`).join("");
-  const excelHtml=`<div>کلیه مبالغ به میلیون ریال است</div><app-table><table>${table}</table></app-table>`;
-  const meta={symbol:bankReport.symbol,period_months:1,period_end:"1405-07-30"};
-  assert.equal(codal.normalizeSectorN30(excelHtml.replace("میلیون ریال","هزار ریال"),meta,"bank_reported_income"),null);
-  assert.equal(codal.normalizeSectorN30(excelHtml,{...meta,period_end:"1405-06-31"},"bank_reported_income"),null);
-  const f=await fixture({excelHtml,storedRows:[bankReport],exactWorkbookResponse:true,
-    initialState:{watermark,fails:{[bankReport.link]:3}}});
-  await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true});
-  const report=f.calls.reportWrites[0]?.[0];
-  assert.equal(report?.data.monthly_measure,"bank_reported_income");
-  assert.equal(report.data.period_total_amount,426058448);
-  assert.deepEqual(report.data.products,[]);
-  assert.equal(f.persisted.fails[bankReport.link],undefined);
-});
-
-test('an industrial report blocked before the parser update receives one bounded automatic reattempt', async () => {
- const a={...stored(9),symbol:"فولاد",title:"گزارش فعالیت ماهانه منتهی به 1405/06/31",report_code:"ن-۳۰",category:"ماهانه",
-   link:"https://codal.ir/Reports/Decision.aspx?LetterSerial=serial9&rt=0&let=58"};
- const failKey=`monthly-industrial-v1:${a.link}`;
- const initialState={watermark,fails:{[a.link]:3}};
- const base={pages:[[]],storedRows:[a],initialState,exactWorkbookResponse:true};
- const accepted=await fixture({...base,excelHtml:readFileSync(new URL("./fixtures/folad-n30-primary.html",import.meta.url),"utf8")});
- await accepted.engine.runEngineCycle({monthlyOnly:true,allowBackground:false});
- assert.equal(accepted.engine.engineStatus.storedRecovery.inserted,1);
- assert.equal(accepted.persisted.fails[a.link],undefined);
- const rejected=await fixture({...base,excelHtml:"<p>No table</p>"});
- await rejected.engine.runEngineCycle({monthlyOnly:true,allowBackground:false});
- assert.equal(rejected.calls.excel.length,1);
- assert.equal(rejected.persisted.fails[a.link],4);
- assert.equal(rejected.persisted.fails[failKey],1);
- const next=await fixture({...base,initialState:rejected.persisted,excelHtml:"<p>No table</p>"});
- await next.engine.runEngineCycle({monthlyOnly:true,allowBackground:false});
- assert.equal(next.calls.excel.length,0);
- assert.equal(next.engine.engineStatus.storedRecovery.blocked,1);
-});
-
-test('insurance monthly admission checks published totals and reads premium apart from paid claims', () => {
-  const date="۱۴۰۵/۰۷/۳۰";
-  const top=["شرح","ابتدای سال","اصلاحات","اصلاح شده",`دوره یک ماهه منتهی به ${date}`,`از ابتدای سال مالی تا پایان مورخ ${date}`];
-  const groups=Array.from({length:5},()=>["حق بیمه صادره (شامل قبولی اتکایی)","خسارت پرداختی"]).flat();
-  const units=Array(19).fill("مبلغ (میلیون ریال)");
-  units[0]="رشته بیمه ای";
-  const values=[71325758,100,55306523,100,0,0,71325758,100,55306523,100,15463740,100,12955444,100,86789498,100,68261967,100];
-  const total=["جمع",...values];
-  const report=rows=>`<div>کلیه مبالغ درج شده به میلیون ریال می باشد.</div><app-table><table>${rows.map(row=>`<tr>${row.map(value=>`<td>${value}</td>`).join("")}</tr>`).join("")}</table></app-table>`;
-  const body=[top,groups,units,["زندگی",...values],total];
-  const meta={symbol:"بخاور",period_months:1,period_end:"1405-07-30"};
-  const d=codal.normalizeSectorN30(report(body),meta,"issued_premium");
-  assert.equal(d?.period_total_amount,15463740);
-  assert.equal(d?.fy_cumulative_amount,86789498);
-  total[11]+=2;
-  assert.equal(codal.normalizeSectorN30(report(body),meta,"issued_premium"),null);
-});
-
-test('service and leasing monthly income verify the source period, adjustments and published totals', () => {
- const date="۱۴۰۵/۰۷/۳۰";
- const caption="کلیه مبالغ درج شده به میلیون ریال می باشد";
- const report=rows=>`<div>${caption}</div><app-table><table>${rows.map(row=>`<tr>${row.map(value=>`<td>${value}</td>`).join("")}</tr>`).join("")}</table></app-table>`;
- const service=[["شرح خدمات یا فروش","قرارد دادها","درآمد شناسایی شده","توضیحات"],
-   ["تاریخ عقد قرارداد","مدت قرارداد (ماه)","تا ماه قبل","اصلاحات","اصلاح شده",
-     `درآمد شناساسی شده طی دوره یک ماهه منتهی به ${date}`,
-     `درآمد شناساسی شده از اول سال مالی تا پایان دوره مالی منتهی به ${date}`,"دوره قبل"],
-   ["درآمد خدمات","1404/01/01","2","105","(5)","100","7","107","80",""],
-   ["جمع","","0","105","(5)","100","7","107","80",""]];
- const leasing=[["شرح","تا ماه قبل","اصلاحات","اصلاح شده",
-   `درآمد محقق شده طی دوره یک ماهه منتهی به ${date}`,
-   `جمع درآمد محقق شده از ابتدای سال مالی تا پایان مورخ ${date}`],
-   ["سود اقساط مربوط به قراردادهای سال جاری","80","0","80","0","80"],
-   ["سایر درآمد حاصل از عملیات لیزینگ","20","0","20","0","20"],
-   ["جمع","100","0","100","0","100"]];
- const meta={symbol:"نمونه",period_months:1,period_end:"1405-07-30"};
- for (const [profile, body, current, cumulative] of [
-   ["service_recognized_income",service,7,107],
-   ["leasing_reported_income",leasing,0,100],
- ]) {
-   const source=report(body);
-   const data=codal.normalizeSectorN30(source,meta,profile);
-   assert.equal(data?.period_total_amount,current);
-   assert.equal(data.fy_cumulative_amount,cumulative);
-   assert.equal(data.monthly_measure,profile);
-   assert.deepEqual(data.products,[]);
-   assert.equal(codal.normalizeSectorN30(source,{...meta,period_end:"1405-06-31"},profile),null);
-   assert.equal(codal.normalizeSectorN30(source.replace("میلیون ریال","هزار ریال"),meta,profile),null);
-   const badTotal=structuredClone(body);
-   badTotal.at(-1)[profile==="service_recognized_income"?6:4]="";
-   assert.equal(codal.normalizeSectorN30(report(badTotal),meta,profile),null);
-   const inconsistent=structuredClone(body);
-   inconsistent.at(-1)[profile==="service_recognized_income"?7:5]="12345";
-   assert.equal(codal.normalizeSectorN30(report(inconsistent),meta,profile),null);
- }
-});
-
-test('real estate monthly totals require a reconciled view and matching duplicated headlines', () => {
- const date="۱۴۰۵/۰۷/۳۰";
- const month=`درآمد محقق شده طي دوره يک ماهه منتهي به ${date}`;
- const year=`جمع درآمد محقق شده از ابتداي سال مالي تا ${date}`;
- const ready="فروش واحد هاي ساختماني آماده فروش";
- const progress="فروش واحد هاي ساختماني در جريان ساخت";
- const html=rows=>`<div class="table-description">کليه مبالغ به ميليون ريال است</div><app-table><table>${rows.map(row=>`<tr>${row.map(value=>`<td>${value}</td>`).join("")}</tr>`).join("")}</table></app-table>`;
- const meta={symbol:"نمونه",period_months:1,period_end:"1405-07-30"};
- const profile="real_estate_recognized_income";
- const plain=[["شرح",month,year],[ready,100,200],[progress,50,70],["جمع",150,270]];
- assert.equal(codal.normalizeSectorN30(html(plain),meta,profile)?.period_total_amount,150);
- const double = [
-   ["شرح","قبل","اصلاحات","اصلاح‌شده",month,year],
-   [ready,100,0,100,100,200], [progress,20,0,20,50,70], ["جمع",120,0,120,150,270],
- ].map(row=>row.flatMap(value=>[value,value]));
- // One rendered view drops a value. The other sums to the same declared total.
- double[1][8]=0;
- assert.equal(codal.normalizeSectorN30(html(double),meta,profile)?.fy_cumulative_amount,270);
- double.at(-1)[8]=80;
- assert.equal(codal.normalizeSectorN30(html(double),meta,profile),null);
- double.at(-1)[8]=150;
- double[1][9]=0;
- assert.equal(codal.normalizeSectorN30(html(double),meta,profile),null);
- assert.equal(codal.normalizeSectorN30(html(plain),{...meta,period_end:"1405-06-31"},profile),null);
-});
-
-test('monthly decision admission binds the publisher identity, period and explicit financing service total', async () => {
- const date='1405/07/30';
- const title='گزارش فعالیت ماهانه';
- const report={
-  ...stored(23),category:'ماهانه',symbol:'لوتوس',report_code:'ن-۳۰',
-  title:`${title} دوره ۱ ماهه منتهی به ${date}`,
-  link:'https://codal.ir/Reports/Decision.aspx?LetterSerial=serial23&rt=9&let=58',
- };
- const values=[
-  ['شرح','از ابتدای دوره','اصلاحات','اصلاح شده',`درآمد محقق شده طی دوره یک ماهه منتهی به ${date}`,
-   `جمع درآمد محقق شده از ابتدای سال مالی تا پایان ${date}`,'سال قبل','توضیحات'],
-  ['درآمد تعهد پذیره نویسی',60,-5,55,6,61,0,''],
-  ['درآمد بازارگردانی',30,0,30,8,38,0,''],
-  ['جمع',90,-5,85,14,99,0,''],
- ];
- const code=2162,sheetCode=1000009;
- const cells=values.flatMap((row,r)=>row.map((value,c)=>({
-  address:String.fromCharCode(65+c)+(r+1),rowSequence:r+1,columnSequence:c+1,isVisible:true,
-  value,metaTableId:code,metaTableCode:code,
- })));
- const payload={type:58,period:1,periodEndToDate:date,isConsolidated:false,tracingNo:42,
-  sheets:[{code:sheetCode,aliasName:'MonthlyActivity',tables:[{code,metaTableId:code,sheetCode,
-   aliasName:'RevenuesServiceDeliveryRealized',description:'کلیه مبالغ به میلیون ریال است',cells}]}]};
- const publisher=(data=payload,symbols=`<span id="ctl00_lblDisplaySymbol">${report.symbol}</span>`)=>`<form id="aspnetForm" action="./MonthlyActivity.aspx?LetterSerial=serial23">
-  <span id="ctl00_lblReportName">${title}</span>${symbols}
-  <span id="ctl00_lblPeriod">1 ماهه</span><span id="ctl00_lblPeriodEndToDate">${date}</span>
-  <script>var datasource = ${JSON.stringify(data)};</script></form>`;
- const alternate=`<span id="ctl00_lblDisplaySymbol"></span><span id="ctl00_txbSymbol">${report.symbol}</span>`;
- const failureKey=`monthly-sector-v1:${report.link}`;
- const retryKey=`monthly-decision-symbol-v1:${report.link}`;
- const f=await fixture({storedRows:[report],pages:[[]],monthlyDecision:{html:publisher(payload,alternate)},
-  initialState:{watermark,fails:{[failureKey]:3}}});
- await f.engine.runEngineCycle({monthlyOnly:true,allowBackground:false});
- const result=f.calls.reportWrites[0][0].data;
- assert.equal(result.monthly_measure,'financing_service_income');
- assert.equal(result.period_total_amount,14);
- assert.equal(result.fy_cumulative_amount,99);
- assert.equal(result.monthly_source.table_code,2162);
- assert.match(result.monthly_source.sha256,/^[0-9a-f]{64}$/);
- assert.deepEqual(f.calls.excel,['monthly-view']);
- assert.equal(f.persisted.fails[failureKey],undefined);
- const forged=structuredClone(payload);
- forged.sheets[0].tables[0].cells.push(forged.sheets[0].tables[0].cells.at(-3));
- await fixture({monthlyDecision:{html:publisher(forged)}});
- assert.equal(await codal.downloadAndParse({
-  ...report,l18:report.symbol,code:report.report_code,link_excel:report.link_excel,
- },'ن-۳۰'),null);
- const conflict=alternate.replace('ctl00_lblDisplaySymbol"></span>','ctl00_lblDisplaySymbol">نماد دیگر</span>');
- const mismatch=await fixture({storedRows:[report],pages:[[]],monthlyDecision:{html:publisher(payload,conflict)},
-  initialState:{watermark,fails:{[failureKey]:3}}});
- await mismatch.engine.runEngineCycle({monthlyOnly:true,allowBackground:false});
- assert.equal(mismatch.calls.reportWrites.length,0);
- assert.equal(mismatch.persisted.fails[retryKey],1);
- await mismatch.engine.runEngineCycle({monthlyOnly:true,allowBackground:false});
- await mismatch.engine.runEngineCycle({monthlyOnly:true,allowBackground:false});
- assert.deepEqual(mismatch.calls.excel,['monthly-view']);
- const bad=await fixture({monthlyDecision:{html:publisher(),redirectSerial:'another-report'}});
- await assert.rejects(codal.downloadAndParse({
-  ...report,l18:report.symbol,code:report.report_code,link_excel:report.link_excel,
- },'ن-۳۰'),/redirect_unsupported/);
- assert.deepEqual(bad.calls.excel,[]);
-});
-
-test('monthly discovery can advance past a rejected workbook once the announcement is durable', async () => {
- const a=announcement(2,{code:'ن-۳۰',title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',link_excel:'https://excel.invalid/2'});
- const f=await fixture({pages:[[a,boundary],[]],excelHtml:'<p>Unsupported worksheet</p>'});
- await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true});
- assert.equal(f.engine.engineStatus.ok,false);
- assert.equal(f.engine.engineStatus.feed.incompleteReason,'report_failure');
- assert.equal(f.calls.feedWrites[0].rows[0].link,a.link);
- assert.equal(f.calls.reportWrites.length,0);
- assert.equal(f.persisted.watermark.key,14050701000002);
- assert.equal(f.persisted.fails[a.link],1);
-});
-
-test('monthly background and archive allocation do not request the financial category', async () => {
- const f=await fixture({pages:[[]],backfillPages:[],marketBody:[{payload:{stocks:[{id:'نمونه'}]}}]});
- await f.engine.runEngineCycle({monthlyOnly:true});
- const archive=await import(`./codal-archive.mjs?mock=${++scenario}`);
- await archive.runArchiveCycle({monthlyOnly:true});
- assert.equal(archive.archiveStatus.reportScope,'monthly_only');
- assert.deepEqual(f.calls.announcementCategories,[null,'3','3']);
-});
-
-test('saturated monthly feed preserves recovery progress and durable deferred notices within the total cap', async t => {
- t.mock.method(Date,'now',()=>Date.parse('2026-11-15T16:30:00Z'));
- const month=(id,publish_date)=>({...stored(id),symbol:'فولاد',title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',
-   report_code:'ن-۳۰',category:'ماهانه',publish_date});
- const fresh=base=>Array.from({length:10},(_,i)=>{
-   const row=month(base-i,'۱۴۰۵/۰۸/۲۴');
-   return announcement(base-i,{l18:row.symbol,l30:row.company_name,title:row.title,code:row.report_code,
-     link:row.link,link_excel:row.link_excel,date_publish:row.publish_date});
- });
- const first=fresh(110),second=fresh(210);
- const options={pages:[[...first,boundary],[]],persistFeedRows:true,
-   storedRows:[month(90,'۱۴۰۵/۰۸/۲۴'),month(89,'۱۴۰۵/۰۸/۲۴'),month(70,'۱۴۰۵/۰۶/۳۱'),month(69,'۱۴۰۵/۰۶/۳۱')],
-   initialState:{watermark,fails:{},recentMonthlyRecoveryCursor:'91',monthlyRecoveryCursor:'71'},
-   excelHtml:readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8')};
- const f=await fixture(options);
- const run={monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true};
- await f.engine.runEngineCycle(run);
- assert.equal(f.engine.engineStatus.feed.downloaded,7);
- assert.equal(f.engine.engineStatus.feed.complete,false);
- assert.equal(f.engine.engineStatus.feed.incompleteReason,'download_limit');
- assert.equal(f.calls.excel.length,10);
- assert.equal(f.persisted.recentMonthlyRecoveryCursor,'90');
- assert.equal(f.persisted.monthlyRecoveryCursor,'70');
- assert.equal(f.calls.feedWrites[0].rows.filter(r=>first.some(a=>a.link===r.link)).length,10);
- assert.equal(f.persisted.watermark.key,14050701000150);
- options.pages=[[...second,first[0],boundary],[]];
- await f.engine.runEngineCycle(run);
- assert.equal(f.engine.engineStatus.feed.downloaded,7);
- assert.equal(f.engine.engineStatus.feed.complete,false);
- assert.equal(f.calls.excel.length,20);
- assert.equal(f.persisted.recentMonthlyRecoveryCursor,null,'recent sweep reached the end');
- assert.equal(f.persisted.monthlyRecoveryCursor,null,'historical sweep reached the end');
- for(const id of [89,69])assert.ok(f.calls.reportWrites.flat().some(r=>r.source_url===month(id,'').link+'#pv2'));
- // A discovery checkpoint may advance after durable metadata. Deferred files
- // must still be recovered from that ledger after the burst has ended.
- options.pages=[[]];
- await f.engine.runEngineCycle(run);
- await f.engine.runEngineCycle(run);
- const written=new Set(f.calls.reportWrites.flat().map(r=>r.source_url));
- for(const a of [...first,...second])assert.ok(written.has(a.link+'#pv2'));
- assert.equal(f.calls.excel.length,new Set(f.calls.excel).size,'no successful workbook downloaded twice');
-});
-
-test('feed allocation reserves recovery in mixed mode and is unchanged outside recent monthly recovery', async () => {
- const entries=Array.from({length:10},(_,i)=>announcement(20-i,{code:'ن-۳۰',
-   title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',link_excel:`https://excel.invalid/${20-i}`}));
- const excelHtml=readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
- for(const [run,expected] of [[{monthlyOnly:true},10],[{prioritizeRecentMonthly:true},10],
-   [{monthlyOnly:true,prioritizeRecentMonthly:true,recentInterimReports:true},5]]){
-   const f=await fixture({pages:[[...entries,boundary],[]],excelHtml,marketBody:[{payload:{stocks:[{id:'نمونه'}]}}]});
-   await f.engine.runEngineCycle({...run,allowBackground:false});
-   assert.equal(f.engine.engineStatus.feed.downloaded,expected);
-   assert.equal(f.calls.excel.length,expected);
-   assert.equal(f.engine.engineStatus.feed.complete,expected===10);
- }
-});
-
-test('opted-in mixed cycles recover recent monthly and interim reports during a saturated monthly feed', async t => {
- t.mock.method(Date,'now',()=>Date.parse('2026-11-15T15:30:00Z'));
- const prior=process.env.CODAL_RECENT_INTERIM_ENABLED;
- process.env.CODAL_RECENT_INTERIM_ENABLED='1';
- try {
-  const monthlyHtml=readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
-  const feed=Array.from({length:10},(_,i)=>announcement(100-i,{code:'ن-۳۰',l18:'فولاد',
-   title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',date_send:'1405/08/24',link_excel:`https://excel.invalid/${100-i}`}));
-  const month=id=>({...stored(id),symbol:'فولاد',category:'ماهانه',report_code:'ن-۳۰',publish_date:'1405/08/24',
-   title:'گزارش فعالیت ماهانه منتهی به 1405/06/31'});
-  const interim=id=>({...stored(id),category:'صورت مالی',sent_date:'1405/08/24',
-   title:'اطلاعات و صورت‌های مالی دوره ۶ ماهه منتهی به ۱۴۰۵/۰۶/۳۱'});
-  const f=await fixture({pages:[[...feed,boundary],[]],storedRows:[month(30),month(29),month(28),interim(20),interim(19)],
-   marketBody:[{payload:{stocks:[{id:'فولاد'},{id:'نمونه'}]}}],excelHtml:monthlyHtml,
-   excelBodies:Object.fromEntries([20,19].map(id=>[`/service/Excel/GetAll/serial${id}/0`,industrial({period:'1405/06/31',months:6,prior:false})])),
-   initialState:{watermark,fails:{}}});
-  await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true,prioritizeRecentMonthly:true});
-  assert.equal(f.engine.engineStatus.reportScope,'monthly_and_recent_interim');
-  assert.equal(f.engine.engineStatus.feed.downloaded,5);
-  assert.equal(f.engine.engineStatus.interimRecovery.inserted,2);
-  assert.ok(f.engine.engineStatus.recentMonthlyRecovery.inserted>=2);
-  assert.equal(f.calls.excel.length,10,'all families share the same existing file allocation');
-  assert.ok(f.calls.reportWrites.flat().some(row=>row.report_kind==='ن-۱۰'));
-  assert.ok(f.calls.reportWrites.flat().some(row=>row.report_kind==='ن-۳۰'));
-  assert.equal(f.calls.feedWrites[0].rows.length,10,'deferred feed metadata remains durable');
- } finally { if(prior===undefined)delete process.env.CODAL_RECENT_INTERIM_ENABLED;else process.env.CODAL_RECENT_INTERIM_ENABLED=prior; }
-});
-
-test('scheduled stored interim rejection records the official serial without weakening admission or changing persisted diagnostics',async t=>{
- t.mock.method(Date,'now',()=>Date.parse('2026-11-15T15:30:00Z'));
- const a={...stored(20),category:'صورت مالی',sent_date:'1405/08/24',
-  title:'اطلاعات و صورت‌های مالی دوره ۶ ماهه منتهی به ۱۴۰۵/۰۶/۳۱'};
- const f=await fixture({pages:[[]],storedRows:[a],officialBody:'<html></html>',
-  marketBody:[{payload:{stocks:[{id:'نمونه'}]}}],
-  excelHtml:industrial({period:'1405/06/31',months:6,prior:false,scope:''})});
- await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true,prioritizeRecentMonthly:true,recentInterimReports:true});
- const state=f.engine.engineStatus;
- assert.equal(state.feed.interimDownloads,0);
- assert.equal(state.interimRecovery.downloaded,1);
- assert.equal(state.interimRecovery.parseFailed,1);
- assert.equal(state.interimRecovery.inserted,0);
- assert.equal(f.calls.reportWrites.length,0);
- assert.equal(f.persisted.fails[a.link],1);
- assert.equal(f.persisted.admissionDiagnostics.lastCycle['ن-۱۰'].scope_unknown,1);
- assert.equal(f.persisted.admissionDiagnostics.totals['ن-۱۰'].scope_unknown,1);
- assert.deepEqual(state.lastRejectedFilings,[{serial:'serial20',kind:'ن-۱۰',reason:'scope_unknown'}]);
- assert.equal(f.persisted.lastRejectedFilings,undefined);
-});
-
-test('recent interim environment opt-in rejects ambiguous values and respects explicit false', async t => {
- t.mock.method(Date,'now',()=>Date.parse('2026-11-15T15:30:00Z'));
- const prior=process.env.CODAL_RECENT_INTERIM_ENABLED;
- try {
-  for(const [value,override] of [[undefined,{}],['0',{}],['true',{}],['1',{recentInterimReports:false}]]){
-   if(value===undefined)delete process.env.CODAL_RECENT_INTERIM_ENABLED;else process.env.CODAL_RECENT_INTERIM_ENABLED=value;
-   const f=await fixture({pages:[[{...financial(9),date_send:'1405/08/24',title:'صورت‌های مالی دوره ۶ ماهه منتهی به ۱۴۰۵/۰۶/۳۱'},boundary],[]]});
-   await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true,prioritizeRecentMonthly:true,...override});
-   assert.equal(f.engine.engineStatus.reportScope,'monthly_only');
-   assert.deepEqual(f.calls.excel,[]);
-  }
- } finally { if(prior===undefined)delete process.env.CODAL_RECENT_INTERIM_ENABLED;else process.env.CODAL_RECENT_INTERIM_ENABLED=prior; }
-});
-
-test('recent monthly recovery uses the verified publication date and shares the previous workbook cap', async t => {
- t.mock.method(Date,'now',()=>Date.parse("2026-11-15T16:30:00Z"));
- const month=(id,publish_date)=>({...stored(id),symbol:'فولاد',title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',
-   report_code:'ن-۳۰',category:'ماهانه',publish_date});
- const recent=Array.from({length:8},(_,i)=>month(40-i,"۱۴۰۵/۰۸/۲۴"));
- const old=Array.from({length:9},(_,i)=>month(30-i,"۱۴۰۵/۰۶/۳۱"));
- const excelHtml=readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
- const f=await fixture({pages:[[]],storedRows:[month(41,"۱۴۰۵/۰۸/۲۵"),...recent,...old],
-   initialState:{watermark,fails:{},monthlyRecoveryCursor:'31'},excelHtml});
- await f.engine.runEngineCycle({monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true});
- assert.deepEqual(f.calls.excel,[40,39,38,37,36,35,34,30].map(id=>`/service/Excel/GetAll/serial${id}/0`));
- assert.equal(f.calls.pages.length,1);
- assert.equal(f.engine.engineStatus.recentMonthlyRecovery.inserted,7);
- assert.equal(f.engine.engineStatus.recentMonthlyRecovery.metadataSkipped,1);
- assert.equal(f.persisted.recentMonthlyRecoveryCursor,'34');
- assert.equal(f.persisted.monthlyRecoveryCursor,'30');
- const fallback=await fixture({pages:[[]],storedRows:old,initialState:{watermark,fails:{},monthlyRecoveryCursor:'31'},
-   excelHtml,rejectMonthlyPublicationRead:true});
- await fallback.engine.runEngineCycle({monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true});
- assert.equal(fallback.engine.engineStatus.recentMonthlyRecovery.readFailed,true);
- assert.equal(fallback.engine.engineStatus.storedRecovery.inserted,8);
- assert.equal(fallback.calls.excel.length,8);
-});
-
-test('recent monthly recovery serves the head and resumes the saved sweep without a new notice', async t => {
- t.mock.method(Date,'now',()=>Date.parse('2026-11-15T16:30:00Z'));
- const month=(id,publish_date)=>({...stored(id),symbol:'فولاد',title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',
-   report_code:'ن-۳۰',category:'ماهانه',publish_date});
- const recent=[50,49,37,36,35,34,33,32,31,30].map(id=>month(id,'۱۴۰۵/۰۸/۲۴'));
- const older=[25,24].map(id=>month(id,'۱۴۰۵/۰۶/۳۱'));
- const excelHtml=readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
- const options={pages:[[]],storedRows:[...recent,...older],excelHtml,
-  initialState:{watermark,fails:{},recentMonthlyRecoveryCursor:'38',monthlyRecoveryCursor:'26'}};
- const run={monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true};
- const f=await fixture(options);
- await f.engine.runEngineCycle(run);
- assert.deepEqual(f.calls.excel,[50,37,36,35,34,33,32,25].map(id=>`/service/Excel/GetAll/serial${id}/0`));
- assert.deepEqual(f.calls.storedPageSizes,[20,100,100]);
- assert.equal(f.engine.engineStatus.recentMonthlyRecovery.inserted,7);
- assert.equal(f.persisted.recentMonthlyRecoveryCursor,'32');
- assert.equal(f.persisted.monthlyRecoveryCursor,'25');
- const noHead=await fixture({...options,rejectMonthlyHeadRead:true});
- await noHead.engine.runEngineCycle(run);
- assert.equal(noHead.engine.engineStatus.recentMonthlyRecovery.readFailed,true);
- assert.deepEqual(noHead.calls.excel,[37,36,35,34,33,32,31,25].map(id=>`/service/Excel/GetAll/serial${id}/0`));
- assert.equal(noHead.persisted.recentMonthlyRecoveryCursor,'31');
-});
-
-test('recovery replays one previously rejected monthly file per corrected reader without rewinding the sweep',async t=>{
- t.mock.method(Date,'now',()=>Date.parse('2026-11-15T16:30:00Z'));
- const month=(id,fields={})=>({...stored(id),symbol:'فولاد',title:'گزارش فعالیت ماهانه منتهی به 1405/06/31',
-  report_code:'ن-۳۰',category:'ماهانه',publish_date:'۱۴۰۵/۰۸/۲۴',...fields});
- const report=(id)=>month(id,{link:`https://codal.ir/Reports/Decision.aspx?LetterSerial=serial${id}&let=58&rt=0`});
- const repaired=report(70),rejected=report(69);
- const marker=`monthly-industrial-v1:${rejected.link}`;
- const excelPath=id=>`/service/Excel/GetAll/serial${id}/0`;
- const storedRows=[month(80),month(79),month(78),repaired,rejected,
-  ...Array.from({length:16},(_,i)=>month(37-i)),...Array.from({length:5},(_,i)=>month(20-i,{publish_date:'۱۴۰۵/۰۶/۳۱'}))];
- const excelHtml=readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
- const f=await fixture({pages:[[]],storedRows,excelHtml,exactWorkbookResponse:true,excelBodies:{[excelPath(69)]:'<h1>Unsupported</h1>'},
-  initialState:{watermark,recentMonthlyRecoveryCursor:'38',monthlyRecoveryCursor:'21',fails:{[repaired.link]:1,[rejected.link]:1}}});
- const run={monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true};
- await f.engine.runEngineCycle(run);
- assert.deepEqual(f.calls.excel,[80,70,37,36,35,34,33,20].map(excelPath));
- assert.equal(f.persisted.recentMonthlyRecoveryCursor,'33');
- assert.equal(f.persisted.fails[repaired.link],undefined);
- await f.engine.runEngineCycle(run);
- assert.deepEqual(f.calls.excel.slice(8),[79,69,32,31,30,29,28,19].map(excelPath));
- assert.equal(f.persisted.fails[rejected.link],2);
- assert.equal(f.persisted.fails[marker],1);
- await f.engine.runEngineCycle(run);
- assert.equal(f.calls.excel.filter(path=>path===excelPath(69)).length,1);
- // The corrected decision reader uses an existing recovery slot instead of
- // rerequesting the rejected workbook or adding an extra file to the cycle.
- assert.deepEqual(f.calls.excel.slice(16),[78,27,26,25,24,23,18].map(excelPath));
- const decisionMarker='monthly-industrial-decision-v1:'+rejected.link;
- assert.equal(f.persisted.fails[decisionMarker],1);
- const failures=f.persisted.fails[rejected.link];
- await f.engine.runEngineCycle(run);
- assert.equal(f.persisted.fails[rejected.link],failures);
-});
-
-test('official monthly reconciliation fills a missing listed report through the existing recovery, preserving page and download bounds',async t=>{
- t.mock.method(Date,'now',()=>Date.parse("2026-11-15T16:30:00Z"));
- const title="گزارش فعالیت ماهانه منتهی به 1405/06/31";
- const official=(id,changes={})=>({TracingNo:id,Symbol:"فولاد",Title:title,CompanyName:"فولاد مبارکه",LetterCode:"ن-۳۰",
-  Url:`/Reports/Decision.aspx?LetterSerial=official${id}&rt=0&let=58`,
-  ExcelUrl:`https://excel.codal.ir/service/Excel/GetAll/official${id}/0`,
-  SentDateTime:"1405/08/24 10:00:00",PublishDateTime:"1405/08/24 11:00:00",...changes});
- const expected=[official(3),official(2)];
- const excelHtml=readFileSync(new URL('./fixtures/folad-n30-primary.html',import.meta.url),'utf8');
- const f=await fixture({pages:[[]],marketBody:[{payload:{stocks:[{id:"فولاد"}]}}],excelHtml,exactWorkbookResponse:true,
-   initialState:{watermark,fails:{},officialMonthlyNextPage:5,recentMonthlyRecoveryCursor:"10"},
-   monthlyOfficialPages:{
-     1:[expected[0],official(4,{Symbol:"خارج بازار"}),official(5,{LetterCode:"ن-۱۰"}),official(6,{ExcelUrl:null,Url:"/Reports/Decision.aspx?LetterSerial=official6&rt=77&let=58"})],
-     5:[expected[1]],
-    ...Object.fromEntries([6,7,8,9,10,11].map(page=>[page,[official(20+page,{Symbol:'خارج بازار'})]])),
-   }});
- await f.engine.runEngineCycle({monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true,officialMonthlyReconciliation:true});
- assert.deepEqual(f.officialPages,[1,5,6,7,8,9,10,11]);
- assert.deepEqual(f.calls.pages,[1]);
- assert.deepEqual(f.calls.feedWrites.flatMap(write=>write.rows.map(row=>row.link)),expected.map(x=>"https://codal.ir"+x.Url));
- assert.deepEqual(f.calls.excel,["/service/Excel/GetAll/official2/0","/service/Excel/GetAll/official3/0"]);
- assert.equal(f.calls.reportWrites.length,2);
- assert.deepEqual(f.engine.engineStatus.officialMonthlyDiscovery,{pages:8,matched:2,inserted:2,nextPage:12,failed:false});
- assert.equal(f.persisted.officialMonthlyNextPage,12);
- await f.engine.runEngineCycle({monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true,officialMonthlyReconciliation:true});
- assert.equal(f.officialPages.at(-1),12);
- assert.equal(f.persisted.officialMonthlyNextPage,12);
- assert.equal(f.engine.engineStatus.officialMonthlyDiscovery.failed,true);
-});
-
-test('the fast discovery cycle includes recent interim statements within the shared download allocation', async t => {
- t.mock.method(Date,'now',()=>Date.parse("2026-11-15T15:30:00Z"));
- const recent = (id, months) => ({
-   ...financial(id), title:`اطلاعات و صورت‌های مالی دوره ${months} ماهه منتهی به ۱۴۰۵/۰۶/۳۱`,
-   date_title:'1405/06/31', date_send:'1405/08/24',
- });
- const fund = {...recent(8,6),l18:'صندوق نمونه'};
- const options = {pages:[[fund,recent(7,12),recent(6,6),recent(5,6),recent(4,6),boundary],[]],
-   marketBody:[{payload:{stocks:[{id:'نمونه'}],funds:[{id:fund.l18}]}}],
-   excelHtml:industrial({period:'1405/06/31',months:6,prior:false})};
- const f = await fixture(options);
- await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true,recentInterimReports:true});
- assert.equal(f.engine.engineStatus.reportScope,"monthly_and_recent_interim");
- assert.deepEqual(f.calls.pages,[1,2]);
- assert.deepEqual(f.calls.excel,["/6","/5"]);
- assert.deepEqual(f.calls.reportWrites.map(rows=>rows[0].report_kind),["ن-۱۰","ن-۱۰"]);
- assert.equal(f.engine.engineStatus.feed.interimDownloads,2);
- assert.equal(f.calls.feedWrites[0].rows.length,5);
- assert.equal(f.calls.feedWrites[0].rows[0].symbol,fund.l18);
-});
-
-test('exact official monthly Decision without Excel is processed through discovery, feed, archive, and stored recovery', async t => {
- t.mock.method(Date,'now',()=>Date.parse("2026-11-16T16:30:00Z"));
- const date = "1405/07/30";
- const link = "https://codal.ir/Reports/Decision.aspx?LetterSerial=official-no-excel&rt=0&let=58";
- const rows = [{0:"شرح",13:`دوره یک ماهه منتهی به ${date}`,17:`از ابتدای سال مالی تا تاریخ ${date}`},
-   {0:"نام محصول",1:"واحد",13:"تعداد تولید",14:"تعداد فروش",15:"نرخ فروش (ریال)",
-    16:"مبلغ فروش (میلیون ریال)",20:"مبلغ فروش (میلیون ریال)"},
-   {0:"فروش داخلی:"},{0:"محصول",1:"دست",13:4,14:4,15:3000000,16:12,20:32},{0:"جمع",16:12,20:32}];
- const cells=rows.flatMap((row,index)=>Object.entries(row).map(([col,value])=>({
-   address:String.fromCharCode(65+Number(col))+(index+1),rowSequence:index+1,columnSequence:Number(col)+1,
-   isVisible:true,value,metaTableId:18,metaTableCode:1197,
- })));
- const source={type:58,period:1,periodEndToDate:date,tracingNo:123,isConsolidated:false,
-   sheets:[{code:1000000,aliasName:"MonthlyActivity",tables:[{code:1197,metaTableId:18,sheetCode:1000000,
-     aliasName:"ProductionAndSales",description:"کلیه مبالغ به میلیون ریال است",cells}]}]};
- const html = `<form id="aspnetForm" action="">
-   <span id="ctl00_lblReportName">گزارش فعالیت ماهانه</span>
-   <span id="ctl00_lblPeriod">1 ماهه</span><span id="ctl00_txbSymbol">نمونه</span>
-   <span id="ctl00_lblPeriodEndToDate">${date}</span><script>var datasource = ${JSON.stringify(source)};</script>
-   </form>`;
- const a=announcement(1,{code:"ن-۳۰",l30:"شرکت نمونه",link,date_title:date,
-   title:`گزارش فعالیت ماهانه منتهی به ${date}`});
- const options={pages:[[a,boundary],[]],officialBody:html,marketBody:[{payload:{stocks:[{id:"نمونه"}]}}]};
- for(const route of ["feed","archive","stored","official"]){
-  const rows=[{id:4,category:"ماهانه",symbol:"نمونه",company_name:a.l30,title:a.title,
-    report_code:a.code,link,link_excel:null}];
-  const discovery=route==="official";
-  const official={TracingNo:123,Symbol:a.l18,Title:a.title,CompanyName:a.l30,LetterCode:a.code,
-   Url:new URL(link).pathname+new URL(link).search,ExcelUrl:null,
-   SentDateTime:"1405/08/25 10:00:00",PublishDateTime:"1405/08/25 11:00:00"};
-  const f=await fixture(discovery ? {...options,pages:[[]],monthlyOfficialPages:{1:[official],2:[]}}
-    : route==="stored" ? {...options,pages:[[]],storedRows:rows} : options);
-  if(route==="archive"){
-   const archive=await import(`./codal-archive.mjs?mock=${++scenario}`);
-   await archive.runArchiveCycle({monthlyOnly:true});
-   assert.equal(archive.archiveStatus.lastCycle.downloaded,1);
-  }else{
-   await f.engine.runEngineCycle({monthlyOnly:true,allowBackground:false,
-    ...(discovery ? {prioritizeRecentMonthly:true,officialMonthlyReconciliation:true} : {})});
-   if(discovery){
-    assert.deepEqual(f.officialPages,[1,2]);
-    const [stored]=f.calls.feedWrites.flatMap(write=>write.rows);
-    assert.equal(stored.link,link);
-    assert.equal(stored.link_excel,null);
-    assert.equal(f.engine.engineStatus.officialMonthlyDiscovery.inserted,1);
-   }else{
-    assert.equal(route==="feed"?f.engine.engineStatus.feed.downloaded:f.engine.engineStatus.storedRecovery.downloaded,1);
-   }
-  }
-  assert.deepEqual(f.calls.excel,[]);
-  assert.equal(f.calls.reportWrites.length,1);
-  const [row]=f.calls.reportWrites[0];
-  assert.equal(row.source_url,link+"#pv3");
-  assert.equal(row.data.period_end,"1405-07-30");
-  assert.equal(row.data.period_total_amount,12);
-  assert.equal(row.data.monthly_source.tracing_no,123);
- }
-});
-
-test('the official sweep repairs a conflicting industrial period once using only the validated publisher grid', async () => {
- const date = "1405/07/30";
- const today = new Intl.DateTimeFormat("fa-IR-u-nu-latn", {
-   timeZone:"Asia/Tehran",year:"numeric",month:"2-digit",day:"2-digit",
- }).format(new Date());
- const url = "/Reports/Decision.aspx?LetterSerial=repair1&rt=0&let=58";
- const link = "https://codal.ir" + url;
- const official = {TracingNo:1,Symbol:"نمونه",Title:`گزارش فعالیت ماهانه منتهی به ${date}`,
-   CompanyName:"نمونه",LetterCode:"ن-۳۰",Url:url,ExcelUrl:"https://excel.codal.ir/service/Excel/GetAll/repair1/0",
-   SentDateTime:`${today} 10:00:00`,PublishDateTime:`${today} 11:00:00`};
- const groups = {0:"شرح",13:`دوره یک ماهه منتهی به ${date}`,17:`از ابتدای سال مالی تا تاریخ ${date}`};
- const cols = {0:"نام محصول",1:"واحد",13:"تعداد تولید",14:"تعداد فروش",
-   15:"نرخ فروش (ریال)",16:"مبلغ فروش (میلیون ریال)",20:"مبلغ فروش (میلیون ریال)"};
- const rows = [groups,cols,{0:"فروش داخلی:"},{0:"محصول",1:"دست",13:4,14:4,15:3000000,16:12,20:32},{0:"جمع",16:12,20:32}];
- const cells = rows.flatMap((row,index) => Object.entries(row).map(([column,value]) => ({
-   address:String.fromCharCode(65+Number(column))+(index+1),rowSequence:index+1,columnSequence:Number(column)+1,
-   isVisible:true,value,metaTableId:18,metaTableCode:1197,
- })));
- const table = {code:1197,metaTableId:18,sheetCode:1000000,aliasName:"ProductionAndSales",
-   description:"کلیه مبالغ به میلیون ریال است",cells};
- const source = {type:58,period:1,periodEndToDate:date,tracingNo:1,isConsolidated:false,
-   sheets:[{code:1000000,aliasName:"MonthlyActivity",tables:[table]}]};
- const html = `<form id="aspnetForm" action="">
-   <span id="ctl00_lblReportName">گزارش فعالیت ماهانه</span>
-   <span id="ctl00_lblPeriod">1 ماهه</span><span id="ctl00_txbSymbol">نمونه</span>
-   <span id="ctl00_lblPeriodEndToDate">${date}</span><script>var datasource = ${JSON.stringify(source)};</script>
-   </form>`;
- const old = {symbol:"نمونه",source_url:link+"#pv2",data:{period_end:"1405-07-01"}};
- const f = await fixture({pages:[[]],marketBody:[{payload:{stocks:[{id:"نمونه"}]}}],officialBody:html,
-   initialReports:[old],monthlyOfficialPages:{1:[official],2:[]},initialState:{watermark,fails:{}}});
- const options = {monthlyOnly:true,allowBackground:false,prioritizeRecentMonthly:true,officialMonthlyReconciliation:true};
- await f.engine.runEngineCycle(options);
- assert.deepEqual(f.engine.engineStatus.officialMonthlyRepair,{attempted:1,inserted:1,failed:false});
- const repaired = f.calls.reportWrites[0][0];
- assert.equal(repaired.source_url,link+"#pv3");
- assert.equal(repaired.raw.parser_version,3);
- assert.equal(repaired.data.period_end,"1405-07-30");
- assert.equal(repaired.data.period_total_amount,12);
- assert.equal(repaired.data.fy_cumulative_amount,32);
- assert.equal(repaired.data.monthly_source.tracing_no,1);
- assert.deepEqual(f.calls.excel,[]);
- await f.engine.runEngineCycle(options);
- assert.deepEqual(f.engine.engineStatus.officialMonthlyRepair,{attempted:0,inserted:0,failed:false});
- assert.equal(f.calls.reportWrites.length,1);
-});
-
-test('interim recovery uses stored fresh announcements, with its own cursor and without annual or old downloads', async t => {
- t.mock.method(Date,'now',()=>Date.parse("2026-11-15T15:30:00Z"));
- const row = (id, months, sent_date) => ({
-   ...stored(id), category:'صورت مالی', sent_date,
-   title:`اطلاعات و صورت‌های مالی دوره ${months} ماهه منتهی به ۱۴۰۵/۰۶/۳۱`,
- });
- const f = await fixture({pages:[[]],storedPageSize:3,
-   storedRows:[{...row(10,6,"1405/08/24"),symbol:'خارج از بازار'},row(9,12,"1405/08/24"),row(8,6,"1405/06/31"),row(7,6,"1405/08/24"),row(6,6,"1405/08/25")],
-   marketBody:[{payload:{stocks:[{id:'نمونه'}]}}],
-   excelHtml:industrial({period:'1405/06/31',months:6,prior:false}),
-   initialState:{watermark,fails:{},storedFeedCursor:'2',monthlyRecoveryCursor:'5'}});
- await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true,recentInterimReports:true});
- assert.deepEqual(f.calls.excel,["/service/Excel/GetAll/serial7/0"]);
- assert.deepEqual(f.calls.storedCategories,["eq.ماهانه","eq.صورت مالی","eq.صورت مالی"]);
- assert.deepEqual(f.calls.storedDates,[null,"gte.2026-10-11T15:30:00.000Z","gte.2026-10-11T15:30:00.000Z"]);
- assert.equal(f.persisted.storedFeedCursor,'2');
- assert.equal(f.persisted.interimRecoveryCursor,'6');
- assert.equal(f.engine.engineStatus.interimRecovery.inserted,1);
-});
-
-test('an unavailable stock roster defers interim recovery and leaves announcements available', async t => {
- t.mock.method(Date,'now',()=>Date.parse("2026-11-15T15:30:00Z"));
- const recent={...financial(5),title:'اطلاعات و صورت‌های مالی دوره ۶ ماهه منتهی به ۱۴۰۵/۰۶/۳۱',date_send:'1405/08/24'};
- const f=await fixture({pages:[[recent,boundary]],marketStatus:503,
-   initialState:{watermark,fails:{},interimRecoveryCursor:'16'}});
- await f.engine.runEngineCycle({allowBackground:false,monthlyOnly:true,recentInterimReports:true});
- assert.deepEqual(f.calls.feedWrites[0].rows.map(row=>row.link),[recent.link]);
- assert.deepEqual(f.calls.excel,[]);
- assert.equal(f.persisted.interimRecoveryCursor,'16');
- assert.match(f.engine.engineStatus.lastError,/stock roster unavailable/);
-});
-
-test('publisher challenge keeps discovery available while file reads and archive remain paused', async () => {
- const a=financial(2);
- const f=await fixture({pages:[[a,boundary],[]],excelHtml:'<h1>تأیید کاربر</h1><img id="captchaImage"><input id="captchaCode">کد امنیتی'});
- await f.engine.runEngineCycle();
- assert.equal(f.calls.excel.length,1);
- assert.equal(f.engine.engineStatus.ok,false);
- assert.match(f.engine.engineStatus.lastError,/codal_source_challenge/);
- assert.deepEqual(f.persisted.fails,{});
- assert.deepEqual(f.persisted.watermark,watermark);
- assert.ok(f.persisted.sourceHoldUntil>Date.now());
- const newer=financial(3);
- const resumed=await fixture({initialState:f.persisted,pages:[[newer,a,boundary],[]]});
- await resumed.engine.runEngineCycle();
- assert.equal(resumed.budgetJobs.length,1);
- assert.deepEqual(resumed.calls.feedWrites[0].rows.map(row=>row.link),[newer.link]);
- assert.equal(resumed.calls.excel.length,0);
- assert.deepEqual(resumed.persisted.watermark,watermark);
- assert.deepEqual(resumed.persisted.metadataWatermark.links,[newer.link]);
- await resumed.engine.runEngineCycle();
- assert.equal(resumed.calls.feedWrites.length,1);
- assert.equal(resumed.calls.excel.length,0);
- const beforeArchive=resumed.budgetJobs.length;
- const archive=await import(`./codal-archive.mjs?mock=${++scenario}`);
- await archive.runArchiveCycle();
- assert.equal(resumed.budgetJobs.length,beforeArchive);
- assert.equal(archive.archiveStatus.lastError,'codal_source_challenge');
- assert.equal(resumed.calls.archiveSaves.at(-1).sourceHoldUntil,f.persisted.sourceHoldUntil);
-});
-
-test('published service decision checks both declared columns and their totals', async () => {
- const {readServiceDecisionRows}=await import('./codal.mjs');
- const date='1405/07/30';
- const cells=(columns)=>Object.assign(Array(10).fill(''),columns);
- const rows=[cells({0:'شرح خدمات یا فروش',3:'درآمد شناسایی شده'}),
-  cells({6:'درآمد شناساسی شده طی دوره یک ماهه منتهی به '+date,7:'درآمد شناساسی شده از اول سال مالی تا پایان دوره مالی منتهی به '+date}),
-  cells({0:'خدمات',6:'۸',7:'۱۲'}),cells({6:'0',7:'0'}),cells({0:'جمع',6:'8',7:'12'})];
- assert.deepEqual(readServiceDecisionRows(rows,'1405-07-30'),{amount:8,cumulative:12});
- assert.equal(readServiceDecisionRows(rows,'1405-06-31'),null);
- for(const invalid of ['', '9.9','19']){
-  const bad=structuredClone(rows);bad[2][6]=invalid;
-  assert.equal(readServiceDecisionRows(bad,'1405-07-30'),null);
- }
- const unnamed=structuredClone(rows);unnamed[2][0]='';assert.equal(readServiceDecisionRows(unnamed,'1405-07-30'),null);
-});
-
-test('decision income and premiums require exact period, measure, unit and arithmetic',async()=>{
- const {readEstateDecision,readInsuranceDecision}=await import('./codal.mjs');
- const cells=(values)=>Object.assign(Array(19).fill(''),values);
- const date='1405/07/30',end='1405-07-30',premium='حق بیمه صادره (شامل قبولی اتکایی)',unit='مبلغ (میلیون ریال)';
- const estate=[cells({0:'شرح',4:'درآمد محقق شده طی دوره یک ماهه منتهی به '+date,5:'جمع درآمد محقق شده از ابتدای سال مالی تا '+date}),
-  cells({0:'فروش',4:'12',5:'20'}),cells({0:'جمع',4:'12',5:'20'})];
- assert.deepEqual(readEstateDecision(estate,end),{amount:12,cumulative:20});
- estate[1][4]='';assert.equal(readEstateDecision(estate,end),null);
- const insurance=[cells({11:'دوره یک ماهه منتهی به '+date,15:'از ابتدای سال مالی تا پایان مورخ '+date}),
-  cells({11:premium,15:premium}),cells({11:unit,15:unit}),cells({0:'آتش سوزی',11:'7',15:'11'}),cells({0:'جمع',11:'7',15:'11'})];
- assert.deepEqual(readInsuranceDecision(insurance,end),{amount:7,cumulative:11});
- assert.equal(readInsuranceDecision(insurance,'1405-06-31'),null);
- for(const [i,j,value] of [[1,11,'خسارت پرداختی'],[2,15,'درصد'],[4,15,'20']]){
-  const bad=structuredClone(insurance);bad[i][j]=value;assert.equal(readInsuranceDecision(bad,end),null);
- }
 });

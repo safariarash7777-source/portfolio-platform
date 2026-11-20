@@ -81,31 +81,12 @@ export interface N30ProductRow {
   sales_amount: number | null; // میلیون ریال
 }
 
-export const MONTHLY_MEASURE_LABELS = {
-  sales: "فروش",
-  bank_reported_income: "درآمدهای گزارش‌شدهٔ بانک",
-  issued_premium: "حق بیمهٔ صادره",
-  service_recognized_income: "درآمد شناسایی‌شدهٔ خدمات و فروش",
-  leasing_reported_income: "درآمدهای گزارش‌شدهٔ لیزینگ",
-  real_estate_recognized_income: "درآمد محقق‌شدهٔ فعالیت ساختمانی",
-  agriculture_operating_income: "درآمدهای عملیاتی کشاورزی",
-  financing_service_income: "درآمد ارائهٔ خدمات تأمین سرمایه",
-} as const;
-
-export type MonthlyMeasure = keyof typeof MONTHLY_MEASURE_LABELS;
-
-export function isMonthlyMeasure(value: unknown): value is MonthlyMeasure {
-  return typeof value === "string" && Object.hasOwn(MONTHLY_MEASURE_LABELS, value);
-}
-
 /** دادهٔ نرمال‌شدهٔ گزارش ن-۳۰ (فعالیت ماهانه). */
 export interface CodalN30Data {
   symbol: string;
   report_kind: "ن-۳۰";
   period_end: string; // ماه جلالی
   fiscal_year: number;
-  monthly_measure?: MonthlyMeasure;
-  sales_zero_reported?: true;
   products: N30ProductRow[];
   period_total_amount: number;
   fy_cumulative_amount: number | null;

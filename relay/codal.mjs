@@ -1,9 +1,6 @@
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
-import { isBrsLocalDeferral } from "./brsapi-policy.mjs";
 import { notifyAdmissionRejection } from "./codal-admission-diagnostics.mjs";
 import { createHash } from "node:crypto";
-import { loadDecisionStatement, loadMonthlyDecision, monthlyDecisionTypeWithoutWorkbook } from "./codal-statement-source.mjs";
-import { codalAccess, isCodalSourceDeferred } from "./codal-source-access.mjs";
 // ماژول کدال — دریافت خودکار گزارش‌های بنیادی از وب‌سرویس کدالِ BrsApi.
 // چرا این‌جا (رله): excel.codal.ir و codal.ir به IP خارجی پاسخ نمی‌دهند؛
 // فقط هاست داخل ایران (لیارا) می‌تواند اکسل گزارش‌ها را دانلود کند.
@@ -683,40 +680,6 @@ export function resolveAmountUnit(tables, products) {
   return { ...base, unit: null, basis: "unresolved" };
 }
 
-const compactProductColumns = ["تعداد تولید", "تعداد فروش", "نرخ فروش (ریال)", "مبلغ فروش (میلیون ریال)"].map(normLabel);
-
-function compactProductLayout(groups, columns, periodEnd) {
-  if (groups.length !== 5 || columns.length !== 14 || !periodEnd ||
-      normLabel(groups[0]) !== "شرح" || normLabel(groups[4]) !== normLabel("وضعیت محصول-واحد") ||
-      !normLabel(groups[1]).startsWith(normLabel("دوره یک ماهه منتهی به")) ||
-      ![2, 3].every(index => normLabel(groups[index]).startsWith(normLabel("از ابتدای سال مالی تا تاریخ"))) ||
-      jalaliStr(groups[1]) !== periodEnd || jalaliStr(groups[2]) !== periodEnd ||
-      normLabel(columns[0]) !== normLabel("نام محصول") || normLabel(columns[1]) !== "واحد" ||
-      !columns.slice(2).every((label, index) => normLabel(label) === compactProductColumns[index % 4])) return false;
-  const prior = jalaliStr(groups[3]);
-  return prior !== null && Number(prior.slice(0, 4)) + 1 === Number(periodEnd.slice(0, 4))
-    && prior.slice(5, 7) === periodEnd.slice(5, 7);
-}
-
-function verifiedZeroProductSales(groups, columns, rows, periodEnd, compact, amountColumn, cumulativeColumn) {
-  const month=groups[compact?1:4],cumulative=groups[compact?2:5];
-  const amountLabel=normLabel("مبلغ فروش (میلیون ریال)");
-  if (!periodEnd || !normLabel(month).startsWith(normLabel("دوره یک ماهه منتهی به")) ||
-      !normLabel(cumulative).startsWith(normLabel("از ابتدای سال مالی تا تاریخ")) ||
-      jalaliStr(month)!==periodEnd || jalaliStr(cumulative)!==periodEnd ||
-      normLabel(columns[amountColumn])!==amountLabel || normLabel(columns[cumulativeColumn])!==amountLabel) return null;
-  const details=rows.filter(row=>row[0]?.trim()&&!row[0].trim().endsWith(":"));
-  const totals=details.filter(row=>["جمع","جمعکل"].includes(normLabel(row[0])));
-  const unexplainedValues=rows.some(row=>{
-    const label=row[0]?.trim();
-    const value=cellNum(row[amountColumn]);
-    return (!label||label.endsWith(":"))&&value!==null&&value!==0;
-  });
-  if (unexplainedValues||totals.length!==1||details.length<2||!details.every(row=>cellNum(row[amountColumn])===0)) return null;
-  const fyAmount=cellNum(totals[0][cumulativeColumn]);
-  return fyAmount===null||Number.isSafeInteger(fyAmount) ? {amount:0,cumulative:fyAmount} : null;
-}
-
 export function normalizeN30(tables, meta, onRejected) {
   const products = [];
   let supportedLayout = false;
@@ -741,28 +704,14 @@ export function normalizeN30(tables, meta, onRejected) {
     if (h1Idx < 0) continue;
     const h0 = t[h1Idx - 1] ?? [];
     if (!h0.some((c) => c.includes("دوره یک ماهه") || c.includes("دوره یکماهه") || c.includes("ماهه منتهی"))) continue;
-    if (meta.period_end && h0.some(c => normLabel(c).startsWith(normLabel("دوره یک ماهه منتهی به")) &&
-        jalaliStr(c) && jalaliStr(c) !== meta.period_end)) {
-      return notifyAdmissionRejection(onRejected, "ن-۳۰", "period_unverified");
-    }
     supportedLayout = true;
 
-    const compact = compactProductLayout(h0, t[h1Idx], meta.period_end);
-    // بلوک‌بندی قالب کامل ن-۳۰ (۲۶ ستون):
+    // بلوک‌بندی ثابت طبق ساختار استاندارد ن-۳۰ (۲۶ ستون):
     //   2..5 تجمعی گزارش قبل | 6..8 اصلاحات | 9..12 تجمعی اصلاح‌شده
     //   13..16 دورهٔ یک‌ماههٔ جاری | 17..20 تجمعی تا پایان ماه جاری | 21..24 تجمعی سال قبل
-    // The compact layout starts directly with the current month and the fiscal
-    // cumulative; the optional final cell is product status, not a value.
-    const minimumColumns = compact ? 14 : 24;
-    const M = compact ? { prod: 2, qty: 3, rate: 4, amount: 5 } : { prod: 13, qty: 14, rate: 15, amount: 16 };
-    const C = { amount: compact ? 9 : 20 };
-    if (compact) {
-      const totals = t.slice(h1Idx + 1).filter(row => normLabel(row[0]) === "جمع");
-      if (totals.length !== 1 || ![cellNum(totals[0][M.amount]), cellNum(totals[0][C.amount])].every(Number.isSafeInteger)) {
-        skippedReasons.add("missing_sales");
-        continue;
-      }
-    }
+    const expectCols = 26;
+    const M = { prod: 13, qty: 14, rate: 15, amount: 16 };
+    const C = { qty: 18, amount: 20 };
 
     // Optional internal hand-off only. The current downloader does not yet
     // supply byte-bound origin metadata; absence must not certify a new unit.
@@ -782,8 +731,7 @@ export function normalizeN30(tables, meta, onRejected) {
 
     let cumTotal = null;
     let sectionMarket = "نامشخص";
-    const observations=t.slice(h1Idx+1);
-    for (const [offset, row] of observations.entries()) {
+    for (const [offset, row] of t.slice(h1Idx + 1).entries()) {
       const name = (row[0] || "").trim();
       if (!name) continue;
       if (name.endsWith(":")) {
@@ -793,14 +741,13 @@ export function normalizeN30(tables, meta, onRejected) {
           : section === normLabel("درآمد ارائه خدمات") ? "خدمات" : "نامشخص";
         continue;
       }
-      if (row.length < minimumColumns) {
+      if (row.length < expectCols - 2) {
         if (source && !name.includes("جمع")) source.rows.push({ rowIndex: h1Idx + 1 + offset, admitted: false,
           productName: name, market: sectionMarket, rawUnit: row[1]?.trim() || "",
           productionQty: cellNum(row[M.prod]), salesQty: cellNum(row[M.qty]) });
         skippedReasons.add("short_rows"); continue;
       } // سطرهای بخشی کوتاه‌ترند
       if (name.includes("جمع")) {
-        if (compact && normLabel(name) !== "جمع") continue;
         const vM = cellNum(row[M.amount]);
         const vC = cellNum(row[C.amount]);
         // «جمع کل» آخرین ردیف جمع است — مقدار آخر برنده می‌شود.
@@ -841,8 +788,6 @@ export function normalizeN30(tables, meta, onRejected) {
     }
     if (cumTotal !== null) fyCumulative = cumTotal;
     if (products.length) { quantitySource = source; break; } // فقط جدول محصول اصلی
-    const zero=verifiedZeroProductSales(h0,t[h1Idx],observations,meta.period_end,compact,M.amount,C.amount);
-    if (zero) return {...sectorMonthlyData(meta,"sales",zero),period_months:1,sales_zero_reported:true};
   }
 
   if (products.length === 0) return notifyAdmissionRejection(onRejected, "ن-۳۰",
@@ -901,22 +846,7 @@ export function setCodalBudgetPorts(ports) {
 }
 export function codalBudgetPorts() { return budgetPorts; }
 
-// Opt-in direct official search. No fallback to the metered provider on failure.
-// Lazy construction keeps existing parser-only/offline callers independent.
-let officialAnnouncements;
-async function readOfficialAnnouncements(params) {
-  officialAnnouncements ??= import('./codal-direct.mjs').then(m => m.createOfficialAnnouncements({
-    fetchImpl: (...args) => fetch(...args),
-  }));
-  return (await officialAnnouncements)(params);
-}
-
-export function fetchOfficialMonthlyPage(page,date_start) {
-  return readOfficialAnnouncements({category:3,page,date_start});
-}
-
 async function fetchAnnouncements(symbol, category) {
-  if (process.env.CODAL_ANNOUNCEMENT_SOURCE === 'official') return readOfficialAnnouncements({ l18: symbol, category });
   // only_subsidiaries=false: گزارش شرکت‌های زیرمجموعه (مثل «بهساز مشارکت‌های ملت») قاطی نشود.
   const qs = new URLSearchParams({
     key: BRSAPI_KEY, l18: symbol, category: String(category), page: "1",
@@ -957,7 +887,6 @@ function announcementRows(json) {
 }
 
 async function downloadExcelHtml(url, onBody) {
-  codalAccess.check();
   // excel.codal.ir کُند است و گاه بار اول timeout می‌دهد — تا ۳ تلاش با مهلت فزاینده.
   let lastErr;
   for (let attempt = 1; attempt <= 3; attempt++) {
@@ -967,18 +896,12 @@ async function downloadExcelHtml(url, onBody) {
         signal: AbortSignal.timeout(30000 * attempt),
       });
       if (!res.ok) throw new Error(`excel HTTP ${res.status}`);
-      if (!onBody) {
-        const html = await res.text();
-        codalAccess.inspect(html);
-        return html;
-      }
+      if (!onBody) return await res.text();
       const htmlBytes = new Uint8Array(await res.arrayBuffer());
       const html = new TextDecoder().decode(htmlBytes);
-      codalAccess.inspect(html);
-      onBody?.({ htmlBytes, sourceRef: url, responseUrl: res.url });
+      onBody({ htmlBytes, sourceRef: url, responseUrl: res.url });
       return html;
     } catch (e) {
-      if (isBrsLocalDeferral(e) || isCodalSourceDeferred(e)) throw e;
       lastErr = e;
       if (attempt < 3) await sleep(3000 * attempt);
     }
@@ -999,10 +922,9 @@ const SB_HDRS = () => ({
  * ردیف جدید با source_url پسونددار (#pv2) درج می‌شود و لایهٔ خواندن باید
  * بالاترین parser_version برای هر اطلاعیه را بخواند (raw.parser_version). */
 export const PARSER_VERSION = 2;
-export const MONTHLY_PERIOD_REPAIR_VERSION = 3;
 
 /** کلید درج برای نسخهٔ فعلی پارسر — نسخهٔ ۱ بدون پسوند بود. */
-const versionedUrl = (link, version = PARSER_VERSION) => version === 1 ? link : `${link}#pv${version}`;
+const versionedUrl = (link) => (PARSER_VERSION === 1 ? link : `${link}#pv${PARSER_VERSION}`);
 
 /** source_urlهای موجود برای نماد — تا اطلاعیهٔ تکراری دوباره دانلود نشود.
  * فقط ردیف‌های نسخهٔ فعلی ملاک‌اند (پسوند #pv جدا می‌شود). */
@@ -1074,11 +996,9 @@ async function insertReport(row) {
 
 function classify(a) {
   const title = a.title || "";
-  const code = typeof a.code === "string" ? faToEnDigits(a.code).trim() : "";
-  // Explicit report codes take precedence; title fallback is only for missing codes.
-  if (code && code !== "ن-30" && code !== "ن-10") return null;
-  if (code === "ن-30" || (!code && title.includes("گزارش فعالیت ماهانه"))) return "ن-۳۰";
-  const isFs = code === "ن-10"
+  const code = a.code || "";
+  if (code.includes("ن-۳۰") || title.includes("گزارش فعالیت ماهانه")) return "ن-۳۰";
+  const isFs = code.includes("ن-۱۰")
     || title.includes("صورت‌های مالی") || title.includes("صورتهای مالی") || title.includes("صورت های مالی");
   if (!isFs) return null;
   // فقط گزارش خود شرکت اصلی (نه پرتفوی زیرمجموعه و نه تلفیقیِ جدا از اصلی — تلفیقی همراه اصلی در همان اکسل است).
@@ -1090,7 +1010,7 @@ function metaFrom(a, kind) {
   const title = a.title || "";
   const period_end = jalaliStr(a.date_title) || jalaliStr(title);
   let period_months = 12;
-  const pm = faToEnDigits(title).match(/(?:دوره\s*)?(\d{1,2})\s*ماهه/);
+  const pm = faToEnDigits(title).match(/دوره\s*(\d{1,2})\s*ماهه/);
   if (pm) period_months = Number(pm[1]);
   else if (kind === "ن-۳۰") period_months = 1;
   return {
@@ -1119,14 +1039,7 @@ export const existingUrlsFor = existingUrls;
 /** دریافت یک صفحهٔ اطلاعیه — بدون l18، فید سراسری کل بازار را می‌دهد
  * (جدیدترین‌ها اول، ۲۰تایی). موتور v3 برای واترمارک فید و بک‌فیل نمادی
  * از همین استفاده می‌کند. */
-export async function fetchAnnouncementsPage({ l18, category, page = 1, date_start, purpose = "archive" } = {}) {
-  if (!["current", "archive"].includes(purpose)) throw new Error("invalid announcement purpose");
-  // Current discovery must not stop with historical backfill. Reuse the existing
-  // standard allocation; never promote it to critical or change any ceiling.
-  const allocation = purpose === "current"
-    ? { producer: "codal-list", budgetClass: "standard" }
-    : { producer: "codal-archive", budgetClass: "bulk" };
-  if (process.env.CODAL_ANNOUNCEMENT_SOURCE === 'official') return readOfficialAnnouncements({ l18, category, page, date_start });
+export async function fetchAnnouncementsPage({ l18, category, page = 1, date_start } = {}) {
   const qs = new URLSearchParams({
     key: BRSAPI_KEY, page: String(page),
     only_main_company: "true", only_subsidiaries: "false",
@@ -1143,14 +1056,13 @@ export async function fetchAnnouncementsPage({ l18, category, page = 1, date_sta
     if (date_start) params.date_start = String(date_start);
     json = await client.request({
       endpoint: "Codal/Announcement.php", params,
-      ...allocation, priority: "background",
+      producer: "codal-archive", priority: "background",
+      // صفحه‌گردیِ آرشیو — تاریخی و بی‌عجله.
+      budgetClass: "bulk",
       dedupeTtlMs: 300_000, timeoutMs: 25_000,
     });
   } else {
-    if (countLegacy) {
-      if (purpose === "current") await countLegacy("codal-list", "standard");
-      else await countLegacy("codal-archive", "bulk");
-    }
+    if (countLegacy) await countLegacy("codal-archive", "bulk");
     const res = await fetch(`${BRSAPI_BASE}/Codal/Announcement.php?${qs}`, {
       headers: HDRS, signal: AbortSignal.timeout(25000),
     });
@@ -1164,7 +1076,6 @@ export async function fetchAnnouncementsPage({ l18, category, page = 1, date_sta
 // into the existing insert path. A copied or caller-authored hash is not a receipt.
 /** @type {WeakMap<object, {dataJson: string, receipt: import('../lib/core/monthly-quantity').MonthlyQuantityCaptureReceipt}>} */
 const monthlyQuantityCaptures = new WeakMap();
-const industrialMonthlyDecisions = new WeakMap();
 
 function sameQuantityResponseSource(sourceRef, responseUrl) {
   try {
@@ -1177,464 +1088,18 @@ function sameQuantityResponseSource(sourceRef, responseUrl) {
   } catch { return false; }
 }
 
-/** Identify the verified monthly workbook families by the linked Codal report. */
-export function monthlyWorkbookType(a) {
-  const direct = monthlyDecisionTypeWithoutWorkbook(a?.link, a?.link_excel);
-  if (direct !== null) return direct;
-  try {
-    const report = new URL(a.link);
-    const serials = report.searchParams.getAll("LetterSerial");
-    const workbook = new URL(a.link_excel);
-    if (report.protocol !== "https:" || !["codal.ir", "www.codal.ir"].includes(report.hostname)
-        || report.username || report.password || report.port || report.hash
-        || report.pathname !== "/Reports/Decision.aspx" || report.searchParams.get("let") !== "58"
-        || serials.length !== 1 || !serials[0] || !sameQuantityResponseSource(a.link_excel, a.link_excel)
-        || workbook.search || decodeURIComponent(workbook.pathname.split("/")[4]) !== serials[0]) return null;
-    return report.searchParams.get("rt");
-  } catch { /* Invalid publisher identity. */ }
-  return null;
-}
-
-export function isIndustrialMonthlyWorkbook(a) {
-  return monthlyWorkbookType(a)==="0";
-}
-
-export function monthlySectorProfile(a) {
-  switch (monthlyWorkbookType(a)) {
-    case "1": return "real_estate_recognized_income";
-    case "3": return "bank_reported_income";
-    case "4": return "leasing_reported_income";
-    case "5": return "service_recognized_income";
-    case "6": return "issued_premium";
-    case "8": return "agriculture_operating_income";
-    case "9": return "financing_service_income";
-    default: return null;
-  }
-}
-
-const bankIncomeRows = [
-  "درآمد تسهیلات اعطایی", "درآمد سپرده گذاری", "درآمد اوراق بدهی", "درآمد سرمایه گذاری ها", "درامد کارمزد",
-].map(normLabel);
-
-function readBankMonthly(rows, periodEnd) {
-  const [header, ...items] = rows;
-  if (header.length !== 6 || normLabel(header[0]) !== "شرح"
-      || !normLabel(header[4]).startsWith(normLabel("درآمد محقق شده طی دوره یک ماهه منتهی به"))
-      || !normLabel(header[5]).startsWith(normLabel("جمع درآمد محقق شده از ابتدای سال مالی تا پایان"))
-      || jalaliStr(header[4]) !== periodEnd || jalaliStr(header[5]) !== periodEnd) return null;
-  const entries = items.filter(row => !normLabel(row[0]).startsWith(normLabel("سرفصل های مندرج در جدول فوق الذکر")));
-  if (entries.length !== bankIncomeRows.length
-      || new Set(entries.map(row => normLabel(row[0]))).size !== bankIncomeRows.length) return null;
-  let amount = 0;
-  let cumulative = 0;
-  for (const row of entries) {
-    if (row.length !== 6 || !bankIncomeRows.includes(normLabel(row[0]))) return null;
-    const [adjusted, month, year] = row.slice(3, 6).map(cellNum);
-    if (![adjusted, month, year].every(Number.isSafeInteger)
-        || Math.abs(adjusted + month - year) > 1) return null;
-    amount += month;
-    cumulative += year;
-  }
-  return { amount, cumulative };
-}
-
-function readInsuranceMonthly(rows, periodEnd) {
-  const [header, groups, units, ...items] = rows;
-  const premium = normLabel("حق بیمه صادره (شامل قبولی اتکایی)");
-  const claims = normLabel("خسارت پرداختی");
-  const unit = normLabel("مبلغ (میلیون ریال)");
-  if (header.length !== 6 || normLabel(header[0]) !== "شرح"
-      || !normLabel(header[4]).startsWith(normLabel("دوره یک ماهه منتهی به"))
-      || !normLabel(header[5]).startsWith(normLabel("از ابتدای سال مالی تا پایان"))
-      || jalaliStr(header[4]) !== periodEnd || jalaliStr(header[5]) !== periodEnd
-      || groups?.length !== 10 || !groups.every((label, i) => normLabel(label) === (i % 2 === 0 ? premium : claims))
-      || units?.length !== 19 || normLabel(units[0]) !== normLabel("رشته بیمه ای")
-      || ![11, 13, 15, 17].every(i => normLabel(units[i]) === unit)) return null;
-  const total = items.at(-1);
-  if (normLabel(total?.[0]) !== "جمع" || total.length !== 19 || items.length < 2) return null;
-  const details = items.slice(0, -1);
-  if (details.some(row => !row[0] || row.length !== 19)
-      || new Set(details.map(row => normLabel(row[0]))).size !== details.length) return null;
-  for (const column of [11, 13, 15, 17]) {
-    const values = details.map(row => cellNum(row[column]));
-    const declared = cellNum(total[column]);
-    if (!Number.isSafeInteger(declared) || !values.every(Number.isSafeInteger)
-        || Math.abs(values.reduce((sum, value) => sum + value, 0) - declared) > 1) return null;
-  }
-  return { amount: cellNum(total[11]), cumulative: cellNum(total[15]) };
-}
-
-function readIncomeTotal(rows, width, firstAmountColumn) {
-  const total = rows.at(-1);
-  if (rows.length < 2 || normLabel(total?.[0]) !== "جمع" ||
-      rows.some(row => row.length !== width || !normLabel(row[0]))) return null;
-  const totals = total.slice(firstAmountColumn, firstAmountColumn + 5).map(cellNum);
-  if (!totals.every(Number.isSafeInteger)) return null;
-  const sums = [0, 0, 0, 0, 0];
-  for (const row of rows.slice(0, -1)) {
-    if (normLabel(row[0]) === "جمع") return null;
-    const amounts = row.slice(firstAmountColumn, firstAmountColumn + 5).map(cellNum);
-    if (!amounts.every(Number.isSafeInteger) ||
-        Math.abs(amounts[0] + amounts[1] - amounts[2]) > 1 ||
-        Math.abs(amounts[2] + amounts[3] - amounts[4]) > 1) return null;
-    for (const [index, amount] of amounts.entries()) sums[index] += amount;
-  }
-  if (sums.some((sum, index) => !Number.isSafeInteger(sum) || Math.abs(sum - totals[index]) > 1) ||
-      Math.abs(totals[0] + totals[1] - totals[2]) > 1 ||
-      Math.abs(totals[2] + totals[3] - totals[4]) > 1) return null;
-  return { amount: totals[3], cumulative: totals[4] };
-}
-
-function readServiceMonthly(rows, periodEnd) {
-  const [groups, header, ...items] = rows;
-  // Both spellings occur in the publisher's service column captions.
-  const incomeLabel = label => normLabel(label).replace("شناساسی", "شناسایی");
-  if (groups.length !== 4 || header?.length !== 8 ||
-      normLabel(groups[0]) !== normLabel("شرح خدمات یا فروش") ||
-      normLabel(groups[2]) !== normLabel("درآمد شناسایی شده") ||
-      normLabel(header[0]) !== normLabel("تاریخ عقد قرارداد") ||
-      normLabel(header[3]) !== "اصلاحات" ||
-      !incomeLabel(header[5]).startsWith(normLabel("درآمد شناسایی شده طی دوره یک ماهه منتهی به")) ||
-      !incomeLabel(header[6]).startsWith(normLabel("درآمد شناسایی شده از اول سال مالی تا پایان دوره مالی منتهی به")) ||
-      jalaliStr(header[5]) !== periodEnd || jalaliStr(header[6]) !== periodEnd) return null;
-  return readIncomeTotal(items, 10, 3);
-}
-
-function readLeasingMonthly(rows, periodEnd) {
-  const [header, ...items] = rows;
-  if (header.length !== 6 || normLabel(header[0]) !== "شرح" || normLabel(header[2]) !== "اصلاحات" ||
-      !normLabel(header[4]).startsWith(normLabel("درآمد محقق شده طی دوره یک ماهه منتهی به")) ||
-      !normLabel(header[5]).startsWith(normLabel("جمع درآمد محقق شده از ابتدای سال مالی تا پایان")) ||
-      jalaliStr(header[4]) !== periodEnd || jalaliStr(header[5]) !== periodEnd) return null;
-  const labels = items.map(row => normLabel(row[0]));
-  if (!labels.includes(normLabel("سود اقساط مربوط به قراردادهای سال جاری")) ||
-      !labels.includes(normLabel("سایر درآمد حاصل از عملیات لیزینگ"))) return null;
-  return readIncomeTotal(items, 6, 1);
-}
-
-function readRealEstateMonthly(rows, periodEnd) {
-  const [header, ...items] = rows;
-  const width = header.length;
-  const stride = width === 12 ? 2 : 1;
-  const columns = header.filter((_, index) => index % stride === 0);
-  const month = columns.length - 2;
-  if (![3, 6, 12].includes(width) || normLabel(columns[0]) !== "شرح" ||
-      !normLabel(columns[month]).startsWith(normLabel("درآمد محقق شده طی دوره یک ماهه منتهی به")) ||
-      !normLabel(columns[month + 1]).startsWith(normLabel("جمع درآمد محقق شده از ابتدای سال مالی تا")) ||
-      jalaliStr(columns[month]) !== periodEnd || jalaliStr(columns[month + 1]) !== periodEnd ||
-      items.length < 2 || items.some(row => row.length !== width || !normLabel(row[0]))) return null;
-  const total = items.at(-1);
-  const labels = items.slice(0, -1).map(row => normLabel(row[0]));
-  if (normLabel(total[0]) !== "جمع" || labels.includes("جمع") ||
-      !labels.includes(normLabel("فروش واحد های ساختمانی آماده فروش")) ||
-      !labels.includes(normLabel("فروش واحد های ساختمانی در جریان ساخت"))) return null;
-  if (width === 6) return readIncomeTotal(items, 6, 1);
-  if (width === 12) {
-    // The official export can render each column twice. Use only the totals
-    // agreed by both columns and independently reconciled by a complete view.
-    if (columns.some((label, index) => normLabel(label) !== normLabel(header[2 * index + 1])) ||
-        items.some(row => normLabel(row[0]) !== normLabel(row[1])) ||
-        cellNum(total[8]) !== cellNum(total[9]) || cellNum(total[10]) !== cellNum(total[11])) return null;
-    for (const lane of [0, 1]) {
-      const view = items.map(row => row.filter((_, index) => index % 2 === lane));
-      const verified = readIncomeTotal(view, 6, 1);
-      if (verified) return verified;
-    }
-    return null;
-  }
-  for (const column of [1, 2]) {
-    const figures = items.slice(0, -1).map(row => cellNum(row[column]));
-    const declared = cellNum(total[column]);
-    if (!figures.every(Number.isSafeInteger) || !Number.isSafeInteger(declared) ||
-        Math.abs(figures.reduce((sum, amount) => sum + amount, 0) - declared) > 1) return null;
-  }
-  return { amount: cellNum(total[1]), cumulative: cellNum(total[2]) };
-}
-
-const monthlySectorReaders = new Map([
-  ["bank_reported_income", readBankMonthly],
-  ["issued_premium", readInsuranceMonthly],
-  ["service_recognized_income", readServiceMonthly],
-  ["leasing_reported_income", readLeasingMonthly],
-  ["real_estate_recognized_income", readRealEstateMonthly],
-]);
-
-export function normalizeSectorN30(html, meta, profile) {
-  if (meta.period_months !== 1 || !meta.period_end || !meta.symbol) return null;
-  const read = monthlySectorReaders.get(profile);
-  if (!read) return null;
-  const candidates = [];
-  const millionRialCaptions = ["کلیه مبالغ به میلیون ریال است", "کلیه مبالغ درج شده به میلیون ریال می باشد"].map(normLabel);
-  const withLocalUnit = /<div\b[^>]*>\s*(کل[یي]ه مبالغ[^<]{1,90})<\/div>\s*<app-table\b[^>]*>([\s\S]*?)<\/app-table>/gi;
-  for (const match of html.matchAll(withLocalUnit)) {
-    const unit = normLabel(match[1]).replace(/\.$/, "");
-    if (!millionRialCaptions.includes(unit)) continue;
-    const tables = parseHtmlTables(match[2]);
-    if (tables.length !== 1) continue;
-    const result = read(tables[0], meta.period_end);
-    if (result && Number.isSafeInteger(result.amount) && Number.isSafeInteger(result.cumulative)) candidates.push(result);
-  }
-  if (candidates.length !== 1) return null;
-  return sectorMonthlyData(meta, profile, candidates[0]);
-}
-
-function sectorMonthlyData(meta, profile, total) {
-  return {
-    symbol: meta.symbol, report_kind: "ن-۳۰", period_end: meta.period_end,
-    fiscal_year: Number(meta.period_end.slice(0, 4)), monthly_measure: profile,
-    period_total_amount: total.amount, fy_cumulative_amount: total.cumulative,
-    products: [], unit: "میلیون ریال", unit_basis: "header_only", unit_header: "میلیون ریال", unit_inferred: null,
-    qty_unit: null,
-  };
-}
-
-function gridRows(table, width) {
-  if (!Array.isArray(table.cells) || table.cells.length > 4000) return null;
-  const grid = new Map();
-  const addresses = new Set();
-  for (const cell of table.cells) {
-    if (cell?.isVisible !== true) continue;
-    const {rowSequence:row,columnSequence:column,value,address} = cell;
-    if (!Number.isSafeInteger(row) || row<1 || row>500 || !Number.isSafeInteger(column) || column<1 || column>width ||
-        address!==String.fromCharCode(64+column)+row || addresses.has(address) ||
-        cell.metaTableId!==table.metaTableId || cell.metaTableCode!==table.code ||
-        (value!==null && typeof value!=="string" && typeof value!=="number")) return null;
-    addresses.add(address);
-    if (!grid.has(row)) grid.set(row, Array(width).fill(""));
-    grid.get(row)[column-1] = value==null ? "" : String(value);
-  }
-  return [...grid].sort(([a],[b])=>a-b).map(([,values])=>values);
-}
-
-const agricultureComponents = [
-  "جمع فروش داخلی", "جمع فروش صادراتی", "ارزش منصفانه تولیدات کشاورزی",
-  "خالص افزایش (کاهش) ارزش منصفانه دارائیهای زیستی غیر مولد", "بهای تمام شده انتسابی",
-].map(normLabel);
-
-function readAgricultureDecision(rows, periodEnd) {
-  const [h0, h1, ...items] = rows;
-  if (!h0 || !h1 || normLabel(h0[0])!==normLabel("نام محصول") ||
-      !normLabel(h0[13]).startsWith(normLabel("دوره یک ماهه منتهی به")) ||
-      !normLabel(h0[17]).startsWith(normLabel("از ابتدای سال مالی تا تاریخ")) ||
-      jalaliStr(h0[13])!==periodEnd || jalaliStr(h0[17])!==periodEnd ||
-      ![16,20].every(i=>normLabel(h1[i])===normLabel("مبلغ فروش (میلیون ریال)"))) return null;
-  const required = [...agricultureComponents, normLabel("جمع درآمدهای عملیاتی")];
-  const selected = new Map();
-  for (const row of items) {
-    const label=normLabel(row[0]);
-    if (!required.includes(label)) continue;
-    if (selected.has(label)) return null;
-    selected.set(label,row);
-  }
-  if (selected.size!==required.length) return null;
-  const total=selected.get(required.at(-1));
-  const result=[16,20].map(column=>{
-    const value=cellNum(total[column]);
-    const sub=agricultureComponents.map(label=>cellNum(selected.get(label)[column]));
-    return Number.isSafeInteger(value)&&sub.every(Number.isSafeInteger)&&Math.abs(sub.reduce((a,b)=>a+b,0)-value)<=1
-      ? value : null;
-  });
-  return result.every(Number.isSafeInteger) ? {amount:result[0],cumulative:result[1]} : null;
-}
-
-// Some first-period reports omit prior-period and correction columns.
-function sumDeclaredColumns(items, month, cumulative) {
-  const total=items.at(-1);
-  if(items.length<2 || normLabel(total?.[0])!=="جمع")return null;
-  const names=new Set(), sums=[0,0];
-  for(const row of items.slice(0,-1)){
-    const name=normLabel(row[0]), values=[cellNum(row[month]),cellNum(row[cumulative])];
-    if(!name || name==="جمع" || names.has(name) || !values.every(Number.isSafeInteger))return null;
-    names.add(name);
-    for(let i=0;i<2;i++)sums[i]+=values[i];
-  }
-  const reported=[cellNum(total[month]),cellNum(total[cumulative])];
-  if(!reported.every((v,i)=>Number.isSafeInteger(v)&&Number.isSafeInteger(sums[i])&&Math.abs(v-sums[i])<=1))return null;
-  return {amount:reported[0],cumulative:reported[1]};
-}
-export function readEstateDecision(rows,end) {
-  const [h,...items]=rows;
-  if(normLabel(h?.[0])!=="شرح" || !normLabel(h[4]).startsWith(normLabel("درآمد محقق شده طی دوره یک ماهه منتهی به")) ||
-     !normLabel(h[5]).startsWith(normLabel("جمع درآمد محقق شده از ابتدای سال مالی تا")) ||
-     ![4,5].every(i=>jalaliStr(h[i])===end))return null;
-  return sumDeclaredColumns(items,4,5);
-}
-export function readInsuranceDecision(rows,end) {
-  const [dates,measure,unit,...items]=rows;
-  if(!normLabel(dates?.[11]).startsWith(normLabel("دوره یک ماهه منتهی به")) ||
-     !normLabel(dates?.[15]).startsWith(normLabel("از ابتدای سال مالی تا پایان")) ||
-     ![11,15].every(i=>jalaliStr(dates[i])===end && normLabel(measure?.[i])===normLabel("حق بیمه صادره (شامل قبولی اتکایی)") &&
-       normLabel(unit?.[i])===normLabel("مبلغ (میلیون ریال)")))return null;
-  return sumDeclaredColumns(items,11,15);
-}
-function readFinancingDecision(rows, periodEnd) {
-  const [header,...items]=rows;
-  const labels=items.map(row=>normLabel(row[0]));
-  if (!header || normLabel(header[0])!=="شرح" ||
-      !normLabel(header[4]).startsWith(normLabel("درآمد محقق شده طی دوره یک ماهه منتهی به")) ||
-      !normLabel(header[5]).startsWith(normLabel("جمع درآمد محقق شده از ابتدای سال مالی تا پایان")) ||
-      jalaliStr(header[4])!==periodEnd||jalaliStr(header[5])!==periodEnd||
-      !labels.includes(normLabel("درآمد بازارگردانی"))||!labels.includes(normLabel("درآمد تعهد پذیره نویسی"))) return null;
-  if(normLabel(header[2])==="اصلاحات")return readIncomeTotal(items,8,1);
-  if(![header,...items].every(row=>[1,2,3].every(i=>!normLabel(row[i]))))return null;
-  return sumDeclaredColumns(items,4,5);
-}
-
-// Service v3 shows recognized income directly, including an empty input row.
-export function readServiceDecisionRows(rows, periodEnd) {
-  const [group, header, ...items] = rows;
-  const label = text => normLabel(text).replace("شناساسی", "شناسایی");
-  if (normLabel(group?.[0]) !== normLabel("شرح خدمات یا فروش") ||
-      normLabel(group?.[3]) !== normLabel("درآمد شناسایی شده") ||
-      !label(header?.[6]).startsWith(normLabel("درآمد شناسایی شده طی دوره یک ماهه منتهی به")) ||
-      !label(header?.[7]).startsWith(normLabel("درآمد شناسایی شده از اول سال مالی تا پایان دوره مالی منتهی به")) ||
-      ![6,7].every(i => jalaliStr(header[i]) === periodEnd)) return null;
-  const total = items.pop();
-  if (normLabel(total?.[0]) !== "جمع" || !items.some(row => normLabel(row[0]))) return null;
-  const sums = [0,0];
-  for (const row of items) {
-    const amounts = [cellNum(row[6]),cellNum(row[7])];
-    if (normLabel(row[0]) === "جمع" || !amounts.every(Number.isSafeInteger) ||
-        (!normLabel(row[0]) && amounts.some(n => n !== 0))) return null;
-    for (let i=0;i<2;i++) sums[i]+=amounts[i];
-  }
-  const totals=[cellNum(total[6]),cellNum(total[7])];
-  if(!totals.every((n,i)=>Number.isSafeInteger(n)&&Number.isSafeInteger(sums[i])&&Math.abs(n-sums[i])<=1)) return null;
-  return {amount:totals[0],cumulative:totals[1]};
-}
-const supplementalDecisionProfiles=new Map([
-  ['5',{code:1704,alias:'ServicesAndSale',unit:'کلیه مبالغ درج شده به میلیون ریال می باشد',width:10,read:readServiceDecisionRows}],
-  ['1',{code:3145,alias:'RealizedOperatingIncome',unit:'کلیه مبالغ به میلیون ریال است',width:6,read:readEstateDecision}],
-  ['6',{code:2639,alias:'MonthlyPerformance',unit:'کلیه مبالغ درج شده به میلیون ریال می باشد.',width:19,read:readInsuranceDecision}],
-]);
-export async function readSupplementalMonthlyDecision(a) {
-  const meta=metaFrom(a,"ن-۳۰");
-  const p=supplementalDecisionProfiles.get(monthlyWorkbookType(a));
-  if(!p || meta.period_months!==1 || !meta.period_end)return null;
-  const source=await loadMonthlyDecision(a,meta);
-  if(!source)return null;
-  const tables=source.sheet.tables.filter(t=>t.code===p.code&&t.aliasName===p.alias);
-  if(tables.length!==1)return null;
-  const [table]=tables;
-  if(table.sheetCode!==source.sheet.code || normLabel(table.description)!==normLabel(p.unit))return null;
-  const rows=gridRows(table,p.width);
-  const total=rows&&p.read(rows,meta.period_end);
-  if(!total)return null;
-  return {...sectorMonthlyData(meta,monthlySectorProfile(a),total),monthly_source:{
-    url:source.url,sha256:source.sha256,tracing_no:source.tracingNo,sheet_code:source.sheet.code,table_code:table.code
-  }};
-}
-const monthlyDecisionTables = new Map([
-  ["agriculture_operating_income",{code:1197,alias:"MonthlyOperatingRevenues",width:26,read:readAgricultureDecision}],
-  ["financing_service_income",{code:2162,alias:"RevenuesServiceDeliveryRealized",width:8,read:readFinancingDecision}],
-]);
-
-function normalizeMonthlyDecision(source,meta,profile) {
-  if (!source) return null;
-  const descriptor=monthlyDecisionTables.get(profile);
-  const candidates=source.sheet.tables.filter(table=>table?.code===descriptor.code&&table.aliasName===descriptor.alias);
-  if (candidates.length!==1) return null;
-  const table=candidates[0];
-  if (table.sheetCode!==source.sheet.code||normLabel(table.description)!==normLabel("کلیه مبالغ به میلیون ریال است")) return null;
-  const rows=gridRows(table,descriptor.width);
-  const total=rows&&descriptor.read(rows,meta.period_end);
-  if (!total) return null;
-  return {...sectorMonthlyData(meta,profile,total),monthly_source:{
-    url:source.url,sha256:source.sha256,tracing_no:source.tracingNo,sheet_code:source.sheet.code,table_code:table.code,
-  }};
-}
-
-export async function readIndustrialMonthlyDecision(a) {
-  if (!isIndustrialMonthlyWorkbook(a)) return null;
-  const meta = metaFrom(a, "ن-۳۰");
-  if (meta.period_months !== 1 || !meta.period_end) return null;
-  const source = await loadMonthlyDecision(a, meta);
-  if (!source) return null;
-  const tables = source.sheet.tables.filter(t => t?.code === 1197 && t.aliasName === "ProductionAndSales");
-  if (tables.length !== 1) return null;
-  const [table] = tables;
-  if (table.sheetCode !== source.sheet.code ||
-      normLabel(table.description) !== normLabel("کلیه مبالغ به میلیون ریال است")) return null;
-  const rows = gridRows(table, 26);
-  if (!rows) return null;
-  const [groups, columns, ...details] = rows;
-  if (!groups || !columns || normLabel(groups[0]) !== "شرح" || normLabel(columns[0]) !== normLabel("نام محصول") ||
-      !normLabel(groups[13]).startsWith(normLabel("دوره یک ماهه منتهی به")) ||
-      !normLabel(groups[17]).startsWith(normLabel("از ابتدای سال مالی تا تاریخ")) ||
-      ![13, 17].every(i => jalaliStr(groups[i]) === meta.period_end) ||
-      ![16, 20].every(i => normLabel(columns[i]) === normLabel("مبلغ فروش (میلیون ریال)"))) return null;
-  const total = details.filter(row => normLabel(row[0]) === "جمع");
-  if (total.length !== 1 || total[0] !== details.at(-1) ||
-      ![16, 20].every(i => Number.isSafeInteger(cellNum(total[0][i])))) return null;
-  const data = normalizeN30([rows], meta);
-  if (data?.unit !== "میلیون ریال" || data.period_total_amount !== cellNum(total[0][16]) ||
-      data.fy_cumulative_amount !== cellNum(total[0][20])) return null;
-  data.monthly_source = {
-    url: source.url, sha256: source.sha256, tracing_no: source.tracingNo, sheet_code: source.sheet.code, table_code: table.code,
-  };
-  industrialMonthlyDecisions.set(data, { link: a.link, symbol: a.l18, period: meta.period_end, json: JSON.stringify(data) });
-  return data;
-}
-
 /** دانلود اکسل اطلاعیه و نرمال‌سازی — null یعنی پارس ناموفق (درج نکنید). */
 export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejected) {
-  if (kind === "ن-۳۰" && monthlyDecisionTypeWithoutWorkbook(a?.link, a?.link_excel) === "0") {
-    const data = await readIndustrialMonthlyDecision(a);
-    onDownloaded();
-    return data ?? notifyAdmissionRejection(onRejected, kind, "unsupported_layout");
-  }
-  const sector=kind==="ن-۳۰" ? monthlySectorProfile(a) : null;
-  if (monthlyDecisionTables.has(sector)) {
-    const meta=metaFrom(a,kind);
-    const source=meta.period_months===1&&meta.period_end ? await loadMonthlyDecision(a,meta,{fetchImpl:fetch}) : null;
-    onDownloaded();
-    return normalizeMonthlyDecision(source,meta,sector) ?? notifyAdmissionRejection(onRejected,kind,"unsupported_layout");
-  }
   let body = null;
-  let html;
-  try {
-    html = await downloadExcelHtml(a.link_excel, kind === "ن-۳۰" ? value => { body = value; } : undefined);
-  } catch (excelError) {
-    // A failed Excel endpoint must not hide a valid same-report publisher
-    // statement. Local quota deferrals still stop immediately; unsupported or
-    // rejected fallback content retains the original download failure stage.
-    if (kind !== "ن-۱۰" || isBrsLocalDeferral(excelError) || isCodalSourceDeferred(excelError)) throw excelError;
-    const result = await loadDecisionStatement(a, metaFrom(a, kind), { fetchImpl: fetch });
-    if (!result.data) throw excelError;
-    onDownloaded();
-    return result.data;
-  }
+  const html = await downloadExcelHtml(a.link_excel, kind === "ن-۳۰" ? value => { body = value; } : undefined);
   // Stage boundary only: never pass report content to diagnostics.
-  const meta = metaFrom(a, kind);
-  if (kind === "ن-۱۰") {
-    let rejection;
-    const legacy = admitN10Html(html, meta, event => { rejection ??= event; });
-    if (legacy) { onDownloaded(); return legacy; }
-    // Discovery remains the shared BRSAPI feed. The official statement pages
-    // supplement missing Excel context; they never bypass financial validation.
-    const result = await loadDecisionStatement(a, meta, { fetchImpl: fetch });
-    onDownloaded();
-    if (result.data) return result.data;
-    return notifyAdmissionRejection(onRejected, kind, rejection?.reason ?? "context_invalid");
-  }
   onDownloaded();
+  const meta = metaFrom(a, kind);
+  if (kind === "ن-۱۰") return admitN10Html(html, meta, onRejected);
   const source = body && sameQuantityResponseSource(body.sourceRef, body.responseUrl)
     ? { version: 1, sourceId: body.sourceRef, htmlSha256: createHash("sha256").update(body.htmlBytes).digest("hex"),
       htmlBytes: body.htmlBytes, symbol: meta.symbol, periodEnd: meta.period_end } : null;
-  if (sector) {
-    const sectorData = source ? normalizeSectorN30(html, meta, sector) : null;
-    return sectorData ?? notifyAdmissionRejection(onRejected, kind, "unsupported_layout");
-  }
-  let rejection;
-  const data = normalizeN30(parseHtmlTables(html), { ...meta, quantity_source: source }, event => { rejection = event; });
-  if (!data && rejection?.reason === "period_unverified" && source && isIndustrialMonthlyWorkbook(a)) {
-    const verified = await readIndustrialMonthlyDecision(a);
-    if (verified) return verified;
-  }
-  if (!data) return notifyAdmissionRejection(onRejected, kind, rejection?.reason ?? "unspecified");
-  if (data?.sales_zero_reported && (!source || !isIndustrialMonthlyWorkbook(a))) {
-    return notifyAdmissionRejection(onRejected,kind,"zero_sales_only");
-  }
+  const data = normalizeN30(parseHtmlTables(html), { ...meta, quantity_source: source }, onRejected);
   if (data?.quantity_source && typeof a.link === "string" && a.link.trim() && a.link.trim() === a.link) {
     const receipt = {
       version: 1, symbol: a.l18, report_kind: kind, announcement_link: a.link, source_url: versionedUrl(a.link),
@@ -1647,13 +1112,11 @@ export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejec
   return data;
 }
 
-/** Same immutable row for collector writes and operator dry-run review. */
-export function buildParsedReportRow(a, kind, data) {
+/** Returns the actual 0/1 count; zero resolves only after confirming the exact
+ * stored report with non-null data. Unconfirmed persistence rejects before any
+ * caller can clear its failure ledger or mark the URL as known. */
+export async function insertParsedReport(a, kind, data) {
   const meta = metaFrom(a, kind);
-  const decision = kind === "ن-۳۰" && industrialMonthlyDecisions.get(data);
-  const parserVersion = decision && decision.link === a.link && decision.symbol === a.l18 &&
-      decision.period === meta.period_end && decision.json === JSON.stringify(data)
-    ? MONTHLY_PERIOD_REPAIR_VERSION : PARSER_VERSION;
   const captured = data && typeof data === "object" ? monthlyQuantityCaptures.get(data) : null;
   const quantityCapture = kind === "ن-۳۰" && captured && captured.dataJson === JSON.stringify(data)
     && captured.receipt.symbol === a.l18 && captured.receipt.announcement_link === a.link
@@ -1666,7 +1129,7 @@ export function buildParsedReportRow(a, kind, data) {
     report_kind: kind,
     period_end: jalaliStrToGregorian(meta.period_end),
     title: a.title || null,
-    source_url: versionedUrl(a.link, parserVersion),
+    source_url: versionedUrl(a.link),
     published_at: null,
     data,
     raw: {
@@ -1678,20 +1141,13 @@ export function buildParsedReportRow(a, kind, data) {
       period_end_jalali: meta.period_end,
       audited: meta.audited,
       period_months: meta.period_months,
-      parser_version: parserVersion,
+      parser_version: PARSER_VERSION,
       announcement_link: a.link,
       discovered_by: "engine-v3",
       ...(quantityCapture ? { quantity_capture: quantityCapture } : {}),
     },
   };
-  return row;
-}
-
-/** Returns the actual 0/1 count; zero resolves only after confirming the exact
- * stored report with non-null data. Unconfirmed persistence rejects before any
- * caller can clear its failure ledger or mark the URL as known. */
-export async function insertParsedReport(a, kind, data) {
-  return await insertReport(buildParsedReportRow(a, kind, data));
+  return await insertReport(row);
 }
 
 /** دامپ تشخیصی ساختار جدول‌های یک اکسل واقعی به Supabase — وقتی لبهٔ لیارا از خارج در دسترس نیست.

@@ -9,9 +9,6 @@ export interface RecommendationBody {
  actions: { actionKey: string; title: string; dueOn: string; responsible: "member" | "advisor" }[];
 }
 export type FeedbackStatus = "viewed" | "acknowledged" | "doing" | "done" | "question";
-// Read future stored feedback before enabling its writers. Existing commands
-// deliberately retain FeedbackStatus until the destination rollout is accepted.
-export type StoredFeedbackStatus = FeedbackStatus | "partial" | "not_done";
 export type ConsultationCommand =
  | { kind: "grant"; advisorId: string; clientLabel: string }
  | { kind: "revoke"; relationshipId: string }
@@ -23,7 +20,7 @@ export interface ConsultationReceipt { contractVersion: "consultation-write.v1";
 export interface Relationship { id: string; clientId: string; advisorId: string; clientLabel: string; createdAt: string; revoked: boolean }
 export interface ConsultationSession { id: string; relationshipId: string; sessionKey: string; version: number; createdAt: string; actorId: string; contentHash: string; body: RecommendationBody; approval: { actorId: string; createdAt: string } | null; state: "draft" | "submitted" | "approved" | "published" | "withdrawn" }
 export interface ConsultationEvent { id: string; sessionId: string; kind: "submit" | "approve" | "publish" | "withdraw"; actorId: string; createdAt: string; note: string | null }
-export interface ConsultationAction { id: string; sessionId: string; actionKey: string | null; version: number; status: StoredFeedbackStatus; text: string | null; actorId: string; createdAt: string }
+export interface ConsultationAction { id: string; sessionId: string; actionKey: string | null; version: number; status: FeedbackStatus; text: string | null; actorId: string; createdAt: string }
 export interface ConsultationDossier {
  basis: FinancialBasis;
  holdings: null | { id: string; version: number; positions: { key: string; title: string; quantity: string | null; unit: string; ownershipPercent: string; declaredValueToman: number | null; source: string | null; asOf: string | null }[]; debts: { key: string; title: string; balanceToman: number; balanceAsOf: string; nextInstallmentToman: number | null; nextDueOn: string | null }[] };
@@ -32,7 +29,6 @@ export interface ConsultationDossier {
 }
 export interface ConsultationRead {
  contractVersion: "consultation-read.v1";
- capabilities?: { extendedFeedbackWrite: boolean };
  actor: { id: string; isAdvisor: boolean; isOwner: boolean };
  advisors: { id: string; displayName: string; isOwner: boolean }[];
  relationships: Relationship[]; selected: Relationship | null; dossier: ConsultationDossier | null;
@@ -88,10 +84,7 @@ const timestamp=(v:unknown):string=>{if(typeof v!=="string"||!/^\d{4}-\d\d-\d\dT
 const bool=(v:unknown):boolean=>{if(typeof v!=="boolean")throw Error("وضعیت معتبر نیست.");return v;};
 function relation(v:unknown):Relationship { const r=object(v,["id","clientId","advisorId","clientLabel","createdAt","revoked"]);return {id:id(r.id),clientId:id(r.clientId),advisorId:id(r.advisorId),clientLabel:text(r.clientLabel,120),createdAt:timestamp(r.createdAt),revoked:bool(r.revoked)}; }
 export function validateConsultationRead(value: unknown, expected: {relationshipId?:string;actorId?:string;period?:{startOn:string;endOn:string}}={}): ConsultationRead {
- const hasCapabilities=Boolean(value&&typeof value==="object"&&Object.hasOwn(value,"capabilities"));
- const r=object(value,["contractVersion","actor","advisors","relationships","selected","dossier","sessions","notes","events","actions",...(hasCapabilities?["capabilities"]:[])]);
- let extendedFeedbackWrite=false;
- if(hasCapabilities){const capabilities=object(r.capabilities,["extendedFeedbackWrite"]);extendedFeedbackWrite=bool(capabilities.extendedFeedbackWrite);}
+ const r=object(value,["contractVersion","actor","advisors","relationships","selected","dossier","sessions","notes","events","actions"]);
  if(r.contractVersion!=="consultation-read.v1")throw Error("قرارداد خواندن معتبر نیست.");
  const a=object(r.actor,["id","isAdvisor","isOwner"]);const actor={id:id(a.id),isAdvisor:bool(a.isAdvisor),isOwner:bool(a.isOwner)};
  if(expected.actorId&&actor.id!==expected.actorId||actor.isOwner&&!actor.isAdvisor)throw Error("هویت تغییر کرده است.");
@@ -105,7 +98,7 @@ export function validateConsultationRead(value: unknown, expected: {relationship
  const sessionIds=new Set(sessions.map(x=>x.id));
  const notes=list(r.notes,100).map(v=>{const x=object(v,["sessionId","note"]);if(!advisor||!sessionIds.has(id(x.sessionId)))throw Error("یادداشت خصوصی قابل مشاهده نیست.");return{sessionId:id(x.sessionId),note:nullableText(x.note,10000)};});
  const events=list(r.events,400).map(v=>{const x=object(v,["id","sessionId","kind","actorId","createdAt","note"]);if(!sessionIds.has(id(x.sessionId))||!["submit","approve","publish","withdraw"].includes(String(x.kind))||!advisor&&x.kind!=="publish"&&x.kind!=="withdraw")throw Error("رویداد معتبر نیست.");return{id:id(x.id),sessionId:id(x.sessionId),kind:x.kind as ConsultationEvent['kind'],actorId:id(x.actorId),createdAt:timestamp(x.createdAt),note:nullableText(x.note,2000)};});
- const actions=list(r.actions,500).map(v=>{const x=object(v,["id","sessionId","actionKey","version","status","text","actorId","createdAt"]);if(!sessionIds.has(id(x.sessionId))||!["viewed","acknowledged","doing","done","question","partial","not_done"].includes(String(x.status)))throw Error("پیگیری معتبر نیست.");return{id:id(x.id),sessionId:id(x.sessionId),actionKey:nullableId(x.actionKey),version:version(x.version),status:x.status as StoredFeedbackStatus,text:nullableText(x.text,2000),actorId:id(x.actorId),createdAt:timestamp(x.createdAt)};});
+ const actions=list(r.actions,500).map(v=>{const x=object(v,["id","sessionId","actionKey","version","status","text","actorId","createdAt"]);if(!sessionIds.has(id(x.sessionId))||!["viewed","acknowledged","doing","done","question"].includes(String(x.status)))throw Error("پیگیری معتبر نیست.");return{id:id(x.id),sessionId:id(x.sessionId),actionKey:nullableId(x.actionKey),version:version(x.version),status:x.status as FeedbackStatus,text:nullableText(x.text,2000),actorId:id(x.actorId),createdAt:timestamp(x.createdAt)};});
  let dossier:ConsultationDossier|null=null;
  if(r.dossier!==null){if(!selected)throw Error("پرونده بدون رابطه");const d=object(r.dossier,["basis","holdings","cashFlow","goals"]);const basis=validateFinancialBasis(d.basis);if(expected.period&&stable(basis.cashFlowPeriod)!==stable(expected.period))throw Error("دوره تغییر کرده است.");
   const money=(v:unknown,nullable=false):number|null=>{if(nullable&&v===null)return null;if(typeof v!=="number"||!Number.isSafeInteger(v)||v<0)throw Error("مبلغ معتبر نیست.");return v;};
@@ -132,9 +125,8 @@ export function validateConsultationRead(value: unknown, expected: {relationship
  for(const action of actions){
   const session=sessions.find(x=>x.id===action.sessionId)!;const definition=session.body.actions.find(x=>x.actionKey===action.actionKey);const key=action.sessionId+":"+action.actionKey+":"+action.version;
   if(feedbackKeys.has(key)||action.actionKey!==null&&!definition||![selected?.advisorId,selected?.clientId].includes(action.actorId)||Date.parse(action.createdAt)<Date.parse(session.createdAt))throw Error("پیگیری معتبر نیست.");feedbackKeys.add(key);
-  if(["doing","done","partial","not_done"].includes(action.status)){if(!definition||action.actorId!==(definition.responsible==="member"?selected?.clientId:selected?.advisorId))throw Error("مسئول پیگیری معتبر نیست.");}else if(action.actorId!==selected?.clientId)throw Error("بازخورد عضو معتبر نیست.");
-  if(["partial","not_done"].includes(action.status)&&!action.text)throw Error("جزئیات پیگیری موجود نیست.");
+  if(["doing","done"].includes(action.status)){if(!definition||action.actorId!==(definition.responsible==="member"?selected?.clientId:selected?.advisorId))throw Error("مسئول پیگیری معتبر نیست.");}else if(action.actorId!==selected?.clientId)throw Error("بازخورد عضو معتبر نیست.");
   if(action.status==="question"&&!action.text)throw Error("پرسش بدون متن معتبر نیست.");
  }
- return {contractVersion:'consultation-read.v1',...(hasCapabilities?{capabilities:{extendedFeedbackWrite}}:{}),actor,advisors,relationships,selected,dossier,sessions,notes,events,actions};
+ return {contractVersion:'consultation-read.v1',actor,advisors,relationships,selected,dossier,sessions,notes,events,actions};
 }

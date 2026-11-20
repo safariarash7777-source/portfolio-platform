@@ -1,5 +1,4 @@
 {
   "platform": "node",
-  "port": 3400,
-  "node": { "version": "22" }
+  "port": 3400
 }

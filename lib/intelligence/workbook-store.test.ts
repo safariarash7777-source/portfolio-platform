@@ -272,20 +272,3 @@ test('stable creation replay returns original timestamp/UUID, concurrent retry c
  assert.equal((await saveWorkbook(h.gw,{...payload,creationId:'invalid'})).status,400);
  assert.equal((await saveWorkbook(h.gw,{...payload,workbookId:creationId,baseVersion:1})).status,400);
 });
-
-
-test("explicit version recovery is bound to original author, base and exact content", async () => {
- const opts={user:'synthetic-admin-A'}; const h=harness(opts);
- const id=(await saveWorkbook(h.gw,{workbookId:null,baseVersion:0,workbook:complete('first')})).body.workbookId as string;
- const payload={workbookId:id,baseVersion:1,recoverVersion:true,workbook:complete('second')};
- const first=await saveWorkbook(h.gw,payload); assert.equal(first.status,201);
- const replay=await saveWorkbook(h.gw,payload);assert.equal(replay.status,200);assert.equal(replay.body.reused,true);
- assert.equal(replay.body.savedAt,first.body.savedAt);assert.equal(replay.body.version,2);assert.equal(h.versions.length,2);
- assert.equal((await saveWorkbook(h.gw,{...payload,workbook:complete('different')})).status,409);
- opts.user='synthetic-admin-B';assert.equal((await saveWorkbook(h.gw,payload)).status,409);
- opts.user='synthetic-admin-A';
- await saveWorkbook(h.gw,{workbookId:id,baseVersion:2,workbook:complete('third')});
- assert.equal((await saveWorkbook(h.gw,payload)).body.version,2);assert.equal(h.versions.length,3);
- assert.equal((await saveWorkbook(h.gw,{...payload,recoverVersion:false})).status,400);
- assert.equal((await saveWorkbook(h.gw,{workbookId:null,baseVersion:0,recoverVersion:true,workbook:complete()})).status,400);
-});

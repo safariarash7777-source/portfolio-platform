@@ -3,20 +3,14 @@ import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import { createHash } from "node:crypto";
 import { notifyAdmissionRejection } from "../codal-admission-diagnostics.mjs";
-import { isBrsLocalDeferral } from '../brsapi-policy.mjs';
-import { loadDecisionStatement, loadMonthlyDecision, monthlyDecisionTypeWithoutWorkbook } from '../codal-statement-source.mjs';
-import { createCodalAccessGuard, isCodalSourceDeferred } from '../codal-source-access.mjs';
 
 export function loadOfflineCodal({ fetchFixture, environment = {} } = {}) {
   const counts = { network: 0, fixtureTransportCalls: 0, syntheticEnvironmentReads: 0 };
   let source = readFileSync(new URL("../codal.mjs", import.meta.url), "utf8");
   const imports = [
     'import { brsFetch as fetch } from "./brsapi-transport.mjs";',
-    'import { isBrsLocalDeferral } from "./brsapi-policy.mjs";',
     'import { notifyAdmissionRejection } from "./codal-admission-diagnostics.mjs";',
     'import { createHash } from "node:crypto";',
-    'import { loadDecisionStatement, loadMonthlyDecision, monthlyDecisionTypeWithoutWorkbook } from "./codal-statement-source.mjs";',
-    'import { codalAccess, isCodalSourceDeferred } from "./codal-source-access.mjs";',
   ];
   for (const line of imports) {
     if (!source.includes(line)) throw new Error("Offline loader import boundary changed");
@@ -28,10 +22,8 @@ export function loadOfflineCodal({ fetchFixture, environment = {} } = {}) {
     if (fetchFixture) { counts.fixtureTransportCalls++; return fetchFixture(...args); }
     counts.network++; throw new Error("Offline parser network denied");
   };
-  const instantiate = vm.runInThisContext(`(function(fetch,notifyAdmissionRejection,process,console,createHash,isBrsLocalDeferral,loadDecisionStatement,loadMonthlyDecision,monthlyDecisionTypeWithoutWorkbook,codalAccess,isCodalSourceDeferred){\n${source}\nreturn {parseHtmlTables,normalizeN10,normalizeN10Bank,normalizeN30,unitFromHeader,unitFromArithmetic,resolveAmountUnit,PARSER_VERSION,metaFrom,downloadAndParse,insertParsedReport};\n})`, { filename: "actual-codal-offline.mjs" });
-  const offlineStatement = (announcement, meta) => loadDecisionStatement(announcement, meta, { fetchImpl: fetch });
-  const offlineMonthly = (announcement, meta) => loadMonthlyDecision(announcement, meta, { fetchImpl: fetch });
-  return { parser: instantiate(fetch, notifyAdmissionRejection, syntheticProcess, console, createHash, isBrsLocalDeferral, offlineStatement, offlineMonthly, monthlyDecisionTypeWithoutWorkbook, createCodalAccessGuard(), isCodalSourceDeferred), counts };
+  const instantiate = vm.runInThisContext(`(function(fetch,notifyAdmissionRejection,process,console,createHash){\n${source}\nreturn {parseHtmlTables,normalizeN10,normalizeN10Bank,normalizeN30,unitFromHeader,unitFromArithmetic,resolveAmountUnit,PARSER_VERSION,metaFrom,downloadAndParse,insertParsedReport};\n})`, { filename: "actual-codal-offline.mjs" });
+  return { parser: instantiate(fetch, notifyAdmissionRejection, syntheticProcess, console, createHash), counts };
 }
 
 export function foladQuantityFixture() {

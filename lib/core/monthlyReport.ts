@@ -5,7 +5,7 @@
 // relay/codal.mjs خط ۳۹۲: اعتبارسنجی مبلغ ≈ فروش×نرخ÷10^6).
 // روایت‌ها فقط template‌ای و قطعی‌اند — هیچ ارزش‌داوری تجویزی.
 
-import { isMonthlyMeasure, MONTHLY_MEASURE_LABELS, type CodalN30Data, type MonthlyMeasure, type N30Market } from "@/lib/fundamental/types";
+import type { CodalN30Data, N30Market } from "@/lib/fundamental/types";
 import { monthlyMarket, monthlyMarketUnavailableReason, withKnownMonthlyQuantities, type MonthlyMarketUnavailableReason, type QuantityWitnessedReport, type QuantityWitnessedProduct, type MonthlyQuantityWitness } from "./monthly-quantity";
 
 /* ── انواع خروجی ─────────────────────────────────────────────────────────── */
@@ -15,21 +15,6 @@ export const JALALI_MONTHS = [
   "فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور",
   "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند",
 ] as const;
-
-export function monthlyMeasureLabel(measure: MonthlyMeasure = "sales"): string {
-  return isMonthlyMeasure(measure) ? MONTHLY_MEASURE_LABELS[measure] : MONTHLY_MEASURE_LABELS.sales;
-}
-
-/** Each displayed series uses the definition of the latest eligible report. */
-export function comparableMonthlyReports(reports: CodalN30Data[]): CodalN30Data[] {
-  const valid = reports.filter(report => report && typeof report.period_end === "string"
-    && monthKeyOf(report.period_end) !== null
-    && Array.isArray(report.products) && isMonthlyMeasure(report.monthly_measure ?? "sales"));
-  const latest = valid.reduce<CodalN30Data | null>((current, item) =>
-    current && current.period_end >= item.period_end ? current : item, null);
-  const measure = latest?.monthly_measure ?? "sales";
-  return valid.filter(report => (report.monthly_measure ?? "sales") === measure);
-}
 
 /** یک ماه از سال مالی — value=null یعنی گزارشی برای آن ماه نیامده (گپ واقعی). */
 export interface FYMonthPoint {
@@ -93,7 +78,6 @@ export interface QuantitySeries {
 }
 
 export interface MonthlySales {
-  measure?: MonthlyMeasure;
   /** Common denominator of observed output contributors, not missing calendar slots. */
   quantityUnit: string | null;
   /** سال مالی جاری (جلالی، مثل ۱۴۰۵) و قبلی. */
@@ -248,7 +232,7 @@ export function dedupeByMonth(reports: CodalN30Data[]): Map<string, CodalN30Data
     // اگر نسخهٔ نگه‌داشته جمعِ صفر دارد و این نسخه جمع ناصفر، جایگزین شود.
     const prevTotal = prev.period_total_amount ?? 0;
     const curTotal = r.period_total_amount ?? 0;
-    if ((prev.monthly_measure ?? "sales") === "sales" && prev.sales_zero_reported !== true && prevTotal === 0 && curTotal > 0) byMonth.set(key, r);
+    if (prevTotal === 0 && curTotal > 0) byMonth.set(key, r);
   }
   return byMonth;
 }
@@ -300,8 +284,7 @@ function buildFYMonths(fy: number, months: Map<number, CodalN30Data> | undefined
  * ورودی: گزارش‌ها از جدید به قدیم (خروجی supabase.ts همین است).
  * خروجی null یعنی هیچ گزارش قابل‌استفاده‌ای وجود ندارد — بخش رندر نشود. */
 export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null {
-  const comparable = comparableMonthlyReports(reports ?? []);
-  const byMonth = dedupeByMonth(comparable);
+  const byMonth = dedupeByMonth(reports ?? []);
   if (byMonth.size === 0) return null;
 
   const byFY = groupByFY(byMonth);
@@ -492,7 +475,6 @@ export function buildMonthlySales(reports: CodalN30Data[]): MonthlySales | null 
   }
 
   return {
-    measure: comparable[0]?.monthly_measure ?? "sales",
     quantityUnit: commonQuantityUnit([
       ...rateSeries.map(series => series.quantityUnit),
       ...prodVsSales.filter(point => point.unavailableReason === null).map(point => point.quantityUnit),
@@ -537,8 +519,8 @@ export function narrativeMonthlyVsAvg(m: MonthlySales): string | null {
   const diff = pct(latestAmount - m.avgCurrent, m.avgCurrent);
   if (diff === null || diff === 0) return null;
   return diff > 0
-    ? `${monthlyMeasureLabel(m.measure)} ${m.latestMonthLabel} حدود ${pctText(diff)} بالاتر از میانگین ماهانهٔ سال ${m.currentFY} است.`
-    : `${monthlyMeasureLabel(m.measure)} ${m.latestMonthLabel} حدود ${pctText(diff)} پایین‌تر از میانگین ماهانهٔ سال ${m.currentFY} است.`;
+    ? `فروش ${m.latestMonthLabel} حدود ${pctText(diff)} بالاتر از میانگین ماهانهٔ سال ${m.currentFY} است.`
+    : `فروش ${m.latestMonthLabel} حدود ${pctText(diff)} پایین‌تر از میانگین ماهانهٔ سال ${m.currentFY} است.`;
 }
 
 /** روایت چارت ۲: تجمیعی سال جاری در برابر هم‌دورهٔ سال قبل. */
@@ -547,8 +529,8 @@ export function narrativeCumulative(m: MonthlySales): string | null {
   const g = pct(m.cumulativeCurrent - m.cumulativePriorSamePoint, Math.abs(m.cumulativePriorSamePoint));
   if (g === null || g === 0) return null;
   return g > 0
-    ? `${monthlyMeasureLabel(m.measure)} تجمیعی از ابتدای سال مالی ${m.currentFY} نسبت به دورهٔ مشابه سال قبل ${pctText(g)} بیشتر است.`
-    : `${monthlyMeasureLabel(m.measure)} تجمیعی از ابتدای سال مالی ${m.currentFY} نسبت به دورهٔ مشابه سال قبل ${pctText(g)} کمتر است.`;
+    ? `فروش تجمیعی از ابتدای سال مالی ${m.currentFY} نسبت به دورهٔ مشابه سال قبل ${pctText(g)} بیشتر است.`
+    : `فروش تجمیعی از ابتدای سال مالی ${m.currentFY} نسبت به دورهٔ مشابه سال قبل ${pctText(g)} کمتر است.`;
 }
 
 /** روایت چارت ۳: نرخ فروش آخرین ماهِ سری اول نسبت به میانگین کل بازه. */

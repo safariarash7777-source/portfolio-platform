@@ -112,7 +112,7 @@ export function buildCoveragePlan(input) {
       maxAttempts: attempts, declaredDailyRequestCap: cap, verifiedLiveCapacity: null, completionDays: null,
       plannedNAVRequests: 0, deferredNAVCandidates: nav.filter(n => n.status === 'candidate_deferred').length,
       unknownCandidateCells: matrix.filter(c => c.status === 'unknown').length, spacingMs: 100,
-      consumers: ['candle-backfill/bulk', 'nav-completion/bulk', 'nav-primary/bulk', 'FX and other shared-key producers'] },
+      consumers: ['candle-backfill/bulk', 'nav-completion/bulk', 'nav-bulk/standard', 'FX and other shared-key producers'] },
     liveGate: { enabled: false, blockers: ['planner_has_no_live_mode', 'PR178_live_acceptance_required',
       'supplier_reset_window_and_prior_usage_required', 'approved_scope_capacity_and_operator_rollout_required'] },
     missingUniverseDays: input.universeComplete === true ? [] : days,

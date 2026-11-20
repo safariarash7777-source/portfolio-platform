@@ -1,12 +1,8 @@
-import { createMcpQuoteBridge } from './mcpfarsi-quote.mjs';
 import { readProviderJson } from './capitalization-response.mjs';
 import { brsFetch as fetch } from "./brsapi-transport.mjs";
-import { brsTransportMetrics, isBrsLocalDeferral, waitForBrsReadiness } from "./brsapi-transport.mjs";
-import { isBrsBudgetDeferral } from "./brsapi-policy.mjs";
-import { createNavRefreshSequence } from "./nav-refresh-sequence.mjs";
-import { selectNavRefreshTargets, selectPriorityNavTargets } from "./nav-refresh-targets.mjs";
+import { brsTransportMetrics } from "./brsapi-transport.mjs";
 import { writeDailyFx } from "./daily-fx.mjs";
-import { retainMarketFamilies, retainCommoditySnapshot, mergeStoredBaseline, sourceErrorCategory, validStoredSnapshot, NAV_STALE_MS } from "./market-retention.mjs";
+import { retainMarketFamilies, retainCommoditySnapshot, mergeStoredBaseline, sourceErrorCategory, validStoredSnapshot } from "./market-retention.mjs";
 // ─────────────────────────────────────────────────────────────────────────────
 // رلهٔ بازارِ ایران — باید روی هاستِ «داخل ایران» اجرا شود (لیارا/آروان/پارس‌پک).
 // چرا: منابعِ ایرانی (BrsApi) به IPِ خارجی ۴۰۳ می‌دهند؛ این سرویسِ
@@ -36,7 +32,6 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { codalTest, codalRawExcel, codalDebugDump, CODAL_INTERVAL_MS, fetchAnnouncementsPage } from "./codal.mjs";
 import { runEngineCycle, engineStatus } from "./codal-engine.mjs";
-import { createCompanyWorkScheduler, scheduledCompanyCycleOptions } from "./company-work-scheduler.mjs";
 import { runArchiveCycle, archiveStatus } from "./codal-archive.mjs";
 import { fetchOptions, optionsStatus } from "./options.mjs";
 import { runCandleBackfill, candleStatus } from "./candle-backfill.mjs";
@@ -108,7 +103,7 @@ function sharedBudget() {
     softBudget: Number(process.env.BRSAPI_DAILY_SOFT || 6000),
     hardCeiling: Number(process.env.BRSAPI_DAILY_HARD || 9000),
     leaseSize: Number(process.env.BRSAPI_LEASE_SIZE || 50),
-    degradedCeiling: 0 /* Emergency unleased allowance is disabled, including env overrides. */,
+    degradedCeiling: Number(process.env.BRSAPI_DEGRADED_CEILING || 100),
     onError: (e) => console.error("brsapi budget store:", errMsg(e)),
   });
   return sharedBudgetInstance;
@@ -126,12 +121,6 @@ let commodityBudgetResolved = false;
 function commodityBudget() {
   if (commodityBudgetResolved) return commodityBudgetInstance;
   commodityBudgetResolved = true;
-  // Commodity may fall back to the main key: that is one provider allowance.
-  // Never mint a second namespace (or a fallback budget) for the same key.
-  if (BRSAPI_KEY.trim() && commodityConfig().key === BRSAPI_KEY.trim()) {
-    commodityBudgetInstance = sharedBudget();
-    return commodityBudgetInstance;
-  }
   const store = makeSupabaseLeaseStore({ url: SUPABASE_URL, serviceKey: SUPABASE_SERVICE_ROLE_KEY });
   if (!store) return null;
   commodityBudgetInstance = new PersistentDailyBudget({
@@ -143,7 +132,7 @@ function commodityBudget() {
     softBudget: Number(process.env.BRSAPI_COMMODITY_SOFT || 900),
     hardCeiling: Number(process.env.BRSAPI_COMMODITY_HARD || 1200),
     leaseSize: Number(process.env.BRSAPI_COMMODITY_LEASE || 20),
-    degradedCeiling: 0 /* Emergency unleased allowance is disabled, including env overrides. */,
+    degradedCeiling: Number(process.env.BRSAPI_COMMODITY_DEGRADED || 20),
     onError: (e) => console.error("commodity budget store:", errMsg(e)),
   });
   return commodityBudgetInstance;
@@ -516,13 +505,18 @@ async function fetchStocksAndFunds() {
 }
 
 // ── BrsApi: NAV صندوق‌ها (Tsetmc/Nav.php — صدور psubtran / ابطال predtran، ریال) ──
-// Use the documented single-symbol endpoint. Quotes already come in AllSymbols.
-// Keep optional NAV traffic below the current-disclosure budget class.
+// مستندات BrsApi این endpoint را «تک‌نمادی» تعریف کرده (پارامتر l18)؛ برای رعایت
+// سهمیهٔ روزانهٔ کلید (۱۰هزار درخواست) NAV هر NAV_REFRESH_MS یک‌بار و فقط برای
+// NAV_TOP صندوقِ پرمعامله تازه می‌شود و بین دورها کشِ نمادی می‌ماند.
+// در شروعِ هر دور یک‌بار حالتِ bulk (بدون l18) امتحان می‌شود؛ اگر آرایهٔ چندنماده
+// برگردد از همان استفاده می‌کنیم (یک درخواست به‌جای صدها).
 const NAV_REFRESH_MS = 60 * 60 * 1000; // هر ساعت
-const NAV_TOP = 10;
+const NAV_TOP = 150;                   // سقف صندوق‌ها در حالت تک‌نمادی
 const NAV_CONCURRENCY = 4;
+const NAV_STALE_MS = 24 * 60 * 60 * 1000; // NAV کهنه‌تر از یک روز منتشر نمی‌شود
 const navCache = new Map(); // l18 → { nav, navIssue, navDate, navTime, at } (ریال)
 let lastNavRound = 0;
+let navBulkMode = null; // null = هنوز نامشخص
 
 function cacheNavRow(l18, d, now) {
   const nav = Number(d?.predtran);
@@ -537,47 +531,70 @@ function cacheNavRow(l18, d, now) {
   return true;
 }
 
-async function refreshNavs(funds, attempted = new Set()) {
+async function refreshNavs(funds) {
   if (!BRSAPI_KEY || funds.length === 0) return;
   if (Date.now() - lastNavRound < NAV_REFRESH_MS) return;
   lastNavRound = Date.now(); // اول ست می‌شود تا دورِ موازی شروع نشود
+  const base = `${BRSAPI_BASE}/Tsetmc/Nav.php?key=${BRSAPI_KEY}`;
 
+  // ۱) تلاش bulk
+  if (navBulkMode !== false) {
+    try {
+      const c = brsClient();
+      let json = null;
+      if (c) {
+        json = await c.request({
+          endpoint: "Tsetmc/Nav.php", params: {},
+          producer: "nav-bulk", priority: "background",
+          // یک درخواست که NAVِ همهٔ صندوق‌ها را می‌آورد — ارزانِ پرفایده.
+          budgetClass: "standard",
+          dedupeTtlMs: 60_000, timeoutMs: 20_000,
+        });
+      } else {
+        await countLegacy("nav-bulk", "standard");
+        const res = await fetch(base, { headers: HDRS, signal: AbortSignal.timeout(20000) });
+        if (res.ok) json = await res.json();
+      }
+      {
+        if (Array.isArray(json) && json.length > 1 && json[0] && json[0].l18) {
+          navBulkMode = true;
+          const now = Date.now();
+          let updated = 0;
+          for (const it of json) if (cacheNavRow(it.l18, it, now)) updated++;
+          status.sources.brsapi_nav = { ok: updated > 0, mode: "bulk", cached: navCache.size, updated, failed: 0, error: null };
+          return;
+        }
+      }
+      navBulkMode = false;
+    } catch {
+      navBulkMode = false;
+    }
+  }
+
+  // ۲) تک‌نمادی برای پرمعامله‌ترین‌ها
   // C1 — قبل از صف‌کردن: زیرنماد، حق تقدم و بلک‌لیست دائمی NAV حذف می‌شوند.
-  const top = selectPriorityNavTargets(funds
-    .filter((f) => !isSubTicker(f.id) && !isRightsIssue(f.id) && !isNavBlacklisted(f.id)),
-    NAV_TOP);
+  const top = funds
+    .filter((f) => !isSubTicker(f.id) && !isRightsIssue(f.id) && !isNavBlacklisted(f.id))
+    .sort((a, b) => (b.value || 0) - (a.value || 0))
+    .slice(0, NAV_TOP);
   let updated = 0;
   let failed = 0;
-  let deferred = false;
   const queue = [...top];
   async function worker() {
     while (queue.length) {
       const f = queue.shift();
       if (!f) return;
-      attempted.add(f.id);
       try {
-        const c = brsClient();
-        let j;
-        if (c) {
-          j = await c.request({
-            endpoint: "Tsetmc/Nav.php", params: { l18: f.id },
-            producer: "nav-primary", priority: "background", budgetClass: "bulk",
-            dedupeTtlMs: 300_000, timeoutMs: 15_000,
-          });
-        } else {
-          await countLegacy("nav-primary", "bulk");
-          const base = `${BRSAPI_BASE}/Tsetmc/Nav.php?key=${BRSAPI_KEY}`;
-          const res = await fetch(`${base}&l18=${encodeURIComponent(f.id)}`, {
-            headers: HDRS, signal: AbortSignal.timeout(15000),
-          });
-          if (!res.ok) { failed++; continue; } // HTTP failure is not proof this symbol lacks NAV.
-          j = await res.json();
-        }
+        const res = await fetch(`${base}&l18=${encodeURIComponent(f.id)}`, {
+          headers: HDRS,
+          signal: AbortSignal.timeout(15000),
+        });
+        if (!res.ok) { failed++; recordNavResult(f.id, false); continue; }
+        const j = await res.json();
         const d = Array.isArray(j) ? j[0] : j;
         if (cacheNavRow(f.id, d, Date.now())) { updated++; recordNavResult(f.id, true); }
         else { failed++; recordNavResult(f.id, false); }
-      } catch (e) {
-        if (isBrsBudgetDeferral(e) || isBrsLocalDeferral(e)) { deferred = true; queue.length = 0; return; }
+      } catch {
         failed++;
         // خطای شبکه/timeout تقصیر نماد نیست — در بلک‌لیست ثبت نمی‌شود.
       }
@@ -590,32 +607,34 @@ async function refreshNavs(funds, attempted = new Set()) {
     cached: navCache.size,
     updated,
     failed,
-    error: deferred ? "budget_or_transport_deferred" : updated === 0 && top.length > 0 ? "no nav fetched" : null,
+    error: updated === 0 && top.length > 0 ? "no nav fetched" : null,
   };
   // C1 — ذخیرهٔ دائمی بلک‌لیست بعد از هر دور
   saveNavBlacklist({ supabaseUrl: SUPABASE_URL.replace(/\/+$/, ""), serviceKey: SUPABASE_SERVICE_ROLE_KEY }).catch(() => {});
 }
 
-// Slower, bounded rotation; quarterly/current disclosures retain headroom.
-const NAV_COMPLETION_MS = 6 * 60 * 60 * 1000;
-const NAV_COMPLETION_CAP = 90;
+// T5-3 — دور تکمیلی NAV: ۲ بار در روز فقط برای صندوق‌هایی که NAV ندارند
+// (خارج از NAV_TOP پرمعامله). هدف: پوشش حباب از ~۱۵۰ به کل صندوق‌ها (~۳۹۰).
+// اگر حالت bulk فعال باشد همه را یک‌جا می‌گیرد و این دور لازم نیست.
+// بودجه: حداکثر NAV_COMPLETION_CAP درخواست در هر دور × ۲ دور/روز ≤ ۸۰۰/روز.
+const NAV_COMPLETION_MS = 12 * 60 * 60 * 1000; // هر ۱۲ ساعت
+const NAV_COMPLETION_CAP = 400;
 let lastCompletionRound = 0;
-const refreshNavSequence = createNavRefreshSequence(refreshNavs, refreshNavCompletion);
 let navCompletionState = { lastRoundAt: null, targeted: 0, updated: 0, failed: 0, skipped: null };
 
-async function refreshNavCompletion(funds, attempted = new Set()) {
+async function refreshNavCompletion(funds) {
   if (!BRSAPI_KEY || funds.length === 0) return;
+  if (navBulkMode === true) { navCompletionState.skipped = "bulk mode covers all funds"; return; }
   if (Date.now() - lastCompletionRound < NAV_COMPLETION_MS) return;
   lastCompletionRound = Date.now();
   const now = Date.now();
   // فقط صندوق‌هایی که NAV تازه ندارند (خارج از کش یا کهنه)
   // C1 — زیرنماد، حق تقدم و بلک‌لیست دائمی هرگز وارد دور تکمیلی نمی‌شوند
   // (ریشهٔ اخطار BrsApi: ریکوئست NAV برای نمادهای فاقد NAV مثل آوند4).
-  const missing = selectNavRefreshTargets(funds
-    .filter((f) => !attempted.has(f.id))
+  const missing = funds
     .filter((f) => !isSubTicker(f.id) && !isRightsIssue(f.id) && !isNavBlacklisted(f.id))
-    .filter((f) => { const c = navCache.get(f.id); return !c || c.at > now || now - c.at >= NAV_STALE_MS; }),
-    navCache, { now, limit: NAV_COMPLETION_CAP });
+    .filter((f) => { const c = navCache.get(f.id); return !c || now - c.at > NAV_STALE_MS; })
+    .slice(0, NAV_COMPLETION_CAP);
   navCompletionState = { lastRoundAt: now, targeted: missing.length, updated: 0, failed: 0, skipped: null };
   if (missing.length === 0) return;
   const base = `${BRSAPI_BASE}/Tsetmc/Nav.php?key=${BRSAPI_KEY}`;
@@ -639,14 +658,13 @@ async function refreshNavCompletion(funds, attempted = new Set()) {
         } else {
           await countLegacy("nav-completion", "bulk");
           const res = await fetch(`${base}&l18=${encodeURIComponent(f.id)}`, { headers: HDRS, signal: AbortSignal.timeout(15000) });
-          if (!res.ok) { navCompletionState.failed++; continue; } // Preserve eligibility after service/auth/rate errors.
+          if (!res.ok) { navCompletionState.failed++; recordNavResult(f.id, false); continue; }
           j = await res.json();
         }
         const d = Array.isArray(j) ? j[0] : j;
         if (cacheNavRow(f.id, d, Date.now())) { navCompletionState.updated++; recordNavResult(f.id, true); }
         else { navCompletionState.failed++; recordNavResult(f.id, false); }
-      } catch (e) {
-        if (isBrsBudgetDeferral(e) || isBrsLocalDeferral(e)) { navCompletionState.skipped = "budget_or_transport_deferred"; queue.length = 0; return; }
+      } catch {
         navCompletionState.failed++;
         // خطای شبکه — در بلک‌لیست ثبت نمی‌شود.
       }
@@ -664,7 +682,7 @@ function applyNav(funds) {
   const now = Date.now();
   for (const f of funds) {
     const c = navCache.get(f.id);
-    if (!c || typeof c.at !== "number" || !Number.isFinite(c.at) || c.at <= 0 || c.at > now || now - c.at > NAV_STALE_MS) continue;
+    if (!c || now - c.at > NAV_STALE_MS) continue;
     const navToman = c.nav / 10;
     if (navToman <= 0 || !isFinite(navToman)) continue;
     const ratio = f.price / navToman;
@@ -673,8 +691,6 @@ function applyNav(funds) {
     f.navIssue = c.navIssue ? Math.round(c.navIssue / 10) : null;
     f.navDate = c.navDate;
     f.navTime = c.navTime;
-    f.navReceivedAt = typeof c.at === "number" && Number.isFinite(c.at) && c.at > 0 && c.at <= now ? c.at : null;
-    f.navRetained = false;
     f.bubblePercent = Number((((f.price - navToman) / navToman) * 100).toFixed(2));
   }
 }
@@ -706,11 +722,9 @@ async function refreshFundMeta(funds) {
 
   let updated = 0;
   let failed = 0;
-  let metaError = null;
-  let deferred = false;
   const queue = [...pending];
   async function worker() {
-    while (queue.length && !deferred) {
+    while (queue.length) {
       const f = queue.shift();
       if (!f) return;
       try {
@@ -730,7 +744,7 @@ async function refreshFundMeta(funds) {
             `${BRSAPI_BASE}/Tsetmc/Symbol.php?key=${BRSAPI_KEY}&l18=${encodeURIComponent(f.id)}`,
             { headers: HDRS, signal: AbortSignal.timeout(15000) }
           );
-          if (!res.ok) { failed++; metaError ??= `HTTP ${res.status}`; continue; }
+          if (!res.ok) { failed++; continue; }
           j = await res.json();
         }
         const d = Array.isArray(j) ? j[0] : j;
@@ -742,23 +756,19 @@ async function refreshFundMeta(funds) {
           // پاسخ بدون cs_sub → دوبارهٔ زودهنگام نخواهیم؛ برچسبِ خالی ثبت می‌شود
           fundMetaCache.set(f.id, { type: null, at: Date.now() });
           failed++;
-          metaError ??= 'schema_missing_fund_type';
         }
-      } catch (error) {
+      } catch {
         failed++;
-        const budget = ['BudgetExceededError', 'LegacyBudgetError', 'BudgetUnavailableError'].includes(error?.name);
-        if (budget) { deferred = true; metaError = 'budget_deferred'; }
-        else metaError ??= sourceErrorCategory(error);
       }
     }
   }
   await Promise.all(Array.from({ length: META_CONCURRENCY }, worker));
   status.sources.brsapi_fund_meta = {
-    ok: failed === 0,
+    ok: updated > 0,
     cached: fundMetaCache.size,
     updated,
     failed,
-    error: metaError,
+    error: updated === 0 && pending.length > 0 ? "no meta fetched" : null,
   };
 }
 
@@ -845,7 +855,9 @@ async function buildPayload() {
   ]);
   // دورهای NAV و نوعِ صندوق در پس‌زمینه (ساعتی؛ درونشان سهمیه‌بندی شده) —
   // payload فعلی از کشِ موجود پر می‌شود و دورِ بعدی نتیجهٔ تازه را برمی‌دارد.
-  refreshNavSequence(sf.funds).catch((e) => console.error("nav refresh error:", errMsg(e)));
+  refreshNavs(sf.funds).catch((e) => console.error("nav refresh error:", errMsg(e)));
+  // T5-3 — دور تکمیلی NAV برای صندوق‌های فاقد NAV (۲ بار در روز)
+  refreshNavCompletion(sf.funds).catch((e) => console.error("nav completion error:", errMsg(e)));
   refreshFundMeta(sf.funds).catch((e) => console.error("fund meta error:", errMsg(e)));
   // Commodity receipt belongs to this cycle, not the next background cycle.
   refreshCertificates({ base: BRSAPI_BASE, key: BRSAPI_KEY, headers: HDRS, client: brsClient(), countLegacy }).catch((e) => console.error("ime cert error:", errMsg(e)));
@@ -1255,9 +1267,6 @@ async function codalFetchBridge() {
 }
 
 // ── رفرش پس‌زمینه ────────────────────────────────────────────────────────────
-// Owner retired MCP market collection on 2026-11-12. Old deployment flags must
-// not resume paid/quota-limited calls; retain the existing dated cache unchanged.
-const mcpQuotes = createMcpQuoteBridge({env:{...process.env,MCPFARSI_QUOTE_ENABLED:'0'}});
 let refreshing = null;
 function refresh() {
   if (refreshing) return refreshing;
@@ -1265,8 +1274,6 @@ function refresh() {
     try {
       resetBudgetStop();
       await hydrateBaseline();
-      // Independent, bounded MCP quote cache; readers never call the router.
-      void mcpQuotes.refresh();
       const { payload, outcomes } = await buildPayload();
       const attemptedAt = Date.now();
       const result = retainMarketFamilies(cache ? JSON.parse(cache.body) : null, payload, outcomes, attemptedAt);
@@ -1293,15 +1300,7 @@ function refresh() {
       if (result.canServe) cache = { body, at: attemptedAt, receivedAt: result.payload.fetchedAt };
       status.lastRefresh = result.payload.fetchedAt;
       // Unknown baseline permits a complete replacement, but never a partial one.
-      if (!result.successes) return;
-      if (budgetStop.active) {
-        // Already received families remain publishable when another allocation
-        // stops. Retention keeps failed-family rows and their original clocks;
-        // an unknown baseline still forbids a partial replacement. This sends
-        // no additional provider/history requests and does not change budgets.
-        if (baselineResolved || result.complete) await pushToSupabase(body);
-        return;
-      }
+      if (!result.successes || budgetStop.active) return;
       if (baselineResolved || result.complete) await pushToSupabase(body);
       const freshBody = JSON.stringify(result.fresh);
       await pushHistory(freshBody);
@@ -1381,7 +1380,6 @@ function debugPayload() {
     historySections: { written: HISTORY_SECTIONS, missing: historyMissingSections },
     brsapiClient: brs ? brs.metrics() : { enabled: false },
     brsapiTransport: brsTransportMetrics(),
-    mcpfarsiQuote: mcpQuotes.status(),
     // مصرفِ مسیرِ **قدیمی** — همان چیزی که تا امروز نامرئی بود. اگر پرچم
     // خاموش باشد `brsapiClient.enabled=false` است ولی این بلوک همچنان
     // می‌گوید روز چقدر خرج شده و چقدرش از سقف رد شده.
@@ -1527,18 +1525,12 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   // درگاه‌های بودجهٔ codal — یک‌بار، پیش از اولین چرخه.
   setCodalBudgetPorts({ client: brsClient(), countLegacy });
 
-  server.listen(PORT, async () => {
+  server.listen(PORT, () => {
   console.log(`ir-market relay v2 (BrsApi) on :${PORT} | codal=${process.env.CODAL_ENABLED === "1" ? "on" : "off"}`);
   // C1 — بارگذاری بلک‌لیست دائمی NAV قبل از اولین رفرش (تا با ریاستارت پاک نشود)
-  // Serve the stored baseline immediately. Do not construct provider timeouts or
-  // report jobs until the unknown prior-process five-minute window has elapsed.
-  await Promise.all([
-    hydrateBaseline(),
-    loadNavBlacklist({ supabaseUrl: SUPABASE_URL.replace(/\/+$/, ""), serviceKey: SUPABASE_SERVICE_ROLE_KEY }).catch(() => {}),
-  ]);
-  try { await waitForBrsReadiness(); }
-  catch { status.lastError = 'provider transport readiness unavailable'; return; }
-  refresh();
+  loadNavBlacklist({ supabaseUrl: SUPABASE_URL.replace(/\/+$/, ""), serviceKey: SUPABASE_SERVICE_ROLE_KEY })
+    .catch(() => {})
+    .finally(() => refresh());
   setInterval(refresh, CACHE_MS).unref();
   // پل دریافت اکسل کدال — هر ۴۵ ثانیه (سبک؛ فقط یک SELECT کوچک وقتی درخواستی نیست).
   setInterval(() => { codalFetchBridge().catch(() => {}); }, 45 * 1000).unref();
@@ -1569,31 +1561,26 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   // کدال — CODAL_ENABLED=1 برای فعال‌سازی موتور v3 (فید سراسری + بک‌فیل اولویت‌دار).
   // مسیر legacy نمادبه‌نماد در پاک‌سازی C3 حذف شد (موتور v3 از ۱۶ تیر سالم، ۱۶۵ گزارش).
   if (process.env.CODAL_ENABLED === "1") {
-    const scheduler = createCompanyWorkScheduler({
-      job: options => runEngineCycle(scheduledCompanyCycleOptions(options)),
-      regularIntervalMs: CODAL_INTERVAL_MS,
-      discoveryIntervalMs: 15 * 60 * 1000,
-      overnightEnabled: process.env.RELAY_BACKGROUND_WINDOW_ENABLED !== "0" });
-    engineStatus.schedule = scheduler.state;
+    const job = runEngineCycle;
     const name = "codal engine v3";
     console.log(`${name} armed: first run in 90s`);
     setTimeout(() => {
       console.log(`${name} starting`);
-      scheduler.run({ initial: true }).catch((e) => console.error(`${name} error:`, e?.message ?? e));
+      job().catch((e) => console.error(`${name} error:`, e?.message ?? e));
     }, 90 * 1000).unref();
     setInterval(() => {
-      scheduler.run().catch((e) => console.error(`${name} error:`, e?.message ?? e));
-    }, 60 * 1000).unref();
+      job().catch((e) => console.error(`${name} error:`, e?.message ?? e));
+    }, CODAL_INTERVAL_MS).unref();
 
     // T4 — بک‌فیل آرشیو کدال (صفحه‌گردی تا ۱۴۰۲/۱۴۰۱، سقف صریح ۲۰۰ درخواست/روز).
     // با فاصله از چرخهٔ موتور اجرا می‌شود تا هم‌زمان فشار نیاورند.
     if (process.env.CODAL_ARCHIVE_ENABLED !== "0") {
       console.log("codal archive (T4) armed: first run in 6m");
       setTimeout(() => {
-      runArchiveCycle({ monthlyOnly: true }).catch((e) => console.error("codal archive error:", e?.message ?? e));
+        runArchiveCycle().catch((e) => console.error("codal archive error:", e?.message ?? e));
       }, 6 * 60 * 1000).unref();
       setInterval(() => {
-        runArchiveCycle({ monthlyOnly: true }).catch((e) => console.error("codal archive error:", e?.message ?? e));
+        runArchiveCycle().catch((e) => console.error("codal archive error:", e?.message ?? e));
       }, 45 * 60 * 1000).unref();
     }
   }

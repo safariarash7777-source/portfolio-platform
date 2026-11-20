@@ -5,10 +5,9 @@ import { useFinancialEditor } from "./FinancialEditors";
 import { formatJalali, formatToman, toPersianDigits } from "@/lib/format";
 import { DEBT_LABELS, normaliseDebt, type Currency, type DebtKind } from "@/lib/portfolio/financialInput";
 import type { DebtPosition } from "@/lib/portfolio/balanceSheet";
-import { paymentReferenceDay } from "@/lib/portfolio/paymentSchedule";
 import { financialSaveAttempt, sendFinancialAttempt, type FinancialSaveAttempt } from "@/lib/portfolio/saveAttempt";
 interface Row { debt_key: string; title: string; kind: DebtKind; balance: string; currency: Currency; balance_as_of: string; next_installment: string; next_due_on: string; note: string }
-const blank = (): Row => ({ debt_key: crypto.randomUUID(), title: "", kind: "loan", balance: "", currency: "IRT", balance_as_of: paymentReferenceDay(new Date()) ?? "", next_installment: "", next_due_on: "", note: "" });
+const blank = (): Row => ({ debt_key: crypto.randomUUID(), title: "", kind: "loan", balance: "", currency: "IRT", balance_as_of: new Date().toISOString().slice(0, 10), next_installment: "", next_due_on: "", note: "" });
 export function DebtList({ debts }: { debts: readonly DebtPosition[] }) {
   return <section className="card p-5 space-y-4" aria-label="بدهی‌های ثبت‌شده"><h2 className="font-bold text-lg">بدهی‌های ثبت‌شده</h2>{debts.length === 0 ? <p>بدهی‌ای در این نسخه ثبت نشده است.</p> : <ul className="space-y-4">{debts.map(d => <li className="border-t pt-3 space-y-2" style={{ borderColor: "var(--line)" }} key={d.debt_key}><p className="font-bold">{d.title} · {DEBT_LABELS[d.kind]}</p><p>مانده: {formatToman(d.balance_toman)} · معتبر برای تاریخ {formatJalali(d.balance_as_of)}</p>{d.next_installment_toman !== null && <p>قسط بعدی: {formatToman(d.next_installment_toman)} · موعد {formatJalali(d.next_due_on!)} (در ماندهٔ بدهی منظور شده است)</p>}{d.note && <p className="text-sm">{d.note}</p>}</li>)}</ul>}</section>;
 }

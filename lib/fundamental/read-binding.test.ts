@@ -8,7 +8,6 @@ import { basename, dirname, join, resolve } from "node:path";
 import { runInNewContext } from "node:vm";
 import { webcrypto } from "node:crypto";
 import ts from "typescript";
-import { fetchFundamentalRows } from "./read-transport";
 import { readFundamentalsFromSupabase, type CodalRow } from "./supabase";
 
 const require = createRequire(import.meta.url);
@@ -46,12 +45,6 @@ test("compiled default reader uses the mapped public binding when runtime legacy
       module: readerModule, exports: readerModule.exports, URLSearchParams, TextEncoder, AbortSignal, crypto: webcrypto,
       process: { env: { NEXT_PUBLIC_SUPABASE_URL: "https://unmapped-runtime.invalid", NEXT_PUBLIC_SUPABASE_ANON_KEY: "synthetic-runtime-anon" } },
       require: (specifier: string) => {
-        if (specifier === "./read-transport") return {
-          fetchFundamentalRows: (url: string, headers: Record<string,string>) => fetchFundamentalRows(url, headers, async (_, init) => {
-            calls.push({ url, key: (init!.headers as Record<string,string>).apikey });
-            return Response.json([]);
-          }),
-        };
         assert(["../core/quarterly", "./units", "../desk/workspace-model", "./monthly-quantity-binding", "./read-config.server"].includes(specifier));
         return {};
       },
@@ -242,33 +235,6 @@ test("HTTP errors, redirect, malformed body and request failure never retry or f
   }
   const calls = fixture();
   assert.equal((await read("failure-402", pair())).state, "empty"); assert.equal(calls.length, 2);
-});
-
-test("temporary monthly failure retains a bounded verified chart only for the same binding", async () => {
-  const start = 1800000000000;
-  const environment = pair(jwt({ fixture: "stale-chart" }));
-  Date.now = () => start;
-  try {
-    fixture([row("stale-chart", 17), row("stale-other", 23)]);
-    assert.equal((await read("stale-chart", environment)).state, "ready");
-    Date.now = () => start + 61000;
-    globalThis.fetch = async () => new Response("", { status: 503 });
-    const retained = await read("stale-chart", environment);
-    assert.equal(retained.state, "stale");
-    assert.equal(amount(retained), 17);
-    assert.equal((await read("stale-other", environment)).state, "error");
-
-    globalThis.fetch = async () => new Response("", { status: 401 });
-    assert.equal((await read("stale-chart", environment)).state, "error");
-
-    globalThis.fetch = async () => new Response("", { status: 503 });
-    Date.now = () => start + 6 * 60 * 60 * 1000;
-    assert.equal((await read("stale-chart", environment)).state, "error");
-
-    Date.now = () => start + 61000;
-    const other = pair(jwt({ fixture: "stale-other-binding" }));
-    assert.equal((await read("stale-chart", other)).state, "error");
-  } finally { Date.now = originalNow; }
 });
 
 test("a pending old read cannot poison a new binding's cache", async () => {

@@ -59,7 +59,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
   const [list, setList] = useState<ListItem[]>([]);
   const [busy, setBusyState] = useState(false);
   const busyRef = useRef(false);
-  const pendingCreation = useRef<{ body: string; revision: number; id: string; version: number } | null>(null);
+  const pendingCreation = useRef<{ body: string; revision: number; id: string } | null>(null);
   const unknownCreation = useRef(false);
   const [uncertainCreation, setUncertainCreation] = useState(false);
   function setBusy(value: boolean) { busyRef.current = value; setBusyState(value); }
@@ -101,16 +101,16 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
     if (busyRef.current) return;
     if (pendingPreparation && !pendingCreation.current) { setMessage('گزاره یا ابهام در حال ویرایش را ابتدا ثبت کنید؛ متن روی صفحه حفظ شده است.'); return; }
     setBusy(true);
-    if (!pendingCreation.current) {
-      const id = saved?.workbookId ?? crypto.randomUUID();
-      pendingCreation.current = { id, version: (saved?.latestVersion ?? 0) + 1, revision: editRevision.current, body: JSON.stringify({ action: 'save', workbookId: id, ...(saved ? { recoverVersion: true } : { creationId: id }), baseVersion: saved?.latestVersion ?? 0, workbook }) };
+    if (!saved && !pendingCreation.current) {
+      const id = crypto.randomUUID();
+      pendingCreation.current = { id, revision: editRevision.current, body: JSON.stringify({ action: 'save', workbookId: id, creationId: id, baseVersion: 0, workbook }) };
     }
     const attempt = pendingCreation.current;
     const savingRevision = attempt?.revision ?? editRevision.current;
     try {
       const r = await transport(API, { method: 'POST', body: attempt?.body ?? JSON.stringify({ action: 'save', workbookId: saved?.workbookId ?? null, baseVersion: saved?.latestVersion ?? 0, workbook }) });
       if (r.status === 201 || r.status === 200 && r.body.reused === true) {
-        if (attempt && (r.body.workbookId !== attempt.id || r.body.version !== attempt.version || typeof r.body.savedAt !== 'string' || !Number.isFinite(Date.parse(r.body.savedAt)))) throw new Error('save receipt mismatch');
+        if (attempt && (r.body.workbookId !== attempt.id || r.body.version !== 1 || typeof r.body.savedAt !== 'string' || !Number.isFinite(Date.parse(r.body.savedAt)))) throw new Error('creation receipt mismatch');
         pendingCreation.current = null; unknownCreation.current = false; setUncertainCreation(false);
         const version = r.body.version as number;
         setSaved({ workbookId: r.body.workbookId as string, version, latestVersion: version, savedAt: r.body.savedAt as string });
@@ -120,7 +120,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
         void refreshList();
       } else {
         if (attempt) {
-          if (!unknownCreation.current && ([400, 401, 403, 413, 422].includes(r.status) || attempt.version > 1 && r.status === 409)) pendingCreation.current = null;
+          if (!unknownCreation.current && [400, 401, 403, 413, 422].includes(r.status)) pendingCreation.current = null;
           else { unknownCreation.current = true; setUncertainCreation(true); }
         }
         if (r.body.unavailable) setServer('unavailable');
@@ -128,7 +128,7 @@ export default function ResearchWorkbook({ initialSource, initialWorkbookId, tra
       }
     } catch {
       if (attempt) { unknownCreation.current = true; setUncertainCreation(true); }
-      setMessage(attempt ? 'نتیجهٔ ثبت دریافت نشد؛ متن و نسخهٔ همین ثبت حفظ شدند. همان ثبت را دوباره بررسی کنید؛ نسخهٔ تکراری ساخته نمی‌شود.' : 'ارتباط با سرور برقرار نشد؛ متن روی صفحه حفظ شد.');
+      setMessage(attempt ? 'نتیجهٔ ثبت دریافت نشد؛ متن و شناسهٔ ثبت اولیه حفظ شدند. همین ثبت را دوباره بررسی کنید؛ دفتر تازه‌ای ساخته نمی‌شود.' : 'ارتباط با سرور برقرار نشد؛ متن روی صفحه حفظ شد.');
     }
     finally { setBusy(false); }
   }

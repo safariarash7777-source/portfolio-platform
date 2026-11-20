@@ -13,7 +13,6 @@
 import { unstable_cache } from "next/cache";
 import { yoyGrowthPercent, type YoYMap } from "./fundamentalPresets";
 import { dedupeByPeriod, latestParserRows, isConsolidatedTitle, isMillionRialUnit, type CodalRow } from "../fundamental/supabase";
-import { isMonthlyMeasure } from "../fundamental/types";
 
 const SB = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -81,14 +80,12 @@ async function readMonthlyYoY(): Promise<{ values: YoYMap; coverage: Coverage }>
   const result = await fetchCodal("ن-۳۰", 3000);
   const rows = selectedRows(result.rows, true);
   // نماد → (سال×۱۰۰+ماه) → درآمد ماه (period_total_amount، میلیون ریال)
-  const bySymbol = new Map<string, Map<number, { amount: number; measure: string }>>();
+  const bySymbol = new Map<string, Map<number, number>>();
   for (const r of rows) {
     const d = r.data;
     if (!d || !r.symbol || !isMillionRialUnit(d["unit"])) continue;
     const pe = jym(d["period_end"]);
     const amt = num(d["period_total_amount"]);
-    const measure = d["monthly_measure"] ?? "sales";
-    if (!isMonthlyMeasure(measure)) continue;
     if (!pe || amt == null) continue;
     let m = bySymbol.get(r.symbol);
     if (!m) {
@@ -97,7 +94,7 @@ async function readMonthlyYoY(): Promise<{ values: YoYMap; coverage: Coverage }>
     }
     const key = pe.y * 100 + pe.m;
     // One canonical selected report per symbol/period.
-    if (!m.has(key)) m.set(key, { amount: amt, measure });
+    if (!m.has(key)) m.set(key, amt);
   }
   const out: YoYMap = new Map();
   for (const [sym, months] of bySymbol) {
@@ -105,10 +102,7 @@ async function readMonthlyYoY(): Promise<{ values: YoYMap; coverage: Coverage }>
     if (keys.length === 0) continue;
     const latest = keys[0];
     const prior = latest - 100; // همان ماه سال قبل
-    const current = months.get(latest);
-    const previous = months.get(prior);
-    if (!current || !previous || current.measure !== previous.measure) continue;
-    const g = yoyGrowthPercent(current.amount, previous.amount);
+    const g = yoyGrowthPercent(months.get(latest), months.get(prior));
     if (g != null) out.set(sym, g);
   }
   return { values: out, coverage: result.coverage };

@@ -72,16 +72,14 @@ type Admin =
 async function latestTimestamp(
   admin: Admin,
   table: string,
-  column: string,
-  snapshotKey?: string
+  column: string
 ): Promise<{ at: string | null; missing: boolean; badColumn: boolean }> {
-  const query = admin
+  const { data, error } = await admin
     .from(table)
     .select(column)
     .order(column, { ascending: false })
-    .limit(1);
-  if (snapshotKey) query.eq("key", snapshotKey);
-  const { data, error } = await query.maybeSingle();
+    .limit(1)
+    .maybeSingle();
   if (error) {
     // «جدول نیست» ≠ «ستون نیست» ≠ «پرس‌وجو شکست خورد». تفکیکشان لازم است،
     // وگرنه یک ستونِ اشتباه در کدِ خودمان مثلِ یک جدولِ غایب به‌نظر می‌رسد و
@@ -104,11 +102,10 @@ async function freshnessSignal(
   okWithinMinutes: number,
   staleWithinMinutes: number,
   emptyDetail: string,
-  now: Date,
-  snapshotKey?: string
+  now: Date
 ): Promise<HealthSignal> {
   try {
-    const { at, missing, badColumn } = await latestTimestamp(admin, table, column, snapshotKey);
+    const { at, missing, badColumn } = await latestTimestamp(admin, table, column);
     if (missing) {
       return { key, label, state: "unknown", detail: `جدولِ \`${table}\` پیدا نشد` };
     }
@@ -199,9 +196,9 @@ export async function GET() {
     // ── ۳) تازگیِ رلهٔ بازارِ ایران ──
     signals.push(
       await freshnessSignal(
-        admin, "relay", "زمان ذخیرهٔ اسنپ‌شات بازار ایران",
+        admin, "relay", "تازگیِ رلهٔ بازارِ ایران",
         "ir_market_snapshots", "updated_at",
-        60, 24 * 60, "هیچ اسنپ‌شات بازاری ثبت نشده", now, "latest"
+        60, 24 * 60, "هیچ اسنپ‌شاتی ثبت نشده", now
       )
     );
 

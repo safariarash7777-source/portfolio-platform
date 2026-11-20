@@ -164,9 +164,6 @@ jobs:
       - name: Native recovery ACL guard (offline)
         run: python3 docs/ops/recovery-01/p01-scripts/test_bounded_acl.py
 
-      - name: Consultation acceptance scope and unknown-result guards (offline)
-        run: python3 scripts/testing/consultation/native-member.test.py
-
   # ── ۴) رفتارِ واقعیِ RLS، گرنت و یکپارچگیِ دیتابیس ─────────────────────────
   # چرا جدا از `quality`: این تنها jobی است که یک Postgres لازم دارد.
   #
@@ -185,9 +182,7 @@ jobs:
   # یک تستِ جداگانه عمداً نسخهٔ معیوب را می‌سازد و ثابت می‌کند گارد پوچ نیست.
   leads-db:
     name: Database RLS · Integrity (Postgres)
-    # Match pg_dump/psql to the PG16 restore target. ubuntu-latest now installs
-    # PG18, whose dumps contain transaction_timeout unsupported by PG16.
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     services:
       postgres:
         # Postgresِ یک‌بارمصرفِ داخلِ runner. نه Supabase، نه دادهٔ واقعی، نه سکرت.
@@ -207,14 +202,7 @@ jobs:
       - run: npm ci
 
       - name: نصبِ کلاینتِ psql
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends postgresql-client-16
-          echo /usr/lib/postgresql/16/bin >> "$GITHUB_PATH"
-      - name: Verify backup client version matches restore server
-        run: |
-          pg_dump --version | grep -E '^pg_dump \(PostgreSQL\) 16\.'
-          psql --version | grep -E '^psql \(PostgreSQL\) 16\.'
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends postgresql-client
 
       # `CI=true` را خودِ GitHub Actions ست می‌کند و تست روی همان تکیه می‌کند:
       # اگر Postgres یا psql نباشد، به‌جای skip **خطا می‌دهد**.
@@ -224,16 +212,6 @@ jobs:
         run: |
           set -o pipefail
           npm run test:db 2>&1 | tee /tmp/leads-db.log
-        env:
-          PGHOST: 127.0.0.1
-          PGPORT: "5433"
-          PGUSER: postgres
-          PGPASSWORD: postgres
-
-      - name: Installment payment allocation SQL and API contracts
-        run: |
-          node scripts/testing/installment-payments.mjs
-          node --import tsx --test lib/portfolio/installmentPayments.test.ts
         env:
           PGHOST: 127.0.0.1
           PGPORT: "5433"

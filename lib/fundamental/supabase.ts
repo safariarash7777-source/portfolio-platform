@@ -20,7 +20,6 @@ import { fiscalChainKey } from "../core/quarterly";
 import { isMillionRialUnit } from "./units";
 import { approvedCodalUrl } from "../desk/workspace-model";
 import { bindSelectedMonthlyQuantity } from "./monthly-quantity-binding";
-import { fetchFundamentalRows } from "./read-transport";
 import type { MonthlyQuantityCaptureReceipt } from "../core/monthly-quantity";
 export { isMillionRialUnit } from "./units";
 
@@ -50,7 +49,6 @@ export interface CodalRow {
 }
 
 const REVALIDATE_MS = 60 * 1000;
-const MONTHLY_STALE_LIMIT_MS = 6 * 60 * 60 * 1000;
 const cache = new Map<string, { at: number; value: SymbolFundamentals | null }>();
 let activeBinding: string | null = null;
 let readRevision = 0;
@@ -64,7 +62,7 @@ export interface FundamentalReadOptions {
 
 export interface FundamentalRead {
   data: SymbolFundamentals | null;
-  state: "ready" | "partial" | "stale" | "empty" | "error";
+  state: "ready" | "empty" | "error";
 }
 
 function env(environment: FundamentalReadOptions["environment"]): { url: string; anon: string } | null {
@@ -100,42 +98,42 @@ export function fetchQueries(symbol: string): Array<{ kind: keyof typeof FETCH_L
   }));
 }
 
-async function fetchRows(symbol: string, e: { url: string; anon: string }): Promise<
-  { rows: CodalRow[]; partial: boolean } | { rows: null; temporary: boolean }
-> {
-  const parts = await Promise.all(
-    fetchQueries(symbol).map(async ({ kind, qs }) => {
-      try {
-        const res = await fetchFundamentalRows(`${e.url}/rest/v1/codal_reports?${qs}`,
-          { apikey: e.anon, Authorization: `Bearer ${e.anon}` });
+async function fetchRows(symbol: string, e: { url: string; anon: string }): Promise<CodalRow[] | null> {
+  try {
+    const parts = await Promise.all(
+      fetchQueries(symbol).map(async ({ kind, qs }) => {
+        const res = await fetch(`${e.url}/rest/v1/codal_reports?${qs}`, {
+          method: "GET",
+          redirect: "error",
+          credentials: "omit",
+          headers: { apikey: e.anon, Authorization: `Bearer ${e.anon}` },
+          signal: AbortSignal.timeout(8000),
+          cache: "no-store",
+        });
         if (!res.ok) {
           console.warn("fundamental_read_failed", { phase: "headers", status: res.status, kind });
-          return { kind, rows: null, temporary: res.status === 408 || res.status === 429 || res.status >= 500 };
+          return null;
         }
         const rows = (await res.json()) as CodalRow[];
         if (!Array.isArray(rows)) {
           console.warn("fundamental_read_failed", { phase: "body", reason: "invalid-response", kind });
-          return { kind, rows: null, temporary: false };
+          return null;
         }
         if (rows.length >= FETCH_LIMITS[kind]) {
           // برش رخ داد: قدیمی‌ترین دوره‌ها بیرون ماندند. بی‌صدا نباشد.
           console.warn(`codal_reports: ${kind} reached limit ${FETCH_LIMITS[kind]} — oldest periods truncated`);
         }
-        return { kind, rows };
-      } catch (error) {
-        const safeNames = ["AbortError", "TimeoutError", "TypeError", "SyntaxError"];
-        const reason = error instanceof Error && safeNames.includes(error.name) ? error.name : "read-error";
-        console.warn("fundamental_read_failed", { phase: "request-or-body", reason, kind });
-        const temporary = reason === "TimeoutError" || reason === "AbortError" || reason === "TypeError";
-        return { kind, rows: null, temporary };
-      }
-    }),
-  );
-  const monthly = parts.find(part => part?.kind === "ن-۳۰");
-  if (!monthly?.rows) return { rows: null, temporary: monthly?.temporary ?? false };
-  const financial = parts.find(part => part?.kind === "ن-۱۰");
-  if (!financial?.rows) return { rows: monthly.rows, partial: true };
-  return { rows: [...financial.rows, ...monthly.rows], partial: false };
+        return rows;
+      }),
+    );
+    if (parts.some((p) => p === null)) return null;
+    return parts.flat() as CodalRow[];
+  } catch (error) {
+    const safeNames = ["AbortError", "TimeoutError", "TypeError", "SyntaxError"];
+    const reason = error instanceof Error && safeNames.includes(error.name) ? error.name : "read-error";
+    console.warn("fundamental_read_failed", { phase: "request-or-body", reason });
+    return null;
+  }
 }
 
 /** آدرس اطلاعیهٔ codal.ir بدون پسوند نسخهٔ پارسر. */
@@ -549,21 +547,9 @@ export async function readFundamentalsFromSupabase(symbol: string, options?: Fun
   const hit = activeBinding === binding ? cache.get(symbol) : undefined;
   const age = hit ? Date.now() - hit.at : -1;
   if (hit && age >= 0 && age < REVALIDATE_MS) return { data: hit.value, state: hit.value ? "ready" : "empty" };
-  const result = await fetchRows(symbol, selected);
-  if (result.rows === null) {
-    // A timeout can leave a verified monthly chart available from this binding.
-    const now = Date.now();
-    const previous = activeBinding === binding && requestEpoch === cacheEpoch ? cache.get(symbol) : undefined;
-    if (result.temporary && previous?.value?.n30 && now >= previous.at && now - previous.at < MONTHLY_STALE_LIMIT_MS &&
-        (selected.expiresAt === undefined || selected.expiresAt > now / 1000)) {
-      return { data: previous.value, state: "stale" };
-    }
-    return { data: null, state: "error" };
-  }
-  const value = result.rows.length > 0 ? buildFundamentals(symbol, result.rows) : null;
-  // A failed historical statement read must not hide genuine monthly charts.
-  // Do not cache the partial result or infer an empty historical statement set.
-  if (result.partial) return value ? { data: value, state: "partial" } : { data: null, state: "error" };
+  const rows = await fetchRows(symbol, selected);
+  if (rows === null) return { data: null, state: "error" };
+  const value = rows && rows.length > 0 ? buildFundamentals(symbol, rows) : null;
   // خطای شبکه (rows=null) کش نمی‌شود تا درخواست بعدی دوباره تلاش کند.
   if (activeBinding === binding && requestEpoch !== null && requestEpoch === cacheEpoch && (selected.expiresAt === undefined || selected.expiresAt > Date.now() / 1000)) cache.set(symbol, { at: Date.now(), value });
   return { data: value, state: value ? "ready" : "empty" };

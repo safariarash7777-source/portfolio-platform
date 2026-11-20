@@ -17,11 +17,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import {
   classifyAnnouncement, fetchAnnouncementsPage, downloadAndParse,
-  insertParsedReport, existingUrlsFor, faToEn, codalEnv, monthlySectorProfile,
+  insertParsedReport, existingUrlsFor, faToEn, codalEnv,
 } from "./codal.mjs";
-import { monthlyDecisionTypeWithoutWorkbook } from "./codal-statement-source.mjs";
-import { companyUniverse, readStoredReportInventory, summarizeReportInventory } from "./codal-coverage.mjs";
-import { codalAccess, isCodalSourceDeferred } from './codal-source-access.mjs';
+import { isMainTicker } from "./symbols-util.mjs"; // C1 — قاعدهٔ یگانهٔ زیرنماد/حق‌تقدم
 
 const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = codalEnv;
 
@@ -43,7 +41,6 @@ const SB_HDRS = () => ({
 // وضعیت تشخیصی برای /debug — پوشش لحظه‌ای + مصرف بودجه
 export const archiveStatus = {
   ok: false,
-  reportScope: null,
   lastRun: 0,
   lastError: null,
   dailyCap: ARCHIVE_DAILY_CAP,
@@ -53,7 +50,7 @@ export const archiveStatus = {
   queueSize: 0,
   doneSymbols: 0,
   lastCycle: { symbols: [], pages: 0, downloaded: 0, inserted: 0, parseFailed: 0, persistenceUnconfirmed: 0 },
-  coverage: { n30Symbols: null, n10Symbols: null, lastChecked: null, error: null },
+  coverage: { n30Symbols: 0, n10Symbols: 0, lastChecked: null },
 };
 
 /* ── وضعیت پایدار (Supabase) ───────────────────────────────────────────────── */
@@ -63,39 +60,25 @@ let state = null;
 
 async function loadState() {
   if (state) return state;
+  try {
     const qs = new URLSearchParams({ select: "payload", key: `eq.${STATE_KEY}`, limit: "1" });
     const res = await fetch(`${SUPABASE_URL}/rest/v1/ir_market_snapshots?${qs}`, {
       headers: SB_HDRS(), signal: AbortSignal.timeout(15000),
     });
-    if (!res.ok) throw new Error(`archive state read HTTP ${res.status}`);
-    const rows = await res.json();
-    // Only a successful, explicitly empty query proves a first run. A failed
-    // read or damaged payload must never reset the cursor or consumption.
-    if (!Array.isArray(rows) || rows.length > 1) throw new Error('archive state invalid rows');
-    const candidate = rows.length === 0
-      ? { cursor: 0, budget: { date: null, used: 0 }, perSymbol: {} }
-      : rows[0]?.payload;
-    const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
-    const counter = value => Number.isSafeInteger(value) && value >= 0;
-    const day = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
-      && Number.isFinite(Date.parse(`${value}T00:00:00Z`))
-      && new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value;
-    if (!object(candidate) || !counter(candidate.cursor) || !object(candidate.budget)
-      || !counter(candidate.budget.used) || !object(candidate.perSymbol)
-      || !(candidate.budget.date === null && candidate.budget.used === 0
-        || day(candidate.budget.date))
-      || Object.values(candidate.perSymbol).some(p => !object(p) || !counter(p.p1) || p.p1 < 1
-        || !counter(p.p3) || p.p3 < 1 || typeof p.done1 !== 'boolean' || typeof p.done3 !== 'boolean')) {
-      throw new Error('archive state invalid payload');
+    if (res.ok) {
+      const rows = await res.json();
+      if (rows[0]?.payload && typeof rows[0].payload === "object") state = rows[0].payload;
     }
-    codalAccess.restore(candidate.sourceHoldUntil);
-    state = candidate;
+  } catch { /* از نو */ }
+  if (!state || typeof state !== "object") state = {};
+  state.cursor ??= 0;
+  state.budget ??= { date: null, used: 0 };
+  state.perSymbol ??= {};
   return state;
 }
 
 async function saveState() {
   if (!state) return;
-  state.sourceHoldUntil = codalAccess.snapshot();
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/ir_market_snapshots?on_conflict=key`, {
       method: "POST",
@@ -114,7 +97,6 @@ function todayUtc() { return new Date().toISOString().slice(0, 10); }
 
 function budgetLeft() {
   const d = todayUtc();
-  if (state.budget.date && state.budget.date > d) throw new Error('archive budget clock moved backwards');
   if (state.budget.date !== d) state.budget = { date: d, used: 0 };
   return ARCHIVE_DAILY_CAP - state.budget.used;
 }
@@ -131,25 +113,43 @@ export function jdateKey(s) {
 
 /* ── صف نمادها (همان اولویت موتور: پرمعامله‌ترین‌ها) ───────────────────────── */
 async function priorityQueue() {
-  const qs = new URLSearchParams({select:'payload',key:'eq.latest',limit:'1'});
-  const res=await fetch(`${SUPABASE_URL}/rest/v1/ir_market_snapshots?${qs}`,{headers:SB_HDRS(),signal:AbortSignal.timeout(20000)});
-  if(!res.ok)throw Error(`archive universe HTTP ${res.status}`);
-  const rows=await res.json();
-  if(!Array.isArray(rows) || rows.length!==1 || !Array.isArray(rows[0]?.payload?.stocks))throw Error('archive universe invalid schema');
-  const extra=String(process.env.CODAL_ARCHIVE_EXTRA || '').split(',').map(id=>({id:id.trim()}));
-  return companyUniverse([...(rows[0]?.payload?.stocks ?? []),...extra]);
+  try {
+    const qs = new URLSearchParams({ select: "payload", key: "eq.latest", limit: "1" });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/ir_market_snapshots?${qs}`, {
+      headers: SB_HDRS(), signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) return [];
+    const rows = await res.json();
+    const stocks = rows[0]?.payload?.stocks || [];
+    // C1 — قاعدهٔ یگانهٔ پروژه (symbols-util): فقط نمادهای اصلی — رقم عربی هم پوشش داده می‌شود.
+    const fromEnv = String(process.env.CODAL_ARCHIVE_EXTRA || "")
+      .split(",").map((s) => s.trim()).filter(Boolean); // «هرچه آرش اضافه کند»
+    const top = stocks
+      .map((s) => ({ ...s, id: String(s?.id || "").trim() }))
+      .filter((s) => s.id && (s.value || 0) > 0 && isMainTicker(s.id))
+      .sort((x, y) => (y.value || 0) - (x.value || 0))
+      .map((s) => s.id);
+    return [...new Set([...fromEnv, ...top])].slice(0, 300);
+  } catch { return []; }
 }
 
 /* ── پوشش لحظه‌ای برای /debug (پذیرش T4: قابل مشاهده در debug) ─────────────── */
 export async function refreshCoverage() {
   try {
-    const universe=await priorityQueue();
-    const inventory=await readStoredReportInventory({baseUrl:SUPABASE_URL,headers:SB_HDRS()});
-    archiveStatus.coverage={...summarizeReportInventory(universe,inventory),lastChecked:new Date().toISOString(),error:null};
-  } catch {
-    // Preserve the last complete inventory and its clock; failure is not zero.
-    archiveStatus.coverage={...archiveStatus.coverage,error:'inventory_read_failed'};
-  }
+    const count = async (kind) => {
+      const qs = `select=symbol&report_kind=eq.${encodeURIComponent(kind)}&data=not.is.null&limit=20000`;
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/codal_reports?${qs}`, {
+        headers: SB_HDRS(), signal: AbortSignal.timeout(20000),
+      });
+      if (!res.ok) return null;
+      const rows = await res.json();
+      return new Set(rows.map((r) => r.symbol)).size;
+    };
+    const [n30, n10] = await Promise.all([count("ن-۳۰"), count("ن-۱۰")]);
+    if (n30 !== null) archiveStatus.coverage.n30Symbols = n30;
+    if (n10 !== null) archiveStatus.coverage.n10Symbols = n10;
+    archiveStatus.coverage.lastChecked = new Date().toISOString();
+  } catch { /* پوشش قبلی می‌ماند */ }
 }
 
 /* ── یک چرخهٔ آرشیو ────────────────────────────────────────────────────────── */
@@ -163,30 +163,18 @@ function recordFail(url) {
 }
 const isBlocked = (url) => (state?.fails?.[url] || 0) >= 3;
 
-export async function runArchiveCycle({ monthlyOnly = false } = {}) {
-  archiveStatus.reportScope = monthlyOnly ? "monthly_only" : "all_reports";
+export async function runArchiveCycle() {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     archiveStatus.lastError = "env ناقص (SUPABASE)";
     return;
   }
+  await loadState();
   const st = archiveStatus.lastCycle;
   st.symbols = []; st.pages = 0; st.downloaded = 0; st.inserted = 0; st.parseFailed = 0;
   st.persistenceUnconfirmed = 0;
   archiveStatus.lastError = null;
 
   try {
-    await loadState();
-  } catch {
-    archiveStatus.ok = false;
-    archiveStatus.lastError = 'archive_state_read_failed';
-    archiveStatus.lastRun = Date.now();
-    // Do not write a substitute state or call the provider. A later scheduled
-    // cycle can retry the read and resume the authoritative stored state.
-    return;
-  }
-
-  try {
-    codalAccess.check();
     if (budgetLeft() <= 2) {
       archiveStatus.lastError = `بودجهٔ روزانه (${ARCHIVE_DAILY_CAP}) مصرف شده — تا فردا صبر می‌کنیم`;
     } else {
@@ -199,7 +187,7 @@ export async function runArchiveCycle({ monthlyOnly = false } = {}) {
         const sym = queue[state.cursor % queue.length];
         state.cursor++;
         const ps = (state.perSymbol[sym] ??= { p1: 1, p3: 1, done1: false, done3: false });
-        if ((monthlyOnly || ps.done1) && ps.done3) continue;
+        if (ps.done1 && ps.done3) continue;
 
         processed++;
         st.symbols.push(sym);
@@ -210,7 +198,6 @@ export async function runArchiveCycle({ monthlyOnly = false } = {}) {
           { cat: 3, pageKey: "p3", doneKey: "done3", boundary: BOUNDARY_N30 },
           { cat: 1, pageKey: "p1", doneKey: "done1", boundary: BOUNDARY_N10 },
         ]) {
-          if (monthlyOnly && cat !== 3) continue;
           if (ps[doneKey]) continue;
           let pagesThis = 0;
           while (pagesThis < PAGES_PER_SYMBOL && budgetLeft() > 2 && st.downloaded < DL_PER_CYCLE) {
@@ -229,16 +216,13 @@ export async function runArchiveCycle({ monthlyOnly = false } = {}) {
               break;
             }
             let sawOlderThanBoundary = false;
-            let pageComplete = true;
             for (const a of items) {
               const k = jdateKey(a?.date_send);
               if (k !== null && k < boundary) { sawOlderThanBoundary = true; continue; }
               const kind = classifyAnnouncement(a);
-              if (!kind || monthlyOnly && kind !== "ن-۳۰" || !a.link || (!a.link_excel &&
-            !(kind === "ن-۳۰" && monthlyDecisionTypeWithoutWorkbook(a.link, a.link_excel) !== null))) continue;
-              const failure = kind === "ن-۳۰" && monthlySectorProfile(a) ? `monthly-sector-v1:${a.link}` : a.link;
-              if (known.has(a.link) || isBlocked(failure)) continue;
-              if (st.downloaded >= DL_PER_CYCLE || budgetLeft() <= 2) { pageComplete = false; break; }
+              if (!kind || !a.link || !a.link_excel) continue;
+              if (known.has(a.link) || isBlocked(a.link)) continue;
+              if (st.downloaded >= DL_PER_CYCLE || budgetLeft() <= 2) break;
               st.downloaded++;
               spend(); // دانلود اکسل هم از سهمیهٔ سرویس کدال حساب می‌شود (محافظه‌کارانه)
               try {
@@ -247,17 +231,13 @@ export async function runArchiveCycle({ monthlyOnly = false } = {}) {
                   st.inserted += await insertParsedReport(a, kind, data);
                   known.add(a.link);
                   delete state.fails?.[a.link];
-                  delete state.fails?.[failure];
                 } else {
                   st.parseFailed++;
-                  pageComplete = false;
-                  recordFail(failure);
+                  recordFail(a.link);
                 }
               } catch (e) {
-                if (isCodalSourceDeferred(e)) throw e;
                 st.parseFailed++;
-                pageComplete = false;
-                recordFail(failure);
+                recordFail(a.link);
                 if (e?.name === "ReportPersistenceError") {
                   st.persistenceUnconfirmed++;
                   archiveStatus.lastError = e.message;
@@ -265,16 +245,13 @@ export async function runArchiveCycle({ monthlyOnly = false } = {}) {
               }
               await new Promise((r) => setTimeout(r, 800));
             }
-            // Retain an incomplete page. Known source identities avoid duplicate
-            // downloads next cycle; unsupported rows still use the bounded ledger.
-            if (!pageComplete) break;
             if (sawOlderThanBoundary) { ps[doneKey] = true; break; } // به مرز رسیدیم
             ps[pageKey]++;
           }
         }
         await new Promise((r) => setTimeout(r, 1000));
       }
-      archiveStatus.doneSymbols = Object.values(state.perSymbol).filter((p) => (monthlyOnly || p.done1) && p.done3).length;
+      archiveStatus.doneSymbols = Object.values(state.perSymbol).filter((p) => p.done1 && p.done3).length;
     }
   } catch (e) {
     archiveStatus.lastError = e?.message ?? String(e);
@@ -284,7 +261,7 @@ export async function runArchiveCycle({ monthlyOnly = false } = {}) {
   archiveStatus.cursor = state.cursor;
   archiveStatus.usedToday = state.budget.used;
   archiveStatus.budgetDate = state.budget.date;
-  archiveStatus.ok = !archiveStatus.lastError && st.parseFailed === 0 && st.persistenceUnconfirmed === 0;
+  archiveStatus.ok = st.persistenceUnconfirmed === 0;
   archiveStatus.lastRun = Date.now();
   await refreshCoverage();
   await saveState();

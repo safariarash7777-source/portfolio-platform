@@ -4,8 +4,7 @@ import Module, { createRequire } from "node:module";
 import { withValidNav } from "./market-quality";
 
 const navNow = Date.parse("2026-09-30T10:00:00Z");
-const classEvidence = { unitClass: "etf-tradable" as const, source: "fixture provider" };
-const navRow = { classEvidence, navClassEvidence: classEvidence, id: "synthetic-fund", faName: "نمونه", unit: "toman" as const, price: 110, nav: 100, navIssue: 101, navDate: "1405-07-08", navTime: "13:25:00", sourceDate: "1405-07-08", sourceTime: "13:25:00", bubblePercent: 999 };
+const navRow = { id: "synthetic-fund", faName: "نمونه", unit: "toman" as const, price: 110, nav: 100, navIssue: 101, navDate: "1405-07-08", navTime: "13:25:00", sourceDate: "1405-07-08", sourceTime: "13:25:00", bubblePercent: 999 };
 
 test("a rejected source NAV cannot become a live bubble through fresh-looking clocks", () => {
   for (const navStatus of ["stale", "invalid-time", "invalid-unit", "unavailable", "unexpected-status"]) {
@@ -18,19 +17,6 @@ test("a rejected source NAV cannot become a live bubble through fresh-looking cl
     assert.equal(result.price, row.price); assert.equal(result.nav, row.nav); assert.equal(result.navIssue, row.navIssue);
     assert.equal(result.navDate, row.navDate); assert.equal(result.navTime, row.navTime); assert.equal(result.navStatus, navStatus);
     assert.equal(row.bubblePercent, 999, "source row is not mutated");
-  }
-});
-
-test("synchronized values need a common traded unit class and currency", () => {
-  for (const changes of [
-    { classEvidence: null },
-    { navClassEvidence: { unitClass: "preferred-tradable" as const, source: "fixture provider" } },
-    { unit: "usd" as const },
-  ]) {
-    const result = withValidNav({ ...navRow, ...changes }, null, navNow);
-    assert.equal(result.bubblePercent, null);
-    assert.equal(result.navState, "unavailable");
-    assert.equal(result.nav, 100);
   }
 });
 
@@ -205,27 +191,4 @@ test("HTTP 200 cannot freshen old, missing, future or mixed price clocks", async
     globalThis.fetch = originalFetch; Date.now = originalNow;
     for (const key of keys) { if (saved[key] === undefined) delete process.env[key]; else process.env[key] = saved[key]; }
   }
-});
-
-
-test('restart NAV actual reader cannot promote retained values without a true NAV receipt', async () => {
-  const { retainMarketFamilies } = createRequire(import.meta.url)('../relay/market-retention.mjs');
-  const { toMarket } = await import('./market-ir');
-  const families = ['gold','currency','crypto','stocks','funds','options','indices'];
-  const fixture = () => ({ gold: [], currency: [], crypto: [], stocks: [], funds: [], options: [], indices: null, fetchedAt: navNow });
-  const outcomes = Object.fromEntries(families.map(name => [name, { ok: true }]));
-  for (const receivedAt of [undefined,null,0,'123',NaN,Infinity,navNow+1]) {
-    const previous = { ...fixture(), funds: [{ ...navRow, navReceivedAt: receivedAt }] };
-    const freshPrice = Object.fromEntries(Object.entries(navRow).filter(([key]) => !['nav','navIssue','navDate','navTime','bubblePercent'].includes(key)));
-    const candidate = { ...fixture(), funds: [freshPrice] };
-    const payload = retainMarketFamilies(previous,candidate,outcomes,navNow).payload;
-    const parsed = toMarket(payload).funds[0];
-    assert.equal(parsed.nav,null);
-    const quality = withValidNav(parsed,navNow,navNow);
-    assert.equal(quality.bubblePercent,null); assert.notEqual(quality.navState,'ready');
-  }
-  const previous = { ...fixture(), funds: [{ ...navRow, navReceivedAt: navNow-1000 }] };
-  const freshPrice = Object.fromEntries(Object.entries(navRow).filter(([key]) => !['nav','navIssue','navDate','navTime','bubblePercent'].includes(key)));
-  const parsed = toMarket(retainMarketFamilies(previous,{...fixture(),funds:[freshPrice]},outcomes,navNow).payload).funds[0];
-  assert.equal(parsed.nav,100); assert.equal(withValidNav(parsed,navNow,navNow).navState,'ready');
 });

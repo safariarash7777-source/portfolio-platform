@@ -12,22 +12,6 @@ function fixture(overrides: Partial<ConsultationDb> = {}) {
   return { db, writes: () => writes };
 }
 const req = (value: unknown = input, origin: string | null = "https://example.test") => new Request("https://example.test/api/consultation", { method: "POST", headers: origin ? { Origin: origin } : {}, body: typeof value === "string" ? value : JSON.stringify(value) });
-
-test("reader-only rollout never advertises or accepts new feedback writes", async () => {
-  for (const capability of [undefined, false, true]) {
-    const source = capability === undefined ? empty : { ...empty, capabilities: { extendedFeedbackWrite: capability } };
-    const f = fixture({ read: async () => ({ data: source, error: null }) });
-    const response = await getConsultation(new Request("https://example.test/api/consultation"), async () => f.db);
-    assert.equal(response.status, 200);
-    assert.deepEqual((await response.json()).capabilities, { extendedFeedbackWrite: false });
-    for (const status of ["partial", "not_done"]) {
-      const command = { kind: "feedback", relationshipId: relation, sessionId: relation, actionKey: relation, baseVersion: 0, status, text: "Synthetic detail" };
-      const rejected = await postConsultation(req({ ...input, command }), async () => f.db);
-      assert.equal(rejected.status, 400);
-    }
-    assert.equal(f.writes(), 0);
-  }
-});
 test("missing and foreign Origin never connect or write", async () => {
   for (const origin of [null, "https://other.test"]) {
     const response = await postConsultation(req(input, origin), async () => { throw new Error("must not connect"); });

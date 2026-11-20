@@ -289,8 +289,6 @@ test("dedupeByMonth: جدیدترین اصلاحیه برنده؛ نسخهٔ ج�
   const zero = report("1404-07-30", 0, [prod({ product_name: "الف", sales_amount: 0 })]);
   const real = report("1404-07-30", 450, [prod({ product_name: "الف", sales_amount: 450 })]);
   const m2 = dedupeByMonth([zero, real]);
-  const verifiedZero = { ...zero, sales_zero_reported: true as const };
-  assert.equal(dedupeByMonth([verifiedZero, real]).get("1404-07")?.period_total_amount, 0);
   assert.equal(m2.get("1404-07")?.period_total_amount, 450);
 });
 

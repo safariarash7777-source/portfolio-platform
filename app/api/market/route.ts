@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { readGlobalMarket, readIranMarket } from "@/lib/market-bounded";
-import { withValidNav } from "@/lib/market-quality";
 import { getLastIrDiag } from "@/lib/market-ir";
 
 export const runtime = "nodejs";
@@ -12,9 +11,7 @@ export const dynamic = "force-dynamic";
 //           برای فهمیدنِ اینکه چرا ir=null است (env؟ توکن؟ رلهٔ خاموش؟ منبعِ خالی؟).
 export async function GET(req: Request) {
   const [global, iran] = await Promise.all([readGlobalMarket(), readIranMarket()]);
-  const now = Date.now();
-  const ir = iran.data && { ...iran.data, funds: iran.data.funds.map(fund => withValidNav(fund, null, now)) };
-  const body: Record<string, unknown> = { ...global.data, ir, partial: global.availability.state !== "ready" || iran.availability.state !== "ready", availability: { global: global.availability, iran: iran.availability } };
+  const body: Record<string, unknown> = { ...global.data, ir: iran.data, partial: global.availability.state !== "ready" || iran.availability.state !== "ready", availability: { global: global.availability, iran: iran.availability } };
   if (new URL(req.url).searchParams.get("diag") === "1") {
     body.irDiag = getLastIrDiag();
   }

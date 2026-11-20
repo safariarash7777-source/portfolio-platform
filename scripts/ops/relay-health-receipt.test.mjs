@@ -10,41 +10,11 @@ import { collectControlPlane, collectReceipt, sanitizeDebug, errorCategory, tran
 const storedUrl = 'https://portfolio-platform-fawn.vercel.app/api/codal-list?symbol=' + encodeURIComponent('فولاد');
 const storedBody = { source: 'codal_feed', coverage: 'stored-announcements', data: [{ private: 'NEVER_EMIT_PRIVATE_VALUE' }] };
 const secret = 'NEVER_EMIT_PRIVATE_VALUE';
-
-test('company scheduler receipt keeps attempt clocks separate and missing state unknown',()=>{
- const schedule={running:true,started:true,lastStartedAt:1794654656941,lastCompletedAt:null,regularIntervalMs:10800000,overnightIntervalMs:900000,private:secret};
- const result=sanitizeDebug({codalEngine:{schedule}}).codal.schedule;
- assert.equal(result.running,true);assert.equal(result.lastStartedAt,'2026-11-14T11:10:56.941Z');
- assert.equal(result.lastCompletedAt,null);assert.equal(result.overnightIntervalMs,900000);
- assert.equal(sanitizeDebug({}).codal.schedule.started,null);assert.ok(!JSON.stringify(result).includes(secret));
-});
-test('MCP receipt exposes confirmed cache state without credentials or raw errors', () => {
-  const d = sanitizeDebug({ mcpfarsiQuote: { enabled: true, configured: true, requests: 1,
-    publication: 'confirmed', pendingPublication: false, lastError: secret, token: secret,
-    sourceDateRaw: '2026-11-04', sourceAtUtc: secret } });
-  assert.equal(d.mcpfarsiQuote.publication, 'confirmed');
-  assert.equal(d.mcpfarsiQuote.sourceAtUtc, null);
-  assert.equal(JSON.stringify(d).includes(secret), false);
-});
-test('enforced runtime requires explicit installed-schema evidence in passive acceptance', async () => {
-  const d = debug(); d.brsapiLegacy.enforced = true;
-  const fetchImpl = async url => new Response(url.endsWith('/debug') ? JSON.stringify(d)
-    : url.endsWith('/healthz') ? 'ok' : JSON.stringify(storedBody));
-  for (const applied of [false, true]) {
-    const r = await collectReceipt({ token: secret, phase28Applied: applied, fetchImpl });
-    assert.equal(r.debug.acceptance, applied ? 'passed' : 'failed');
-    assert.equal(r.debug.data.budget.providerAccountUsage, null);
-    assert.equal(r.debug.data.budget.legacy.budget.accountingScope, 'internal_allocation_not_provider_usage');
-  }
-});
 function debug() {
   return { now: 1793066400000, warmedUp: true, lastRefresh: 1793066300000, ageSec: 100,
     historySections: { written: ['gold', 'currency'], missing: [] },
     brsapiClient: { enabled: false }, brsapiLegacy: { enforced: false, used: { privateProducer: 12 }, budget: { persistent: true, used: 12, remaining: 88, store: { healthy: false, errors: 1, lastError: 'HTTP 404 PGRST202 ' + secret } } },
-    brsapiTransport: { enabled: true, scope: 'process', spacingMs: 300, sent: 6508, pending: 0, minStartGapMs: 309.6578,
-      rollingWindowMs: 300000, rollingLimit: 300, ipWindowMs: 1000, ipLimit: 20,
-      policy: 'conservative_unverified_plan', windowScope: 'process_lifetime', priorProcessWindow: 'unknown',
-      coldStartPolicy: 'full_window_defer', globalEnforced: false, clockValid: true },
+    brsapiTransport: { enabled: true, scope: 'process', spacingMs: 100, sent: 6508, pending: 0, minStartGapMs: 109.6578 },
     supabase: { enabled: true, ok: false, status: 500, at: 1793066300000, error: 'HTTP 500 ' + secret },
     snapshotQuality: { state: 'partial', attemptedAt: 1793066300000, families: { stocks: { state: 'retained', receivedAt: 1793000000000, retained: true, error: 'timeout ' + secret } } },
     codalEngine: { ok: false, lastRun: 1793066300000, lastError: 'timeout ' + secret, feed: { inserted: 0, complete: false, incompleteReason: secret }, backfill: { symbols: [secret], queueSize: 12 } },
@@ -135,7 +105,7 @@ test('workflow preserves existing gates and adds one receipt invocation with san
   assert.match(workflow, /for i in \$\(seq 1 12\)/);
   assert.match(workflow, /relay-gate.mjs accept/);
   assert.match(workflow, /i < 3/);
-  assert.match(workflow, /observedBrsTransportPolicy\(t\)/);
+  assert.match(workflow, /minStartGapMs < 100/);
   assert.equal((workflow.match(/node scripts\/ops\/relay-health-receipt.mjs/g) ?? []).length, 1);
   assert.match(workflow, /path: relay-health-receipt.json/);
   assert.match(workflow, /contents: read/);
@@ -251,14 +221,6 @@ test('Codal diagnostics drop unknown versions, malformed counters and secret-bea
   assert.equal(sanitizeDebug({codalEngine:{failureDiagnostics:{version:2,totals:{download:{exception:0}}}}}).codal.failureDiagnostics.totals.download.exception,null);
 });
 
-test("ops receipt exposes the typed deferral only, not rejected filing identifiers or arbitrary fields", () => {
-  const engine={lastDeferral:{phase:"stored_report",reason:"official_source_hold",detail:secret},lastRejectedFilings:[{serial:secret}]};
-  const result=sanitizeDebug({codalEngine:engine}).codal;
-  assert.deepEqual(result.lastDeferral,{phase:"stored_report",reason:"official_source_hold"});
-  assert.equal(JSON.stringify(result).includes(secret),false);
-  assert.deepEqual(sanitizeDebug({codalEngine:{lastDeferral:{phase:secret,reason:secret}}}).codal.lastDeferral,{phase:null,reason:null});
-});
-
 test('HTTP and SQL details require fixed producer prefixes and exact code allowlists, never raw error scans', () => {
   const project = value => sanitizeDebug({brsapiLegacy:{budget:{store:{lastError:value}}}}).budget.legacy.budget.store;
   const known=project('rpc brsapi_budget_lease → 404: '+JSON.stringify({code:'PGRST202',message:secret,details:'https://private.invalid/'+secret}));
@@ -311,62 +273,4 @@ test('environment names distinguish explicit empty from incomplete schema withou
     const out=await collectControlPlane({token:secret,fetchImpl:async url=>{const body=controlBodies(url);if(body.project)body.project.envs=envs;return Response.json(body);}});
     assert.deepEqual(out.project.data.envNames,expected);assert.equal(out.project.data.envNamesComplete,complete);assert.equal(JSON.stringify(out).includes(secret),false);
   }
-});
-
-test('reviewed backend binding inspects only the single URL in RAM and never emits it',async()=>{
-  const reviewed='https://62.60.191.24/liara-preview';
-  const cases=[
-    [undefined,'invalid_env_schema',false,false,false,false,false],
-    [[], 'missing',false,false,false,false,false],
-    [[{key:'SUPABASE_URL',value:null}],'invalid_url',true,false,false,false,false],
-    [[{key:'SUPABASE_URL',value:'not a URL'}],'invalid_url',true,false,false,false,false],
-    [[{key:'SUPABASE_URL',value:reviewed},{key:'SUPABASE_URL',value:reviewed}],'duplicate_name',true,false,false,false,true],
-    ...['https://other.invalid/liara-preview','https://62.60.191.24/other',reviewed+'/', 'https://62.60.191.24:443/liara-preview'].map(value=>[[{key:'SUPABASE_URL',value}],'different_url',true,true,true,false,false]),
-    ...['https://user:private@62.60.191.24/liara-preview',reviewed+'?private='+secret,reviewed+'#'+secret,reviewed+'?',reviewed+'#'].map(value=>[[{key:'SUPABASE_URL',value}],'credentials_query_or_hash',true,true,false,false,false]),
-    [[{key:'SUPABASE_URL',value:' '+reviewed}],'invalid_url',true,false,false,false,false],
-    [[{key:'SUPABASE_URL',value:reviewed},{key:'SERVICE_ROLE_KEY',value:secret}],'exact_match',true,true,true,true,false],
-  ];
-  for(const [envs,reason,present,parseValid,noCredentialsQueryHash,exactReviewedBackendMatch,duplicateNameRejected] of cases){
-    const out=await collectControlPlane({token:secret,fetchImpl:async url=>{const body=controlBodies(url);if(body.project)body.project.envs=envs;return Response.json(body);}});
-    assert.deepEqual(out.project.data.reviewedBackendBinding,{present,parseValid,noCredentialsQueryHash,exactReviewedBackendMatch,duplicateNameRejected,reason});
-    const serialized=JSON.stringify(out);assert.equal(serialized.includes(reviewed),false);assert.equal(serialized.includes(secret),false);assert.equal(serialized.includes('user:private'),false);
-  }
-});
-
-
-test('project detail configuration is typed, preserves false and is never actual process evidence',async()=>{
-  const out=await collectControlPlane({token:secret,fetchImpl:async url=>{
-    const body=controlBodies(url);
-    if(body.project)Object.assign(body.project,{scale:1,zeroDowntime:false});
-    body.projects=[{project_id:'arsadata',scale:99,zeroDowntime:true}];
-    return Response.json(body);
-  }});
-  assert.equal(out.project.data.configuredScale,1);
-  assert.equal(out.project.data.configuredZeroDowntime,false);
-  assert.equal(out.project.data.configuredNotActual,true);
-  assert.equal(JSON.stringify(out).includes(secret),false);
-});
-
-test('unknown or malformed scale/zero-downtime stays null without coercion',async()=>{
-  for(const [scale,zeroDowntime] of [[undefined,undefined],[null,null],[0,0],[-1,1],['1','false'],[1.5,{}],[[],[]],[true,'true']]){
-    const out=await collectControlPlane({token:secret,fetchImpl:async url=>{
-      const body=controlBodies(url);if(body.project)Object.assign(body.project,{scale,zeroDowntime});return Response.json(body);
-    }});
-    assert.equal(out.project.data.configuredScale,null);
-    assert.equal(out.project.data.configuredZeroDowntime,null);
-    assert.equal(out.project.data.configuredNotActual,true);
-  }
-});
-
-test('inventory receipt distinguishes complete stored presence from freshness and unknown counters',()=>{
- const input={codalArchive:{coverage:{basis:'stored-presence-not-freshness',universeSize:780,universeFinancial:459,universeMonthly:357,withoutReports:224,storedRows:12571,error:'inventory_read_failed',lastChecked:'2026-11-14T08:17:00Z',private:secret}},codalEngine:{backfill:{workWindow:'overnight',symbolLimit:8,downloaded:6,cursor:12,symbols:[secret]}}};
- const result=sanitizeDebug(input).codal;
- assert.equal(result.archive.coverage.universeSize,780);
- assert.equal(result.archive.coverage.withoutReports,224);
- assert.equal(result.archive.coverage.basis,'stored-presence-not-freshness');
- assert.equal(result.archive.coverage.error,'inventory_read_failed');
- assert.equal(result.backfill.workWindow,'overnight');
- assert.equal(result.backfill.symbolLimit,8);
- assert.equal(JSON.stringify(result).includes(secret),false);
- assert.equal(sanitizeDebug({}).codal.archive.coverage.withoutReports,null);
 });

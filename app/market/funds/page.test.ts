@@ -31,8 +31,7 @@ function component(file: string): { default: unknown } {
 }
 const FundsFullBoard = component("components/market/FundsFullBoard.tsx").default as typeof import("../../../components/market/FundsFullBoard").default;
 const now = Date.parse("2026-09-30T10:00:00Z");
-const classEvidence = { unitClass: "etf-tradable" as const, source: "fixture provider" };
-const valid = { classEvidence, navClassEvidence: classEvidence, id: "synthetic-fund", faName: "صندوق ساختگی", unit: "toman" as const, price: 110, closingPrice: 110, nav: 100, navStatus: "ready", navDate: "1405-07-08", navTime: "13:25:00", sourceDate: "1405-07-08", sourceTime: "13:25:00", bubblePercent: 999 };
+const valid = { id: "synthetic-fund", faName: "صندوق ساختگی", unit: "toman" as const, price: 110, closingPrice: 110, nav: 100, navStatus: "ready", navDate: "1405-07-08", navTime: "13:25:00", sourceDate: "1405-07-08", sourceTime: "13:25:00", bubblePercent: 999 };
 
 async function actualPage(rows: Record<string, unknown>[], state = "unknown-time", readAt = now, availabilityOverride?: SourceAvailability, dataPresent = true, readMarket?: () => Promise<{ data: IrMarket | null; availability: SourceAvailability }>) {
   const source = readFileSync(new URL("./page.tsx", import.meta.url), "utf8");
@@ -102,12 +101,6 @@ function renderActualBoard(availability?: SourceAvailability, funds: Parameters<
       React.createElement(SearchParamsContext.Provider, { value: new URLSearchParams() },
         React.createElement(FundsFullBoard, { funds, fetchedAt: null, availability })))));
 }
-
-test("fund desktop and mobile show independent source dates, preserving unknown quote dates", async () => {
-  const html = renderActualBoard(undefined, [{ ...valid, sourceDate: null }]);
-  assert.equal((html.match(/تاریخ قیمت نامشخص/g) ?? []).length, 2);
-  assert.equal((html.match(/۱۴۰۵\/۰۷\/۰۸ · ۱۳:۲۵:۰۰/g) ?? []).length, 2);
-});
 
 test("actual funds page forwards the existing read/quality result without converting failed null data into confirmed empty", async () => {
   const availability: SourceAvailability = { ...failedAvailability, state: "error" };

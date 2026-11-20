@@ -51,36 +51,6 @@ const chartData = (trace: Trace) => trace.props.data as Array<Record<string, str
 const values = (trace: Trace, key: string) => Array.from(chartData(trace), row => row[key]);
 const formatter = (trace: Trace) => trace.props.formatter as (value: unknown, name: unknown) => [string, string];
 
-test("issued premium uses the existing amount charts without mixing older sales or displaying product metrics", () => {
-  const old = report("1405-06-31");
-  const premium = report("1405-07-30", [], {
-    monthly_measure: "issued_premium", period_total_amount: 15463740, fy_cumulative_amount: 86789498,
-  });
-  const { html, traces } = renderChart([old,premium]);
-  assert.match(html, /حق بیمهٔ صادره ماهانه/);
-  assert.doesNotMatch(html, /روند نرخ فروش|ترکیب فروش/);
-  const bars = traces.find(trace => trace.component === "ComposedChart");
-  assert.ok(bars);
-  assert.equal(values(bars,"current")[5],null);
-  assert.equal(values(bars,"current")[6],15463740);
-});
-
-test("service and leasing accounts keep their own monthly metrics in the existing chart", () => {
-  for (const [measure,label,amount] of [
-    ["service_recognized_income","درآمد شناسایی‌شدهٔ خدمات و فروش",19505116],
-    ["leasing_reported_income","درآمدهای گزارش‌شدهٔ لیزینگ",326990],
-  ] as const) {
-    const old = report("1405-06-31");
-    const current = report("1405-07-30", [], { monthly_measure: measure, period_total_amount: amount });
-    const { html, traces } = renderChart([old,current]);
-    assert.ok(html.includes(label));
-    assert.doesNotMatch(html, /روند نرخ فروش|ترکیب فروش/);
-    const bars = traces.find(trace => trace.component === "ComposedChart");
-    assert.ok(bars);
-    assert.deepEqual(values(bars,"current").slice(5,7),[null,amount]);
-  }
-});
-
 test("monthly charts render declared units, actual values, calendar gaps and unit-bearing tooltips", () => {
   const reports = [report("1405-01-31"), report("1405-03-31", [product({ sales_rate: 200 })])];
   const { html, traces } = renderChart(reports);

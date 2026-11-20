@@ -5,24 +5,6 @@ import { postFinancialSnapshot } from "../../lib/portfolio/financialHttp";
 const receipt = { version_id: "11111111-1111-4111-8111-111111111111", version: 2, position_count: 1, reused: false };
 const asset = { positionKey: "gold", manualLabel: "طلای ساختگی", symbol: null, assetClass: "gold", qty: null, unit: "قلم", costBasis: null, asOf: "2026-10-03", ownershipPct: 50, valuationMode: "declared", declaredValue: 2000, valuationSource: "ساختگی", valuationAsOf: "2026-10-03", valuationStatus: "valid" };
 const debt = { debt_key: "d", title: "وام ساختگی", kind: "loan", balance_toman: 1500, currency: "IRT", balance_as_of: "2026-10-03", next_installment_toman: null, next_due_on: null, note: null };
-for (const [instant, day] of [["2026-10-19T20:29:59Z", "2026-10-19"], ["2026-10-19T20:30:00Z", "2026-10-20"], ["2026-10-19T23:59:59Z", "2026-10-20"]]) {
- test(`new asset and debt dates use Tehran calendar at ${instant} without rewriting stored dates`, async t => {
-  t.mock.timers.enable({ apis: ["Date"], now: new Date(instant) });
-  try {
-   const holdings = mountFinancialForm("components/portfolio/HoldingsWorkbench.tsx", { ready: true, targetFailed: false, activeVersion: 1, latestVersion: 1, history: [], activePositions: [asset], rows: [], gaps: [], definitive: false, notes: [], totalValue: null, showComparison: false, showImport: false });
-   await holdings.submit("افزودن قلم");
-   const mode = holdings.find("select", element => element.props.value === "market");
-   (mode.props.onChange as (event: { target: { value: string } }) => void)({ target: { value: "declared" } }); holdings.render();
-   const assetDates = holdings.elements().filter(element => element.type === "input" && element.props.type === "date").map(element => element.props.value);
-   assert.deepEqual(assetDates, ["2026-10-03", "2026-10-03", day, day]);
-   const debts = mountFinancialForm("components/portfolio/DebtsWorkbench.tsx", { ready: true, activeVersion: 1, latestVersion: 1, debts: [debt] });
-   await debts.submit("افزودن بدهی");
-   const debtDates = debts.elements().filter(element => element.type === "input" && element.props.type === "date").map(element => element.props.value);
-   assert.deepEqual(debtDates, ["2026-10-03", "", day, ""], "next due date stays unknown instead of assuming today");
-   assert.equal(holdings.navigation.length, 0); assert.equal(debts.navigation.length, 0);
-  } finally { t.mock.timers.reset(); }
- });
-}
 for(const kind of ["holdings", "debts"] as const) {
  const mount = () => kind === "holdings" ? mountFinancialForm("components/portfolio/HoldingsWorkbench.tsx", { ready: true, targetFailed: false, activeVersion: 1, latestVersion: 1, history: [], activePositions: [asset], rows: [], gaps: [], definitive: false, notes: [], totalValue: null, showComparison: false, showImport: false }) : mountFinancialForm("components/portfolio/DebtsWorkbench.tsx", { ready: true, activeVersion: 1, latestVersion: 1, debts: [debt] });
  const saveLabel = kind === "holdings" ? "ذخیرهٔ نسخهٔ تازه" : "ذخیرهٔ بدهی‌ها";

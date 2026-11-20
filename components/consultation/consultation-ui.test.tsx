@@ -8,8 +8,6 @@ import { receiptVisible } from "./readback";
 import RecommendationEditor from "./RecommendationEditor";
 import Dossier from "./Dossier";
 import SessionCard from "./SessionCard";
-import { mountComponent } from "../admin/p07-component-test-host";
-import Field from "./Field";
 import ConsultationPanel from "./ConsultationPanel";
 
 const actor = "11111111-1111-4111-8111-111111111111", relationId = "22222222-2222-4222-8222-222222222222", sessionId = "33333333-3333-4333-8333-333333333333", member = "44444444-4444-4444-8444-444444444444";
@@ -18,18 +16,6 @@ const body: RecommendationBody = { topic: "موضوع مصنوعی", goal: "هد
 const session: ConsultationSession = { id: sessionId, relationshipId: relationId, sessionKey: sessionId, version: 1, createdAt: "2026-10-23T12:00:00Z", actorId: actor, contentHash: "a".repeat(64), body, state: "draft", approval: null };
 const data: ConsultationRead = { contractVersion: "consultation-read.v1", actor: { id: actor, isAdvisor: true, isOwner: true }, advisors: [{ id: actor, displayName: "مشاور مصنوعی", isOwner: true }], relationships: [{ id: relationId, advisorId: actor, clientId: member, clientLabel: "عضو مصنوعی", createdAt: "2026-10-23T12:00:00Z", revoked: false }], selected: null, dossier: { basis, holdings: null, cashFlow: null, goals: null }, sessions: [session], notes: [{ sessionId, note: "یادداشت خصوصی" }], events: [], actions: [] };
 data.selected = data.relationships[0];
-
-test("stored extended feedback renders its label and explanation without new write controls", () => {
-  const actionKey = relationId;
-  const published: ConsultationSession = { ...session, state: "published", approval: { actorId: actor, createdAt: session.createdAt }, body: { ...body, actions: [{ actionKey, title: "اقدام ساختگی", dueOn: "2027-01-01", responsible: "member" }] } };
-  for (const [status, label] of [["partial", "بخشی انجام‌شده طبق اعلام"], ["not_done", "انجام‌نشده طبق اعلام"]] as const) {
-    const html = renderToStaticMarkup(<SessionCard session={published} latest advisor={false} owner={false} revoked={false} basis={basis} feedback={[{ id: relationId, sessionId, actionKey, version: 1, status, text: "توضیح ساختگی عضو", actorId: member, createdAt: session.createdAt }]} locked={false} onCommand={async () => { throw new Error("render must not write"); }} onEdit={() => {}} onDirty={() => {}} />);
-    assert.ok(html.includes(label));
-    assert.ok(html.includes("توضیح ساختگی عضو"));
-    assert.ok(!html.includes("بخشی انجام دادم"));
-    assert.ok(!html.includes("انجام ندادم"));
-  }
-});
 const receipt: ConsultationReceipt = { contractVersion: "consultation-write.v1", actorId: actor, clientToken: "test", command: { kind: "save", relationshipId: relationId, sessionKey: sessionId, baseVersion: 0, body, privateNote: "یادداشت خصوصی" }, id: sessionId, version: 1, reused: false, canonicalContentHash: "b".repeat(64) };
 
 test("draft preserves exact selected financial basis, normalizes Persian dates, keeps private note outside body", () => {
@@ -89,18 +75,4 @@ test("consent form hides for existing active current-owner relation and returns 
   const unavailable = render({ ...memberData, advisors: [] });
   assert.match(unavailable, /دسترسی آرش برای این محیط هنوز/);
   assert.match(unavailable, /aria-label="رضایت و دسترسی مشاور"/);
-});
-
-
-test("period form rejects 366 days locally and remains editable for a valid 365-day period",async()=>{
- const periods:unknown[]=[];
- const ui=mountComponent('components/consultation/ConsultationPanel.tsx',{data,locked:false,selectionLocked:false,onCommand:async()=>{throw Error('no write');},onSelect:()=>{},onDirty:()=>{},onPeriod:(period:unknown)=>periods.push(period),onDiscard:()=>{}});
- await ui.settle();
- const edit=async(label:string,value:string)=>{(ui.find(Field,e=>e.props.label===label).props.onChange as (value:string)=>void)(value);await ui.settle();};
- const submit=async()=>{(ui.find('form',e=>e.props['aria-label']==='دورهٔ پروندهٔ مالی').props.onSubmit as (event:unknown)=>void)({preventDefault(){}});await ui.settle();};
- await edit('شروع دوره (میلادی)','2024-01-01');await edit('پایان دوره (میلادی)','2025-01-01');await submit();
- assert.equal(periods.length,0);assert.match(String(ui.find('p',e=>e.props.role==='alert').props.children),/۳۶۵/);
- assert.equal(ui.find(Field,e=>e.props.label==='شروع دوره (میلادی)').props.value,'2024-01-01');
- await edit('شروع دوره (میلادی)','2024-01-02');await submit();
- assert.deepEqual(periods,[{startOn:'2024-01-02',endOn:'2025-01-01'}]);
 });

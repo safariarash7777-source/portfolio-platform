@@ -4,8 +4,6 @@ import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { readFundamentalsFromSupabase, type CodalRow } from "./supabase";
 import FundamentalReadNotice from "../../components/symbol/FundamentalReadNotice";
-import { buildFundamentalCard } from "../core/fundamentalCard";
-import { buildMonthlySales } from "../core/monthlyReport";
 
 Object.assign(globalThis, { React });
 const originalFetch = globalThis.fetch;
@@ -59,29 +57,6 @@ test("database failure is separate from successful empty and is retried", async 
   const html = renderToStaticMarkup(React.createElement(FundamentalReadNotice, { readFailed: true }));
   assert.match(html, /نبود نمودار.*به معنی نبود گزارش/);
   assert.equal(renderToStaticMarkup(React.createElement(FundamentalReadNotice, { readFailed: false })), "");
-});
-
-test("a historical financial read failure leaves the monthly card and chart usable without caching the partial result", async () => {
-  const symbol = "monthly-independent";
-  const months = [monthly(symbol, 2, "1405-07-30"), monthly(symbol, 1, "1405-06-31")];
-  let failFinancial = true;
-  let attempts = 0;
-  globalThis.fetch = async (input) => {
-    const kind = new URL(String(input)).searchParams.get("report_kind");
-    if (kind === "eq.ن-۳۰") return Response.json(months);
-    attempts++;
-    if (failFinancial) throw new TypeError("offline historical read");
-    return Response.json([]);
-  };
-  const result = await readFundamentalsFromSupabase(symbol);
-  assert.equal(result.state, "partial");
-  const reports = result.data?.n30?.data ?? [];
-  assert.equal(buildFundamentalCard(symbol, reports).latestMonth, "1405-07");
-  assert.equal(buildMonthlySales(reports)?.currentMonths.filter(month => month.amount !== null).length, 2);
-  assert.equal(result.data?.n10, null);
-  failFinancial = false;
-  assert.equal((await readFundamentalsFromSupabase(symbol)).state, "ready");
-  assert.equal(attempts, 2);
 });
 
 test("unknown monthly amount unit stays observable without a converted money report", async () => {

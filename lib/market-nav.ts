@@ -15,7 +15,7 @@
 
 import { isFundSelectionValue } from "./core/fund-comparison-selection";
 
-export type MarketSectionKey = "overview" | "stocks" | "funds" | "gold" | "map" | "options" | "screener";
+export type MarketSectionKey = "overview" | "stocks" | "funds" | "gold" | "map" | "options";
 
 export interface MarketSection {
   key: MarketSectionKey;
@@ -34,7 +34,6 @@ export interface MarketSection {
 export const MARKET_SECTIONS: readonly MarketSection[] = [
   { key: "overview", href: "/market", label: "نمای کلان", hint: "شاخص، نبض بازار و جریان پول" },
   { key: "stocks", href: "/market/stocks", label: "سهام", hint: "تابلوی کامل نمادهای بورس و فرابورس" },
-  { key: "screener", href: "/market/screener", label: "غربال فروش", hint: "رشد ماهانه و مقایسهٔ ناشران" },
   { key: "funds", href: "/market/funds", label: "صندوق‌ها", hint: "NAV، حباب و بازده صندوق‌ها" },
   { key: "gold", href: "/market#gold-currency", label: "طلا و ارز", hint: "بخشی از نمای کلان", anchor: true },
   { key: "map", href: "/market/map", label: "نقشه و صنایع", hint: "نقشهٔ نمادها و میز صنایع" },
@@ -278,10 +277,6 @@ const BACK_TARGETS: ReadonlyArray<BackTargetSpec> = [
       dir: isEnum(SORT_DIRS),
     },
   },
-  { href: "/market/screener", label: "غربال فروش ماهانه", params: {
-    period: v => /^1\d{3}-(0[1-9]|1[0-2])$/.test(v),
-    minGrowth: v => /^-?\d{1,9}(\.\d{1,5})?$/.test(v),
-  } },
   { href: "/market/map", label: "نقشه و صنایع", params: { ...SHELL_SEARCH } },
   { href: "/market/options", label: "اختیار معامله", params: { ...SHELL_SEARCH } },
   { href: "/data", label: "بانک داده", params: {} },

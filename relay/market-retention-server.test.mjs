@@ -6,23 +6,11 @@ async function probe(scenario) {
   const source = new URL('./server.mjs', import.meta.url).href;
   const program = `
     import http from 'node:http';
-    import assert from 'node:assert/strict';
-    import { performance } from 'node:perf_hooks';
-    import timers from 'node:timers/promises';
-    import { syncBuiltinESMExports } from 'node:module';
-    // Offline child only: advance the actual transport's monotonic clock port.
-    // Production has no environment switch or shortened policy window.
-    let transportClock = 0;
-    Object.defineProperty(performance, 'now', { value: () => transportClock });
-    timers.setTimeout = async (ms, value, options = {}) => {
-      options.signal?.throwIfAborted(); transportClock += ms; options.signal?.throwIfAborted(); return value;
-    };
-    syncBuiltinESMExports();
     const scenario=${JSON.stringify(scenario)};
     const start=Date.parse('2026-10-06T06:00:00Z'); let now=start,phase=0;
     const RealDate=Date;
     globalThis.Date=class extends RealDate {constructor(...a){super(...(a.length?a:[now]));}static now(){return now;}};
-    const latest=[],history=[],daily=[]; let blockedHosts=0,initialReads=0,leased=0,partialGrant=false,navReads=0;
+    const latest=[],history=[],daily=[]; let blockedHosts=0,initialReads=0,leased=0,partialGrant=false;
     const stock={l18:'isolated-stock',l30:'Synthetic',cs_id:1,pl:1000,pc:1000,tval:1000,tvol:10,date:'1405-07-14',time:'09:30:00'};
     const fund={...stock,l18:'isolated-fund',cs_id:68};
     const option={l18:'isolated-option',type:'call',pl:2000,date:'1405-07-14',time:'09:31:00'};
@@ -35,7 +23,6 @@ async function probe(scenario) {
     globalThis.fetch=async(input,init={})=>{
       const u=new URL(input);
       if(u.hostname==='brsapi.ir') {
-        if(scenario==='client-budget-auxiliary'&&phase===0&&u.pathname.endsWith('/Symbol.php'))return reply({},400);
         const core=/Gold_Currency|AllSymbols|Index|Option/.test(u.pathname);
         if(core&&phase===1&&scenario==='malformed-sources')return reply(/Option/.test(u.pathname)?[{}]:{});
         if(core&&failed()&&(!/Option/.test(u.pathname)||scenario==='warm-all-failed'||scenario==='cold-all-failed'))failure();
@@ -48,16 +35,6 @@ async function probe(scenario) {
           }));
           return reply(phase===1&&scenario==='authoritative-empty'?{gold:[],currency:[],cryptocurrency:[]}:phase===1&&scenario==='missing-currency'?{gold:gc.gold,cryptocurrency:gc.cryptocurrency}:{...gc,currency});
         }
-        if(/Nav/.test(u.pathname)&&scenario==='nav-http-recovery') {
-          if(!u.searchParams.has('l18'))return reply({});
-          navReads++;
-          return phase<2?reply({error:'temporary provider failure'},503):reply({predtran:1000,psubtran:1010,date:'1405-07-14',time:'09:30:00'});
-        }
-        if(/Nav/.test(u.pathname)&&scenario.startsWith('nav-restart')){
-          assert.ok(u.searchParams.has('l18'),'NAV must use the documented single-symbol endpoint');
-          return reply(u.searchParams.get('l18')===fund.l18?{predtran:1200,psubtran:1210,date:'1405-07-14',time:'09:30:00'}:{predtran:0});
-        }
-        if(/AllSymbols/.test(u.pathname)&&scenario.startsWith('nav-restart'))return reply([stock,fund,{...fund,l18:'isolated-second-fund'}]);
         if(/AllSymbols/.test(u.pathname))return reply(phase===1&&scenario==='authoritative-empty'?[]:phase===1&&scenario==='invalid-fund'?[stock,{...fund,pl:0}]:[stock,fund]);
         if(/Index/.test(u.pathname))return reply({index:100,index_change:0,date:'1405-07-14',time:'09:30:00'});
         if(/Option/.test(u.pathname))return reply(phase===1&&scenario==='authoritative-empty'?[]:[{...option,pl:2000+phase*1000}]);
@@ -65,11 +42,11 @@ async function probe(scenario) {
       }
       if(u.hostname!=='isolated.invalid') {blockedHosts++;throw new Error('Unexpected host blocked');}
       if(u.pathname.includes('/rpc/')) {
-        if((scenario.startsWith('client-')||scenario==='legacy-budget-options')&&u.pathname.endsWith('/brsapi_budget_lease')) {
+        if(scenario.startsWith('client-')&&u.pathname.endsWith('/brsapi_budget_lease')) {
           const starved=scenario==='client-budget-midcycle'&&phase===1;
-          const granted=starved?(partialGrant?0:1):scenario==='legacy-budget-options'?(phase===0?64:40):1;
+          const granted=starved?(partialGrant?0:1):1;
           if(starved)partialGrant=true;
-          const before=starved?1000-granted:(scenario.startsWith('client-budget-options')||scenario==='legacy-budget-options')&&phase===1?Math.max(960,leased):scenario==='client-budget-auxiliary'&&phase===1?Math.max(900,leased):leased;leased=before+granted;
+          const before=starved?1000-granted:leased;leased=before+granted;
           return reply([{granted,leased_before:before,hard_ceiling:1000}]);
         }
         return reply({code:'PGRST202'},404);
@@ -83,12 +60,8 @@ async function probe(scenario) {
       }
       if(u.pathname.endsWith('/ir_market_snapshots')&&u.searchParams.get('key')==='eq.latest') {
         initialReads++;
-        if(scenario==='unknown-baseline'||scenario==='client-budget-options-unknown'||scenario==='retry-baseline'&&phase===0)failure();
+        if(scenario==='unknown-baseline'||scenario==='retry-baseline'&&phase===0)failure();
         if(scenario==='malformed-baseline')return reply([{payload:{}}]);
-        if(scenario.startsWith('nav-restart'))return reply([{payload:{...gc,crypto:gc.cryptocurrency,stocks:[],options:[],indices:null,
-          funds:[fund.l18,'isolated-second-fund'].map(id=>({id,faName:'Synthetic retained fund',unit:'toman',price:100,nav:100,navIssue:101,
-            navDate:'1405-07-14',navTime:'08:00:00',...(scenario==='nav-restart-partial'?{navReceivedAt:start-3600000}:{})})),fetchedAt:start-3600000,
-          snapshotQuality:{families:{funds:{state:'received',receivedAt:start-3600000,retained:false}}}}}]);
         if(scenario==='hydrated-partial'||scenario==='retry-baseline')return reply([{payload:{...gc,crypto:gc.cryptocurrency,
           stocks:[stock],funds:[fund],options:[option],indices:{date:'1405-07-14',time:'09:30:00'},fetchedAt:start-3600000}}]);
       }
@@ -103,19 +76,6 @@ async function probe(scenario) {
     await new Promise(r=>server.listen(0,'127.0.0.1',r));
     if(scenario==='hydrated-partial')phase=1;
     await refresh();
-    if(scenario.startsWith('nav-restart'))for(let i=0;i<100;i++) {
-      if((await get('/debug')).body.sources.brsapi_nav?.updated===1)break;
-      await new Promise(r=>setTimeout(r,5));if(i===99)throw Error('offline NAV round did not complete');
-    }
-    const drainNav=async()=>{
-      for(let i=0;i<200;i++) {
-        const d=(await get('/debug')).body;
-        if(navReads>=phase+1 && (phase<2?d.sources.brsapi_nav?.failed===1:d.sources.brsapi_nav?.updated===1))return;
-        await new Promise(r=>setTimeout(r,5));
-      }
-      throw Error('NAV eligibility did not recover');
-    };
-    if(scenario==='nav-http-recovery')await drainNav();
     const first=await get('/market.json');
     if(scenario.startsWith('client-')) {
       for(let i=0;i<500;i++) {
@@ -126,22 +86,19 @@ async function probe(scenario) {
       }
     }
     if(!scenario.startsWith('cold')&&scenario!=='hydrated-partial') {
-      phase=1;now+=scenario==='legacy-budget-options'?24*3600000:scenario==='nav-http-recovery'?61*60000:scenario==='client-budget-auxiliary'?12*3600000:scenario.startsWith('daily-')||scenario==='client-budget-midcycle'?5*3600000:31*60000;await refresh();
+      phase=1;now+=scenario.startsWith('daily-')||scenario==='client-budget-midcycle'?5*3600000:31*60000;await refresh();
     }
-    if(scenario==='nav-http-recovery')await drainNav();
     const second=await get('/market.json');const writesAfterSecond=latest.length;
     if(scenario==='partial-recovery'||scenario==='daily-recovery'){phase=2;now+=60000;await refresh();}
-    if(scenario==='nav-http-recovery'){phase=2;now+=61*60000;await refresh();await drainNav();}
     const third=await get('/market.json'); const debug=(await get('/debug')).body;
-    console.log('RESULT:'+JSON.stringify({start,now,first,second,third,latest,history,daily,writesAfterSecond,debug,blockedHosts,initialReads,navReads}));
+    console.log('RESULT:'+JSON.stringify({start,now,first,second,third,latest,history,daily,writesAfterSecond,debug,blockedHosts,initialReads}));
     server.close(()=>process.exit(0));`;
   return new Promise((resolve,reject)=>{
     const child=spawn(process.execPath,['--input-type=module','--eval',program],{
       env:{...process.env,RELAY_TOKEN:'synthetic',BRSAPI_KEY:'synthetic',BRSAPI_BASE:'https://brsapi.ir/Api',
         SUPABASE_URL:'https://isolated.invalid',SUPABASE_SERVICE_ROLE_KEY:'synthetic',BRSAPI_CLIENT_ENABLED:scenario.startsWith('client-')?'1':'0',
-        BRSAPI_LEASE_SIZE:scenario==='legacy-budget-options'?'64':'1',BRSAPI_DAILY_SOFT:'900',BRSAPI_DAILY_HARD:'1000',
-        MCPFARSI_QUOTE_ENABLED:'1',MCP_FARSI_API_KEY:'synthetic',
-        BRSAPI_BUDGET_ENFORCE_LEGACY:scenario==='legacy-budget-options'?'1':'0',BRSAPI_COMMODITY_KEY:'',CODAL_ENABLED:'0',CANDLE_BACKFILL_ENABLED:'0',
+        BRSAPI_LEASE_SIZE:'1',BRSAPI_DAILY_SOFT:'900',BRSAPI_DAILY_HARD:'1000',
+        BRSAPI_BUDGET_ENFORCE_LEGACY:'0',BRSAPI_COMMODITY_KEY:'',CODAL_ENABLED:'0',CANDLE_BACKFILL_ENABLED:'0',
         IME_ENABLED:'0',EOD_AFTER_HOUR:scenario.startsWith('daily-')||scenario==='client-budget-midcycle'?'14':'25',IR_HISTORY_SECTIONS:'gold,currency,stocks,funds'},
       stdio:['ignore','pipe','pipe']});
     let out='',err='';const timeout=setTimeout(()=>{child.kill();reject(new Error('Offline server probe timed out'));},20000);
@@ -157,8 +114,6 @@ async function probe(scenario) {
 test('actual relay: healthy → partial timeout → recovery preserves failed rows and advances options independently',async()=>{
   const r=await probe('partial-recovery');
   assert.equal(r.blockedHosts,0);
-  assert.equal(r.debug.mcpfarsiQuote.enabled,false,'retired MCP stays disabled even with the old deployed flag');
-  assert.equal(r.debug.mcpfarsiQuote.requests,0);
   assert.equal(r.second.body.stocks.length,1);
   assert.deepEqual(r.second.body.stocks,r.first.body.stocks);
   assert.deepEqual(r.second.body.funds,r.first.body.funds);
@@ -297,7 +252,7 @@ test('actual relay: valid stocks cannot disguise an unusable nonempty fund famil
   assert.equal(r.history.filter(x=>x.section==='stocks').length,2);
 });
 
-test('actual relay CLIENT_ENABLED=1: mid-cycle budget rejection preserves partial latest and stops history/EOD work',async()=>{
+test('actual relay CLIENT_ENABLED=1: mid-cycle budget rejection blocks partial latest/history/EOD writes despite successful families',async()=>{
   const r=await probe('client-budget-midcycle');
   assert.equal(r.blockedHosts,0);
   assert.equal(r.first.body.snapshotQuality.state,'complete');
@@ -307,10 +262,7 @@ test('actual relay CLIENT_ENABLED=1: mid-cycle budget rejection preserves partia
   assert.equal(r.debug.brsapiBudgetStop.active,true,JSON.stringify({latestWrites:r.writesAfterSecond,historyRows:r.history.length,dailyPaths:r.daily.map(x=>x.path)}));
   assert.ok(r.debug.brsapiBudgetStop.producers.options>0,'pre-queue rejection reaches the cycle gate');
   assert.ok(r.debug.brsapiBudgetStop.producers['market-index']>0,'reserve-at-send rejection reaches the cycle gate');
-  assert.equal(r.writesAfterSecond,2,'received families persist with the known retained baseline');
-  assert.equal(r.latest[1].snapshotQuality.state,'partial');
-  assert.deepEqual(r.latest[1].options,r.latest[0].options);
-  assert.equal(r.latest[1].snapshotQuality.families.options.receivedAt,r.latest[0].snapshotQuality.families.options.receivedAt);
+  assert.equal(r.writesAfterSecond,1,'no latest write from the budget-stopped cycle');
   assert.equal(r.history.length,4,'no fresh-family history from the stopped cycle');
   assert.deepEqual(r.daily,[],'no EOD/FX/index/breadth from the stopped cycle');
 });
@@ -323,68 +275,4 @@ test('actual relay CLIENT_ENABLED=1: ordinary source timeout remains a partial u
   assert.equal(r.writesAfterSecond,2);
   assert.equal(r.second.body.options[0].price,300);
   assert.deepEqual(r.second.body.stocks,r.first.body.stocks);
-});
-
-test('complete core snapshot persists when optional enrichment exhausts its budget',async()=>{
-  const r=await probe('client-budget-auxiliary');
-  assert.equal(r.blockedHosts,0);
-  assert.equal(r.second.body.snapshotQuality.state,'complete');
-  assert.equal(r.debug.brsapiBudgetStop.active,true);
-  assert.ok(r.debug.brsapiBudgetStop.producers['fund-meta']>0);
-  assert.equal(r.debug.sources.brsapi_fund_meta.error,'budget_deferred');
-  assert.equal(r.debug.sources.brsapi_fund_meta.ok,false);
-  assert.equal(r.writesAfterSecond,2);
-  assert.equal(r.latest[1].fetchedAt,r.second.body.fetchedAt);
-  assert.equal(r.latest[1].options[0].price,300);
-  assert.equal(r.history.length,4,'budget stop still prevents follow-on history writes');
-});
-
-for(const scenario of ['client-budget-options','legacy-budget-options'])test(`${scenario}: options budget cannot starve critical market persistence or relabel retained options as fresh`,async()=>{
-  const r=await probe(scenario);
-  assert.equal(r.blockedHosts,0);
-  assert.equal(r.debug.brsapiBudgetStop.active,true);
-  assert.ok(r.debug.brsapiBudgetStop.producers.options>0);
-  assert.equal(r.writesAfterSecond,2);
-  const before=r.latest[0],after=r.latest[1];
-  assert.equal(after.snapshotQuality.state,'partial');
-  assert.equal(after.snapshotQuality.families.stocks.state,'received');
-  assert.ok(after.snapshotQuality.families.stocks.receivedAt>before.snapshotQuality.families.stocks.receivedAt);
-  assert.equal(after.snapshotQuality.families.options.state,'stale');
-  assert.equal(after.snapshotQuality.families.options.receivedAt,before.snapshotQuality.families.options.receivedAt);
-  assert.deepEqual(after.options,before.options);
-  assert.equal(r.history.length,4);
-  assert.deepEqual(r.daily,[]);
-});
-
-test('budget-deferred partial snapshot still cannot replace an unknown stored baseline',async()=>{
-  const r=await probe('client-budget-options-unknown');
-  assert.equal(r.debug.baseline.state,'unknown');
-  assert.equal(r.debug.brsapiBudgetStop.active,true);
-  assert.equal(r.second.body.snapshotQuality.state,'partial');
-  assert.equal(r.writesAfterSecond,1);
-  assert.equal(r.latest[0].snapshotQuality.state,'complete');
-});
-
-
-for(const scenario of ['nav-restart-partial','nav-restart-legacy'])test(`restart NAV actual server: ${scenario} retains only truly received NAV through partial fresh rotation`,async()=>{
-  const r=await probe(scenario);assert.equal(r.blockedHosts,0);assert.equal(r.initialReads,1);
-  const row=r.second.body.funds.find(f=>f.id==='isolated-second-fund');
-  assert.equal(row.price,100); assert.equal(row.unit,'toman');
-  if(scenario==='nav-restart-partial') {
-    assert.equal(row.nav,100); assert.equal(row.navIssue,101); assert.equal(row.navDate,'1405-07-14');
-    assert.equal(row.navTime,'08:00:00'); assert.equal(row.navRetained,true); assert.equal(row.navReceivedAt,r.start-3600000);
-  } else { assert.equal(row.nav,undefined); assert.equal(row.navDate,undefined); assert.equal(row.navReceivedAt,undefined); }
-  assert.equal(r.second.body.funds.find(f=>f.id==='isolated-fund').nav,120);
-  assert.equal(r.second.body.funds.find(f=>f.id==='isolated-fund').navReceivedAt,r.start);
-  assert.equal(r.latest.at(-1).funds.find(f=>f.id==='isolated-second-fund').navReceivedAt,row.navReceivedAt);
-  assert.equal(r.second.body.snapshotQuality.families.funds.receivedAt,r.now);
-});
-
-
-test('actual relay: two HTTP failures cannot permanently suppress the next valid NAV', async()=>{
-  const r=await probe('nav-http-recovery');
-  assert.equal(r.navReads,3);
-  assert.equal(r.blockedHosts,0);
-  assert.equal(r.debug.sources.brsapi_nav.updated,1);
-  assert.equal(r.debug.navBlacklist.size,0);
 });
