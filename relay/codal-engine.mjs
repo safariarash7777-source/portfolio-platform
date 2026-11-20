@@ -374,11 +374,17 @@ async function pushFeedRows(items) {
   }
 }
 
+function providerRefusalReason(error) {
+  if (error?.status === 429) return "provider_rate_limited";
+  if (error?.status === 403) return "provider_forbidden";
+  return null;
+}
+
 /** یک صفحه با یک تلاش مجدد — BrsApi گاه اتصال را گذرا قطع می‌کند. */
 async function fetchPageWithRetry(params) {
   try { return await fetchAnnouncementsPage(params); }
   catch (e) {
-    if (e?.noRetry === true || e?.name === "AnnouncementSchemaError" || isBrsLocalDeferral(e)) throw e;
+    if (providerRefusalReason(e) || e?.noRetry === true || e?.name === "AnnouncementSchemaError" || isBrsLocalDeferral(e)) throw e;
     await new Promise((r) => setTimeout(r, 4000));
     return await fetchAnnouncementsPage(params);
   }
@@ -406,7 +412,7 @@ async function pollGlobalFeed({ metadataOnly = false, monthlyOnly = false, inter
     catch (error) {
       const deferred = isBrsLocalDeferral(error);
       if (deferred) noteDeferral(error, "announcement_search");
-      st.incompleteReason = deferred ? "local_deferred" : "feed_failure";
+      st.incompleteReason = deferred ? "local_deferred" : (providerRefusalReason(error) ?? "feed_failure");
       pageFailure = error;
       break;
     }
