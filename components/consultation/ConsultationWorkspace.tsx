@@ -11,7 +11,7 @@ type Read = Extract<Awaited<ReturnType<typeof readConsultation>>, { status: "rea
 type Attempt = ReturnType<typeof createConsultationAttempt>;
 type Command = Parameters<typeof createConsultationAttempt>[0]["command"];
 
-export default function ConsultationWorkspace({ expectedActorId, initialRelationshipId }: { expectedActorId: string; initialRelationshipId?: string }) {
+export default function ConsultationWorkspace({ expectedActorId, initialRelationshipId, advisorDesk = false }: { expectedActorId: string; initialRelationshipId?: string; advisorDesk?: boolean }) {
   const [identity, setIdentity] = useState<"checking" | "ready" | "changed" | "error">("checking");
   const [data, setData] = useState<Read | null>(null), [reading, setReading] = useState(false), [error, setError] = useState("");
   const [selectionDenied, setSelectionDenied] = useState(false);
@@ -37,7 +37,7 @@ export default function ConsultationWorkspace({ expectedActorId, initialRelation
       if (result.status === "error") {
         if (result.error.code === "AUTH_REQUIRED" || result.error.code === "ACTOR_CHANGED") { clearIdentity(); return false; }
         if (result.httpStatus === 403 || result.httpStatus === 404) { setData(null); setDirty(false); setSelectionDenied(Boolean(relationshipId)); }
-        setError("خواندن پرونده انجام نشد؛ نبود اطلاعات یا دسترسی تأیید نشده است. نتیجهٔ قبلی، خواندن تازه نیست."); return false;
+        setError(result.httpStatus === 403 || result.httpStatus === 404 ? "این پرونده برای حساب شما در دسترس نیست." : "خواندن پرونده انجام نشد؛ خالی بودن پرونده تأیید نشده است. نتیجهٔ قبلی، خواندن تازه نیست."); return false;
       }
       if (result.data.actor.id !== expectedActorId) { clearIdentity(); return false; }
       if (receiptRef.current && !receiptVisible(result.data, receiptRef.current)) { setData(result.data); setError("رسید ثبت حفظ شده است، اما اثر همان درخواست در بازخوانی هنوز دیده نشد. ثبت را تکرار نکنید؛ بازخوانی را بررسی کنید."); return false; }
@@ -111,6 +111,7 @@ export default function ConsultationWorkspace({ expectedActorId, initialRelation
     {confirmed && !readbackVerified && !error && !reading && <section className="card space-y-3 p-4"><p role="status">رسید ثبت محفوظ است؛ بازخوانی مستقل همان اثر هنوز تأیید نشده است. ثبت دوباره انجام نمی‌شود.</p><button className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" disabled={saving} onClick={() => void load(selected.current)}>دوباره خواندن پرونده</button></section>}
     {confirmed && readbackVerified && !error && !reading && <button className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" disabled={saving} onClick={() => { if (!live.current || revoked.current || !readbackVerified) return; receiptRef.current = null; setConfirmed(false); setReadbackVerified(false); setMessage(""); }}>ادامه با پروندهٔ بازخوانی‌شده</button>}
     {dirty && !saving && !reading && !uncertain && !confirmed && <section className="card space-y-3 p-4"><p className="text-sm leading-7">برای تغییر پرونده، دوره یا لغو دسترسی مشاور، تغییرات فرم‌ها را ثبت یا کنار بگذارید. کنارگذاشتن فرم‌ها هیچ سابقه یا دسترسی ثبت‌شده‌ای را تغییر نمی‌دهد.</p><button type="button" className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" onClick={discardDrafts}>کنارگذاشتن تغییرات ثبت‌نشدهٔ فرم‌ها</button></section>}
-    {data && <ConsultationPanel key={revision} data={data} locked={locked} onDirty={() => { if (!locked) setDirty(true); }} onCommand={command => send(command)} onSelect={relationshipId => { if (!locked && !dirty) { setData(null); setMessage(""); void load(relationshipId); } }} selectionLocked={locked || dirty} onPeriod={next => { if (!locked && !dirty) { try { period.current = validateCashFlowPeriod(next); } catch { setMessage("دوره معتبر نیست؛ پروندهٔ فعلی حفظ شد. فاصلهٔ شروع و پایان حداکثر ۳۶۵ روز باشد."); return; } setMessage(""); setData(null); void load(selected.current); } }} onDiscard={discardDrafts} />}
+    {data && advisorDesk && !data.actor.isAdvisor && <section className="card space-y-2 p-5" role="status"><h2 className="font-display text-xl">دسترسی مشاور فعال نیست</h2><p>نقش مدیریت سایت به‌تنهایی اجازهٔ دیدن پروندهٔ اعضا، تأیید یا انتشار جمع‌بندی را نمی‌دهد.</p></section>}
+    {data && (!advisorDesk || data.actor.isAdvisor) && <ConsultationPanel key={revision} data={data} locked={locked} onDirty={() => { if (!locked) setDirty(true); }} onCommand={command => send(command)} onSelect={relationshipId => { if (!locked && !dirty) { setData(null); setMessage(""); void load(relationshipId); } }} selectionLocked={locked || dirty} onPeriod={next => { if (!locked && !dirty) { try { period.current = validateCashFlowPeriod(next); } catch { setMessage("دوره معتبر نیست؛ پروندهٔ فعلی حفظ شد. فاصلهٔ شروع و پایان حداکثر ۳۶۵ روز باشد."); return; } setMessage(""); setData(null); void load(selected.current); } }} onDiscard={discardDrafts} />}
   </div>;
 }

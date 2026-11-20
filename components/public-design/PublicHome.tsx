@@ -1,43 +1,45 @@
 import Link from "next/link";
-import { ArrowUpLeft, BookOpen } from "lucide-react";
-import s from "./PublicDesign.module.css";
+import { ArrowLeft, ArrowUpLeft, BookOpen, Files, Wallet, Layers3, MessagesSquare, Compass } from "lucide-react";
+
+const START = [
+  { href: "/codal", title: "گزارش شرکت‌ها", context: "اطلاعیه‌های کدال", Icon: Files },
+  { href: "/dashboard/holdings", title: "دارایی و سبد من", context: "ثبت دارایی و بدهی", Icon: Layers3 },
+  { href: "/dashboard/cashflow", title: "دفتر مالی من", context: "درآمد، هزینه و بودجه", Icon: Wallet },
+  { href: "#waitlist", title: "مشاوره با آرش", context: "فهرست انتظار مشاوره", Icon: MessagesSquare },
+] as const;
 
 export default function PublicHome() {
   return (
-    <section className={s.homeHero} aria-labelledby="public-home-title">
-      <div className={s.heroCopy}>
-        <p className={s.eyebrow}>تحلیلگر و مشاور سرمایه‌گذاری</p>
-        <h1 id="public-home-title">آرش صفری</h1>
-        <p>مطالب و تحلیل‌های بازار، با ابزارهای ثبت و بررسی اطلاعات مالی شخصی.</p>
-        <p>بازار ایران را دنبال می‌کنم و تحلیلم را با نام خودم منتشر می‌کنم.</p>
-        <div className={s.actions}>
-          <a href="#home-media" className={s.primary}>
-            رسانهٔ آرش <ArrowUpLeft size={18} aria-hidden />
-          </a>
-          <Link href="/about">دربارهٔ آرش و روش کارش</Link>
+    <section className="dos dos-home" aria-labelledby="public-home-title">
+      <header className="dos-heading">
+        <div>
+          <div className="dos-kicker"><span />اقتصاد سیاسی و سرمایه‌گذاری</div>
+          <h1 id="public-home-title">آرش صفری</h1>
+          <p>تحلیلگر و مشاور سرمایه‌گذاری</p>
+        </div>
+        <Link href="/about" className="dos-link">دربارهٔ من و روش کارم <ArrowUpLeft size={16} aria-hidden /></Link>
+      </header>
+      <div className="dos-top">
+        <div className="dos-main">
+          <div className="dos-headline"><span><BookOpen size={17} aria-hidden /> از دفتر آرش</span></div>
+          <h2>بازار ایران از نگاه من</h2>
+          <p>از اثر سیاست بر قیمت‌ها می‌نویسم و از اینکه این تغییرها برای سبد سرمایه‌گذاری ما چه معنایی دارند.</p>
+          <a href="#home-media">خواندن رسانهٔ آرش <ArrowLeft size={17} aria-hidden /></a>
+        </div>
+        <div className="dos-action">
+          <div className="dos-label"><span className="dos-sign"><Compass size={17} aria-hidden /></span> فضای خصوصی عضو</div>
+          <h2>پروندهٔ مالی من</h2><p>دارایی‌ها، تعهدها و اقدام بعدی‌تان را یک‌جا ببینید.</p>
+          <Link prefetch={false} className="dos-cta" href="/dashboard">ورود به پرونده <ArrowLeft size={16} aria-hidden /></Link>
         </div>
       </div>
-      <section
-        className={`${s.panel} ${s.journey}`}
-        aria-labelledby="home-intro-title"
-      >
-        <header>
-          <BookOpen size={22} aria-hidden />
-          <h2 id="home-intro-title">در این وب‌سایت</h2>
-        </header>
-        <p>مطالب منتشرشده و روش کار آرش صفری؛ همراه با فضای مالی شخصی اعضا.</p>
-        <nav className={s.introLinks} aria-label="مسیرهای آشنایی با آرش">
-          <a href="#home-media">
-            محتوای منتشرشده <ArrowUpLeft size={16} aria-hidden />
-          </a>
-          <Link href="/about">
-            روش کار آرش <ArrowUpLeft size={16} aria-hidden />
-          </Link>
-          <a href="#waitlist">
-            مسیرهای همکاری <ArrowUpLeft size={16} aria-hidden />
-          </a>
+      <div className="dos-ledgers">
+        <h2>از کجا شروع کنم؟</h2>
+        <nav aria-label="از کجا شروع کنم؟">
+          {START.map(({href, title, context, Icon}) => <Link key={href} prefetch={false} href={href}>
+            <Icon aria-hidden size={19} /><span><b>{title}</b><small>{context}</small></span><ArrowUpLeft size={14} aria-hidden />
+          </Link>)}
         </nav>
-      </section>
+      </div>
     </section>
   );
 }

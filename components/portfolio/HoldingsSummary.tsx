@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { formatToman, formatJalali, toPersianDigits } from "@/lib/format";
 import type { valuePositions } from "@/lib/portfolio/valuation";
-export default function HoldingsSummary({ valuation, version, pricesFailed = false, readOnly = false }: { valuation: ReturnType<typeof valuePositions>; version: number | null; pricesFailed?: boolean; readOnly?: boolean }) {
+export default function HoldingsSummary({ valuation, version, pricesFailed = false, readOnly = false, historical = false }: { valuation: ReturnType<typeof valuePositions>; version: number | null; pricesFailed?: boolean; readOnly?: boolean; historical?: boolean }) {
   return <section className="card p-5 space-y-4" aria-label="ارزش دارایی‌های ثبت‌شده">
-    <h2 className="font-display text-xl font-bold">{readOnly ? "دارایی‌های پرونده" : "دارایی‌های من"} {version !== null && `· نسخهٔ ${toPersianDigits(version)}`}</h2>
+    <h2 className="font-display text-xl font-bold">{historical ? "ارزش‌گذاری اقلام نسخهٔ قبلی" : readOnly ? "دارایی‌های پرونده" : "دارایی‌های من"} {version !== null && `· نسخهٔ ${toPersianDigits(version)}`}</h2>
     <p className="text-sm leading-7">نسخه یعنی یک ثبت ثابت از اقلام شما؛ اصلاح، نسخهٔ تازه می‌سازد و قبلی حفظ می‌شود. ارزش اقلام ثبت‌شده با کل ثروت شما یکسان فرض نمی‌شود.</p>
+    {historical && <p className="text-sm leading-7">برای هر قلم، تاریخ و منبع قیمت را جداگانه ببینید. ارزش سهم و وزن‌ها با همین مبنا محاسبه شده‌اند، نه لزوماً با قیمت روز ثبت نسخه.</p>}
     {pricesFailed && <p role="alert">دریافت قیمت‌ها انجام نشد. ارزش‌گذاری قابل تأیید نیست.</p>}
-    {valuation.positions.length === 0 ? <p>هنوز نسخه‌ای از دارایی‌ها ثبت نکرده‌اید.</p> : <>
+    {valuation.positions.length === 0 ? <p>{version === null ? "هنوز نسخه‌ای از دارایی‌ها ثبت نکرده‌اید." : "در این نسخه قلم دارایی ثبت نشده است؛ این به معنی صفر بودن دارایی شما نیست."}</p> : <>
       <p className="font-bold">{valuation.totalValue !== null ? `ارزش دارایی‌های دارای ارزش‌گذاری: ${formatToman(Math.round(valuation.totalValue))}` : "ارزش‌گذاری همهٔ اقلام موجود نیست؛ جمع دارایی‌ها جزئی است."}</p>
       {valuation.totalValue === null && valuation.subtotal !== null && <p>جمع اقلام دارای ارزش‌گذاری: {formatToman(Math.round(valuation.subtotal))}</p>}
       {valuation.estimatedCount > 0 && <p role="alert">این جمع شامل {toPersianDigits(valuation.estimatedCount)} ارزش‌گذاری تخمینی است.</p>}

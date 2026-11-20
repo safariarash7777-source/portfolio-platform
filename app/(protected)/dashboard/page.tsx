@@ -8,7 +8,10 @@ import DashboardClient from "./DashboardClient";
 import PersonalFinance, { type MemberFinanceSummary } from "@/components/dashboard/PersonalFinance";
 import AccessStatusCard from "@/components/dashboard/AccessStatusCard";
 import { getAccess } from "@/lib/access";
-import { loadPortfolioSnapshot, loadVersionDebts } from "@/lib/portfolio/service";
+import { loadPortfolioSnapshot, loadVersionDebts, loadPriceRows } from "@/lib/portfolio/service";
+import { readDossierHistory, DOSSIER_VERSION_LIMIT } from "@/lib/portfolio/dossier-history";
+import { buildBalanceSheet } from "@/lib/portfolio/balanceSheet";
+import { buildRecordedPayments, paymentReferenceDay } from "@/lib/portfolio/paymentSchedule";
 import { loadInvestmentScope } from "@/lib/portfolio/scopeService";
 
 export const metadata = {
@@ -107,16 +110,50 @@ export default async function DashboardPage() {
     loadPortfolioSnapshot(undefined, async () => supabase),
   ]);
 
-  const [memberDebts, memberScope] = await Promise.all([
+  const selectedVersions = memberSnapshot.ready && memberSnapshot.holdings
+    ? memberSnapshot.history.slice(0, DOSSIER_VERSION_LIMIT).map(v => ({ id: v.id, version: v.version, date: v.createdAt })) : [];
+  const [memberDebts, memberScope, prices, dossierHistory] = await Promise.all([
     memberSnapshot.ready && memberSnapshot.holdings
       ? loadVersionDebts(memberSnapshot.holdings.id).catch(() => ({ ready: false, debts: [] }))
       : Promise.resolve({ ready: false, debts: [] }),
     memberSnapshot.ready && memberSnapshot.holdings
       ? loadInvestmentScope(memberSnapshot.holdings)
       : Promise.resolve({ status: "error" as const, review: null }),
+    loadPriceRows(memberSnapshot.holdings?.positions ?? [], async () => supabase),
+    readDossierHistory(supabase, user.id, selectedVersions, memberSnapshot.holdings?.positions ?? []),
   ]);
   const assetsState = !memberSnapshot.ready ? "error" : memberSnapshot.holdings ? "ready" : "empty";
+  const now = new Date();
+  const sheet = buildBalanceSheet({
+    positions: memberSnapshot.holdings?.positions ?? [], debts: memberDebts.debts,
+    priceRows: prices.data ?? [], now, recorded: !!memberSnapshot.holdings,
+    assetsReady: memberSnapshot.ready, debtsReady: memberDebts.ready, pricesFailed: prices.status === "error",
+  });
+  const payments = buildRecordedPayments({
+    debts: memberDebts.debts, ready: memberDebts.ready, recorded: !!memberSnapshot.holdings,
+    referenceDay: paymentReferenceDay(now),
+  });
   const memberFinance: MemberFinanceSummary = {
+    // No saved values or note bodies from other contexts. Empty lists don't establish
+    // zero wealth or zero debt. A subtotal with a gap is never called net worth.
+    picture: {
+      assets: sheet.valuation.subtotal,
+      debts: memberDebts.debts.length ? sheet.debtValue : null,
+      net: !sheet.partial && sheet.valuation.fullCoverage && memberDebts.debts.length ? sheet.netWorth : null,
+      estimated: sheet.estimated,
+      stale: sheet.valuation.gaps.some(gap => gap.reason === "stale_price"),
+      pricesFailed: prices.status === "error",
+      positions: sheet.valuation.positions.map(({ position, price, value, weightPct }) => ({
+        id: position.positionKey, name: position.title || position.manualLabel || position.symbol || "قلم بدون عنوان",
+        amount: value, source: price?.source ?? null, asOf: price?.asOf ?? null,
+        weight: weightPct, estimated: price?.status === "estimated",
+      })),
+      // Show the first dated obligation in the existing sorted schedule, without
+      // treating an elapsed date as proof of delinquency, or absence as payment.
+      due: payments.items.find(item => item.dueOn !== null) ?? null,
+      incompleteSchedule: payments.incompleteCount > 0,
+      history: dossierHistory,
+    },
     assetsState,
     version: memberSnapshot.holdings?.version ?? null,
     recordedAt: memberSnapshot.holdings ? memberSnapshot.history[0]?.createdAt ?? null : null,
@@ -132,7 +169,7 @@ export default async function DashboardPage() {
     return (
       <>
         <Navbar />
-        <main id="main-content" dir="rtl" className="mx-auto w-full max-w-6xl px-5 py-10 space-y-6">
+        <main id="main-content" dir="rtl" className="mx-auto w-full max-w-6xl py-6 space-y-6">
           <div role="alert" className="card p-6 space-y-4">
             <p>اطلاعات پروفایل یا سابقهٔ ارزیابی ریسک دریافت نشد. بخش ارزیابی ریسک تا بازیابی اطلاعات نمایش داده نمی‌شود؛ دفتر مالی شما در ادامه در دسترس است.</p>
             <a href="/dashboard" className="btn btn-outline">تلاش دوباره</a>
@@ -155,10 +192,7 @@ export default async function DashboardPage() {
   return (
     <>
       <Navbar />
-      <main style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
-        <div className="mx-auto w-full max-w-6xl px-5 pt-6 space-y-4">
-          <AccessStatusCard access={access} />
-        </div>
+      <main id="main-content" style={{ background: "var(--bg)", minHeight: "calc(100vh - 72px)" }}>
         <DashboardClient
           userId={user.id}
           userEmail={user.email ?? ""}
@@ -185,6 +219,9 @@ export default async function DashboardPage() {
             portfolioVersions: Boolean(portfolioVersionsRes.error),
           }}
         />
+        <div className="mx-auto w-full max-w-6xl px-5 pb-6 space-y-4">
+          <AccessStatusCard access={access} />
+        </div>
         <div className="mx-auto w-full max-w-6xl px-5 pb-8">
           {/* بستنِ حلقه: از داشبورد به میزِ بازار. طرفِ دیگرِ همین مسیر در
               `/market` و `/symbol/[symbol]` است. */}

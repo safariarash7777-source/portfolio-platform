@@ -1191,3 +1191,19 @@
   color: var(--text-2);
   background: var(--surface);
 }
+
+.skipToContent { position: absolute; inset-block-start: 6px; inset-inline-start: 16px; z-index: 100; padding: 10px 16px; border-radius: 8px; background: var(--surface); color: var(--navy-ink); transform: translateY(-160%); }
+.skipToContent:focus { transform: none; }
+
+.home .frame { max-width: 1176px; margin-inline: auto; }
+.home:not(.layout2) .frame { display: block; }
+.home:not(.layout2) .rail { display: none; }
+.home > header > div:first-child { max-width: 1176px; }
+.home > header nav { border: none; box-shadow: none; background: transparent; }
+.home .homeSectionHeading { padding-block-end: 12px; border-bottom: 1px solid var(--line); }
+.mediaProvenance summary { cursor: pointer; width: fit-content; padding-block: 11px; min-height: 44px; }
+.mediaProvenance p { max-width: 76ch; }
+@media (max-width: 800px) {
+  .home .frame { display: block; }
+  .home.layout2 .rail { margin-block-end: 12px; }
+}

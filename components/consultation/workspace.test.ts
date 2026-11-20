@@ -18,7 +18,7 @@ type Element = React.ReactElement<Record<string, unknown>>;
 function nodes(tree: unknown): Element[] { if (Array.isArray(tree)) return tree.flatMap(nodes); if (!React.isValidElement(tree)) return []; const node = tree as Element; const content = typeof node.type === "function" ? (node.type as (p: unknown) => unknown)(node.props) : node.props.children; return [node, ...nodes(content)]; }
 function text(tree: unknown): string { if (Array.isArray(tree)) return tree.map(text).join(""); if (!React.isValidElement(tree)) return typeof tree === "string" || typeof tree === "number" ? String(tree) : ""; const node = tree as Element; return text(typeof node.type === "function" ? (node.type as (p: unknown) => unknown)(node.props) : node.props.children); }
 /** Actual workspace handlers/effects; controlled auth and transport seams, no DOM/RLS claim. */
-function mount(reads: unknown[], writes: unknown[], initialRelationshipId?: string) {
+function mount(reads: unknown[], writes: unknown[], initialRelationshipId?: string, advisorDesk = false) {
   const slots: unknown[] = [], effects: (() => void)[] = [], cleanups: (() => void)[] = [], readCalls: unknown[] = [], attempts: unknown[] = [], writeCalls: unknown[][] = [];
   let cursor = 0, tree: unknown, callback: (event: string, session: unknown) => void = () => {};
   const hooks = { ...React,
@@ -33,7 +33,7 @@ function mount(reads: unknown[], writes: unknown[], initialRelationshipId?: stri
   const load = (name: string) => name === "react" ? hooks : name === "@/lib/consultation/request" ? request : name === "./ConsultationPanel" ? { __esModule: true, default: (props: object) => React.createElement("test-panel", props) } : name === "@/lib/supabase/client" ? { createClient: () => ({ auth: { onAuthStateChange(fn: typeof callback) { callback = fn; return { data: { subscription: { unsubscribe() {} } } }; } } }) } : local(name.startsWith("@/") ? resolve(name.slice(2)) : name);
   const code = ts.transpileModule(readFileSync(filename, "utf8"), { compilerOptions: { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React, esModuleInterop: true }, fileName: filename }).outputText;
   new Function("require", "module", "exports", "React", "window", code)(load, taskModule, taskModule.exports, React, browser);
-  const render = () => { cursor = 0; tree = taskModule.exports.default({ expectedActorId: actor, initialRelationshipId }); effects.splice(0).forEach(fn => fn()); };
+  const render = () => { cursor = 0; tree = taskModule.exports.default({ expectedActorId: actor, initialRelationshipId, advisorDesk }); effects.splice(0).forEach(fn => fn()); };
   const flush = async () => { for (let i = 0; i < 4; i++) { await new Promise(resolve => setImmediate(resolve)); render(); } };
   const panel = () => { const item = nodes(tree).find(node => node.type === "test-panel"); assert.ok(item); return item; };
   const button = (label: string) => { const item = nodes(tree).find(node => node.type === "button" && text(node).includes(label)); assert.ok(item, label); return item; };
@@ -177,4 +177,10 @@ test("failed read after session recovery allows discarding an unsent draft and r
   assert.equal(view.readCalls.length, 3);
   assert.equal(view.writeCalls.length, 0);
   view.unmount();
+});
+
+test("site admin without a consultation registry role sees no member form or advisor desk", async () => {
+  const view = mount([result()], [], undefined, true); await view.auth();
+  assert.match(view.text(), /دسترسی مشاور فعال نیست/); assert.throws(() => view.panel());
+  assert.equal(view.writeCalls.length, 0); view.unmount();
 });
