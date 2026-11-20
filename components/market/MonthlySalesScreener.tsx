@@ -14,6 +14,13 @@ const control = "min-h-11 rounded-lg border border-[var(--line-strong)] bg-[var(
 const statuses = { pass: "عبورکرده", fail: "زیر حد رشد", missing: "غیرقابل محاسبه", all: "همه نمادها" } as const;
 const columns = { industry: "صنعت", current: "فروش ماه جاری", previous: "فروش ماه هم‌دوره" } as const;
 
+function screenQuery(period: string, minGrowth: string, outside: boolean, symbol = "") {
+  const query = new URLSearchParams({ period, minGrowth });
+  if (outside) query.set("universe", "reported-outside");
+  if (symbol) query.set("symbol", symbol);
+  return query;
+}
+
 function timestamp(value: string | null) {
   if (!value) return "نامشخص";
   if (/^1[34]\d{2}[/-]/.test(toLatinDigits(value))) return toPersianDigits(value);
@@ -32,9 +39,9 @@ function PointSource({ label, point }: { label: string; point: Point | null }) {
   </div>;
 }
 
-export function GrowthEvidence({ row, result }: { row: Row; result: MonthlySalesScreen }) {
+export function GrowthEvidence({ row, result, outside = false }: { row: Row; result: MonthlySalesScreen; outside?:boolean }) {
   return <div className="space-y-3 py-2">
-    <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold">{row.symbol} · مبنای محاسبه</h3><a className="underline" href={"/market/screener?" + new URLSearchParams({ period:result.period, minGrowth:String(result.minGrowth), symbol:row.symbol })}>پیوند این ردیف</a></div>
+    <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold">{row.symbol} · مبنای محاسبه</h3><a className="underline" href={"/market/screener?" + screenQuery(result.period,String(result.minGrowth),outside,row.symbol)}>پیوند این ردیف</a></div>
     <p>{row.reason || (row.passed ? "رشد به حد انتخابی رسیده است." : "رشد کمتر از حد انتخابی است.")}</p>
     <p>درصد رشد = (فروش ماه جاری − فروش ماه هم‌دوره) ÷ فروش ماه هم‌دوره × ۱۰۰</p>
     <div className="grid gap-2 sm:grid-cols-2">
@@ -45,7 +52,7 @@ export function GrowthEvidence({ row, result }: { row: Row; result: MonthlySales
   </div>;
 }
 
-export function SalesScreenResults({ result, symbol = "" }: { result: MonthlySalesScreen; symbol?:string }) {
+export function SalesScreenResults({ result, symbol = "", outside = false }: { result: MonthlySalesScreen; symbol?:string; outside?:boolean }) {
   const [status, setStatus] = useState<keyof typeof statuses>(symbol ? "all" : "pass");
   const [search, setSearch] = useState(symbol);
   const [open, setOpen] = useState<string | null>(symbol || null);
@@ -62,15 +69,16 @@ export function SalesScreenResults({ result, symbol = "" }: { result: MonthlySal
   });
   const pages = Math.max(1, Math.ceil(rows.length / 40));
   const start = (page - 1) * 40;
-  const from = "/market/screener?" + new URLSearchParams({period:result.period, minGrowth:String(result.minGrowth)});
+  const from = "/market/screener?" + screenQuery(result.period,String(result.minGrowth),outside,symbol);
   function compare(symbol: string) {
     setSelected(previous => previous.includes(symbol) ? previous.filter(s => s !== symbol) : previous.length < 2 ? [...previous, symbol] : previous);
   }
   return <div className="space-y-4">
-    <details className="card p-4"><summary className="cursor-pointer font-bold">پوشش بازار · {formatCount(result.coverage.calculable)} قابل محاسبه از {formatCount(result.coverage.eligible)} ناشر مشمول</summary>
+    <details className="card p-4"><summary className="cursor-pointer font-bold">پوشش {outside ? "ناشران خارج از تابلو" : "تابلوی سهام"} · {formatCount(result.coverage.calculable)} قابل محاسبه از {formatCount(result.coverage.eligible)} ناشر مشمول</summary>
       <p className="mt-3 text-sm">{result.coverage.universeSource} آخرین دریافت فهرست نمادها {timestamp(result.coverage.rosterUpdatedAt)}</p>
       <p className="py-2 text-sm">جامعهٔ بررسی {formatCount(result.coverage.universe)} · مشمول {formatCount(result.coverage.eligible)} · عبورکرده {formatCount(result.coverage.passed)}</p>
-      <p className="mb-2 text-sm">ناشران دارای اطلاعیه یا گزارش در این دوره که در تابلو نیستند و شمولشان جداگانه باید بررسی شود · {result.coverage.outsideRoster === undefined ? "نامشخص" : formatCount(result.coverage.outsideRoster)}</p>
+      {outside ? <p className="mb-2 text-sm">مخرج این غربال فقط ناشران گزارش‌دهندهٔ خارج از آخرین تابلو است. وضعیت پذیرش بورسی این ناشران احراز نشده است.</p>
+        : <p className="mb-2 text-sm">گزارش‌دهندگان خارج از آخرین تابلو · {result.coverage.outsideRoster === undefined ? "نامشخص" : formatCount(result.coverage.outsideRoster)} · <Link prefetch={false} className="underline" href={"/market/screener?" + screenQuery(result.period,String(result.minGrowth),true)}>بررسی جداگانهٔ این ناشران</Link></p>}
       <ul className="list-inside list-disc text-sm">{Object.entries(result.coverage.excluded).map(([reason, count]) => <li key={reason}>{reason} · {formatCount(count)}</li>)}</ul>
       <p className="mt-2 text-xs">زمان خواندن داده‌ها {timestamp(result.checkedAt)} (تهران)</p>
     </details>
@@ -91,7 +99,7 @@ export function SalesScreenResults({ result, symbol = "" }: { result: MonthlySal
             <th scope="row" className="p-2 text-start"><Link prefetch={false} className="underline" href={"/symbol/" + encodeURIComponent(row.symbol) + "?from=" + encodeURIComponent(from) + "#fundamental"}>{row.symbol}</Link></th>
             <td className="p-2"><button className="min-h-11 max-w-36 whitespace-normal text-start underline" aria-expanded={open === row.symbol} onClick={() => setOpen(open === row.symbol ? null : row.symbol)}>{row.growth === null ? row.reason || "علت کنارگذاری" : number.format(row.growth) + "٪"}</button></td>
             {visible.industry && <td className="p-2">{row.industry || "نامشخص"}</td>}{visible.current && <td className="p-2">{row.current ? number.format(row.current.amount) : "—"}</td>}{visible.previous && <td className="p-2">{row.previous ? number.format(row.previous.amount) : "—"}</td>}
-          </tr>{open === row.symbol && <tr><td className="whitespace-normal bg-[var(--surface-2)] p-3" colSpan={3 + Number(visible.industry) + Number(visible.current) + Number(visible.previous)}><GrowthEvidence row={row} result={result}/></td></tr>}
+          </tr>{open === row.symbol && <tr><td className="whitespace-normal bg-[var(--surface-2)] p-3" colSpan={3 + Number(visible.industry) + Number(visible.current) + Number(visible.previous)}><GrowthEvidence row={row} result={result} outside={outside}/></td></tr>}
         </tbody>)}
       </table></div>
       {!rows.length && <p>هیچ نمادی با این انتخاب پیدا نشد.</p>}
@@ -100,29 +108,33 @@ export function SalesScreenResults({ result, symbol = "" }: { result: MonthlySal
   </div>;
 }
 
-export default function MonthlySalesScreener({ period, minGrowth, symbol }: {period:string; minGrowth:string; symbol:string}) {
+export default function MonthlySalesScreener({ period, minGrowth, symbol, outside }: {period:string; minGrowth:string; symbol:string; outside:boolean}) {
   const [result, setResult] = useState<MonthlySalesScreen | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
-    const query = new URLSearchParams({period:toLatinDigits(period), minGrowth:toLatinDigits(minGrowth).replace("٫",".")});
+    const query = screenQuery(toLatinDigits(period),toLatinDigits(minGrowth).replace("٫","."),outside);
     async function load() {
       const response = await fetch("/api/screener/monthly-sales?" + query, { signal:controller.signal });
       if (!response.ok) throw new Error(response.status === 400 ? "دوره یا حد رشد معتبر نیست." : "خواندن داده‌های غربالگر ممکن نشد.");
       const data: MonthlySalesScreen = await response.json();
+      if (outside && data.universeKind !== "reported-outside") throw new Error("جامعهٔ درخواستی برای این خواندن تأیید نشد.");
       if (!controller.signal.aborted) setResult(data);
     }
     load().catch(e => {if (!controller.signal.aborted) setError(e instanceof Error ? e.message : "دریافت داده ممکن نشد.");});
     return () => controller.abort();
-  }, [period, minGrowth, attempt]);
+  }, [period, minGrowth, outside, attempt]);
   return <>
     <form action="/market/screener" className="card flex flex-wrap items-end gap-3 p-4">
+      <label className="grid gap-1 text-sm">جامعهٔ بررسی<select name="universe" defaultValue={outside ? "reported-outside" : "board"} className={control}>
+        <option value="board">تابلوی سهام</option><option value="reported-outside">گزارش‌دهندگان خارج از تابلو</option>
+      </select></label>
       <label className="grid gap-1 text-sm">دورهٔ شمسی (سال-ماه)<input className={control} dir="ltr" name="period" required defaultValue={period} placeholder="۱۴۰۵-۰۷" maxLength={7}/></label>
       <label className="grid gap-1 text-sm">حداقل رشد (درصد)<input className={control} name="minGrowth" dir="ltr" required defaultValue={minGrowth} inputMode="decimal" maxLength={12}/></label>
       <button className="min-h-11 rounded-lg bg-[var(--navy)] px-5 text-white">اعمال فیلتر</button>
     </form>
     {error ? <p role="alert" className="card p-4">{error} <button className="underline" onClick={() => {setError(""); setAttempt(n => n + 1);}}>تلاش دوباره</button></p>
-      : result ? <SalesScreenResults result={result} symbol={symbol}/> : <p className="card p-4" role="status">در حال خواندن جامعهٔ ناشران و گزارش‌های کدال…</p>}
+      : result ? <SalesScreenResults result={result} symbol={symbol} outside={outside}/> : <p className="card p-4" role="status">در حال خواندن جامعهٔ ناشران و گزارش‌های کدال…</p>}
   </>;
 }
