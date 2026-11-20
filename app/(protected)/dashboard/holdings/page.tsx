@@ -1,4 +1,3 @@
-import { WalletCards } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { loadPortfolioSnapshot, loadPriceRows, loadVersionDebts } from "@/lib/portfolio/service";
@@ -36,12 +35,14 @@ export default async function HoldingsPage({
 
   return (
     <><Navbar /><main id="main-content" className="mx-auto w-full max-w-6xl space-y-6 px-5 py-8" dir="rtl">
-      <header className="arash-workspace-heading">
-        <WalletCards aria-hidden="true" size={34} strokeWidth={1.5} />
-        <h1 className="font-display">دارایی، بدهی و خالص ثروت</h1>
+      <header>
+        <span className="eyebrow">داشبورد</span>
+        <h1 className="font-display text-2xl md:text-3xl font-bold mt-1" style={{ color: "var(--navy-deep)" }}>
+          دارایی، بدهی و خالص ثروت
+        </h1>
       </header>
 
-      <nav aria-label="بخش‌های پروندهٔ مالی" className="member-jumps">
+      <nav aria-label="بخش‌های پروندهٔ مالی" className="flex flex-wrap gap-2">
         <a href="#asset-editor" className="btn btn-gold min-h-11">ثبت دارایی</a>
         <Link href="/dashboard/consultation" className="btn btn-outline min-h-11">درخواست مشاوره از پرونده</Link>
         <a href="#debt-editor" className="btn btn-outline min-h-11">ثبت بدهی</a>
