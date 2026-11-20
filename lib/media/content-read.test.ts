@@ -37,7 +37,7 @@ const compile = (text: string) => ts.transpileModule(text, { compilerOptions: {
 } }).outputText;
 // Use the actual approved selector and its actual public-key validator.
 const selector = evaluate(compile(readFileSync(new URL("../fundamental/read-config.server.ts", import.meta.url), "utf8")), {
-  "server-only": {}, "../liara-public-env.js": require("../liara-public-env.js"),
+  "server-only": {}, "./read-config.node.mjs": require("../fundamental/read-config.node.mjs"),
 });
 function reader(fetcher: typeof fetch, environment: Record<string, string | undefined> = {}, deadline = withDeadline, text = compile(source)) {
   return evaluate(text, {
