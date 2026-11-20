@@ -6,11 +6,14 @@ import Field from "./Field";
 const labels = { draft: "پیش‌نویس", submitted: "در انتظار تأیید آرش", approved: "تأییدشده؛ هنوز منتشر نشده", published: "منتشرشده برای عضو", withdrawn: "پس‌گرفته‌شده" };
 const feedbackLabels = { viewed: "مشاهده‌شده", acknowledged: "دریافت توسط عضو تأیید شد", doing: "در حال انجام", done: "انجام‌شده طبق اعلام", question: "پرسش", partial: "بخشی انجام‌شده طبق اعلام", not_done: "انجام‌نشده طبق اعلام" };
 export function sameBasis(left: FinancialBasis, right: FinancialBasis) { return left.holdingsVersionId === right.holdingsVersionId && left.cashFlowVersionId === right.cashFlowVersionId && left.goalsVersionId === right.goalsVersionId && left.cashFlowPeriod.startOn === right.cashFlowPeriod.startOn && left.cashFlowPeriod.endOn === right.cashFlowPeriod.endOn; }
-export default function SessionCard({ session, latest, advisor, owner, revoked, basis, feedback, privateNote, locked, onCommand, onEdit, onDirty }: {
+export default function SessionCard({ session, latest, advisor, owner, revoked, basis, feedback, privateNote, locked, questionDraft, onQuestionDraft, onCommand, onEdit, onDirty }: {
   session: ConsultationSession; latest: boolean; advisor: boolean; owner: boolean; revoked: boolean; basis: FinancialBasis; feedback: ConsultationAction[]; privateNote?: string | null; locked: boolean;
+  questionDraft?: string; onQuestionDraft?: (value: string) => void;
   onCommand: (command: ConsultationCommand) => Promise<boolean>; onEdit: () => void; onDirty: () => void;
 }) {
-  const [question, setQuestion] = useState("");
+  const [localQuestion, setLocalQuestion] = useState("");
+  const question = questionDraft ?? localQuestion;
+  const setQuestion = onQuestionDraft ?? setLocalQuestion;
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Tehran", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
   const expired = session.body.reviewOn < today;
   const stale = !sameBasis(session.body.basis, basis), published = session.state === "published";

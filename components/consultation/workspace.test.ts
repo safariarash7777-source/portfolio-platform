@@ -162,49 +162,47 @@ test("captured discard cannot clear an in-flight or uncertain attempt or cross a
  assert.match(view.text(),/حساب یا نشست تغییر کرد/);assert.equal(view.readCalls.length,1);view.unmount();
 });
 
-test("failed read after session recovery allows discarding an unsent draft and retrying the read", async () => {
-  const data = readback();
+test("same-actor reconnect hides draft until an authorized read; read failure permits retry without discarding", async () => {
+  const data = ready();
   const view = mount([result(data), {status: "error", httpStatus: 503, error: {code: "READ_UNAVAILABLE"}}, result(data)], []);
   await view.auth();
-  (view.panel().props.onDirty as () => void)();
+  const start = view.panel();
+  const update = start.props.updateDrafts as (f: (d: {clientLabel:string})=>{clientLabel:string})=>void;
+  update(d => ({...d,clientLabel:"literal unsent draft"}));
+  (start.props.onDirty as () => void)();
   await view.flush();
   await view.auth("TOKEN_REFRESHED", null);
+  assert.throws(() => view.panel());
   await view.auth("SIGNED_IN");
-  assert.equal(view.button("دوباره خواندن پرونده").props.disabled, true);
-  await view.click(discardLabel);
+  assert.throws(() => view.panel());
   assert.equal(view.button("دوباره خواندن پرونده").props.disabled, false);
   await view.click("دوباره خواندن پرونده");
+  assert.equal((view.panel().props.drafts as {clientLabel:string}).clientLabel,"literal unsent draft");
   assert.equal(view.readCalls.length, 3);
   assert.equal(view.writeCalls.length, 0);
   view.unmount();
 });
 
-
-test("service queue remains locked with unsent dirty forms during reconnect failure; discard then retry changes neither actor nor write", async () => {
+test("reconnect hides service queue and discard clears the draft without unlocking until a fresh read", async () => {
   const same = readback();
   same.selected = same.relationships[0];
   const view = mount([result(same), { status: "error", httpStatus: 503, error: { code: "READ_UNAVAILABLE" } }, result(same)], [], relation, true);
-  assert.equal(view.serviceQueue(), undefined);
   await view.auth();
   assert.equal(view.serviceQueue()?.props.selected, relation);
-  assert.equal(view.serviceQueue()?.props.actor, actor);
-  assert.equal(view.panel().props.serviceRequests, true);
-  assert.equal(view.serviceQueue()?.props.locked, false);
-  (view.panel().props.onDirty as () => void)();
+  const start = view.panel();
+  (start.props.updateDrafts as (f:(d:{clientLabel:string})=>{clientLabel:string})=>void)(d=>({...d,clientLabel:"literal to discard"}));
+  (start.props.onDirty as () => void)();
   await view.flush();
   assert.equal(view.serviceQueue()?.props.locked, true);
   await view.auth("TOKEN_REFRESHED", null);
   assert.equal(view.serviceQueue(), undefined);
   await view.auth("SIGNED_IN");
-  assert.equal(view.button("دوباره خواندن پرونده").props.disabled, true);
-  assert.equal(view.serviceQueue()?.props.locked, true);
-  const previous = view.panelKey();
-  await view.click(discardLabel);
-  assert.notEqual(view.panelKey(), previous);
   assert.equal(view.button("دوباره خواندن پرونده").props.disabled, false);
-  assert.equal(view.serviceQueue()?.props.locked, true, "a read failure still prevents choosing/starting a service request");
-  assert.equal(view.panel().props.data, same);
+  assert.equal(view.serviceQueue(), undefined);
+  await view.click(discardLabel);
+  assert.equal(view.serviceQueue(), undefined);
   await view.click("دوباره خواندن پرونده");
+  assert.equal((view.panel().props.drafts as {clientLabel:string}).clientLabel,"");
   assert.equal(view.readCalls.length, 3);
   assert.ok(view.readCalls.every(c => (c as { actorId: string; relationshipId: string }).actorId === actor && (c as { relationshipId: string }).relationshipId === relation));
   assert.equal(view.serviceQueue()?.props.locked, false);
@@ -231,5 +229,22 @@ test("enabling the service queue does not expose an escape from a confirmed rece
   await view.click("ادامه با پروندهٔ بازخوانی‌شده");
   assert.equal(view.serviceQueue()?.props.locked, false);
   assert.equal(view.writeCalls.length, 1);
+  view.unmount();
+});
+
+test("verified forbidden reread clears buffered draft before same actor can read a permitted list", async () => {
+  const same = readback(); same.selected = same.relationships[0];
+  const view = mount([result(same), denied(403), result(ready())], [], relation);
+  await view.auth();
+  const panel = view.panel();
+  (panel.props.updateDrafts as (f:(d:{clientLabel:string})=>{clientLabel:string})=>void)(d=>({...d,clientLabel:"forbidden draft"}));
+  (panel.props.onDirty as () => void)();
+  await view.flush();
+  await view.auth("TOKEN_REFRESHED", null);
+  await view.auth("SIGNED_IN");
+  assert.throws(() => view.panel());
+  await view.click(backToList);
+  assert.equal((view.panel().props.drafts as {clientLabel:string}).clientLabel,"");
+  assert.equal(view.writeCalls.length,0);
   view.unmount();
 });
