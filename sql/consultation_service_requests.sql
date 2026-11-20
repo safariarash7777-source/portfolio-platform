@@ -1,6 +1,11 @@
 -- Additive, explicit binding of a legacy purchase/grant to an actual consultation item.
 -- Existing entitlements keep their original duration and revocation rules.
 BEGIN;
+DO $$ BEGIN
+ IF to_regprocedure('consultation_private.holdings_basis(uuid,uuid)') IS NULL
+    OR to_regprocedure('consultation_private.basis_current(uuid,uuid,jsonb)') IS NULL
+ THEN RAISE EXCEPTION 'request-pinned consultation workflow required' USING ERRCODE='55000'; END IF;
+END $$;
 -- On an existing installation, operations must supply reviewed purchase records
 -- in these two temporary tables on THIS connection before running the file.
 -- A completely empty destination can install without a review packet.
@@ -76,6 +81,23 @@ LANGUAGE sql STABLE SET search_path='' AS $$
  WHERE r.id=p_relation AND e.user_id=r.client_id AND e.kind='consulting' AND e.revoked_at IS NULL
  AND now()>=e.starts_at AND now()<e.expires_at);
 $$;
+
+-- A service request pins the member's holdings/debts version. A later
+-- portfolio edit must not change the case, and a mismatched pin must never
+-- silently substitute a newer version. Legacy consent paths stay unchanged.
+CREATE OR REPLACE FUNCTION consultation_private.holdings_basis(client uuid,p_relation uuid) RETURNS uuid
+LANGUAGE plpgsql STABLE SECURITY INVOKER SET search_path='' AS $$
+DECLARE pinned uuid;
+BEGIN
+ SELECT q.holdings_version_id INTO pinned FROM consultation_private.service_requests q WHERE q.relationship_id=p_relation;
+ IF FOUND THEN
+  IF NOT EXISTS(SELECT FROM public.member_holding_versions h JOIN public.consultation_relationships r
+    ON r.client_id=h.user_id WHERE r.id=p_relation AND h.id=pinned AND h.user_id=client)
+  THEN RAISE EXCEPTION 'financial basis unavailable' USING ERRCODE='42501'; END IF;
+  RETURN pinned;
+ END IF;
+ RETURN (SELECT id FROM public.member_holding_versions WHERE user_id=client ORDER BY version DESC LIMIT 1);
+END $$;
 
 -- Current paid service and active explicit consent are both required for advisor access.
 -- Members retain their own published history and the ability to revoke consent after expiry.

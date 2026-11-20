@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import type { SymbolFundamentals } from "@/lib/fundamental/types";
-import { changes, evidenceRecord, monthlyObservations, observation, type ReportRecord } from "@/lib/fundamental/product-observation";
+import { changes, companyMonthlyModel, evidenceRecord, observation, type CompanyComparison, type ReportRecord } from "@/lib/fundamental/product-observation";
+import { FOOLAD_HOT_DOMESTIC_KEY } from "@/lib/fundamental/foolad-rate-evidence";
 import { approvedCodalUrl } from "@/lib/desk/workspace-model";
 
 const nf = new Intl.NumberFormat("fa-IR", {maximumFractionDigits: 2});
@@ -22,33 +23,28 @@ function Source({record}: {record?: ReportRecord | null}) {
   </p>;
 }
 
-export default function CompanyReportReview({fundamentals}: {fundamentals: SymbolFundamentals}) {
-  const monthly = fundamentals.n30;
+export default function CompanyReportReview({fundamentals, initialComparison}: {fundamentals: SymbolFundamentals; initialComparison?: CompanyComparison | null}) {
   const reviewed = fundamentals.reviewedProductReports;
-  const model = useMemo(()=>{
-    if (!monthly) return null;
-    const restored = reviewed?.map(item=>item.report) ?? [];
-    return monthlyObservations({...monthly,data:[...restored,...monthly.data.filter(report=>!restored.some(r=>r.period_end===report.period_end))]});
-  },[monthly,reviewed]);
+  const model = useMemo(() => companyMonthlyModel(fundamentals), [fundamentals]);
   const options = Array.from(model?.options ?? []);
   const months = model?.months ?? [];
-  const [chosen,setChosen] = useState("");
-  const [selected,setSelected] = useState("");
-  const [basis,setBasis] = useState("year");
+  const [chosen,setChosen] = useState(initialComparison?.product ?? "");
+  const [selected,setSelected] = useState(initialComparison?.month ?? "");
+  const [basis,setBasis] = useState(initialComparison?.compare ?? "year");
   const [metric,setMetric] = useState<Metric>("amount");
-  const key = model?.options.has(chosen) ? chosen : options.find(([id])=>id===JSON.stringify(["محصولات گرم","داخلی"]))?.[0] ?? options[0]?.[0] ?? "";
+  const key = model?.options.has(chosen) ? chosen : options.find(([id])=>id===FOOLAD_HOT_DOMESTIC_KEY)?.[0] ?? options[0]?.[0] ?? "";
   const period = months.includes(selected) ? selected : months.at(-1) ?? "";
-  const priorKey = basis === "year" ? String(Number(period.slice(0,4))-1)+period.slice(4) : months[months.indexOf(period)-1];
+  const priorKey = basis === "year" ? String(Number(period.slice(0,4))-1)+period.slice(4) : months[months.indexOf(period)-1] ?? "";
   const series = months.map(month=>{
     const report = model?.reports.get(month);
-    return observation(report,key,reviewed?.find(item=>item.report===report)?.record);
+    return observation(report,key,model?.sourceFor(report) ?? undefined);
   });
   const current = series[months.indexOf(period)], prior = series[months.indexOf(priorKey)];
   const change = changes(current,prior);
   const growth = change && prior?.amount != null && prior.amount > 0 ? 100*change.delta/prior.amount : null;
   const effectShare = (effect: number|null|undefined) =>
     effect != null && change?.delta ? " ("+fmt(effect*100/change.delta)+"٪ از تغییر)" : "";
-  const read = (which: string) => reviewed?.find(item=>item.report.period_end===model?.reports.get(which)?.period_end)?.record ?? evidenceRecord(monthly?.source.records,model?.reports.get(which)?.period_end);
+  const read = (which: string) => model?.sourceFor(model.reports.get(which));
   const values = series.map(point => metric === "amount" || point?.unit === current?.unit ? point?.[metric] ?? null : null);
   const max = Math.max(1,...values.map(n=>Math.abs(n??0)));
   const unit = metric === "amount" ? "میلیون ریال" : metric === "rate" ? "ریال / "+(current?.unit??"واحد نامعلوم") : current?.unit??"واحد نامعلوم";
@@ -74,7 +70,7 @@ export default function CompanyReportReview({fundamentals}: {fundamentals: Symbo
       <div className="arash-analysis-controls">
         <label>محصول و بازار<select aria-label="محصول و بازار" className="input block" value={key} onChange={e=>setChosen(e.target.value)}>{options.map(([v,label])=><option key={v} value={v}>{label}</option>)}</select></label>
         <label>ماه<select aria-label="ماه" className="input block" value={period} onChange={e=>setSelected(e.target.value)}>{months.map(m=><option key={m} value={m}>{fa(m)}</option>)}</select></label>
-        <label>مقایسه با<select aria-label="مقایسه با" className="input block" value={basis} onChange={e=>setBasis(e.target.value)}><option value="previous">ماه قبل</option><option value="year">همان ماه سال قبل</option></select></label>
+        <label>مقایسه با<select aria-label="مقایسه با" className="input block" value={basis} onChange={e=>setBasis(e.target.value === "previous" ? "previous" : "year")}><option value="previous">ماه قبل</option><option value="year">همان ماه سال قبل</option></select></label>
         <label>نمای نمودار<select aria-label="نمای نمودار" className="input block" value={metric} onChange={e=>setMetric(e.target.value as Metric)}>{Object.entries(nameOf).map(([v,label])=><option value={v} key={v}>{label}</option>)}</select></label>
       </div>
       <section aria-live="polite" className="arash-analysis-result">
@@ -85,7 +81,7 @@ export default function CompanyReportReview({fundamentals}: {fundamentals: Symbo
           <div><dt>اثر مقدار</dt><dd>{fmt(change?.quantityEffect)}</dd><small>میلیون ریال{effectShare(change?.quantityEffect)}</small></div>
         </dl>
       </section>
-      <details className="text-sm"><summary>روش تفکیک تغییر فروش</summary><p>اثر مشترک نرخ و مقدار به‌طور مساوی تقسیم شده است. اثر ترکیب محصولات از یک قلم قابل تعیین نیست.</p></details>
+      <details className="text-sm"><summary>روش تفکیک تغییر فروش</summary><p>نرخ ضمنی از تقسیم مبلغ گزارش‌شده بر مقدار فروش به دست آمده و مبنای این تفکیک است؛ نرخ چاپ‌شده در گزارش، در صورت تطبیق با سند، جدا می‌آید. اثر مشترک نرخ و مقدار به‌طور مساوی تقسیم شده است. اثر ترکیب محصولات از یک قلم قابل تعیین نیست.</p></details>
       <figure><figcaption>{nameOf[metric]} ({unit})</figcaption>
         <div className="overflow-x-auto"><div dir="ltr" className="flex gap-1 items-stretch py-2" style={{minWidth:months.length*36}}>
         {months.map((month,i)=><button type="button" key={month} onClick={()=>setSelected(month)} aria-pressed={month===period} title={fa(month)+" · "+fmt(values[i])+" "+unit} aria-label={fa(month)+" · "+fmt(values[i])+" "+unit}
@@ -96,12 +92,14 @@ export default function CompanyReportReview({fundamentals}: {fundamentals: Symbo
         </button>)}</div></div>
       </figure>
       <div className="overflow-x-auto"><table className="w-full text-right text-sm"><caption className="text-right font-bold">{model?.options.get(key)}</caption>
-        <thead><tr>{["دوره","مبلغ (میلیون ریال)","مقدار","نرخ ضمنی (ریال بر واحد)"].map(h=><th key={h} className="p-2">{h}</th>)}</tr></thead>
-        <tbody>{[period,priorKey].filter(Boolean).map(m=>{const pt=series[months.indexOf(m)];return <tr key={m}><th className="p-2">{fa(m)}</th><td>{fmt(pt?.amount)}</td><td>{fmt(pt?.qty)} {pt?.unit}</td><td>{fmt(pt?.rate)}</td></tr>})}</tbody></table></div>
+        <thead><tr>{["دوره","مبلغ (میلیون ریال)","مقدار","نرخ ضمنی","نرخ گزارش‌شده"].map(h=><th key={h} className="p-2">{h}</th>)}</tr></thead>
+        <tbody>{[period,priorKey].filter(Boolean).map(m=>{const pt=series[months.indexOf(m)];return <tr key={m}><th className="p-2">{fa(m)}</th><td>{fmt(pt?.amount)}</td><td>{fmt(pt?.qty)} {pt?.unit}</td><td>{fmt(pt?.rate)}{pt?.rate != null && ` ریال به‌ازای ${pt.unit}`}</td>
+          <td>{fmt(pt?.reportedRate?.rate)}{pt?.reportedRate && ` ریال به‌ازای ${pt.unit}`}</td></tr>})}</tbody></table></div>
             {[period,priorKey].filter(Boolean).map(m=>{
         const supplement = reviewed?.find(item=>item.report.period_end===model?.reports.get(m)?.period_end);
+        const rateSheet = series[months.indexOf(m)]?.reportedRate;
         return <div key={m}><small>{fa(m)}</small><Source record={read(m)}/>
-          {supplement && <a className="text-xs underline" href={supplement.workbook} target="_blank" rel="noreferrer">فایل رسمی تطبیق مقدار و مبلغ</a>}
+          {(rateSheet || supplement) && <a className="text-xs underline" href={rateSheet?.workbook ?? supplement?.workbook} target="_blank" rel="noreferrer">{rateSheet ? "فایل رسمی مقدار، نرخ (P5) و مبلغ" : "فایل رسمی تطبیق مقدار و مبلغ"}</a>}
         </div>;
       })}
     </>}
@@ -121,7 +119,7 @@ export default function CompanyReportReview({fundamentals}: {fundamentals: Symbo
       </div></div>
       <p>درآمد {fmt(line?.revenue)} میلیون ریال · حاشیه سود ناخالص {fmt(now)}٪</p>
       <p>دوره مقایسه‌ای سند · درآمد {fmt(line?.prior?.revenue)} میلیون ریال · حاشیه {fmt(then)}٪ · تغییر {fmt(now!==null && then!==null ? now-then : null)} واحد درصد</p>
-      <p>حاشیه سود خالص {fmt(netNow)}٪ · دوره مقایسه‌ای {fmt(netThen)}٪ · تغییر {fmt(netNow!==null && netThen!==null ? netNow-netThen : null)} واحد درصد</p>
+      <p>حاشیه سود خالص کل شرکت {fmt(netNow)}٪ · دوره مقایسه‌ای {fmt(netThen)}٪ · تغییر {fmt(netNow!==null && netThen!==null ? netNow-netThen : null)} واحد درصد</p>
       <Source record={statement.record ?? evidenceRecord(fundamentals.n10?.source.records,statement.data.period_end)}/>
     </section>}
   </section>;

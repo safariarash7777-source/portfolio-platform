@@ -9,6 +9,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FundamentalCharts from "@/components/symbol/FundamentalCharts";
 import CompanyReportReview from "@/components/symbol/CompanyReportReview";
+import { companyComparisonSeed } from "@/lib/fundamental/product-observation";
 import MonthlySalesCharts from "@/components/symbol/MonthlySalesCharts";
 import QuarterlyCharts from "@/components/symbol/QuarterlyCharts";
 import HistoryChart, { type HistoryPoint } from "@/components/terminal/HistoryChart";
@@ -57,7 +58,7 @@ export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ symbol: string }>;
-  /** `?from=` — مبدأی که کاربر از آن آمده؛ فقط برای مسیرِ بازگشت. */
+  /** `from` controls return navigation; product/month/compare seed the report view. */
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
 }
 
@@ -114,6 +115,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
   const fundamentals = storedFundamentals?.n30 ? {
     ...storedFundamentals, n30: { ...storedFundamentals.n30, data: storedFundamentals.n30.data.map(withKnownMonthlyQuantities) },
   } : storedFundamentals;
+  const comparison = fundamentals ? companyComparisonSeed(fundamentals, sp) : null;
   const fx = latestRate(fxRates);
 
   const all: IrStockRow[] = [...(ir?.stocks ?? []), ...(ir?.funds ?? [])];
@@ -303,7 +305,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
   // T6: محتوای تب بنیادی (T1 + T3 + WP4 + کارت بنیادی WP-F + کارت امتیاز آتی)
   const fundamentalTab = (
     <>
-      {fundamentals && <CompanyReportReview fundamentals={fundamentals} />}
+      {fundamentals && <CompanyReportReview key={comparison ? JSON.stringify(comparison) : "default"} fundamentals={fundamentals} initialComparison={comparison} />}
       {/* WP-F — کارت بنیادی سه‌لایه: روایت یک‌خطی + روند + دادهٔ خام (قبل از نمودارها) */}
       {fundamentalCard && fundamentalCard.narrative ? (
         <SymbolFundamentalCard card={fundamentalCard} />
@@ -455,6 +457,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
 
           {/* T6 — هاب نماد با تب‌ها: نمای کلی · بنیادی · گزارش‌ها · مجامع */}
           <SymbolTabs
+            initialTab={comparison ? "fundamental" : "overview"}
             overview={
               <div className="space-y-6">
                 {/* M6: قیمت در برابر NAV — فقط برای صندوق‌ها */}

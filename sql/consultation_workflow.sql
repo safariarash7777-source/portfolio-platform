@@ -162,14 +162,20 @@ $$;
 CREATE FUNCTION consultation_private.state(s uuid) RETURNS text LANGUAGE sql STABLE SECURITY INVOKER SET search_path='' AS $$
  SELECT coalesce((SELECT CASE kind WHEN 'submit' THEN 'submitted' WHEN 'approve' THEN 'approved' WHEN 'publish' THEN 'published' ELSE 'withdrawn' END FROM public.consultation_events WHERE session_id=s ORDER BY event_no DESC LIMIT 1),'draft');
 $$;
-CREATE FUNCTION consultation_private.basis_current(client uuid,b jsonb) RETURNS void LANGUAGE plpgsql SECURITY INVOKER SET search_path='' AS $$
+-- Before the optional service binding is installed, preserve the existing
+-- behavior for consent relationships without a request-pinned file.
+CREATE FUNCTION consultation_private.holdings_basis(client uuid,p_relation uuid) RETURNS uuid
+LANGUAGE sql STABLE SECURITY INVOKER SET search_path='' AS $$
+ SELECT id FROM public.member_holding_versions WHERE user_id=client ORDER BY version DESC LIMIT 1;
+$$;
+CREATE FUNCTION consultation_private.basis_current(client uuid,p_relation uuid,b jsonb) RETURNS void LANGUAGE plpgsql SECURITY INVOKER SET search_path='' AS $$
 DECLARE h uuid;c uuid;g uuid;start_day date:=(b->'cashFlowPeriod'->>'startOn')::date;end_day date:=(b->'cashFlowPeriod'->>'endOn')::date;
 BEGIN
  -- Same keys as all three canonical writers. Lock order is fixed; no financial writer calls consultation.
  PERFORM pg_advisory_xact_lock(hashtext('member_holdings'),hashtext(client::text));
  PERFORM pg_advisory_xact_lock(hashtext('cash_flow_period:'||client::text),hashtext(start_day::text||':'||end_day::text));
  PERFORM pg_advisory_xact_lock(hashtext('member_goals'),hashtext(client::text));
- SELECT id INTO h FROM public.member_holding_versions WHERE user_id=client ORDER BY version DESC LIMIT 1;
+ h:=consultation_private.holdings_basis(client,p_relation);
  SELECT id INTO c FROM public.member_cash_flow_versions WHERE user_id=client AND period_start=start_day AND period_end=end_day ORDER BY version DESC LIMIT 1;
  SELECT id INTO g FROM public.member_goals_versions WHERE user_id=client ORDER BY version DESC LIMIT 1;
  IF h IS DISTINCT FROM (b->>'holdingsVersionId')::uuid OR c IS DISTINCT FROM (b->>'cashFlowVersionId')::uuid OR g IS DISTINCT FROM (b->>'goalsVersionId')::uuid THEN RAISE EXCEPTION 'financial basis changed' USING ERRCODE='PT409';END IF;
@@ -216,7 +222,7 @@ BEGIN
  ELSIF k='save' THEN
   SELECT coalesce(max(version),0) INTO prior FROM public.consultation_sessions WHERE relationship_id=r.id AND session_key=(c->>'sessionKey')::uuid;
   IF prior<>(c->>'baseVersion')::integer THEN RAISE EXCEPTION 'draft version changed' USING ERRCODE='PT409';END IF;
-  PERFORM consultation_private.basis_current(r.client_id,c->'body'->'basis');PERFORM consultation_private.research_current(c->'body'->'researchVersionIds');
+  PERFORM consultation_private.basis_current(r.client_id,r.id,c->'body'->'basis');PERFORM consultation_private.research_current(c->'body'->'researchVersionIds');
   result_version:=prior+1;
   INSERT INTO public.consultation_sessions(relationship_id,session_key,version,body,content_hash,actor_id) VALUES(r.id,(c->>'sessionKey')::uuid,result_version,c->'body',encode(sha256(convert_to((c->'body')::text,'UTF8')),'hex'),actor) RETURNING id INTO result_id;
   INSERT INTO public.consultation_private_notes(session_id,note) VALUES(result_id,c->>'privateNote');
@@ -239,7 +245,7 @@ BEGIN
    IF (k='submit' AND state<>'draft') OR (k='approve' AND state<>'submitted') OR (k='publish' AND state<>'approved') OR (k='withdraw' AND state NOT IN ('submitted','approved','published')) THEN RAISE EXCEPTION 'workflow state changed' USING ERRCODE='PT409';END IF;
    IF k='approve' AND NOT EXISTS(SELECT FROM public.consultation_advisors WHERE user_id=actor AND enabled AND is_owner) THEN RAISE EXCEPTION 'owner approval required' USING ERRCODE='42501';END IF;
    IF k IN ('approve','publish') THEN
-    PERFORM consultation_private.basis_current(r.client_id,s.body->'basis');PERFORM consultation_private.research_current(s.body->'researchVersionIds');
+    PERFORM consultation_private.basis_current(r.client_id,r.id,s.body->'basis');PERFORM consultation_private.research_current(s.body->'researchVersionIds');
     IF (s.body->>'reviewOn')::date<(now() AT TIME ZONE 'Asia/Tehran')::date THEN RAISE EXCEPTION 'review overdue' USING ERRCODE='22023';END IF;
    END IF;
    IF k='publish' THEN
@@ -278,7 +284,7 @@ BEGIN
   PERFORM pg_advisory_xact_lock(hashtext('member_holdings'),hashtext(r.client_id::text));
   PERFORM pg_advisory_xact_lock(hashtext('cash_flow_period:'||r.client_id::text),hashtext(start_day::text||':'||end_day::text));
   PERFORM pg_advisory_xact_lock(hashtext('member_goals'),hashtext(r.client_id::text));
-  SELECT * INTO h FROM public.member_holding_versions WHERE user_id=r.client_id ORDER BY version DESC LIMIT 1;
+  SELECT * INTO h FROM public.member_holding_versions WHERE user_id=r.client_id AND id=consultation_private.holdings_basis(r.client_id,r.id);
   SELECT * INTO c FROM public.member_cash_flow_versions WHERE user_id=r.client_id AND period_start=start_day AND period_end=end_day ORDER BY version DESC LIMIT 1;
   SELECT * INTO g FROM public.member_goals_versions WHERE user_id=r.client_id ORDER BY version DESC LIMIT 1;
   basis:=jsonb_build_object('holdingsVersionId',h.id,'cashFlowPeriod',jsonb_build_object('startOn',start_day,'endOn',end_day),'cashFlowVersionId',c.id,'goalsVersionId',g.id);
