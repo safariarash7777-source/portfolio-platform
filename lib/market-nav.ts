@@ -13,6 +13,7 @@
  * صریح می‌کند تا نما نتواند لنگر را مثلِ یک تبِ صفحه‌ای نشان دهد.
  */
 
+import { monthlyComparisonSymbols } from "./fundamental/monthly-comparison-link";
 import { isFundSelectionValue } from "./core/fund-comparison-selection";
 
 export type MarketSectionKey = "overview" | "stocks" | "funds" | "gold" | "map" | "options" | "screener";
@@ -280,6 +281,7 @@ const BACK_TARGETS: ReadonlyArray<BackTargetSpec> = [
   },
   { href: "/market/screener", label: "غربال فروش ماهانه", params: {
     universe: isEnum(["board","reported-outside"]),
+    compare: raw => monthlyComparisonSymbols(raw).length > 0,
     symbol: isFreeText(64),
     period: v => /^1\d{3}-(0[1-9]|1[0-2])$/.test(v),
     minGrowth: v => /^-?\d{1,9}(\.\d{1,5})?$/.test(v),

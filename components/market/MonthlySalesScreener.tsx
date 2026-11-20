@@ -15,10 +15,11 @@ const control = "min-h-11 rounded-lg border border-[var(--line-strong)] bg-[var(
 const statuses = { pass: "عبورکرده", fail: "زیر حد رشد", missing: "غیرقابل محاسبه", all: "همه نمادها" } as const;
 const columns = { industry: "صنعت", current: "فروش ماه جاری", previous: "فروش ماه هم‌دوره" } as const;
 
-function screenQuery(period: string, minGrowth: string, outside: boolean, symbol = "") {
+function screenQuery(period: string, minGrowth: string, outside: boolean, symbol = "", compare: readonly string[] = []) {
   const query = new URLSearchParams({ period, minGrowth });
   if (outside) query.set("universe", "reported-outside");
   if (symbol) query.set("symbol", symbol);
+  if (compare.length) query.set("compare", compare.join(","));
   return query;
 }
 
@@ -46,11 +47,11 @@ export function GrowthEvidence({ row, result, outside = false }: { row: Row; res
   </div>;
 }
 
-export function SalesScreenResults({ result, symbol = "", outside = false }: { result: MonthlySalesScreen; symbol?:string; outside?:boolean }) {
+export function SalesScreenResults({ result, symbol = "", outside = false, initialCompare = [] }: { result: MonthlySalesScreen; symbol?:string; outside?:boolean; initialCompare?:string[] }) {
   const [status, setStatus] = useState<keyof typeof statuses>(symbol ? "all" : "pass");
   const [search, setSearch] = useState(symbol);
   const [open, setOpen] = useState<string | null>(symbol || null);
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>(() => initialCompare.filter(id => result.rows.some(row => row.symbol === id)));
   const [visible, setVisible] = useState({industry:true, current:true, previous:true});
   const [page, setPage] = useState(1);
   const query = normalizeFa(search);
@@ -63,9 +64,15 @@ export function SalesScreenResults({ result, symbol = "", outside = false }: { r
   });
   const pages = Math.max(1, Math.ceil(rows.length / 40));
   const start = (page - 1) * 40;
-  const from = "/market/screener?" + screenQuery(result.period,String(result.minGrowth),outside,symbol);
+  const from = "/market/screener?" + screenQuery(result.period,String(result.minGrowth),outside,symbol,selected);
   function compare(symbol: string) {
-    setSelected(previous => previous.includes(symbol) ? previous.filter(s => s !== symbol) : previous.length < 2 ? [...previous, symbol] : previous);
+    const next = selected.includes(symbol) ? selected.filter(id => id !== symbol) : [...selected, symbol];
+    if (next.length > 2) return;
+    setSelected(next);
+    const location = new URL(window.location.href);
+    if (next.length) location.searchParams.set("compare", next.join(","));
+    else location.searchParams.delete("compare");
+    window.history.replaceState(window.history.state, "", location);
   }
   return <div className="space-y-4">
     <SalesReadNotice label="غربال فروش" readState={result.readState} checkedAt={result.checkedAt}/>
@@ -77,7 +84,7 @@ export function SalesScreenResults({ result, symbol = "", outside = false }: { r
       <ul className="list-inside list-disc text-sm">{Object.entries(result.coverage.excluded).map(([reason, count]) => <li key={reason}>{reason} · {formatCount(count)}</li>)}</ul>
       <p className="mt-2 text-xs">زمان خواندن داده‌ها {screenTimestamp(result.checkedAt)} (تهران)</p>
     </details>
-    {selected.length > 0 && <><div className="flex flex-wrap gap-2">{selected.map(s => <button className={control} key={s} onClick={() => compare(s)}>حذف {s} از مقایسه</button>)}</div>
+    {selected.length > 0 && <><div className="flex flex-wrap gap-2">{selected.map(s => <button className={control} key={s} onClick={() => compare(s)}>حذف {s} از مقایسه</button>)}<a href={from + "#sales-comparison"} className="inline-flex min-h-11 items-center underline">پیوند مقایسه</a></div>
       <MonthlySalesComparison key={selected.join("/") + result.period} symbols={selected} period={result.period}/></>}
     <section className="card space-y-4 p-4" aria-label="جدول غربال فروش">
       <div className="flex flex-wrap items-end gap-3">
@@ -103,7 +110,7 @@ export function SalesScreenResults({ result, symbol = "", outside = false }: { r
   </div>;
 }
 
-export default function MonthlySalesScreener({ period, minGrowth, symbol, outside }: {period:string; minGrowth:string; symbol:string; outside:boolean}) {
+export default function MonthlySalesScreener({ period, minGrowth, symbol, outside, compare }: {period:string; minGrowth:string; symbol:string; outside:boolean; compare:string[]}) {
   const [result, setResult] = useState<MonthlySalesScreen | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -130,6 +137,6 @@ export default function MonthlySalesScreener({ period, minGrowth, symbol, outsid
       <button className="min-h-11 rounded-lg bg-[var(--navy)] px-5 text-white">اعمال فیلتر</button>
     </form>
     {error ? <p role="alert" className="card p-4">{error} <button className="underline" onClick={() => {setError(""); setAttempt(n => n + 1);}}>تلاش دوباره</button></p>
-      : result ? <SalesScreenResults result={result} symbol={symbol} outside={outside}/> : <p className="card p-4" role="status">در حال خواندن جامعهٔ ناشران و گزارش‌های کدال…</p>}
+      : result ? <SalesScreenResults result={result} symbol={symbol} outside={outside} initialCompare={compare}/> : <p className="card p-4" role="status">در حال خواندن جامعهٔ ناشران و گزارش‌های کدال…</p>}
   </>;
 }
