@@ -39,6 +39,7 @@ async function actualPage(ir: IrMarket, symbol = stock.id, fundamentals: SymbolF
   const traces = { inputs: [] as QuarterInput[], quarters: [] as DerivedQuarter[], ttm: [] as TtmPoint[] };
   const stubs: Record<string, unknown> = {
     "@/lib/market-ir": { getStoredIrMarket: async () => ir },
+    "@/lib/fundamental/monthly-pilot.server": { MonthlyPilot: () => null, readApprovedMonthlyPilot: async () => null },
     "@/lib/fundamental/registry": { readFundamentals: async () => ({ state: reads.fundamental ?? (fundamentals ? "ready" : "empty"), data: fundamentals }) },
     "@/lib/core/quarterly": {
       peOf,

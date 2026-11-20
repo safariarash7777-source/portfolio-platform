@@ -9,6 +9,7 @@
   "scripts": {
     "test:research-agent": "tsx --test scripts/agents/research-lock.test.ts scripts/agents/research-reconcile.test.ts lib/intelligence/research-agent.test.ts lib/intelligence/research-inputs.test.ts",
     "dev": "next dev",
+    "prebuild": "node --import tsx scripts/ops/fundamental-preview-capture.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

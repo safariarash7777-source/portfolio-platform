@@ -151,10 +151,10 @@ function parserVersion(row: CodalRow): number {
 }
 
 /** حذف نسخه‌های تکراری: هر اطلاعیه فقط با بالاترین نسخهٔ پارسر. */
-export function latestParserRows(rows: CodalRow[]): CodalRow[] {
+export function latestParserRows(rows: CodalRow[], announcementKey = cleanUrl): CodalRow[] {
   const byAnnouncement = new Map<string, CodalRow>();
   for (const r of rows) {
-    const key = cleanUrl(r) ?? String(r.id);
+    const key = announcementKey(r) ?? String(r.id);
     const prev = byAnnouncement.get(key);
     if (!prev || parserVersion(r) > parserVersion(prev)) byAnnouncement.set(key, r);
   }
@@ -222,7 +222,7 @@ export function publishKey(row: Pick<CodalRow, "raw">): string | null {
 }
 
 /** Adapt the existing331 record projection without changing selection's legacy defaults. */
-function rowProvenance(row: CodalRow): NonNullable<ReportSource["records"]>[number] {
+export function rowProvenance(row: CodalRow): NonNullable<ReportSource["records"]>[number] {
   const stamp = row.captured_at;
   const day = typeof stamp === "string" ? new Date(stamp.slice(0, 10) + "T00:00:00Z") : null;
   const validCapture = !!day && Number.isFinite(day.getTime())
