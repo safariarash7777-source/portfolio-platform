@@ -1,3 +1,4 @@
+import { publicMarketOverride } from "@/lib/fundamental/public-market-client.server";
 import { NextResponse } from "next/server";
 import { readGlobalMarket, readIranMarket } from "@/lib/market-bounded";
 import { withValidNav } from "@/lib/market-quality";
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
 // ?diag=1 → فیلدِ irDiag با خلاصهٔ عیب‌یابیِ اتصالِ رله (بدونِ سکرت) اضافه می‌شود؛
 //           برای فهمیدنِ اینکه چرا ir=null است (env؟ توکن؟ رلهٔ خاموش؟ منبعِ خالی؟).
 export async function GET(req: Request) {
-  const [global, iran] = await Promise.all([readGlobalMarket(), readIranMarket()]);
+  const [global, iran] = await Promise.all([readGlobalMarket(), readIranMarket(publicMarketOverride())]);
   const now = Date.now();
   const ir = iran.data && { ...iran.data, funds: iran.data.funds.map(fund => withValidNav(fund, null, now)) };
   const body: Record<string, unknown> = { ...global.data, ir, partial: global.availability.state !== "ready" || iran.availability.state !== "ready", availability: { global: global.availability, iran: iran.availability } };

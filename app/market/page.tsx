@@ -101,7 +101,7 @@ export default async function MarketPage({
     getMarketData(),
     readIranMarket(marketSource),
     getAccess(),
-    readSiteAppearance(supabase, sp),
+    readSiteAppearance(supabase, sp, publicMarketOverride()?.pair ? publicMarketClient() : supabase),
   ]);
 
   let watchlist: string[] = [];

@@ -14,6 +14,7 @@ import {
 export async function readSiteAppearance(
   client: Awaited<ReturnType<typeof createClient>>,
   search: Record<string, string | string[] | undefined> = {},
+  settingsClient = client,
 ): Promise<SiteAppearance> {
   noStore();
   // One request-local budget covers the setting and optional preview checks.
@@ -23,7 +24,7 @@ export async function readSiteAppearance(
   };
   try {
     return await withDeadline(async (signal) => {
-      const { data, error } = await client.rpc("get_media_layout").abortSignal(signal);
+      const { data, error } = await settingsClient.rpc("get_media_layout").abortSignal(signal);
       if (signal.aborted || error || !isSiteLayout(data)) return fallback;
       const canonical: SiteAppearance = {
         state: "ready", globalLayout: data, previewLayout: null,

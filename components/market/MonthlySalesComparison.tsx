@@ -28,6 +28,7 @@ export default function MonthlySalesComparison({ symbols, period }: { symbols: s
   const [histories, setHistories] = useState<History[] | null>(null);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const [selectedPeriod, selectPeriod] = useState(period);
   useEffect(() => {
     const controller = new AbortController();
     Promise.all(symbols.map(async symbol => {
@@ -44,13 +45,16 @@ export default function MonthlySalesComparison({ symbols, period }: { symbols: s
   if (error) return <p role="alert">دریافت تاریخچه ممکن نشد. <button className="underline" onClick={() => {setError(false); setAttempt(n => n + 1);}}>تلاش دوباره</button></p>;
   if (!histories) return <p role="status">در حال دریافت تاریخچهٔ فروش…</p>;
   const data = alignMonths(period, histories);
+  const selectedMonth = data.find(month => month.label === selectedPeriod);
   return <section id="sales-comparison" aria-label="مقایسه فروش ماهانه" className="card scroll-mt-24 space-y-3 p-4">
     <h2 className="text-lg font-bold">{symbols.join(" و ")} · فروش ماهانه</h2>
     {histories.map(h => <SalesReadNotice key={h.symbol} label={"تاریخچهٔ " + h.symbol} readState={h.readState} checkedAt={h.checkedAt}/>)}
     <p className="text-sm">۱۲ ماه منتهی به {toPersianDigits(period)} · میلیون ریال</p>
     <div dir="ltr" className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{left: 20, right: 8}}>
+        <BarChart data={data} onClick={state => {
+          if (typeof state.activeLabel === "string" && data.some(month => month.label === state.activeLabel)) selectPeriod(state.activeLabel);
+        }} margin={{left: 20, right: 8}}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--line)"/>
           <XAxis dataKey="label" tickFormatter={toPersianDigits} tick={{fontSize: 10}}/>
           <YAxis tickFormatter={v => new Intl.NumberFormat("fa-IR",{notation:"compact"}).format(v)} tick={{fontSize: 10}}/>
@@ -60,6 +64,16 @@ export default function MonthlySalesComparison({ symbols, period }: { symbols: s
           {symbols.length === 2 && <Bar dataKey="second" name={symbols[1]} fill="var(--gold)" isAnimationActive={false}/>}
         </BarChart>
       </ResponsiveContainer>
+    </div>
+    <div className="space-y-2">
+      <label className="flex flex-wrap items-center gap-2">سند نقطهٔ نمودار
+        <select className="rounded border p-2" value={selectedPeriod} onChange={event=>selectPeriod(event.target.value)}>
+          {data.map(month=><option key={month.label} value={month.label}>{toPersianDigits(month.label)}</option>)}
+        </select>
+      </label>
+      <ul aria-live="polite" className="flex flex-wrap gap-4">{selectedMonth?.values.map((point,index)=><li key={symbols[index]}>{symbols[index]} · {point
+        ? <a href={point.sourceUrl} className="underline" target="_blank" rel="noopener noreferrer">{number.format(point.amount)} میلیون ریال · سند کدال</a>
+        : "فاقد دادهٔ قابل مقایسه"}</li>)}</ul>
     </div>
     <details><summary className="cursor-pointer py-2 underline">مبلغ و سند هر ماه</summary>
       <table className="w-full text-start text-sm"><thead><tr><th scope="col">ماه</th>{symbols.map(s => <th scope="col" key={s}>{s}</th>)}</tr></thead>
