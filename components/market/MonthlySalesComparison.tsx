@@ -45,6 +45,10 @@ export default function MonthlySalesComparison({ symbols, period }: { symbols: s
   if (error) return <p role="alert">دریافت تاریخچه ممکن نشد. <button className="underline" onClick={() => {setError(false); setAttempt(n => n + 1);}}>تلاش دوباره</button></p>;
   if (!histories) return <p role="status">در حال دریافت تاریخچهٔ فروش…</p>;
   const data = alignMonths(period, histories);
+  const selectBar = (bar: { originalDataIndex: number }) => {
+    const month = data[bar.originalDataIndex];
+    if (month) selectPeriod(month.label);
+  };
   const selectedMonth = data.find(month => month.label === selectedPeriod);
   return <section id="sales-comparison" aria-label="مقایسه فروش ماهانه" className="card scroll-mt-24 space-y-3 p-4">
     <h2 className="text-lg font-bold">{symbols.join(" و ")} · فروش ماهانه</h2>
@@ -60,8 +64,8 @@ export default function MonthlySalesComparison({ symbols, period }: { symbols: s
           <YAxis tickFormatter={v => new Intl.NumberFormat("fa-IR",{notation:"compact"}).format(v)} tick={{fontSize: 10}}/>
           <Tooltip labelFormatter={v => toPersianDigits(String(v))} formatter={v => number.format(Number(v)) + " میلیون ریال"}/>
           <Legend />
-          <Bar dataKey="first" name={symbols[0]} fill="var(--navy-ink)" isAnimationActive={false}/>
-          {symbols.length === 2 && <Bar dataKey="second" name={symbols[1]} fill="var(--gold)" isAnimationActive={false}/>}
+          <Bar dataKey="first" onClick={selectBar} name={symbols[0]} fill="var(--navy-ink)" isAnimationActive={false}/>
+          {symbols.length === 2 && <Bar dataKey="second" onClick={selectBar} name={symbols[1]} fill="var(--gold)" isAnimationActive={false}/>}
         </BarChart>
       </ResponsiveContainer>
     </div>
