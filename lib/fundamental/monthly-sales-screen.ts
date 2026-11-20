@@ -20,7 +20,7 @@ export interface SalesFiling {
   measure: string | null; months: string | null; parser: string | null;
   publicationDate: string | null; publicationTime: string | null; captured_at: string | null;
 }
-export interface SalesNotice { symbol: string; title: string; link: string }
+export interface SalesNotice { symbol: string; title: string; link: string; report_code?: string | null }
 export interface UnitReview { reportId: number; symbol: string; periodEnd: string; sourceUrl: string; amendment: boolean }
 export interface ScreenRow {
   unitReview?: UnitReview[];
@@ -97,7 +97,11 @@ function selectPoint(period: string, filings: SalesFiling[], notices: SalesNotic
   const versions = [...docs.values()];
   const amendments = versions.filter(row => isAmendmentTitle(row.title));
   const candidates = amendments.length ? amendments : versions;
-  if (notices.some(n => {
+  const salesNotices = notices.filter(n => latin(n.report_code ?? "").trim() !== "ن-31");
+  if (!versions.length && !salesNotices.length && notices.length) {
+    return fail("فقط اطلاعیهٔ ن-۳۱ موجود است؛ فروش محصول برای این دوره احراز نشده است");
+  }
+  if (salesNotices.some(n => {
     const ref = documentRef(n.link);
     return (!ref || !docs.has(ref.serial)) && (!amendments.length || isAmendmentTitle(n.title));
   })) return fail("اطلاعیهٔ این دوره هنوز تطبیق و پردازش نشده است");
@@ -109,8 +113,9 @@ function selectPoint(period: string, filings: SalesFiling[], notices: SalesNotic
   const nextMonthStart = jalaliYmdToGregorian(monthOffset(period, 1) + "-01");
   const endOfCalendarMonth = nextMonthStart ? new Date(Date.parse(nextMonthStart + "T00:00:00Z") - 86400000).toISOString().slice(0, 10) : null;
   const date = row.reportPeriod?.replaceAll("/", "-");
-  if (!date || date.slice(0,7) !== period || row.storedPeriod !== endOfCalendarMonth || titleDate(row.title) !== date || jalaliYmdToGregorian(date) !== row.storedPeriod ||
+  if (!date || date.slice(0,7) !== period || titleDate(row.title) !== date || jalaliYmdToGregorian(date) !== row.storedPeriod ||
       issuerKey(row.reportSymbol || "") !== issuerKey(row.symbol) || Number(row.months) !== 1) return fail(periodError);
+  if (row.storedPeriod !== endOfCalendarMonth) return fail("پایان دورهٔ سند (" + date + ") با پایان ماه انتخابی یکسان نیست");
   if (basis(row) !== "sales") return fail(nonSales);
   if (!isMillionRialUnit(row.unit)) {
     const rejected = fail("واحد مبلغ فروش قابل تطبیق نیست");

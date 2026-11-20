@@ -105,7 +105,7 @@ async function load(db:BoundedBinding, period:string, symbol:string|null, univer
     const prior=monthOffset(period,-12);
     const ranges=symbol ? [interval(monthOffset(period,-11),period)] : [interval(prior,prior),interval(period,period)];
     const reports=new URLSearchParams({select:projection, report_kind:"eq.ن-۳۰",data:"not.is.null",or:"("+ranges.join(",")+")"});
-    const feed=new URLSearchParams({select:"id,symbol,title,link",category:"eq.ماهانه"});
+    const feed=new URLSearchParams({select:"id,symbol,title,link,report_code",category:"eq.ماهانه"});
     if (symbol) { reports.set("symbol","eq."+symbol); feed.set("symbol","eq."+symbol); }
     else feed.set("or","("+[...monthPatterns(prior),...monthPatterns(period)].join(",")+")");
     const [filings,notices,rosters] = await Promise.all([
