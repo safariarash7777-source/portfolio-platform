@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { formatCount, formatJalali, formatTehranClock, toLatinDigits, toPersianDigits } from "@/lib/format";
+import { formatCount, toLatinDigits, toPersianDigits } from "@/lib/format";
 import { normalizeFa } from "@/lib/market-nav";
 import type { MonthlySalesScreen } from "@/lib/fundamental/monthly-sales-screen";
 import MonthlySalesComparison from "./MonthlySalesComparison";
+import { SalesReadNotice, screenTimestamp } from "./SalesReadNotice";
 
 type Row = MonthlySalesScreen["rows"][number];
 type Point = NonNullable<Row["current"]>;
@@ -21,19 +22,12 @@ function screenQuery(period: string, minGrowth: string, outside: boolean, symbol
   return query;
 }
 
-function timestamp(value: string | null) {
-  if (!value) return "نامشخص";
-  if (/^1[34]\d{2}[/-]/.test(toLatinDigits(value))) return toPersianDigits(value);
-  if (!Number.isFinite(Date.parse(value))) return toPersianDigits(value);
-  return formatJalali(value, false) + " · " + formatTehranClock(value);
-}
-
 function PointSource({ label, point }: { label: string; point: Point | null }) {
   return <div className="rounded-lg border border-[var(--line)] p-3">
     <h4 className="font-bold">{label}</h4>
     {point ? <>
       <p>{number.format(point.amount)} {point.unit} · {toPersianDigits(point.period)}</p>
-      <p>زمان انتشار {timestamp(point.publishedAt)}</p><p>زمان دریافت {timestamp(point.capturedAt)}</p>
+      <p>زمان انتشار {screenTimestamp(point.publishedAt)}</p><p>زمان دریافت {screenTimestamp(point.capturedAt)}</p>
       <a href={point.sourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center underline">سند کدال{point.amendment ? " (اصلاحیه)" : ""}</a>
     </> : <p>گزارش معتبر این دوره در دسترس نیست.</p>}
   </div>;
@@ -74,13 +68,14 @@ export function SalesScreenResults({ result, symbol = "", outside = false }: { r
     setSelected(previous => previous.includes(symbol) ? previous.filter(s => s !== symbol) : previous.length < 2 ? [...previous, symbol] : previous);
   }
   return <div className="space-y-4">
+    <SalesReadNotice label="غربال فروش" readState={result.readState} checkedAt={result.checkedAt}/>
     <details className="card p-4"><summary className="cursor-pointer font-bold">پوشش {outside ? "ناشران خارج از تابلو" : "تابلوی سهام"} · {formatCount(result.coverage.calculable)} قابل محاسبه از {formatCount(result.coverage.eligible)} ناشر مشمول</summary>
-      <p className="mt-3 text-sm">{result.coverage.universeSource} آخرین دریافت فهرست نمادها {timestamp(result.coverage.rosterUpdatedAt)}</p>
+      <p className="mt-3 text-sm">{result.coverage.universeSource} آخرین دریافت فهرست نمادها {screenTimestamp(result.coverage.rosterUpdatedAt)}</p>
       <p className="py-2 text-sm">جامعهٔ بررسی {formatCount(result.coverage.universe)} · مشمول {formatCount(result.coverage.eligible)} · عبورکرده {formatCount(result.coverage.passed)}</p>
       {outside ? <p className="mb-2 text-sm">مخرج این غربال فقط ناشران گزارش‌دهندهٔ خارج از آخرین تابلو است. وضعیت پذیرش بورسی این ناشران احراز نشده است.</p>
         : <p className="mb-2 text-sm">گزارش‌دهندگان خارج از آخرین تابلو · {result.coverage.outsideRoster === undefined ? "نامشخص" : formatCount(result.coverage.outsideRoster)} · <Link prefetch={false} className="underline" href={"/market/screener?" + screenQuery(result.period,String(result.minGrowth),true)}>بررسی جداگانهٔ این ناشران</Link></p>}
       <ul className="list-inside list-disc text-sm">{Object.entries(result.coverage.excluded).map(([reason, count]) => <li key={reason}>{reason} · {formatCount(count)}</li>)}</ul>
-      <p className="mt-2 text-xs">زمان خواندن داده‌ها {timestamp(result.checkedAt)} (تهران)</p>
+      <p className="mt-2 text-xs">زمان خواندن داده‌ها {screenTimestamp(result.checkedAt)} (تهران)</p>
     </details>
     {selected.length > 0 && <><div className="flex flex-wrap gap-2">{selected.map(s => <button className={control} key={s} onClick={() => compare(s)}>حذف {s} از مقایسه</button>)}</div>
       <MonthlySalesComparison key={selected.join("/") + result.period} symbols={selected} period={result.period}/></>}

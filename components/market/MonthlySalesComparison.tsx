@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { SalesReadNotice } from "./SalesReadNotice";
 import { toPersianDigits } from "@/lib/format";
 import type { MonthlySalesScreen } from "@/lib/fundamental/monthly-sales-screen";
 
 type Point = NonNullable<MonthlySalesScreen["rows"][number]["current"]>;
-type History = { symbol: string; points: Point[] };
+type History = { symbol: string; points: Point[]; checkedAt?: string; readState?: "fresh" | "retained" };
 const number = new Intl.NumberFormat("fa-IR", {maximumFractionDigits: 3});
 
 export function alignMonths(period: string, histories: History[]) {
@@ -45,6 +46,7 @@ export default function MonthlySalesComparison({ symbols, period }: { symbols: s
   const data = alignMonths(period, histories);
   return <section aria-label="مقایسه فروش ماهانه" className="card space-y-3 p-4">
     <h2 className="text-lg font-bold">{symbols.join(" و ")} · فروش ماهانه</h2>
+    {histories.map(h => <SalesReadNotice key={h.symbol} label={"تاریخچهٔ " + h.symbol} readState={h.readState} checkedAt={h.checkedAt}/>)}
     <p className="text-sm">۱۲ ماه منتهی به {toPersianDigits(period)} · میلیون ریال</p>
     <div dir="ltr" className="h-64 w-full">
       <ResponsiveContainer width="100%" height="100%">
