@@ -48,7 +48,7 @@ function productionReader(origin, env) {
   const headers = {apikey:key,Authorization:"Bearer "+key};
   return {
     async current(screen) {
-      return get(origin+"/api/screener/monthly-sales?"+new URLSearchParams({period:screen.period,minGrowth:"0"}));
+      return get(origin+"/api/screener/monthly-sales?"+new URLSearchParams({period:screen.period,minGrowth:"0",universe:screen.universeKind ?? "board"}));
     },
     async checkHold() {
       const state=await get(pinnedBackend+"/rest/v1/ir_market_snapshots?key=eq.codal_engine_state&select=hold:payload-%3EsourceHoldUntil",headers);
@@ -97,7 +97,7 @@ async function inventoryAndVerify({screen,directory,limit=0,reader}) {
   if(holdUntil>Date.now()) throw Error("Queue's publisher hold is active");
   await mkdir(directory,{recursive:true});
   const latest=await reader.current(screen);
-  if(latest.period!==screen.period || latest.previousPeriod!==screen.previousPeriod) throw Error("Screen period changed");
+  if(latest.period!==screen.period || latest.previousPeriod!==screen.previousPeriod || (latest.universeKind ?? "board")!==(screen.universeKind ?? "board")) throw Error("Screen period changed");
   const live=new Map(candidates(latest).map(item=>[item.reportId,item]));
   for(const item of pending) {
     if(summary.attempted>=limit) break;
