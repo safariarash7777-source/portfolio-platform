@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { SalesReadNotice } from "./SalesReadNotice";
+import { monthlyComparisonSymbols } from "../../lib/fundamental/monthly-comparison-link";
 import { alignMonths } from "./MonthlySalesComparison";
 import { GrowthEvidence, SalesScreenResults } from "./MonthlySalesScreener";
 import { resolveBackTarget } from "../../lib/market-nav";
@@ -70,4 +71,21 @@ test("retention and elapsed read age show the original clock without inventing a
   assert.ok(!aged.includes("نتیجهٔ خواندن تازه در دسترس نیست"));
   assert.equal(render("fresh", new Date().toISOString()), "");
   assert.ok(render("retained",undefined).includes("آخرین خواندن کامل نامشخص"));
+});
+
+test("comparison accepts two known public symbols and keeps the period and cohort on return", () => {
+  assert.deepEqual(monthlyComparisonSymbols("ذوب,فولاد"), ["ذوب","فولاد"]);
+  for (const raw of ["ذوب,ذوب","الف,ب,ج","<نام>"," ذوب","فولاد,"]) assert.deepEqual(monthlyComparisonSymbols(raw), []);
+  const href=resolveBackTarget("/market/screener?period=1405-07&minGrowth=40&compare=ذوب,فولاد&universe=board",{href:"/market",label:"بازار"}).href;
+  assert.equal(new URL(href,"https://site.test").searchParams.get("compare"),"ذوب,فولاد");
+});
+
+test("a successful empty result distinguishes a threshold miss, incomplete history, and no eligible issuer", () => {
+  const render = (eligible: number, calculable: number) => {
+    const result:MonthlySalesScreen={period:"1405-01",previousPeriod:"1404-01",minGrowth:500,checkedAt:new Date().toISOString(),rows:[],coverage:{universe:5,eligible,calculable,passed:0,excluded:{},universeSource:"تابلو",rosterUpdatedAt:null}};
+    return renderToStaticMarkup(React.createElement(SalesScreenResults,{result}));
+  };
+  assert.ok(render(5,2).includes("از ۲ ناشر قابل محاسبه هیچ‌کدام از حد رشد عبور نکردند"));
+  assert.ok(render(5,0).includes("دادهٔ این دوره برای محاسبهٔ رشد هیچ ناشر مشمولی کافی نیست"));
+  assert.ok(render(0,0).includes("ناشر مشمول فروش ماهانه در این جامعه و دوره شناسایی نشد"));
 });

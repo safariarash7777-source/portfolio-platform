@@ -15,10 +15,11 @@ const control = "min-h-11 rounded-lg border border-[var(--line-strong)] bg-[var(
 const statuses = { pass: "عبورکرده", fail: "زیر حد رشد", missing: "غیرقابل محاسبه", all: "همه نمادها" } as const;
 const columns = { industry: "صنعت", current: "فروش ماه جاری", previous: "فروش ماه هم‌دوره" } as const;
 
-function screenQuery(period: string, minGrowth: string, outside: boolean, symbol = "") {
+function screenQuery(period: string, minGrowth: string, outside: boolean, symbol = "", compare: readonly string[] = []) {
   const query = new URLSearchParams({ period, minGrowth });
   if (outside) query.set("universe", "reported-outside");
   if (symbol) query.set("symbol", symbol);
+  if (compare.length) query.set("compare", compare.join(","));
   return query;
 }
 
@@ -46,11 +47,11 @@ export function GrowthEvidence({ row, result, outside = false }: { row: Row; res
   </div>;
 }
 
-export function SalesScreenResults({ result, symbol = "", outside = false }: { result: MonthlySalesScreen; symbol?:string; outside?:boolean }) {
+export function SalesScreenResults({ result, symbol = "", outside = false, initialCompare = [] }: { result: MonthlySalesScreen; symbol?:string; outside?:boolean; initialCompare?:string[] }) {
   const [status, setStatus] = useState<keyof typeof statuses>(symbol ? "all" : "pass");
   const [search, setSearch] = useState(symbol);
   const [open, setOpen] = useState<string | null>(symbol || null);
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>(() => initialCompare.filter(id => result.rows.some(row => row.symbol === id)));
   const [visible, setVisible] = useState({industry:true, current:true, previous:true});
   const [page, setPage] = useState(1);
   const query = normalizeFa(search);
@@ -61,23 +62,36 @@ export function SalesScreenResults({ result, symbol = "", outside = false }: { r
     if (status === "missing") return row.passed === null;
     return true;
   });
+  const incomplete = result.coverage.eligible - result.coverage.calculable;
+  let emptyMessage = "هیچ نمادی با این انتخاب پیدا نشد.";
+  if (!query && status === "pass" && result.coverage.passed === 0) {
+    if (result.coverage.eligible === 0) emptyMessage = "ناشر مشمول فروش ماهانه در این جامعه و دوره شناسایی نشد.";
+    else if (result.coverage.calculable === 0) emptyMessage = "دادهٔ این دوره برای محاسبهٔ رشد هیچ ناشر مشمولی کافی نیست.";
+    else emptyMessage = `از ${formatCount(result.coverage.calculable)} ناشر قابل محاسبه هیچ‌کدام از حد رشد عبور نکردند.`;
+  }
   const pages = Math.max(1, Math.ceil(rows.length / 40));
   const start = (page - 1) * 40;
-  const from = "/market/screener?" + screenQuery(result.period,String(result.minGrowth),outside,symbol);
+  const from = "/market/screener?" + screenQuery(result.period,String(result.minGrowth),outside,symbol,selected);
   function compare(symbol: string) {
-    setSelected(previous => previous.includes(symbol) ? previous.filter(s => s !== symbol) : previous.length < 2 ? [...previous, symbol] : previous);
+    const next = selected.includes(symbol) ? selected.filter(id => id !== symbol) : [...selected, symbol];
+    if (next.length > 2) return;
+    setSelected(next);
+    const location = new URL(window.location.href);
+    if (next.length) location.searchParams.set("compare", next.join(","));
+    else location.searchParams.delete("compare");
+    window.history.replaceState(window.history.state, "", location);
   }
   return <div className="space-y-4">
     <SalesReadNotice label="غربال فروش" readState={result.readState} checkedAt={result.checkedAt}/>
     <details className="card p-4"><summary className="cursor-pointer font-bold">پوشش {outside ? "ناشران خارج از تابلو" : "تابلوی سهام"} · {formatCount(result.coverage.calculable)} قابل محاسبه از {formatCount(result.coverage.eligible)} ناشر مشمول</summary>
       <p className="mt-3 text-sm">{result.coverage.universeSource} آخرین دریافت فهرست نمادها {screenTimestamp(result.coverage.rosterUpdatedAt)}</p>
-      <p className="py-2 text-sm">جامعهٔ بررسی {formatCount(result.coverage.universe)} · مشمول {formatCount(result.coverage.eligible)} · عبورکرده {formatCount(result.coverage.passed)}</p>
+      <p className="py-2 text-sm">جامعهٔ بررسی {formatCount(result.coverage.universe)} · مشمول {formatCount(result.coverage.eligible)} · عبورکرده {formatCount(result.coverage.passed)} · زیر حد {formatCount(result.coverage.calculable - result.coverage.passed)} · مشمول با دادهٔ ناکافی {formatCount(incomplete)}</p>
       {outside ? <p className="mb-2 text-sm">مخرج این غربال فقط ناشران گزارش‌دهندهٔ خارج از آخرین تابلو است. وضعیت پذیرش بورسی این ناشران احراز نشده است.</p>
         : <p className="mb-2 text-sm">گزارش‌دهندگان خارج از آخرین تابلو · {result.coverage.outsideRoster === undefined ? "نامشخص" : formatCount(result.coverage.outsideRoster)} · <Link prefetch={false} className="underline" href={"/market/screener?" + screenQuery(result.period,String(result.minGrowth),true)}>بررسی جداگانهٔ این ناشران</Link></p>}
       <ul className="list-inside list-disc text-sm">{Object.entries(result.coverage.excluded).map(([reason, count]) => <li key={reason}>{reason} · {formatCount(count)}</li>)}</ul>
       <p className="mt-2 text-xs">زمان خواندن داده‌ها {screenTimestamp(result.checkedAt)} (تهران)</p>
     </details>
-    {selected.length > 0 && <><div className="flex flex-wrap gap-2">{selected.map(s => <button className={control} key={s} onClick={() => compare(s)}>حذف {s} از مقایسه</button>)}</div>
+    {selected.length > 0 && <><div className="flex flex-wrap gap-2">{selected.map(s => <button className={control} key={s} onClick={() => compare(s)}>حذف {s} از مقایسه</button>)}<a href={from + "#sales-comparison"} className="inline-flex min-h-11 items-center underline">پیوند مقایسه</a></div>
       <MonthlySalesComparison key={selected.join("/") + result.period} symbols={selected} period={result.period}/></>}
     <section className="card space-y-4 p-4" aria-label="جدول غربال فروش">
       <div className="flex flex-wrap items-end gap-3">
@@ -97,13 +111,15 @@ export function SalesScreenResults({ result, symbol = "", outside = false }: { r
           </tr>{open === row.symbol && <tr><td className="whitespace-normal bg-[var(--surface-2)] p-3" colSpan={3 + Number(visible.industry) + Number(visible.current) + Number(visible.previous)}><GrowthEvidence row={row} result={result} outside={outside}/></td></tr>}
         </tbody>)}
       </table></div>
-      {!rows.length && <p>هیچ نمادی با این انتخاب پیدا نشد.</p>}
+      {!rows.length && <div className="space-y-2"><p>{emptyMessage}</p>
+        {!query && status === "pass" && incomplete > 0 && <button className="min-h-11 underline" onClick={() => {setStatus("missing");setPage(1);}}>مشاهدهٔ علت‌های کنارگذاری</button>}
+      </div>}
       {pages > 1 && <nav aria-label="صفحه‌های نتیجه" className="flex items-center gap-3"><button className={control} disabled={page === 1} onClick={() => setPage(p => p - 1)}>قبلی</button><span>{formatCount(page)} از {formatCount(pages)}</span><button className={control} disabled={page === pages} onClick={() => setPage(p => p + 1)}>بعدی</button></nav>}
     </section>
   </div>;
 }
 
-export default function MonthlySalesScreener({ period, minGrowth, symbol, outside }: {period:string; minGrowth:string; symbol:string; outside:boolean}) {
+export default function MonthlySalesScreener({ period, minGrowth, symbol, outside, compare }: {period:string; minGrowth:string; symbol:string; outside:boolean; compare:string[]}) {
   const [result, setResult] = useState<MonthlySalesScreen | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -130,6 +146,6 @@ export default function MonthlySalesScreener({ period, minGrowth, symbol, outsid
       <button className="min-h-11 rounded-lg bg-[var(--navy)] px-5 text-white">اعمال فیلتر</button>
     </form>
     {error ? <p role="alert" className="card p-4">{error} <button className="underline" onClick={() => {setError(""); setAttempt(n => n + 1);}}>تلاش دوباره</button></p>
-      : result ? <SalesScreenResults result={result} symbol={symbol} outside={outside}/> : <p className="card p-4" role="status">در حال خواندن جامعهٔ ناشران و گزارش‌های کدال…</p>}
+      : result ? <SalesScreenResults result={result} symbol={symbol} outside={outside} initialCompare={compare}/> : <p className="card p-4" role="status">در حال خواندن جامعهٔ ناشران و گزارش‌های کدال…</p>}
   </>;
 }
