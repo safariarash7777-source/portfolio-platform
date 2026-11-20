@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { SalesReadNotice } from "./SalesReadNotice";
 import { alignMonths } from "./MonthlySalesComparison";
 import { GrowthEvidence, SalesScreenResults } from "./MonthlySalesScreener";
 import { resolveBackTarget } from "../../lib/market-nav";
@@ -55,4 +56,18 @@ test("off-board row and issuer return preserve the separate population and selec
   const params=new URL(back.href,"https://site.test").searchParams;
   assert.equal(params.get("symbol"),row.symbol);
   assert.equal(params.get("universe"),"reported-outside");
+});
+
+test("retention and elapsed read age show the original clock without inventing a failed read or fresh report", () => {
+  const asOf = "2026-04-29T12:00:00Z";
+  const render = (state: "fresh" | "retained", stamp: string | undefined) =>
+    renderToStaticMarkup(React.createElement(SalesReadNotice, {label:"غربال فروش", checkedAt:stamp, readState:state}));
+  const retained = render("retained", asOf);
+  assert.ok(retained.includes("نتیجهٔ خواندن تازه در دسترس نیست"));
+  assert.ok(retained.includes("۱۴۰۵/۰۲/۰۹"));
+  const aged = render("fresh", asOf);
+  assert.ok(aged.includes("زمان بازبینی این نتیجه رسیده است"));
+  assert.ok(!aged.includes("نتیجهٔ خواندن تازه در دسترس نیست"));
+  assert.equal(render("fresh", new Date().toISOString()), "");
+  assert.ok(render("retained",undefined).includes("آخرین خواندن کامل نامشخص"));
 });

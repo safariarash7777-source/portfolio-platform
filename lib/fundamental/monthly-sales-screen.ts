@@ -30,6 +30,7 @@ export interface ScreenRow {
 export type ScreenUniverse = "board" | "reported-outside";
 export interface MonthlySalesScreen {
   universeKind?: ScreenUniverse;
+  readState?: "fresh" | "retained";
   period: string; previousPeriod: string; minGrowth: number; checkedAt: string;
   rows: ScreenRow[];
   coverage: { universe: number; eligible: number; calculable: number; passed: number;
