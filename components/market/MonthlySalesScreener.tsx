@@ -70,7 +70,7 @@ export function SalesScreenResults({ result, symbol = "" }: { result: MonthlySal
     <details className="card p-4"><summary className="cursor-pointer font-bold">پوشش بازار · {formatCount(result.coverage.calculable)} قابل محاسبه از {formatCount(result.coverage.eligible)} ناشر مشمول</summary>
       <p className="mt-3 text-sm">{result.coverage.universeSource} تاریخ تابلو {timestamp(result.coverage.rosterUpdatedAt)}</p>
       <p className="py-2 text-sm">جامعهٔ بررسی {formatCount(result.coverage.universe)} · مشمول {formatCount(result.coverage.eligible)} · عبورکرده {formatCount(result.coverage.passed)}</p>
-      <p className="mb-2 text-sm">ناشران دارای اطلاعیه یا گزارش در این دوره که در تابلو نیستند و شمولشان جداگانه باید بررسی شود · {formatCount(result.coverage.outsideRoster)}</p>
+      <p className="mb-2 text-sm">ناشران دارای اطلاعیه یا گزارش در این دوره که در تابلو نیستند و شمولشان جداگانه باید بررسی شود · {result.coverage.outsideRoster === undefined ? "نامشخص" : formatCount(result.coverage.outsideRoster)}</p>
       <ul className="list-inside list-disc text-sm">{Object.entries(result.coverage.excluded).map(([reason, count]) => <li key={reason}>{reason} · {formatCount(count)}</li>)}</ul>
       <p className="mt-2 text-xs">زمان خواندن داده‌ها {timestamp(result.checkedAt)} (تهران)</p>
     </details>
