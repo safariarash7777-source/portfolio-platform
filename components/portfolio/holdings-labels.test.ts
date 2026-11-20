@@ -40,7 +40,7 @@ test("associated labels retain per-row editing and do not bypass a locked form",
   const quantities = () => ui.elements().filter(node => node.type === "input" && node.props["aria-label"] === "مقدار کل دارایی");
   (quantities()[1].props.onChange as (event: { target: { value: string } }) => void)({ target: { value: "۲۵" } });
   ui.render();
-  assert.deepEqual(quantities().map(node => node.props.value), ["10", "۲۵"]);
+  assert.deepEqual(quantities().map(node => node.props.value), ["۱۰", "۲۵"]);
   assert.equal(ui.navigation.length, 0);
   const locked = mount(true);
   const relevant = locked.elements().filter(node => names.includes(String(node.props["aria-label"])));

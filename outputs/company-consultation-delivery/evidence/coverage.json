@@ -1,0 +1,82 @@
+{
+  "sampledAtUtc": "2026-11-17T19:45:24.652007+00:00",
+  "monthlyStoredOfficialInventoryDate": "2026-11-15",
+  "monthly": {
+    "sampledAt": "2026-11-17T19:45:24.652007+00:00",
+    "scanFinished": true,
+    "sourceScannedPageCount": 107,
+    "marketStocks": 775,
+    "marketStocksWithMonthlyNotice": 601,
+    "otherMarketStocks": 174,
+    "officialNotices": {
+      "official": 922,
+      "presentInFeed": 904,
+      "reportsWithData": 893,
+      "reportsWithVerifiedUnit": 893,
+      "reportsWithVerifiedUnitAndPeriod": 893
+    },
+    "latestByIssuer": {
+      "ready_exact": 582,
+      "in_feed_waiting": 19
+    },
+    "sourceExclusions": {
+      "not_stock_roster": 205
+    },
+    "changedDuringRead": 0,
+    "latestMissingByReportType": [
+      {
+        "state": "in_feed_waiting",
+        "type": "0",
+        "count": 5
+      },
+      {
+        "state": "in_feed_waiting",
+        "type": "1",
+        "count": 4
+      },
+      {
+        "state": "in_feed_waiting",
+        "type": "5",
+        "count": 6
+      },
+      {
+        "state": "in_feed_waiting",
+        "type": "6",
+        "count": 1
+      },
+      {
+        "state": "in_feed_waiting",
+        "type": "8",
+        "count": 1
+      },
+      {
+        "state": "in_feed_waiting",
+        "type": "9",
+        "count": 2
+      }
+    ],
+    "periodMismatch": []
+  },
+  "quarterly": {
+    "scope": "Current n-10 accepted exact issuer/serial against known feed notices published 1405/07/24 through 1405/08/24 with three, six or nine month title. No independent N10 all-market official census.",
+    "universe": 775,
+    "coverage": {
+      "notices": 641,
+      "unmatchedByReportType": {
+        "0": 385,
+        "2": 76,
+        "5": 71,
+        "9": 4,
+        "6": 34,
+        "3": 16,
+        "8": 20,
+        "4": 13,
+        "1": 7
+      },
+      "matchedExact": 15,
+      "issuerCount": 546,
+      "latestKnownReleaseDayPresent": 14,
+      "excludedWithoutIdentityOrSourceDate": 0
+    }
+  }
+}

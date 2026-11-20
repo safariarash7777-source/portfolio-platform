@@ -4,6 +4,7 @@
  * Run: node scripts/testing/consultation/run.mjs
  */
 import assert from 'node:assert/strict';
+import {acceptConsultationService} from './service-acceptance.mjs';
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -215,6 +216,17 @@ try{
   check('lab rollback only; preserves exact prior schema/functions/ACL inventory',()=>{
    denied(rollback,'rollback requires owned synthetic lab');sql("SELECT set_config('portfolio.consultation_lab_marker','consultation-isolated-20261023',false);"+rollback);assert.equal(sql(inventory),before);
   });
+  // The legacy rollback has already restored its inventory. Exercise the new
+  // install with new synthetic actors in this same isolated, disposable DB.
+  sql(readFileSync(new URL('../../../sql/phase11_access_tiers.sql',import.meta.url),'utf8'));
+  sql(migration);
+  sql(readFileSync(new URL('../../../sql/consultation_service_requests.sql',import.meta.url),'utf8'));
+  const serviceActor = async (user, query) => {
+    const output = sql(as('authenticated', user, query)).split('\n').filter(Boolean).at(-1);
+    try { return JSON.parse(output); } catch { return output; }
+  };
+  await acceptConsultationService({sql, actor:serviceActor, q:quote,
+    deny: async (user,query,state) => denied(as('authenticated',user,query),state)});
  }
  const fixtureGeneration=spawnSync(process.env.PYTHON||(process.platform==='win32'?'python':'python3'),[fileURLToPath(new URL('./registry-fixtures.py',import.meta.url))],{encoding:'utf8',timeout:10000});
  assert.equal(fixtureGeneration.status,0,fixtureGeneration.stderr);const registry=JSON.parse(fixtureGeneration.stdout);

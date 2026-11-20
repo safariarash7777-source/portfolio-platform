@@ -1,0 +1,115 @@
+{
+  "symbol": "فولاد",
+  "product": "محصولات گرم",
+  "market": "داخلی",
+  "periodPair": [
+    {
+      "storeId": 13719,
+      "source": "https://codal.ir/Reports/Decision.aspx?LetterSerial=LyQnlYP7OOObOOOIDLto8TGJDkDQ%3d%3d&rt=0&let=58&ct=0&ft=-1",
+      "title": "گزارش فعالیت ماهانه دوره ۱ ماهه منتهی به  ۱۴۰۵/۰۷/۳۰",
+      "tracking": 1621524,
+      "published": "1405/08/06 16:01:48",
+      "documentPeriod": "1405/07/30",
+      "documentColumnGroups": {
+        "A1": "شرح",
+        "C1": "از ابتدای سال مالی تا تاریخ 1405/06/31",
+        "G1": "اصلاحات",
+        "J1": "از ابتدای سال مالی تا تاریخ 1405/06/31 (اصلاح شده)",
+        "N1": "دوره یک ماهه منتهی به 1405/07/30",
+        "R1": "از ابتدای سال مالی تا تاریخ 1405/07/30",
+        "V1": "از ابتدای سال مالی تا تاریخ 1404/07/30",
+        "Z1": "وضعیت محصول-واحد"
+      },
+      "cells": {
+        "A5": "محصولات گرم",
+        "B5": "هزار تن",
+        "O5": "267",
+        "P5": "966612044944",
+        "Q5": "258085416"
+      },
+      "stored": {
+        "market": "داخلی",
+        "qty_unit": "هزار تن",
+        "sales_qty": 267,
+        "sales_rate": 966612044944,
+        "market_basis": "section_header",
+        "product_name": "محصولات گرم",
+        "sales_amount": 258085416,
+        "production_qty": 294,
+        "quantity_witness": {
+          "rowIndex": 4,
+          "sourceId": "https://excel.codal.ir/service/Excel/GetAll/LyQnlYP7OOObOOOIDLto8TGJDkDQ%3d%3d/0",
+          "periodEnd": "1405-07-30",
+          "htmlSha256": "717b8d5b0d71b6a8666bef4ff45c5be2af51a41621e8016b5615e690ccfc5329",
+          "tableIndex": 0,
+          "unitColumn": 1
+        }
+      },
+      "officialSourceSha256": "e7c897ca40be22808173168297172701206452e676b898f9f74e8581b9a0e610",
+      "workbook": {
+        "url": "https://excel.codal.ir/service/Excel/GetAll/LyQnlYP7OOObOOOIDLto8TGJDkDQ%3d%3d/0",
+        "sha256": "717b8d5b0d71b6a8666bef4ff45c5be2af51a41621e8016b5615e690ccfc5329",
+        "sectionRowIndex": 2,
+        "section": "فروش داخلی:",
+        "productRowIndex": 4,
+        "product": "محصولات گرم",
+        "unit": "هزار تن",
+        "salesQuantity": "۲۶۷",
+        "rate": "۹۶۶,۶۱۲,۰۴۴,۹۴۴",
+        "salesAmount": "۲۵۸,۰۸۵,۴۱۶"
+      }
+    },
+    {
+      "storeId": 93,
+      "source": "https://codal.ir/Reports/Decision.aspx?LetterSerial=5nKO45yY4Zr5NLhxicMKgA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+      "title": "گزارش فعالیت ماهانه دوره ۱ ماهه منتهی به  ۱۴۰۴/۰۷/۳۰(اصلاحیه)",
+      "tracking": 1497913,
+      "published": "1404/12/05 13:53:12",
+      "documentPeriod": "1404/07/30",
+      "documentColumnGroups": {
+        "A1": "شرح",
+        "C1": "از ابتدای سال مالی تا تاریخ 1404/06/31",
+        "G1": "اصلاحات",
+        "J1": "از ابتدای سال مالی تا تاریخ 1404/06/31 (اصلاح شده)",
+        "N1": "دوره یک ماهه منتهی به 1404/07/30",
+        "R1": "از ابتدای سال مالی تا تاریخ 1404/07/30",
+        "V1": "از ابتدای سال مالی تا تاریخ 1403/07/30",
+        "Z1": "وضعیت محصول-واحد"
+      },
+      "cells": {
+        "A5": "محصولات گرم",
+        "B5": "هزار تن",
+        "O5": "262",
+        "P5": "379583778626",
+        "Q5": "99450950"
+      },
+      "stored": {
+        "market": "داخلی",
+        "sales_qty": 262,
+        "sales_rate": 379583778626,
+        "product_name": "محصولات گرم",
+        "sales_amount": 99450950,
+        "production_qty": 303
+      },
+      "officialSourceSha256": "e60715b6b6fd4dcc4ae20caad3b148418527a9d28aa58159ac7130a1a9ac4d1a",
+      "workbook": {
+        "url": "https://excel.codal.ir/service/Excel/GetAll/5nKO45yY4Zr5NLhxicMKgA%3d%3d/0",
+        "sha256": "2fa968d278c7c8f6c895f72d91c55b1f10d48a8f14765c48db741221ca2340c5",
+        "sectionRowIndex": 2,
+        "section": "فروش داخلی:",
+        "productRowIndex": 4,
+        "product": "محصولات گرم",
+        "unit": "هزار تن",
+        "salesQuantity": "۲۶۲",
+        "rate": "۳۷۹,۵۸۳,۷۷۸,۶۲۶",
+        "salesAmount": "۹۹,۴۵۰,۹۵۰"
+      }
+    }
+  ],
+  "comparison": "same one-month period in consecutive Jalali years",
+  "decomposition": "Midpoint symmetric decomposition of the change in reported amount, using implied unit values from each period and rounded volume/amount as published. No integration of actual stated rate; precision limited by reported volume. Quantity in thousand tonnes verified from official row B. Implied unit values are million IRR per thousand tonnes.",
+  "amountDeltaMillionIRR": 158634466,
+  "amountChangePercent": 159.5102570664232,
+  "quantityContributionMillionIRR": 3365489.558924436,
+  "rateContributionMillionIRR": 155268976.44107556
+}

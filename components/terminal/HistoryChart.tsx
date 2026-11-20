@@ -1,6 +1,7 @@
 "use client";
 // نمودار قیمت + خالص ورود پول حقیقی برای ترمینال تحلیلگر.
 // دادهٔ سری از سرور به‌صورت prop می‌آید (بدون fetch کلاینتی).
+import { chartAxisDateLabel, chartTooltipDateLabel } from "../symbol/chartDate";
 import { useEffect, useRef } from "react";
 import {
   createChart,
@@ -8,6 +9,7 @@ import {
   HistogramSeries,
   type IChartApi,
   type UTCTimestamp,
+  type Time,
 } from "lightweight-charts";
 
 export interface HistoryPoint {
@@ -49,7 +51,8 @@ export default function HistoryChart({ points }: { points: HistoryPoint[] }) {
         horzLines: { color: p.line },
       },
       rightPriceScale: { borderColor: p.line },
-      timeScale: { borderColor: p.line },
+      timeScale: { borderColor: p.line, tickMarkFormatter: (time: Time) => chartAxisDateLabel(time) },
+      localization: { locale: "fa-IR", timeFormatter: (time: Time) => chartTooltipDateLabel(time), priceFormatter: (value: number) => value.toLocaleString("fa-IR",{maximumFractionDigits: 3}) },
       autoSize: true,
     } as const;
 
@@ -60,12 +63,12 @@ export default function HistoryChart({ points }: { points: HistoryPoint[] }) {
       topColor: `${p.navy}33`,
       bottomColor: `${p.navy}05`,
       lineWidth: 2,
-      priceFormat: { type: "price", precision: 0, minMove: 1 },
+      priceFormat: { type: "price", precision: 1, minMove: 0.1 },
     });
     priceSeries.setData(
       points
         .filter((d) => d.close != null)
-        .map((d) => ({ time: d.time as UTCTimestamp, value: d.close as number }))
+        .map((d) => ({ time: d.time as UTCTimestamp, value: (d.close as number) / 10 }))
     );
     priceChart.timeScale().fitContent();
 
@@ -79,7 +82,7 @@ export default function HistoryChart({ points }: { points: HistoryPoint[] }) {
         .filter((d) => d.netFlow != null)
         .map((d) => ({
           time: d.time as UTCTimestamp,
-          value: (d.netFlow as number) / 1e9, // میلیارد ریال
+          value: (d.netFlow as number) / 1e10, // میلیارد تومان
           color: (d.netFlow as number) >= 0 ? p.up : p.down,
         }))
     );
@@ -103,13 +106,13 @@ export default function HistoryChart({ points }: { points: HistoryPoint[] }) {
     <div className="space-y-4">
       <div className="card p-3">
         <p className="mb-2 text-[12px] font-bold" style={{ color: "var(--text-2)" }}>
-          قیمت پایانی (ریال)
+          قیمت پایانی (تومان)
         </p>
         <div ref={priceRef} className="w-full" style={{ minHeight: 320 }} />
       </div>
       <div className="card p-3">
         <p className="mb-2 text-[12px] font-bold" style={{ color: "var(--text-2)" }}>
-          خالص ورود پول حقیقی (میلیارد ریال در روز)
+          خالص ورود پول حقیقی (میلیارد تومان در روز)
         </p>
         <div ref={flowRef} className="w-full" style={{ minHeight: 160 }} />
       </div>

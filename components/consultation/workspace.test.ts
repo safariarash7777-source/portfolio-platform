@@ -18,7 +18,7 @@ type Element = React.ReactElement<Record<string, unknown>>;
 function nodes(tree: unknown): Element[] { if (Array.isArray(tree)) return tree.flatMap(nodes); if (!React.isValidElement(tree)) return []; const node = tree as Element; const content = typeof node.type === "function" ? (node.type as (p: unknown) => unknown)(node.props) : node.props.children; return [node, ...nodes(content)]; }
 function text(tree: unknown): string { if (Array.isArray(tree)) return tree.map(text).join(""); if (!React.isValidElement(tree)) return typeof tree === "string" || typeof tree === "number" ? String(tree) : ""; const node = tree as Element; return text(typeof node.type === "function" ? (node.type as (p: unknown) => unknown)(node.props) : node.props.children); }
 /** Actual workspace handlers/effects; controlled auth and transport seams, no DOM/RLS claim. */
-function mount(reads: unknown[], writes: unknown[], initialRelationshipId?: string) {
+function mount(reads: unknown[], writes: unknown[], initialRelationshipId?: string, serviceRequests = false) {
   const slots: unknown[] = [], effects: (() => void)[] = [], cleanups: (() => void)[] = [], readCalls: unknown[] = [], attempts: unknown[] = [], writeCalls: unknown[][] = [];
   let cursor = 0, tree: unknown, callback: (event: string, session: unknown) => void = () => {};
   const hooks = { ...React,
@@ -30,15 +30,15 @@ function mount(reads: unknown[], writes: unknown[], initialRelationshipId?: stri
   const filename = resolve("components/consultation/ConsultationWorkspace.tsx"), local = createRequire(filename), taskModule = { exports: {} as { default: (props: unknown) => unknown } };
   const request = { createConsultationAttempt(input: unknown) { const attempt = Object.freeze({ input }); attempts.push(attempt); return attempt; }, async readConsultation(options: unknown) { readCalls.push(options); assert.ok(reads.length, "unexpected read"); return await reads.shift(); }, async sendConsultationAttempt(...args: unknown[]) { writeCalls.push(args); assert.ok(writes.length, "unexpected write"); return await writes.shift(); } };
   const browser = Object.assign(new EventTarget(), { location: { reload() {} } });
-  const load = (name: string) => name === "react" ? hooks : name === "@/lib/consultation/request" ? request : name === "./ConsultationPanel" ? { __esModule: true, default: (props: object) => React.createElement("test-panel", props) } : name === "@/lib/supabase/client" ? { createClient: () => ({ auth: { onAuthStateChange(fn: typeof callback) { callback = fn; return { data: { subscription: { unsubscribe() {} } } }; } } }) } : local(name.startsWith("@/") ? resolve(name.slice(2)) : name);
+  const load = (name: string) => name === "react" ? hooks : name === "@/lib/consultation/request" ? request : name === "./ConsultationPanel" ? { __esModule: true, default: (props: object) => React.createElement("test-panel", props) } : name === "./ServiceRequests" ? { __esModule: true, default: (props: object) => React.createElement("test-service-request-queue", props) } : name === "@/lib/supabase/client" ? { createClient: () => ({ auth: { onAuthStateChange(fn: typeof callback) { callback = fn; return { data: { subscription: { unsubscribe() {} } } }; } } }) } : local(name.startsWith("@/") ? resolve(name.slice(2)) : name);
   const code = ts.transpileModule(readFileSync(filename, "utf8"), { compilerOptions: { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React, esModuleInterop: true }, fileName: filename }).outputText;
   new Function("require", "module", "exports", "React", "window", code)(load, taskModule, taskModule.exports, React, browser);
-  const render = () => { cursor = 0; tree = taskModule.exports.default({ expectedActorId: actor, initialRelationshipId }); effects.splice(0).forEach(fn => fn()); };
+  const render = () => { cursor = 0; tree = taskModule.exports.default({ expectedActorId: actor, initialRelationshipId, serviceRequests }); effects.splice(0).forEach(fn => fn()); };
   const flush = async () => { for (let i = 0; i < 4; i++) { await new Promise(resolve => setImmediate(resolve)); render(); } };
   const panel = () => { const item = nodes(tree).find(node => node.type === "test-panel"); assert.ok(item); return item; };
   const button = (label: string) => { const item = nodes(tree).find(node => node.type === "button" && text(node).includes(label)); assert.ok(item, label); return item; };
   render();
-  return { text: () => text(tree), panel, panelKey: () => nodes(tree).find(node => typeof node.type === "function" && node.props.onCommand)?.key, render, flush, attempts, writeCalls, readCalls, button,
+  return { text: () => text(tree), panel, serviceQueue: () => nodes(tree).find(node => node.type === "test-service-request-queue"), panelKey: () => nodes(tree).find(node => typeof node.type === "function" && node.props.onCommand)?.key, render, flush, attempts, writeCalls, readCalls, button,
     async auth(event = "INITIAL_SESSION", id: string | null = actor) { callback(event, id ? { user: { id } } : null); render(); await flush(); },
     send() { (panel().props.onCommand as (command: ConsultationCommand) => unknown)(command); render(); },
     async click(label: string) { const item = button(label); assert.ok(!item.props.disabled); (item.props.onClick as () => unknown)(); render(); await flush(); },
@@ -162,19 +162,89 @@ test("captured discard cannot clear an in-flight or uncertain attempt or cross a
  assert.match(view.text(),/حساب یا نشست تغییر کرد/);assert.equal(view.readCalls.length,1);view.unmount();
 });
 
-test("failed read after session recovery allows discarding an unsent draft and retrying the read", async () => {
-  const data = readback();
+test("same-actor reconnect hides draft until an authorized read; read failure permits retry without discarding", async () => {
+  const data = ready();
   const view = mount([result(data), {status: "error", httpStatus: 503, error: {code: "READ_UNAVAILABLE"}}, result(data)], []);
+  await view.auth();
+  const start = view.panel();
+  const update = start.props.updateDrafts as (f: (d: {clientLabel:string})=>{clientLabel:string})=>void;
+  update(d => ({...d,clientLabel:"literal unsent draft"}));
+  (start.props.onDirty as () => void)();
+  await view.flush();
+  await view.auth("TOKEN_REFRESHED", null);
+  assert.throws(() => view.panel());
+  await view.auth("SIGNED_IN");
+  assert.throws(() => view.panel());
+  assert.equal(view.button("دوباره خواندن پرونده").props.disabled, false);
+  await view.click("دوباره خواندن پرونده");
+  assert.equal((view.panel().props.drafts as {clientLabel:string}).clientLabel,"literal unsent draft");
+  assert.equal(view.readCalls.length, 3);
+  assert.equal(view.writeCalls.length, 0);
+  view.unmount();
+});
+
+test("reconnect hides service queue and discard clears the draft without unlocking until a fresh read", async () => {
+  const same = readback();
+  same.selected = same.relationships[0];
+  const view = mount([result(same), { status: "error", httpStatus: 503, error: { code: "READ_UNAVAILABLE" } }, result(same)], [], relation, true);
+  await view.auth();
+  assert.equal(view.serviceQueue()?.props.selected, relation);
+  const start = view.panel();
+  (start.props.updateDrafts as (f:(d:{clientLabel:string})=>{clientLabel:string})=>void)(d=>({...d,clientLabel:"literal to discard"}));
+  (start.props.onDirty as () => void)();
+  await view.flush();
+  assert.equal(view.serviceQueue()?.props.locked, true);
+  await view.auth("TOKEN_REFRESHED", null);
+  assert.equal(view.serviceQueue(), undefined);
+  await view.auth("SIGNED_IN");
+  assert.equal(view.button("دوباره خواندن پرونده").props.disabled, false);
+  assert.equal(view.serviceQueue(), undefined);
+  await view.click(discardLabel);
+  assert.equal(view.serviceQueue(), undefined);
+  await view.click("دوباره خواندن پرونده");
+  assert.equal((view.panel().props.drafts as {clientLabel:string}).clientLabel,"");
+  assert.equal(view.readCalls.length, 3);
+  assert.ok(view.readCalls.every(c => (c as { actorId: string; relationshipId: string }).actorId === actor && (c as { relationshipId: string }).relationshipId === relation));
+  assert.equal(view.serviceQueue()?.props.locked, false);
+  assert.equal(view.writeCalls.length, 0);
+  view.unmount();
+});
+
+test("enabling the service queue does not expose an escape from a confirmed receipt before exact readback", async () => {
+  const view = mount([result(), { status: "error", httpStatus: 503, error: { code: "READ_UNAVAILABLE" } }, result(readback())],
+    [{ status: "saved", receipt }], undefined, true);
   await view.auth();
   (view.panel().props.onDirty as () => void)();
   await view.flush();
+  const capturedDiscard = view.button(discardLabel).props.onClick as () => void;
+  view.send();
+  await view.flush();
+  capturedDiscard();
+  await view.flush();
+  assert.throws(() => view.button(discardLabel));
+  assert.equal(view.serviceQueue()?.props.locked, true);
+  assert.equal(view.writeCalls.length, 1);
+  await view.click("دوباره خواندن پرونده");
+  assert.equal(view.serviceQueue()?.props.locked, true, "readback alone does not drop the receipt");
+  await view.click("ادامه با پروندهٔ بازخوانی‌شده");
+  assert.equal(view.serviceQueue()?.props.locked, false);
+  assert.equal(view.writeCalls.length, 1);
+  view.unmount();
+});
+
+test("verified forbidden reread clears buffered draft before same actor can read a permitted list", async () => {
+  const same = readback(); same.selected = same.relationships[0];
+  const view = mount([result(same), denied(403), result(ready())], [], relation);
+  await view.auth();
+  const panel = view.panel();
+  (panel.props.updateDrafts as (f:(d:{clientLabel:string})=>{clientLabel:string})=>void)(d=>({...d,clientLabel:"forbidden draft"}));
+  (panel.props.onDirty as () => void)();
+  await view.flush();
   await view.auth("TOKEN_REFRESHED", null);
   await view.auth("SIGNED_IN");
-  assert.equal(view.button("دوباره خواندن پرونده").props.disabled, true);
-  await view.click(discardLabel);
-  assert.equal(view.button("دوباره خواندن پرونده").props.disabled, false);
-  await view.click("دوباره خواندن پرونده");
-  assert.equal(view.readCalls.length, 3);
-  assert.equal(view.writeCalls.length, 0);
+  assert.throws(() => view.panel());
+  await view.click(backToList);
+  assert.equal((view.panel().props.drafts as {clientLabel:string}).clientLabel,"");
+  assert.equal(view.writeCalls.length,0);
   view.unmount();
 });

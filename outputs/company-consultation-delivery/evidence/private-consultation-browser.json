@@ -1,0 +1,35 @@
+{
+  "steps": [
+    "Request and consent from the financial file; server committed, browser reply intentionally dropped",
+    "Reload recovered same request; dossier contains asset and nonzero debt",
+    "Private first draft invisible to member; revised into version 2",
+    "Owner approved and published exact revision; member saw only published text",
+    "Sign out and fresh login recovered approved revision and follow-up; action did not mutate holdings",
+    "Second authenticated member denied in page and API",
+    "Independent consent control opened",
+    "Revoked consent prevents advisor opening financial dossier",
+    "After a real edit the dashboard advanced to holdings version 3; approved answer still refers to version 2 and prior follow-up",
+    "Member B with expired entitlement saved a labeled 3 gram asset in the basic portfolio and read it back after reload",
+    "After final legacy compatibility installation both fresh browser logins recovered the same published answer, question and original basis; revoked dossier remains forbidden"
+  ],
+  "relation": "6aff90fb-07ba-4810-aa1b-3549827de4b0",
+  "basis": "030b4590-23f1-46c6-b145-3e71ed90ff80",
+  "financeVersion": 2,
+  "session": "c2cac76e-0150-4940-94c6-6ccd0b138333",
+  "responseVersion": 2,
+  "followUp": "517f14e6-7980-4f72-a41a-48a97d667dda",
+  "revocationRelation": "385e967c-c79a-427d-9f6f-5817199bb7a0",
+  "latestHoldings": {
+    "id": "d2970bda-d18b-437f-89a8-a5023d09df72",
+    "version": 3
+  },
+  "environment": {
+    "app": "http://localhost:32192",
+    "auth": "isolated GoTrue",
+    "data": "isolated PostgreSQL via PostgREST",
+    "sessions": "Chromium desktop and mobile viewport; synthetic ordinary members and registered synthetic owner",
+    "production": false
+  },
+  "verifiedAt": "2026-11-18T05:24:33.555Z",
+  "serviceSqlSha256": "8abfd68a13f8f3ee13703830e3a3aef700843eefd24687710c21c216637c8b49"
+}

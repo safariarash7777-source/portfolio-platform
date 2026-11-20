@@ -79,7 +79,7 @@ export default function MarketShell({
     <div className="mx-auto w-full max-w-7xl px-4 pb-16 pt-5 sm:px-5 md:pt-6">
       <MarketAutoRefresh />
       {/* ── ردیفِ اول: سربرگِ بازار، زمان و جست‌وجو ───────────────────────── */}
-      <header className="space-y-3">
+      <header className="market-reading-header space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
           <div className="min-w-0">
             <p className="eyebrow">میز بازار</p>
@@ -124,7 +124,7 @@ export default function MarketShell({
           refresh و back/forward حالتِ فعال را حفظ می‌کنند (چون از `active`
           سمتِ سرور می‌آید، نه از state). «طلا و ارز» لنگر است و با ظاهرِ
           متفاوت نشان داده می‌شود تا با تبِ صفحه‌ای اشتباه نشود. */}
-      <nav aria-label="بخش‌های بازار" className="mt-4">
+      <nav aria-label="بخش‌های بازار" className="market-section-nav mt-4">
         <ul
           className="flex gap-1 overflow-x-auto pb-1"
           style={{ scrollbarWidth: "thin", borderBottom: "1px solid var(--line)" }}

@@ -52,7 +52,7 @@ test("compiled default reader uses the mapped public binding when runtime legacy
             return Response.json([]);
           }),
         };
-        assert(["../core/quarterly", "./units", "../desk/workspace-model", "./monthly-quantity-binding", "./read-config.server"].includes(specifier));
+        assert(["../core/quarterly", "./units", "../desk/workspace-model", "./monthly-quantity-binding", "./read-config.server", "./reviewed-product-rows"].includes(specifier));
         return {};
       },
       console: { warn: () => {} },

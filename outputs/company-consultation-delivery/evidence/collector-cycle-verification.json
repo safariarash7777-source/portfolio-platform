@@ -1,0 +1,227 @@
+{
+  "meaning": "Successful persistence timestamps are per-row; overall attempt status is independent. Aggregated canonical serial peer IDs include fragments and capture versions.",
+  "cycles": [
+    {
+      "run": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/44162303313",
+      "scheduledStart": "2026-11-17T19:33:45.818Z",
+      "actualCompleted": "2026-11-17T19:34:32.730Z",
+      "verdict": "budget_or_rate_limit",
+      "lastAttempt": "2026-11-17T19:33:45.819Z",
+      "reportedRecoveryInserted": 8,
+      "otherPathsInserted": {
+        "feed": 0,
+        "backfill": 0,
+        "recentMonthlyRecovery": 0,
+        "interimRecovery": 0
+      },
+      "rejected": 0,
+      "rejectReasons": {
+        "ن-۱۰": {},
+        "ن-۳۰": {}
+      },
+      "rowsInWindow": [
+        {
+          "id": 13928,
+          "symbol": "بازرگام",
+          "periodEnd": "2026-08-22",
+          "kind": "ن-۳۰",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=VD7CdYwB3q6Qd8y03HLIyg%3d%3d&rt=5&let=58&ct=0&ft=-1#pv2",
+          "canonicalSerialPeerIds": [
+            13928
+          ],
+          "capturedAt": "2026-11-17T19:34:14.217775+00:00"
+        },
+        {
+          "id": 13929,
+          "symbol": "سیمرغ",
+          "periodEnd": "2026-08-22",
+          "kind": "ن-۳۰",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=TSY7VJWxCxBT6WRADx26Vw%3d%3d&rt=8&let=58&ct=0&ft=-1#pv2",
+          "canonicalSerialPeerIds": [
+            13929
+          ],
+          "capturedAt": "2026-11-17T19:34:19.110937+00:00"
+        },
+        {
+          "id": 13930,
+          "symbol": "ورازی",
+          "periodEnd": "2026-08-22",
+          "kind": "ن-۳۰",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=TAhr4ZJLNU1TJGCqK09N7w%3d%3d&rt=6&let=58&ct=0&ft=-1#pv2",
+          "canonicalSerialPeerIds": [
+            13930
+          ],
+          "capturedAt": "2026-11-17T19:34:19.599365+00:00"
+        },
+        {
+          "id": 13931,
+          "symbol": "افرا",
+          "periodEnd": "2026-08-22",
+          "kind": "ن-۳۰",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=O9ClQRr2xwpMt05cHp9KWg%3d%3d&rt=5&let=58&ct=0&ft=-1#pv2",
+          "canonicalSerialPeerIds": [
+            13931
+          ],
+          "capturedAt": "2026-11-17T19:34:19.828562+00:00"
+        },
+        {
+          "id": 13932,
+          "symbol": "وبصادر",
+          "periodEnd": "2026-08-22",
+          "kind": "ن-۳۰",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=XrxXNXaWyLUwUCikchIb2g%3d%3d&rt=3&let=58&ct=0&ft=-1#pv2",
+          "canonicalSerialPeerIds": [
+            13932
+          ],
+          "capturedAt": "2026-11-17T19:34:19.994336+00:00"
+        },
+        {
+          "id": 13933,
+          "symbol": "رمپنا",
+          "periodEnd": "2026-08-22",
+          "kind": "ن-۳۰",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=rdqfDklGpYDJOOObOOOUDgAARz9A%3d%3d&rt=5&let=58&ct=0&ft=-1#pv2",
+          "canonicalSerialPeerIds": [
+            13933
+          ],
+          "capturedAt": "2026-11-17T19:34:20.170562+00:00"
+        },
+        {
+          "id": 13934,
+          "symbol": "اوان",
+          "periodEnd": "2026-08-22",
+          "kind": "ن-۳۰",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=LtdlpXGuJ89Q5TZNfv8wCA%3d%3d&rt=5&let=58&ct=0&ft=-1#pv2",
+          "canonicalSerialPeerIds": [
+            13934
+          ],
+          "capturedAt": "2026-11-17T19:34:20.390921+00:00"
+        },
+        {
+          "id": 13935,
+          "symbol": "شپاکسا",
+          "periodEnd": "2026-08-22",
+          "kind": "ن-۳۰",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=OOObOOO2lB5fU9z4z2dCGYYx8aLg%3d%3d&rt=0&let=58&ct=0&ft=-1#pv2",
+          "canonicalSerialPeerIds": [
+            13935
+          ],
+          "capturedAt": "2026-11-17T19:34:20.564566+00:00"
+        }
+      ],
+      "latestSuccessfulWriteInWindow": "2026-11-17T19:34:20.564566+00:00",
+      "duplicateCountWithSameIssuerKindPeriodAndCanonicalSerial": 0
+    },
+    {
+      "run": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/44162979689",
+      "scheduledStart": "2026-11-17T19:49:45.957Z",
+      "actualCompleted": "2026-11-17T19:50:44.846Z",
+      "verdict": "budget_or_rate_limit",
+      "lastAttempt": "2026-11-17T19:49:45.958Z",
+      "reportedRecoveryInserted": 8,
+      "otherPathsInserted": {
+        "feed": 0,
+        "backfill": 0,
+        "recentMonthlyRecovery": 0,
+        "interimRecovery": 0
+      },
+      "rejected": 0,
+      "rejectReasons": {
+        "ن-۱۰": {},
+        "ن-۳۰": {}
+      },
+      "rowsInWindow": [
+        {
+          "id": 13936,
+          "symbol": "کفرآور",
+          "periodEnd": "2026-08-22",
+          "kind": "ن-۳۰",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=PQ1U1aBWqVpm0Vt6Uxx8xQ%3d%3d&rt=0&let=58&ct=0&ft=-1#pv2",
+          "canonicalSerialPeerIds": [
+            13936
+          ],
+          "capturedAt": "2026-11-17T19:50:17.256129+00:00"
+        },
+        {
+          "id": 13937,
+          "symbol": "حآسا",
+          "periodEnd": "2026-08-22",
+          "kind": "ن-۳۰",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=baLo82lrKYaXbOmPZxgTgw%3d%3d&rt=5&let=58&ct=0&ft=-1#pv2",
+          "canonicalSerialPeerIds": [
+            13937
+          ],
+          "capturedAt": "2026-11-17T19:50:17.431542+00:00"
+        },
+        {
+          "id": 13938,
+          "symbol": "بکام",
+          "periodEnd": "2026-08-22",
+          "kind": "ن-۳۰",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=u4wyuRELGbvOOObOOO4Vmd9ejYBw%3d%3d&rt=0&let=58&ct=0&ft=-1#pv2",
+          "canonicalSerialPeerIds": [
+            13938
+          ],
+          "capturedAt": "2026-11-17T19:50:17.681577+00:00"
+        },
+        {
+          "id": 13939,
+          "symbol": "تکاردان",
+          "periodEnd": "2026-08-22",
+          "kind": "ن-۳۰",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=oR2mjDSzxi7O3yI0oA6lzA%3d%3d&rt=9&let=58&ct=0&ft=-1#pv2",
+          "canonicalSerialPeerIds": [
+            13939
+          ],
+          "capturedAt": "2026-11-17T19:50:31.699029+00:00"
+        },
+        {
+          "id": 13940,
+          "symbol": "غگرجی",
+          "periodEnd": "2026-07-22",
+          "kind": "ن-۳۰",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=4Ru2zJ6A2wHOp0xn5EtTXw%3d%3d&rt=0&let=58&ct=0&ft=-1#pv2",
+          "canonicalSerialPeerIds": [
+            13940
+          ],
+          "capturedAt": "2026-11-17T19:50:32.033345+00:00"
+        },
+        {
+          "id": 13941,
+          "symbol": "لطیف",
+          "periodEnd": "2026-08-22",
+          "kind": "ن-۳۰",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=fqdIu00WFBSrOimJc0pzxw%3d%3d&rt=0&let=58&ct=0&ft=-1#pv2",
+          "canonicalSerialPeerIds": [
+            13941
+          ],
+          "capturedAt": "2026-11-17T19:50:32.315585+00:00"
+        },
+        {
+          "id": 13942,
+          "symbol": "فماک",
+          "periodEnd": "2026-08-22",
+          "kind": "ن-۳۰",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=MsZps8Hp1B8znkxOkdHPIw%3d%3d&rt=0&let=58&ct=0&ft=-1#pv2",
+          "canonicalSerialPeerIds": [
+            13942
+          ],
+          "capturedAt": "2026-11-17T19:50:32.49281+00:00"
+        },
+        {
+          "id": 13943,
+          "symbol": "معین",
+          "periodEnd": "2026-08-22",
+          "kind": "ن-۳۰",
+          "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=OOObOOOJQQQaQQQRMpI5WVg4SMp7RsXaKQ%3d%3d&rt=6&let=58&ct=0&ft=-1#pv2",
+          "canonicalSerialPeerIds": [
+            13943
+          ],
+          "capturedAt": "2026-11-17T19:50:32.668075+00:00"
+        }
+      ],
+      "latestSuccessfulWriteInWindow": "2026-11-17T19:50:32.668075+00:00",
+      "duplicateCountWithSameIssuerKindPeriodAndCanonicalSerial": 0
+    }
+  ]
+}
