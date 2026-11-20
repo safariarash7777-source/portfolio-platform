@@ -1647,10 +1647,8 @@ export async function downloadAndParse(a, kind, onDownloaded = () => {}, onRejec
   return data;
 }
 
-/** Returns the actual 0/1 count; zero resolves only after confirming the exact
- * stored report with non-null data. Unconfirmed persistence rejects before any
- * caller can clear its failure ledger or mark the URL as known. */
-export async function insertParsedReport(a, kind, data) {
+/** Same immutable row for collector writes and operator dry-run review. */
+export function buildParsedReportRow(a, kind, data) {
   const meta = metaFrom(a, kind);
   const decision = kind === "ن-۳۰" && industrialMonthlyDecisions.get(data);
   const parserVersion = decision && decision.link === a.link && decision.symbol === a.l18 &&
@@ -1686,7 +1684,14 @@ export async function insertParsedReport(a, kind, data) {
       ...(quantityCapture ? { quantity_capture: quantityCapture } : {}),
     },
   };
-  return await insertReport(row);
+  return row;
+}
+
+/** Returns the actual 0/1 count; zero resolves only after confirming the exact
+ * stored report with non-null data. Unconfirmed persistence rejects before any
+ * caller can clear its failure ledger or mark the URL as known. */
+export async function insertParsedReport(a, kind, data) {
+  return await insertReport(buildParsedReportRow(a, kind, data));
 }
 
 /** دامپ تشخیصی ساختار جدول‌های یک اکسل واقعی به Supabase — وقتی لبهٔ لیارا از خارج در دسترس نیست.

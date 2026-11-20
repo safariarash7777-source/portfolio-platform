@@ -21,7 +21,9 @@ export interface SalesFiling {
   publicationDate: string | null; publicationTime: string | null; captured_at: string | null;
 }
 export interface SalesNotice { symbol: string; title: string; link: string }
+export interface UnitReview { reportId: number; symbol: string; periodEnd: string; sourceUrl: string; amendment: boolean }
 export interface ScreenRow {
+  unitReview?: UnitReview[];
   symbol: string; industry: string | null; eligible: boolean; reason: string | null;
   current: SalesPoint | null; previous: SalesPoint | null; growth: number | null; passed: boolean | null;
 }
@@ -29,7 +31,7 @@ export interface MonthlySalesScreen {
   period: string; previousPeriod: string; minGrowth: number; checkedAt: string;
   rows: ScreenRow[];
   coverage: { universe: number; eligible: number; calculable: number; passed: number;
-    excluded: Record<string, number>; universeSource: string; rosterUpdatedAt: string | null };
+    excluded: Record<string, number>; universeSource: string; outsideRoster?: number; rosterUpdatedAt: string | null };
 }
 
 export function monthOffset(period: string, delta: number): string {
@@ -76,7 +78,7 @@ function pub(row: SalesFiling) {
   return publishKey({ raw: { date_publish: row.publicationDate || undefined, time_publish: row.publicationTime || undefined } });
 }
 
-function selectPoint(period: string, filings: SalesFiling[], notices: SalesNotice[]): { point: SalesPoint | null; reason: string | null } {
+function selectPoint(period: string, filings: SalesFiling[], notices: SalesNotice[]): { point: SalesPoint | null; reason: string | null; unitReview?: UnitReview } {
   const fail = (reason: string) => ({ point: null, reason });
   const docs = new Map<string, SalesFiling>();
   for (const row of [...filings].sort((a,b) => Number(b.parser || 1) - Number(a.parser || 1))) {
@@ -107,7 +109,18 @@ function selectPoint(period: string, filings: SalesFiling[], notices: SalesNotic
   if (!date || date.slice(0,7) !== period || row.storedPeriod !== endOfCalendarMonth || titleDate(row.title) !== date || jalaliYmdToGregorian(date) !== row.storedPeriod ||
       issuerKey(row.reportSymbol || "") !== issuerKey(row.symbol) || Number(row.months) !== 1) return fail(periodError);
   if (basis(row) !== "sales") return fail(nonSales);
-  if (!isMillionRialUnit(row.unit)) return fail("واحد مبلغ فروش قابل تطبیق نیست");
+  if (!isMillionRialUnit(row.unit)) {
+    const rejected = fail("واحد مبلغ فروش قابل تطبیق نیست");
+    const ref = documentRef(row.source_url);
+    // Different explicit units require a separate analysis. Only legacy rows
+    // with an absent declaration can enter source reconciliation.
+    if (row.unit?.trim() || ref?.template !== "0" || Number(row.parser || 1) >= 3 ||
+        !Number.isSafeInteger(row.amount) || row.amount! < 0) return rejected;
+    return { ...rejected, unitReview: {
+      reportId: row.id, symbol: issuerKey(row.symbol), periodEnd: date, sourceUrl: ref.url,
+      amendment: isAmendmentTitle(row.title),
+    } };
+  }
   if (typeof row.amount !== "number" || !Number.isSafeInteger(row.amount) || row.amount < 0) return fail("مبلغ فروش همان ماه معتبر نیست");
   return { point: { period, amount: row.amount, unit: "میلیون ریال", sourceUrl: documentRef(row.source_url)!.url,
     publishedAt: pub(row) ?? row.publicationDate, capturedAt: row.captured_at, amendment: isAmendmentTitle(row.title), reportId: row.id }, reason: null };
@@ -175,9 +188,16 @@ export function monthlySalesScreen(period:string,minGrowth:number,roster:ScreenI
       }
     }
     if (reason) coverage.excluded[reason]=(coverage.excluded[reason] ?? 0)+1;
-    rows.push({symbol,industry:issuer.industry ?? null,eligible,reason,current,previous,growth,passed});
+    const unitReview = eligible ? [now.unitReview, prior.unitReview].filter((r): r is UnitReview => !!r) : [];
+    rows.push({symbol,industry:issuer.industry ?? null,eligible,reason,current,previous,growth,passed,
+      ...(unitReview.length ? {unitReview} : {})});
   }
   coverage.universe=rows.length;
+  const reportingSymbols = new Set([
+    ...filings.filter(r => periodOf(r) === period).map(r => issuerKey(r.symbol)),
+    ...notices.filter(r => titleDate(r.title)?.slice(0,7) === period).map(r => issuerKey(r.symbol)),
+  ]);
+  coverage.outsideRoster = [...reportingSymbols].filter(symbol => symbol && !seen.has(symbol)).length;
   rows.sort((a,b)=> (b.growth ?? -Infinity)-(a.growth ?? -Infinity) || a.symbol.localeCompare(b.symbol,"fa"));
   return {period,previousPeriod,minGrowth,coverage,rows,checkedAt};
 }

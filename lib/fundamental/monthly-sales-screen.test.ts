@@ -34,3 +34,19 @@ test("zero denominator, wrong unit, period, missing month amount, and bank incom
 test("history shares revision selection and does not fill missing months",()=>{
  const {points}=salesHistory("1405-07","الف",[now,prior],[]);assert.deepEqual(points.map(p=>p.period),["1405-07"]);
 });
+
+test("only the selected unpriced-unit filing is eligible for review; missing or ambiguous origins stay closed",()=>{
+ const old={...prior,unit:null};
+ const review=run([now,old]).rows.find(x=>x.symbol==="الف")!.unitReview;
+ assert.equal(review?.[0]?.reportId,old.id);
+ assert.equal(Object.hasOwn(review![0],"amount"),false);
+ const n={symbol:"الف",title:old.title+" (اصلاحیه)",link:old.source_url.replace("Serial=2","Serial=9")};
+ assert.equal(run([now,old],[n]).rows.find(x=>x.symbol==="الف")!.unitReview,undefined);
+ assert.equal(run([now,{...old,unit:"ریال"}]).rows.find(x=>x.symbol==="الف")!.unitReview,undefined);
+ assert.equal(run([now,{...old,storedPeriod:"2020-01-01"}]).rows.find(x=>x.symbol==="الف")!.unitReview,undefined);
+});
+test("outside-board filings and notices count once, separately from the roster",()=>{
+ const external={...now,symbol:"سایر",reportSymbol:"سایر"};
+ const out=run([now,prior,external],[{symbol:"سایر",title:now.title,link:now.source_url}]);
+ assert.equal(out.coverage.outsideRoster,1); assert.equal(out.coverage.universe,3);
+});
