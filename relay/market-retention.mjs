@@ -88,6 +88,7 @@ export function retainFundNav(previous, candidate, attemptedAt) {
     return { ...row, nav: old.nav, navIssue: positive(old.navIssue) ? old.navIssue : null,
       navDate: typeof old.navDate === 'string' ? old.navDate : null,
       navTime: typeof old.navTime === 'string' ? old.navTime : null,
+      navClassEvidence: old.navClassEvidence ?? null,
       navReceivedAt: at, navRetained: true, bubblePercent: null };
   });
 }

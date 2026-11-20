@@ -1,4 +1,5 @@
 import { jalaliYmdToGregorian } from "./core/jalali";
+import { evidencedClass } from "./core/fundUnitClass";
 import { navAtIso, liveBubble } from "./core/fundBubble";
 import type { IrMarket, IrStockRow } from "./market-ir";
 import { toLatinDigits } from './format';
@@ -178,6 +179,13 @@ export function withValidNav<T extends IrStockRow>(row: T, priceAt: number | nul
   priceAt = sourceTime(row.sourceDate, row.sourceTime);
   const at = navAtIso(row.navDate, row.navTime, jalaliYmdToGregorian);
   const result = liveBubble({ priceToman: row.closingPrice ?? row.price, navToman: row.nav, navAt: at?.iso, navPrecision: at?.precision, priceAt: priceAt == null ? null : new Date(priceAt).toISOString(), now: new Date(now) });
-  const missingPriceTime = sourceTime(row.sourceDate, row.sourceTime) == null;
+  const missingPriceTime = priceAt === null;
+  if (result.state === "ready" && !missingPriceTime) {
+    if (row.unit !== "toman") return { ...row, bubblePercent: null, navState: "unavailable", navReason: "واحد پول قیمت با NAV تومانی همسان نیست" };
+    const priceClass = evidencedClass(row.classEvidence);
+    if (!priceClass || priceClass === "ordinary-subscription" || priceClass !== evidencedClass(row.navClassEvidence)) {
+      return { ...row, bubblePercent: null, navState: "unavailable", navReason: "تطبیق طبقه واحد قابل معامله برای قیمت و NAV مستند نیست" };
+    }
+  }
   return { ...row, bubblePercent: result.state === "ready" && !missingPriceTime ? result.bubblePercent : null, navState: missingPriceTime && result.state === "ready" ? "unknown-time" : result.state === "ready" ? "ready" : result.state === "stale" ? "stale" : "unavailable", navReason: missingPriceTime && result.state === "ready" ? "زمان قیمت ثبت نشده؛ هم‌زمانی با NAV نامشخص" : result.reason };
 }

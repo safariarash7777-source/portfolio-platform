@@ -27,7 +27,8 @@ require.extensions[".css"] = (loaded, filename) => {
 };
 const now = Date.parse("2026-09-30T10:00:00Z");
 const stock: IrStockRow = { id: "fixture", faName: "نمونهٔ آزمون", unit: "toman", price: 110, closingPrice: 110, value: 50_000_000_000, marketValue: 700_000_000_000, sourceDate: "1405-07-08", sourceTime: "13:25:00" };
-const fund: IrStockRow = { ...stock, type: "سهامی", nav: 100, navIssue: 101, navStatus: "ready", navDate: "1405-07-08", navTime: "13:25:00", bubblePercent: 999 };
+const classEvidence = { unitClass: "etf-tradable" as const, source: "fixture provider" };
+const fund: IrStockRow = { classEvidence, navClassEvidence: classEvidence, ...stock, type: "سهامی", nav: 100, navIssue: 101, navStatus: "ready", navDate: "1405-07-08", navTime: "13:25:00", bubblePercent: 999 };
 const market = (row: IrStockRow, isFund = false): IrMarket => ({ ok: true, fetchedAt: now, gold: [], currency: [], crypto: [], options: [], indices: null, stocks: isFund ? [] : [row], funds: isFund ? [row] : [] });
 
 async function actualPage(ir: IrMarket, symbol = stock.id, fundamentals: SymbolFundamentals | null = null,

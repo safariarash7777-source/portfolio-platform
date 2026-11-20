@@ -13,6 +13,8 @@ import { FUND_SORT_KEYS, SORT_DIRS, type FundSortKey, type SortDirection } from 
 import Term from "@/components/learn/Term";
 import FundComparisonPanel from "./FundComparisonPanel";
 import type { FundComparisonRow } from "@/lib/core/fundComparison";
+import { navAtIso } from "@/lib/core/fundBubble";
+import { jalaliYmdToGregorian } from "@/lib/core/jalali";
 import { marketQualityLabel, type DataQuality } from "@/lib/market-quality";
 import type { SourceAvailability } from "@/lib/market-bounded";
 import { PieChart, Search, ArrowUpDown, ChevronDown, Clock, ArrowLeft, SlidersHorizontal } from "lucide-react";
@@ -705,6 +707,7 @@ export default function FundsFullBoard({ funds, fetchedAt, availability }: Props
                   </td>
                   <td className="py-3 px-4 text-left" style={{ fontVariantNumeric: "tabular-nums" }}>
                     {formatToman(f.price)}
+                    <SourceClock label="تاریخ قیمت" date={f.sourceDate} time={f.sourceTime} />
                   </td>
                   <td className="py-3 px-4 text-left font-bold" style={{ color: pct != null ? deltaColor(pct) : "var(--text-3)", fontVariantNumeric: "tabular-nums" }}>
                     {pct != null ? formatSignedPercent(pct) : "—"}
@@ -713,6 +716,7 @@ export default function FundsFullBoard({ funds, fetchedAt, availability }: Props
                     <>
                       <td className="py-3 px-4 text-left" style={{ fontVariantNumeric: "tabular-nums", color: "var(--text-2)" }}>
                         {f.nav != null ? formatToman(f.nav) : "—"}
+                        {f.nav != null && <SourceClock label="تاریخ NAV" date={f.navDate} time={f.navTime} />}
                         <NavNotice fund={f} />
                       </td>
                       <td
@@ -789,13 +793,13 @@ export default function FundsFullBoard({ funds, fetchedAt, availability }: Props
                 )}
               </div>
               <div className="flex items-center justify-between mt-2 text-xs" style={{ color: "var(--text-2)" }}>
-                <span>{formatToman(f.price)}</span>
+                <span>{formatToman(f.price)}<SourceClock label="تاریخ قیمت" date={f.sourceDate} time={f.sourceTime} /></span>
                 {f.value ? <span>ارزش: {fmtValue(f.value)}</span> : null}
               </div>
               {hasNav && (
                 <div className="mt-1.5 text-xs" style={{ color: "var(--text-2)" }}>
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span>NAV ابطال: {f.nav != null ? formatToman(f.nav) : "—"}</span>
+                    <span>NAV ابطال: {f.nav != null ? formatToman(f.nav) : "—"}{f.nav != null && <SourceClock label="تاریخ NAV" date={f.navDate} time={f.navTime} />}</span>
                     <span className="font-bold" style={{ color: f.bubblePercent != null ? bubbleColor(f.bubblePercent) : "var(--text-3)", fontVariantNumeric: "tabular-nums" }}>
                       حباب: {f.bubblePercent != null ? formatSignedPercent(f.bubblePercent) : "—"}
                     </span>
@@ -870,6 +874,15 @@ export default function FundsFullBoard({ funds, fetchedAt, availability }: Props
 }
 
 // ── Helper Components ────────────────────────────────────────────────────────
+
+function SourceClock({ label, date, time }: { label: string; date?: string | null; time?: string | null }) {
+  const valid = navAtIso(date, time, jalaliYmdToGregorian);
+  return <span className="mt-0.5 block text-[11px]" style={{ color: "var(--text-3)" }}>
+    {label} {valid && date
+      ? <bdi>{toPersianDigits(date.replaceAll("-", "/"))}{valid.precision === "minute" && time && ` · ${toPersianDigits(time)}`}</bdi>
+      : "نامشخص"}
+  </span>;
+}
 
 /** Visible beside retained NAV and unavailable bubble on both screen sizes. */
 function NavNotice({ fund }: { fund: FundRow }) {
