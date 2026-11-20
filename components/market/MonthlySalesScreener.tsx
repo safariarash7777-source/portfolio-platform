@@ -41,6 +41,7 @@ export function GrowthEvidence({ row, result }: { row: Row; result: MonthlySales
       <PointSource label={"ماه جاری " + toPersianDigits(result.period)} point={row.current}/>
       <PointSource label={"ماه هم‌دوره " + toPersianDigits(result.previousPeriod)} point={row.previous}/>
     </div>
+    {row.unitReview?.map(review => <p key={review.reportId}>واحد مبلغ فروش در محاسبه تأیید نشده است. <a href={review.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">بازبینی سند {toPersianDigits(review.periodEnd)}{review.amendment ? " (اصلاحیه)" : ""}</a></p>)}
   </div>;
 }
 
