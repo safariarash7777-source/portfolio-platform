@@ -26,6 +26,7 @@ import { getAccess } from "@/lib/access";
 import { resolveBackTarget } from "@/lib/market-nav";
 import { getStoredIrMarket, type IrStockRow } from "@/lib/market-ir";
 import { iranReadQuality, marketQualityLabel, sourceTime, withValidNav } from "@/lib/market-quality";
+import { MonthlyPilot, readApprovedMonthlyPilot } from "@/lib/fundamental/monthly-pilot.server";
 import { readFundamentals } from "@/lib/fundamental/registry";
 import { isMillionRialUnit } from "@/lib/fundamental/units";
 import { getSymbolHistory, readSymbolHistory } from "@/lib/core/history";
@@ -100,13 +101,14 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
   const sym = decodeURIComponent(symbol);
   const sp = searchParams ? await searchParams : {};
 
-  const [ir, historyRead, fundamentalRead, fxRates, navHistory, access] = await Promise.all([
+  const [ir, historyRead, fundamentalRead, fxRates, navHistory, access, monthlyPilot] = await Promise.all([
     getStoredIrMarket(),
     readSymbolHistory(sym, 400),
     readFundamentals(sym),
     getFxRates(),
     getNavHistory(sym, 400),
     getAccess(),
+    sym === "فولاد" ? readApprovedMonthlyPilot() : Promise.resolve(null),
   ]);
   const history = historyRead.data;
   const storedFundamentals = fundamentalRead.data;
@@ -302,6 +304,7 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
   // T6: محتوای تب بنیادی (T1 + T3 + WP4 + کارت بنیادی WP-F + کارت امتیاز آتی)
   const fundamentalTab = (
     <>
+      <MonthlyPilot snapshot={monthlyPilot} symbol={sym} />
       {/* WP-F — کارت بنیادی سه‌لایه: روایت یک‌خطی + روند + دادهٔ خام (قبل از نمودارها) */}
       {fundamentalCard && fundamentalCard.narrative ? (
         <SymbolFundamentalCard card={fundamentalCard} />

@@ -4,6 +4,7 @@ import DataExplorer from "@/components/data/DataExplorer";
 import { getIrMarket } from "@/lib/market-ir";
 import { getAvgVolume30 } from "@/lib/core/avgVolume";
 import { getFundamentalYoY } from "@/lib/core/fundamentalData";
+import { MonthlyPilot, readApprovedMonthlyPilot } from "@/lib/fundamental/monthly-pilot.server";
 import { pageMetadata } from "@/lib/metadata";
 
 
@@ -17,10 +18,11 @@ export const metadata = pageMetadata({
 });
 
 export default async function DataBankPage() {
-  const [ir, avgVol, fundamentalYoY] = await Promise.all([
+  const [ir, avgVol, fundamentalYoY, monthlyPilot] = await Promise.all([
     getIrMarket(),
     getAvgVolume30(),
     getFundamentalYoY().catch(() => null),
+    readApprovedMonthlyPilot(),
   ]);
   return (
     <>
@@ -36,6 +38,7 @@ export default async function DataBankPage() {
               پوشش گزارش‌های رشد بنیادی کامل نیست. نتایج فیلترهای بنیادی فقط برای نمادهایی است که هر دو دورهٔ مقایسه در دادهٔ خوانده‌شده موجود است.
             </p>
           ) : null}
+          <MonthlyPilot snapshot={monthlyPilot} />
           <DataExplorer
             stocks={ir?.stocks ?? []}
             funds={ir?.funds ?? []}
