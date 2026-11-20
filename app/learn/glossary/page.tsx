@@ -1,4 +1,6 @@
 // /learn/glossary — واژه‌نامهٔ کامل (WP-G) از lib/glossary.ts
+import { BookOpen } from "lucide-react";
+import PageTitle from "@/components/layout/PageTitle";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
@@ -22,9 +24,7 @@ export default function GlossaryPage() {
             بازگشت به هاب یادگیری
           </Link>
         </p>
-        <h1 className="font-display mt-1 text-2xl font-extrabold" style={{ color: "var(--navy-deep)" }}>
-          واژه‌نامهٔ اصطلاحات بازار
-        </h1>
+        <PageTitle icon={BookOpen} title="واژه‌نامهٔ اصطلاحات بازار" />
         <p className="mt-2 text-[13px] leading-7" style={{ color: "var(--text-2)" }}>
           توضیح ساده و مفهومی هر اصطلاح — محتوای آموزشی است و توصیهٔ خرید یا فروش هیچ نمادی نیست.
         </p>

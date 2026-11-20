@@ -5,6 +5,8 @@
 //  - هیچ عدد ساختگی؛ حالت خالی صادقانه.
 //  - هر رکورد هش زنجیره‌ای دارد و دیتابیس ویرایش/حذف را بلاک می‌کند (append-only).
 
+import { BarChart3 } from "lucide-react";
+import PageTitle from "@/components/layout/PageTitle";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import {
@@ -94,13 +96,7 @@ export default async function AnalysesPage() {
         <div className="mx-auto w-full max-w-5xl px-5 pt-10 pb-16">
           {/* ── سربرگ ── */}
           <header className="mb-8">
-            <span className="eyebrow">کارنامهٔ قابل راستی‌آزمایی</span>
-            <h1
-              className="font-display text-3xl md:text-4xl font-bold mt-2"
-              style={{ color: "var(--navy-deep)" }}
-            >
-              کارنامهٔ تحلیل‌ها — شفاف و غیرقابل دستکاری
-            </h1>
+            <PageTitle icon={BarChart3} title="کارنامهٔ تحلیل‌ها" />
             <p className="text-sm md:text-base mt-3 leading-8" style={{ color: "var(--text-2)" }}>
               هر تحلیل و هر چشم‌انداز هفتگی، در لحظهٔ انتشار با مُهر زمانی و هشِ زنجیره‌ای در
               پایگاه‌داده ثبت می‌شود و پس از آن نه قابل ویرایش است، نه قابل حذف — برد و باخت، هر دو

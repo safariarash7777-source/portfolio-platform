@@ -1,3 +1,5 @@
+import { SlidersHorizontal } from "lucide-react";
+import PageTitle from "@/components/layout/PageTitle";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import PortfolioScenario from "@/components/tools/PortfolioScenario";
@@ -16,12 +18,8 @@ export default function PortfolioScenarioPage() {
       <Navbar />
       <main className="container-narrow pt-24 pb-16 sm:pt-28">
         <header className="mb-6">
-          <p className="eyebrow">ابزار</p>
-          <h1 className="text-[26px] sm:text-[32px] font-black mt-1" style={{ color: "var(--heading)" }}>
-            سناریوی سبد
-          </h1>
-          <div className="divider-gold mt-3 mb-4" />
-          <p className="text-[13.5px] leading-8 max-w-3xl" style={{ color: "var(--text-2)" }}>
+          <PageTitle icon={SlidersHorizontal} title="سناریوی سبد" />
+          <p className="mt-4 text-[13.5px] leading-8 max-w-3xl" style={{ color: "var(--text-2)" }}>
             فرض‌های خودتان را وارد کنید و ببینید هرکدام سبد را کجا می‌برد: چقدر از نتیجه از کدام
             دارایی آمده، بازدهٔ اسمی چقدر است و اگر تورم را هم بگویید، چه چیزی از آن واقعاً
             می‌ماند.

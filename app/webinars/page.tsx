@@ -1,5 +1,6 @@
 "use client";
 
+import PageTitle from "@/components/layout/PageTitle";
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
@@ -151,18 +152,11 @@ function WebinarsContent() {
         className="border-b"
         style={{ background: "var(--surface)", borderColor: "var(--line)" }}
       >
-        <div className="max-w-4xl mx-auto px-5 py-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-black" style={{ color: "var(--text-1)" }}>
-              وبینارها
-            </h1>
-            <p className="text-sm mt-1" style={{ color: "var(--text-3)" }}>
-              رویدادهای آنلاین آرش صفری
-            </p>
-          </div>
+        <div className="max-w-4xl mx-auto px-5 py-6 space-y-2">
+          <PageTitle icon={Video} title="وبینارهای آرش صفری" />
           <Link
             href="/"
-            className="text-sm font-bold rounded-xl px-4 py-2"
+            className="inline-flex items-center min-h-11 text-sm font-bold px-4"
             style={{ color: "var(--navy)" }}
           >
             بازگشت به سایت

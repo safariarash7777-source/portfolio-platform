@@ -175,10 +175,14 @@ export function getTerm(id: string): GlossaryTerm | null {
 }
 
 /** جستجوی ساده در term/short/long (بدون حساسیت به فاصلهٔ مجازی). */
+function normalizeTerm(value: string): string {
+  return value.trim().toLowerCase().replace(/ي/g, "ی").replace(/ك/g, "ک").replace(/[\s\u200c]+/g, "");
+}
+
 export function searchGlossary(query: string): GlossaryTerm[] {
-  const q = query.trim().replace(/\u200c/g, "");
+  const q = normalizeTerm(query);
   if (!q) return GLOSSARY;
   return GLOSSARY.filter((t) =>
-    [t.term, t.short, t.long].some((s) => s.replace(/\u200c/g, "").includes(q))
+    [t.term, t.short, t.long].some((s) => normalizeTerm(s).includes(q))
   );
 }

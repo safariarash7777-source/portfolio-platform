@@ -1,5 +1,7 @@
 // /learn — هاب ناحیهٔ یادگیری (WP-G) طبق SPEC-learning-hub §۴
 // کارت‌های دروس (placeholder تا تأیید آرش) + جستجوی واژه‌نامه (کلاینت).
+import { GraduationCap } from "lucide-react";
+import PageTitle from "@/components/layout/PageTitle";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
@@ -18,16 +20,26 @@ export default function LearnPage() {
     <div className="min-h-screen" style={{ background: "var(--bg)" }}>
       <Navbar />
       <main className="mx-auto w-full max-w-5xl px-4 py-8">
-        <p className="text-[11px] font-bold" style={{ color: "var(--text-3)" }}>
-          ناحیهٔ یادگیری
-        </p>
-        <h1 className="font-display mt-1 text-2xl font-extrabold" style={{ color: "var(--navy-deep)" }}>
-          سواد مالی، از صفر و به زبان ساده
-        </h1>
+        <PageTitle icon={GraduationCap} title="یادگیری بازار سرمایه" />
         <p className="mt-2 max-w-2xl text-[13px] leading-7" style={{ color: "var(--text-2)" }}>
           محتوای این بخش صرفاً آموزشی و مفهومی است — بدون توصیهٔ نماد، بدون سیگنال و بدون وعدهٔ
           بازدهی. هدف این است که هر اصطلاحی را که در سایت می‌بینید، همین‌جا و درجا بفهمید.
         </p>
+
+        {/* جستجوی واژه‌نامه */}
+        <div className="mt-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
+              واژه‌نامهٔ اصطلاحات
+            </h2>
+            <Link href="/learn/glossary" className="text-[12px] hover:underline" style={{ color: "var(--navy)" }}>
+              مشاهدهٔ واژه‌نامهٔ کامل ←
+            </Link>
+          </div>
+          <div className="mt-3">
+            <GlossarySearch limit={6} />
+          </div>
+        </div>
 
         {/* مسیر یادگیری */}
         <h2 className="font-display mt-8 text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
@@ -45,7 +57,7 @@ export default function LearnPage() {
           <p className="mt-2 text-[12px] leading-6" style={{ color: "var(--text-3)" }}>
             سرفصل‌های این مسیر نهایی شده‌اند، ولی <strong>هنوز هیچ درسی منتشر نشده</strong> —
             متن‌ها در بازبینی‌اند. فهرستِ زیر فقط برنامهٔ کار است، نه محتوای قابل‌مطالعه.
-            آنچه همین حالا واقعاً در دسترس است، واژه‌نامهٔ اصطلاحاتِ پایین همین صفحه است.
+            آنچه همین حالا واقعاً در دسترس است، واژه‌نامهٔ اصطلاحاتِ همین صفحه است.
           </p>
         ) : null}
 
@@ -101,20 +113,6 @@ export default function LearnPage() {
           })}
         </div>
 
-        {/* جستجوی واژه‌نامه */}
-        <div className="mt-10">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-display text-lg font-bold" style={{ color: "var(--navy-deep)" }}>
-              واژه‌نامهٔ اصطلاحات
-            </h2>
-            <Link href="/learn/glossary" className="text-[12px] hover:underline" style={{ color: "var(--navy)" }}>
-              مشاهدهٔ واژه‌نامهٔ کامل ←
-            </Link>
-          </div>
-          <div className="mt-3">
-            <GlossarySearch limit={6} />
-          </div>
-        </div>
       </main>
       <Footer />
     </div>

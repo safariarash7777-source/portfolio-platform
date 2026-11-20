@@ -1,8 +1,9 @@
 "use client";
 
 // جستجوی واژه‌نامه (WP-G) — روی /learn (خلاصه) و /learn/glossary (کامل) استفاده می‌شود.
-import { useMemo, useState } from "react";
-import Link from "next/link";
+import { useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import { Search } from "lucide-react";
 import { GLOSSARY, searchGlossary, getTerm } from "@/lib/glossary";
 
 export default function GlossarySearch({
@@ -15,6 +16,7 @@ export default function GlossarySearch({
   full?: boolean;
 }) {
   const [q, setQ] = useState("");
+  const input = useRef<HTMLInputElement>(null);
   const results = useMemo(() => {
     const r = searchGlossary(q);
     return limit && !q.trim() ? r.slice(0, limit) : r;
@@ -22,22 +24,29 @@ export default function GlossarySearch({
 
   return (
     <div>
-      <input
+      <div className="flex items-center gap-2 rounded-xl border border-[var(--line)] bg-[var(--surface)] px-3 focus-within:ring-2 focus-within:ring-[var(--navy)]">
+        <Search size={18} aria-hidden="true" />
+        <input
+        ref={input}
         type="search"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="جستجوی اصطلاح… (مثلاً حجم مبنا، NAV، صف خرید)"
-        className="w-full rounded-lg px-4 py-2.5 text-[13px] outline-none"
-        style={{ background: "var(--surface)", border: "1px solid var(--line)", color: "var(--text-1)" }}
+        placeholder="جستجو؛ مثلاً حجم مبنا یا NAV"
+        className="min-h-12 min-w-0 flex-1 bg-transparent text-base outline-none"
         aria-label="جستجوی واژه‌نامه"
       />
+        {q && (
+          <button type="button" className="min-h-11 px-2 text-sm underline" onClick={() => { setQ(""); input.current?.focus(); }}>
+            پاک کردن
+          </button>
+        )}
+      </div>
+      <p role="status" className="mt-2 text-sm">
+        {q.trim() && `${results.length.toLocaleString("fa-IR")} نتیجه`}
+      </p>
       {results.length === 0 ? (
         <p className="mt-3 text-[12px]" style={{ color: "var(--text-3)" }}>
-          چیزی پیدا نشد. واژهٔ دیگری امتحان کنید یا{" "}
-          <Link href="/learn/glossary" className="underline">
-            واژه‌نامهٔ کامل
-          </Link>{" "}
-          را ببینید.
+          واژهٔ دیگری جستجو کنید یا با «پاک کردن» به فهرست برگردید.
         </p>
       ) : (
         <div className={`mt-3 grid grid-cols-1 gap-3 ${full ? "" : "sm:grid-cols-2"}`}>
@@ -45,7 +54,7 @@ export default function GlossarySearch({
             <div
               key={t.id}
               id={full ? t.id : undefined}
-              className="rounded-xl px-4 py-3"
+              className="scroll-mt-24 rounded-xl px-4 py-3 target:ring-2 target:ring-[var(--navy)]"
               style={{ background: "var(--surface)", border: "1px solid var(--line)" }}
             >
               <h3 className="text-[14px] font-bold" style={{ color: "var(--navy-deep)" }}>
@@ -63,7 +72,7 @@ export default function GlossarySearch({
                     return (
                       <span key={id}>
                         {i > 0 ? "، " : ""}
-                        <a href={`#${id}`} className="underline" style={{ color: "var(--navy)" }}>
+                        <a href={`#${id}`} onClick={() => { if (q) flushSync(() => setQ("")); }} className="underline" style={{ color: "var(--navy)" }}>
                           {ref.term}
                         </a>
                       </span>
