@@ -33,6 +33,7 @@ import MarketSectionLinks from "@/components/market/MarketSectionLinks";
 import FeaturedTrend from "@/components/market/FeaturedTrend";
 import DetailDisclosure from "@/components/market/DetailDisclosure";
 import AccountBridge from "@/components/account/AccountBridge";
+import { publicMarketClient, publicMarketOverride } from "@/lib/fundamental/public-market-client.server";
 import { getMarketData } from "@/lib/market";
 import { readIranMarket } from "@/lib/market-bounded";
 import { getAccess } from "@/lib/access";
@@ -86,6 +87,7 @@ export default async function MarketPage({
   ).href;
 
   const supabase = await createClient();
+  const marketSource = publicMarketOverride();
   const [
     {
       data: { user },
@@ -97,7 +99,7 @@ export default async function MarketPage({
   ] = await Promise.all([
     supabase.auth.getUser(),
     getMarketData(),
-    readIranMarket(),
+    readIranMarket(marketSource),
     getAccess(),
     readSiteAppearance(supabase, sp),
   ]);
@@ -137,10 +139,10 @@ export default async function MarketPage({
   // سری‌های تاریخی — همه best-effort؛ نبودشان صفحه را نمی‌شکند.
   const [flowTrend, goldUsdSeries, indexSeries, reportRead] = await Promise.all(
     [
-      getFlowTrend(90).catch(() => []),
-      getGoldUsdTrend(180).catch(() => []),
-      getIndexTrend(180).catch(() => []),
-      publicReports(supabase),
+      getFlowTrend(90, marketSource?.pair).catch(() => []),
+      getGoldUsdTrend(180, marketSource?.pair).catch(() => []),
+      getIndexTrend(180, marketSource?.pair).catch(() => []),
+      publicReports(() => publicMarketClient()),
     ],
   );
 

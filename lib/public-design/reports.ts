@@ -8,9 +8,10 @@ import {
 
 /** Existing Codal metadata under the current session/RLS; no parsed-report claim. */
 export async function publicReports(
-  client: Awaited<ReturnType<typeof createClient>>,
+  source: Awaited<ReturnType<typeof createClient>> | (() => Awaited<ReturnType<typeof createClient>>),
 ): Promise<DeskRead<DeskCompanyReport[]>> {
   try {
+    const client = typeof source === "function" ? source() : source;
     const { data, error } = await client
       .from("codal_feed")
       .select("id,symbol,title,category,sent_date,sent_time,created_at,link")

@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 import { readHomeMedia } from "@/lib/public-design/home-media";
 import PublicMarketProvenance from "@/components/public-design/PublicMarketProvenance";
 import MarketKpiRow from "@/components/market/MarketKpiRow";
+import { publicMarketOverride } from "@/lib/fundamental/public-market-client.server";
 import { readIranMarket } from "@/lib/market-bounded";
 import { buildMarketHeadline } from "@/lib/core/marketHeadline";
 import { readSiteAppearance } from "@/lib/appearance/site-layout-server";
@@ -40,7 +41,7 @@ export default async function LandingPage({
   const sp = searchParams ? await searchParams : {};
   const supabase = await createClient();
   const [market, media, appearance] = await Promise.all([
-    readIranMarket(),
+    readIranMarket(publicMarketOverride()),
     readHomeMedia(supabase),
     readSiteAppearance(supabase, sp),
   ]);

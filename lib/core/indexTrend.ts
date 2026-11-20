@@ -58,9 +58,9 @@ function env(): { url: string; anon: string } | null {
 }
 
 /** آخرین `days` ردیف EOD شاخص. جدول نساخته/خطا → []. */
-export async function getIndexTrend(days = 180): Promise<IndexSeries[]> {
-  if (cached && Date.now() - cached.at < REVALIDATE_MS) return cached.value;
-  const e = env();
+export async function getIndexTrend(days = 180, binding?: {url: string; anon: string} | null): Promise<IndexSeries[]> {
+  if (binding === undefined && cached && Date.now() - cached.at < REVALIDATE_MS) return cached.value;
+  const e = binding === undefined ? env() : binding;
   if (!e) return [];
   try {
     const qs = new URLSearchParams({
@@ -76,7 +76,7 @@ export async function getIndexTrend(days = 180): Promise<IndexSeries[]> {
     if (!res.ok) return []; // 404 = جدول نساخته (phase14) — حالت خالی صادقانه
     const rows = (await res.json()) as IndexHistRow[];
     const value = buildIndexSeries(rows);
-    cached = { at: Date.now(), value };
+    if (binding === undefined) cached = { at: Date.now(), value };
     return value;
   } catch {
     return [];

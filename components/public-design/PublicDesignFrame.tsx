@@ -75,6 +75,7 @@ export default function PublicDesignFrame({
       label: "رسانه",
       Icon: Newspaper,
     },
+    { href: "/market/screener?period=1405-07&minGrowth=40", label: "غربال شرکت‌ها", Icon: LineChart },
     { href: "/learn", label: "یادگیری", Icon: BookOpen },
     { href: "/dashboard", label: "میز من", Icon: LayoutDashboard },
   ];

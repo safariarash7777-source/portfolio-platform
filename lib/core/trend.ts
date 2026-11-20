@@ -78,9 +78,9 @@ export function extractDailySeries(rows: HistRow[]): TrendSeries[] {
 }
 
 /** خواندن تاریخچهٔ gold/currency از Supabase و ساخت سری روزانه. */
-export async function getGoldUsdTrend(days = 180): Promise<TrendSeries[]> {
-  if (cached && cached.days === days && Date.now() - cached.at < REVALIDATE_MS) return cached.value;
-  const e = env();
+export async function getGoldUsdTrend(days = 180, binding?: {url: string; anon: string} | null): Promise<TrendSeries[]> {
+  if (binding === undefined && cached && cached.days === days && Date.now() - cached.at < REVALIDATE_MS) return cached.value;
+  const e = binding === undefined ? env() : binding;
   if (!e) return [];
 
   const since = new Date(Date.now() - days * 24 * 3600 * 1000).toISOString();
@@ -112,7 +112,7 @@ export async function getGoldUsdTrend(days = 180): Promise<TrendSeries[]> {
       rows.push(...page);
     }
     const value = extractDailySeries(rows);
-    cached = { at: Date.now(), days, value };
+    if (binding === undefined) cached = { at: Date.now(), days, value };
     return value;
   } catch {
     return [];

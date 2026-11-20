@@ -3,7 +3,7 @@
 // فیلتر دسته + جستجوی نماد از searchParams (server-side، بدون JS اضافی).
 import Link from "next/link";
 import { FileText, Search, ExternalLink } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { publicMarketClient } from "@/lib/fundamental/public-market-client.server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { toPersianDigits } from "@/lib/format";
@@ -49,7 +49,7 @@ export default async function CodalFeedPage({
   let feedFailure: "missing" | "unavailable" | null = null;
   try {
     const { data, error } = await withDeadline(async (signal) => {
-      const supabase = await createClient();
+      const supabase = publicMarketClient();
       let query = supabase
         .from("codal_feed")
         .select("id, symbol, company_name, title, report_code, category, sent_date, sent_time, link, link_pdf, link_excel")
