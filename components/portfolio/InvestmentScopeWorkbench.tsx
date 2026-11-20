@@ -9,7 +9,7 @@ import { buildHoldingsView, type BuildViewInput } from "@/lib/portfolio/view";
 import { formatToman, formatJalali, toPersianDigits } from "@/lib/format";
 import { withDeadline } from "@/lib/deadline";
 const assetLabels: Record<string, string> = { gold: "طلا", cash: "نقد", fixed_income: "درآمد ثابت", equity_ir: "سهام ایران", fx: "ارز" };
-export default function InvestmentScopeWorkbench({ holdings, storedTarget, priceRows, pricesFailed, scopeState = { status: "error", review: null }, editable = false }: { holdings: HoldingVersion; storedTarget: BuildViewInput["storedTarget"]; priceRows: BuildViewInput["priceRows"]; pricesFailed: boolean; scopeState?: ScopeRead; editable?: boolean }) {
+export default function InvestmentScopeWorkbench({ holdings, storedTarget, priceRows, pricesFailed, historical = false, scopeState = { status: "error", review: null }, editable = false }: { holdings: HoldingVersion; storedTarget: BuildViewInput["storedTarget"]; priceRows: BuildViewInput["priceRows"]; pricesFailed: boolean; historical?: boolean; scopeState?: ScopeRead; editable?: boolean }) {
   const router = useRouter();
   const editor = useFinancialEditor("scope");
   const [uses, setUses] = useState<Record<string, "allocatable" | "excluded" | "unknown">>(() => Object.fromEntries((scopeState.review?.assignments ?? []).map(a => [a.positionKey, a.use])));
@@ -49,7 +49,7 @@ export default function InvestmentScopeWorkbench({ holdings, storedTarget, price
   const review = unchanged && scopeState.status === "ready" ? savedReview : null;
   const scope = selectInvestmentScope(holdings, review, new Date());
   const unknownClass = scope.status === "ready" && scope.holdings.positions.some(p => !Object.hasOwn(assetLabels, p.assetClass));
-  const view = scope.status === "ready" && !pricesFailed && !unknownClass ? buildHoldingsView({ holdings: scope.holdings, storedTarget, priceRows, maxPriceAgeDays: 3, maxPriceFutureDays: 1, now: new Date() }) : null;
+  const view = !historical && scope.status === "ready" && !pricesFailed && !unknownClass ? buildHoldingsView({ holdings: scope.holdings, storedTarget, priceRows, maxPriceAgeDays: 3, maxPriceFutureDays: 1, now: new Date() }) : null;
   async function saveScope() {
     if (lock.current || completed.current || conflict || scopeState.status !== "ready" || !editable || !editor.acquire()) return;
     token.current ??= crypto.randomUUID(); lock.current = true; setSaving(true); setError(null);
@@ -90,16 +90,17 @@ export default function InvestmentScopeWorkbench({ holdings, storedTarget, price
     {error && <p role="alert">{error}</p>}
     {scopeState.status === "error" && <p role="alert">سابقهٔ تأیید محدوده خوانده نشد؛ ثبت و مقایسه تا رفع خطا انجام نمی‌شود.</p>}
     {!editable && <p className="text-xs">نسخهٔ قبلی فقط برای مشاهده است؛ محدوده را در آخرین نسخه اصلاح کنید.</p>}
-    <p className="text-sm">{review ? `تأیید ثبت‌شدهٔ این نسخه: ${formatJalali(review.memberConfirmedAt)}؛ با تغییر نسخه یا انتخاب‌ها تأیید دوباره لازم است.` : "انتخاب‌های این صفحه برای این نسخه هنوز ثبت و تأیید نشده‌اند."}</p>
+    {scopeState.status === "ready" && <p className="text-sm">{review ? `تأیید ثبت‌شدهٔ این نسخه: ${formatJalali(review.memberConfirmedAt)}؛ با تغییر نسخه یا انتخاب‌ها تأیید دوباره لازم است.` : "انتخاب‌های این صفحه برای این نسخه هنوز ثبت و تأیید نشده‌اند."}</p>}
     <p className="text-xs">تأیید در سابقهٔ همین نسخه نگهداری می‌شود. این صفحه اعلان یا تغییر دارایی ایجاد نمی‌کند.</p>
+    {historical && <p className="rounded-xl p-3 text-sm leading-7" style={{ background: "var(--surface-2)" }}>هدفِ زمان ثبت این نسخه مشخص نیست. آخرین هدف جای آن قرار نمی‌گیرد؛ فاصلهٔ وزن‌ها و عملکرد تاریخی نمایش داده نمی‌شوند.</p>}
     {scope.status === "ready" && <>
       <p className="text-sm">مبنای وزن: {toPersianDigits(scope.denominator.includedPositionKeys.length)} قلم منتخب از {toPersianDigits(holdings.positions.length)} قلمِ نسخهٔ {toPersianDigits(holdings.version)}؛ {toPersianDigits(scope.denominator.excludedPositionKeys.length)} قلم خارج از محاسبه است.</p>
-      {storedTarget && <>
-        <p className="text-sm">نسخهٔ هدف: {toPersianDigits(storedTarget.version)}</p>
+      {!historical && storedTarget && <>
+        <p className="text-sm">آخرین نسخهٔ هدف: {toPersianDigits(storedTarget.version)}</p>
         <details className="text-xs"><summary>شناسهٔ هدف و مرجع برای پیگیری</summary><p>هدف: <code dir="ltr" className="break-all">{storedTarget.id}</code></p><p>مرجع: {storedTarget.referenceVersionId ? <code dir="ltr" className="break-all">{storedTarget.referenceVersionId}</code> : "به نسخهٔ مرجعی متصل نیست"}</p></details>
       </>}
-      {unknownClass && <p role="alert">دستهٔ یکی از اقلام منتخب هنوز برای مقایسه شناخته نشده است؛ مقدار قطعی محاسبه نمی‌شود.</p>}
-      {pricesFailed && <p role="alert">قیمت‌ها دریافت نشد؛ مقایسه قطعی انجام نمی‌شود.</p>}
+      {!historical && unknownClass && <p role="alert">دستهٔ یکی از اقلام منتخب هنوز برای مقایسه شناخته نشده است؛ مقدار قطعی محاسبه نمی‌شود.</p>}
+      {!historical && pricesFailed && <p role="alert">قیمت‌ها دریافت نشد؛ مقایسه قطعی انجام نمی‌شود.</p>}
       {view && <><p>{view.notes.join(" ")}</p>{view.definitive && view.totalValue !== null && <p>ارزش سبد منتخب: {formatToman(view.totalValue)}</p>}<p className="text-sm">هزینهٔ معامله نامعلوم است؛ فاصلهٔ ارزش، کارمزد و مالیات را شامل نمی‌شود و دستور معامله نیست.</p><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr><th>دسته</th><th>وزن فعلی</th><th>وزن الگو</th><th>اختلاف وزن (هدف منهای فعلی، واحد درصد)</th><th>فاصله ارزش (تومان)</th></tr></thead><tbody>{view.rows.map(r => <tr key={r.assetClass}><td>{assetLabels[r.assetClass] ?? `دسته ناشناخته (${r.assetClass})`}</td><td>{r.currentWeightPct === null ? "نامعلوم" : `${toPersianDigits(r.currentWeightPct.toFixed(1))}٪`}</td><td>{toPersianDigits(r.targetWeightPct)}٪</td><td>{r.deltaPercentagePoints === null ? "نامعلوم" : <bdi dir="ltr">{r.deltaPercentagePoints > 0 ? "+" : ""}{toPersianDigits(r.deltaPercentagePoints.toFixed(1))}</bdi>}</td><td>{r.valueDelta === null ? "اطلاعات کافی نیست" : formatToman(r.valueDelta)}</td></tr>)}</tbody></table></div></>}
     </>}
   </section>;

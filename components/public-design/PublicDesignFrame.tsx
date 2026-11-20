@@ -84,6 +84,7 @@ export default function PublicDesignFrame({
       data-public-layout={appearance.state === "ready" ? layout : "fallback"}
       className={`${s.site} ${s[`layout${layout}`]} ${s[page]}`}
     >
+      <a className={s.skipToContent} href="#public-main">رفتن به محتوای اصلی</a>
       {navigation}
       <div className={s.frame}>
         <aside className={s.rail} aria-label="دسترسی سریع">
@@ -111,10 +112,11 @@ export default function PublicDesignFrame({
             </a>
           )}
         </aside>
-        <main id="public-main" className={s.main}>
-          {appearance.state === "unavailable" && <SiteAppearanceWarning />}
+        <main tabIndex={-1} id="public-main" className={s.main}>
+          {page !== "home" && appearance.state === "unavailable" && <SiteAppearanceWarning />}
           {preview && <SiteLayoutPreview layout={layout} onChoose={choose} />}
           {children}
+          {page === "home" && appearance.state === "unavailable" && <SiteAppearanceWarning />}
         </main>
       </div>
       {footer}

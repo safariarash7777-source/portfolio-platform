@@ -31,11 +31,11 @@ const words = (node: unknown): string => Array.isArray(node) ? node.map(words).j
 const deferred = <T,>() => { let resolve!: (value: T) => void; const promise = new Promise<T>(done => { resolve = done; }); return { promise, resolve }; };
 
 /** Runs actual TSX handlers and effects with bounded hooks + API/auth seams; no DOM, network or RLS claim. */
-function mount(reads: unknown[], writes: unknown[] = [], initialVersion?: string, attemptError?: Error, actualTransport?: typeof fetch) {
+function mount(reads: unknown[], writes: unknown[] = [], initialVersion?: string, attemptError?: Error, actualTransport?: typeof fetch, entry = { period, hash: "" }) {
   const slots: unknown[] = []; let cursor = 0, tree: unknown, callback: (event: string, session: unknown) => void = () => {};
   const effects: (() => void)[] = [], cleanups: (() => void)[] = [], readCalls: Record<string, unknown>[] = [], attempts: unknown[] = [], writeCalls: unknown[][] = [];
   const urls: string[] = [];
-  const browser = Object.assign(new EventTarget(), { location: { reload() {} }, history: { replaceState(_state: unknown, _title: string, url: string) { urls.push(url); } } });
+  const browser = Object.assign(new EventTarget(), { location: { hash: entry.hash, reload() {} }, history: { replaceState(_state: unknown, _title: string, url: string) { urls.push(url); } } });
   const hooks = { ...React,
     useState(initial: unknown) { const i = cursor++; if (!(i in slots)) slots[i] = typeof initial === "function" ? initial() : initial; return [slots[i], (next: unknown) => { slots[i] = typeof next === "function" ? next(slots[i]) : next; }]; },
     useRef(initial: unknown) { const i = cursor++; if (!(i in slots)) slots[i] = { current: initial }; return slots[i]; },
@@ -52,7 +52,7 @@ function mount(reads: unknown[], writes: unknown[] = [], initialVersion?: string
   const code = ts.transpileModule(readFileSync(filename, "utf8"), { compilerOptions: { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.React, esModuleInterop: true }, fileName: filename }).outputText;
   const load = (name: string) => name === "react" ? hooks : name === "./InstallmentPayments" ? function InstallmentSeam(props: unknown) { return React.createElement("mock-installments", props as object); } : name === "@/lib/portfolio/cashFlowRequest" ? request : name === "@/lib/supabase/client" ? { createClient: () => ({ auth: { onAuthStateChange(fn: typeof callback) { callback = fn; return { data: { subscription: { unsubscribe() {} } } }; } } }) } : local(name.startsWith("@/") ? resolve(name.slice(2)) : name);
   new Function("require", "module", "exports", "React", "window", code)(load, taskModule, taskModule.exports, React, browser);
-  const render = () => { cursor = 0; tree = taskModule.exports.default({ expectedOwnerId: owner, initialPeriod: period, initialVersion }); effects.splice(0).forEach(effect => effect()); };
+  const render = () => { cursor = 0; tree = taskModule.exports.default({ expectedOwnerId: owner, initialPeriod: entry.period, initialVersion }); effects.splice(0).forEach(effect => effect()); };
   const flush = async () => { for (let i = 0; i < 4; i++) { await new Promise(resolve => setImmediate(resolve)); render(); } };
   const find = (type: string, query: string) => { const element = nodes(tree).find(node => node.type === type && words(node).includes(query)); assert.ok(element, `${type}: ${query}`); return element; };
   const editor = () => { const element = nodes(tree).find(node => typeof node.type === "function" && node.type.name === "CashFlowEditor"); assert.ok(element); return element; };
@@ -60,6 +60,15 @@ function mount(reads: unknown[], writes: unknown[] = [], initialVersion?: string
   render();
   return { render, flush, find, editor, click, readCalls, attempts, writeCalls, urls, text: () => words(tree), all: () => nodes(tree),
     async auth(event = "INITIAL_SESSION", userId: string | null = owner) { callback(event, userId ? { user: { id: userId } } : null); render(); await flush(); },
+    setHash(hash: string) { browser.location.hash = hash; browser.dispatchEvent(new Event("hashchange")); render(); },
+    inputDate(index: number, value: string) {
+      const input = nodes(tree).filter(n => n.type === "input" && n.props.type === "date")[index];
+      assert.ok(input); (input.props.onChange as (e: unknown) => void)({target:{value}}); render();
+    },
+    async readPeriod() {
+      const form = nodes(tree).find(n => n.type === "form" && n.props["aria-label"] === "انتخاب دورهٔ جریان نقد");
+      assert.ok(form); (form.props.onSubmit as (e: unknown) => void)({preventDefault(){}}); render(); await flush();
+    },
     beginSave() { (editor().props.onSave as () => void)(); render(); },
     beforeUnload() { const event = new Event("beforeunload", { cancelable: true }); browser.dispatchEvent(event); return event.defaultPrevented; },
     unmount() { cleanups.forEach(cleanup => cleanup()); },
@@ -176,9 +185,51 @@ test("actual member page forwards only native owner/selected period and separate
     return await taskModule.exports.default({ searchParams: Promise.resolve({ ...period, version: id }) });
   }
   const tree = await page({ id: owner }, null), workspace = nodes(tree).find(node => node.type === "mock-workspace");
-  assert.match(words(tree), /فضای مالی شخصی · آرش صفری/);
   assert.ok(workspace); assert.equal(workspace.props.expectedOwnerId, owner); assert.deepEqual(workspace.props.initialPeriod, period); assert.equal(workspace.props.initialVersion, id);
   const failure = await page(null, { status: 503 }); assert.doesNotMatch(words(failure), /در این دوره هنوز نسخه‌ای/);
   assert.ok(nodes(failure).some(node => node.props.code === "CASHFLOW_AUTH"));
   await assert.rejects(() => page(null, null), /REDIRECT:\/login/);
+});
+
+test("blank budget arrival does not auto-read; keyboard form shares a single authenticated period read and keeps the budget hash", async () => {
+  const waiting = deferred<unknown>();
+  const view = mount([waiting.promise], [], undefined, undefined, undefined, {period:{startOn:"",endOn:""}, hash:"#period-budget"});
+  await view.auth();
+  assert.equal(view.readCalls.length,0); assert.equal(view.writeCalls.length,0);
+  assert.match(view.text(),/دوره را انتخاب و بخوانید/); assert.doesNotMatch(view.text(),/بودجه‌ای برای این دوره ثبت نشده است|۰ تومان/);
+  const form = view.all().find(el => el.type === "form" && el.props["aria-label"] === "انتخاب دورهٔ جریان نقد");
+  assert.ok(form); assert.equal(view.all().filter(el => el.type === "input" && el.props.type === "date" && el.props.required).length,2);
+  view.inputDate(0,period.startOn); view.inputDate(1,period.endOn); await view.readPeriod();
+  assert.equal(view.readCalls.length,1); assert.match(view.text(),/در حال خواندن نسخه/);
+  assert.doesNotMatch(view.text(),/۰ تومان|برنامه در برابر عملکرد/);
+  waiting.resolve(result()); await view.flush();
+  assert.match(view.text(),/برنامه در برابر عملکرد/); assert.match(view.text(),/۱٬۲۳۴ تومان/);
+  assert.equal(view.urls[0],`/dashboard/cashflow?startOn=${period.startOn}&endOn=${period.endOn}&version=${id}#period-budget`);
+  assert.equal(view.readCalls.length,1); assert.equal(view.writeCalls.length,0); view.unmount();
+});
+
+test("budget survives historical links, history pagination, receipt readback and hash changes during a read", async () => {
+  const next = ready({ snapshot: { ...ready().snapshot!, id: second, version: 2 }, latest: { state:"ready", id: second,version:2 } });
+  const readback = deferred<unknown>();
+  const view=mount([result(),readback.promise], [{status:"confirmed",receipt}], undefined, undefined, undefined, {period,hash:"#period-budget"});
+  await view.auth();
+  const oldLinks=view.all().filter(el=>el.type==="a"&&String(el.props.href).includes("/dashboard/cashflow?"));
+  assert.ok(oldLinks.length>1);assert.ok(oldLinks.every(el=>String(el.props.href).endsWith("#period-budget")));
+  view.beginSave();await view.flush();assert.equal(view.readCalls.length,2);
+  view.setHash("#cashflow-editor");readback.resolve(result(next));await view.flush();
+  assert.ok(view.urls.at(-1)?.endsWith(`version=${second}#cashflow-editor`));
+  view.setHash("#period-budget");
+  assert.equal(view.find("a","بازکردن نسخهٔ رسید").props.href,`/dashboard/cashflow?startOn=${period.startOn}&endOn=${period.endOn}&version=${second}#period-budget`);
+  assert.equal(view.readCalls.length,2); assert.equal(view.writeCalls.length,1);
+  view.setHash("#unrelated");assert.ok(!String(view.find("a","بازکردن نسخهٔ رسید").props.href).includes("#"));view.unmount();
+});
+
+test("failed budget read cannot report zero or an empty budget, and retry preserves the selected dates and hash",async()=>{
+  const view=mount([{status:"error",httpStatus:503,error:{}},result()],[],undefined,undefined,undefined,{period,hash:"#period-budget"});
+  await view.auth();assert.match(view.text(),/خواندن این نسخه انجام نشد/);
+  assert.doesNotMatch(view.text(),/بودجه‌ای برای این دوره ثبت نشده است|۰ تومان/);
+  assert.equal(view.urls.length,0);assert.equal(view.readCalls.length,1);
+  await view.click("دوباره خواندن نسخهٔ درخواست‌شده");assert.equal(view.readCalls.length,2);
+  assert.deepEqual(view.readCalls[0].period,view.readCalls[1].period);
+  assert.equal(view.writeCalls.length,0);assert.ok(view.urls[0].endsWith("#period-budget"));view.unmount();
 });

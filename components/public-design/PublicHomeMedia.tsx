@@ -81,11 +81,11 @@ export default function PublicHomeMedia({ read }: { read: HomeMediaRead }) {
     >
       <header className={s.homeSectionHeading}>
         <div>
-          <p className={s.eyebrow}>نوشته‌ها و محتوای منتشرشده</p>
+          <p className={s.eyebrow}>دفتر انتشار</p>
           <h2 id="home-media-title">رسانهٔ آرش</h2>
         </div>
         <Link href="/insights">
-          مشاهدهٔ همهٔ مطالب <ArrowUpLeft size={17} aria-hidden />
+          آرشیو رسانه <ArrowUpLeft size={17} aria-hidden />
         </Link>
       </header>
       <nav className={s.mediaChannels} aria-label="شبکه‌های آرش">
@@ -132,7 +132,7 @@ export default function PublicHomeMedia({ read }: { read: HomeMediaRead }) {
           </h3>
           <p>
             {read.state === "unavailable"
-              ? "این خطا به معنی نبود محتوا در شبکه‌های آرش نیست."
+              ? "آرشیو سایت در دسترس نیست؛ مطالب را می‌توانید از تلگرام یا اینستاگرام آرش بخوانید."
               : "برای دیدن محتوای اصلی، صفحهٔ رسانه یا شبکه‌های آرش را باز کنید."}
           </p>
           <Link href="/insights">
@@ -140,12 +140,12 @@ export default function PublicHomeMedia({ read }: { read: HomeMediaRead }) {
           </Link>
         </div>
       )}
-      <p className={s.mediaProvenance}>
+      <details className={s.mediaProvenance}><summary>منبع و تاریخ این فهرست</summary><p>
         تاریخ ثبت‌شدهٔ قبلی الزاماً زمان انتشار در منبع نیست. زمان انتشار و
         آخرین همگام‌سازی جداگانه در این فهرست موجود نیستند. خواندن این صفحه:{" "}
         {dateLabel(read.readAt)}. تصویر اصلی یا فایل قابل‌پخش از این اتصال
         دریافت نشده است.
-      </p>
+      </p></details>
     </section>
   );
 }

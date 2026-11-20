@@ -25,7 +25,8 @@ export default function DebtsWorkbench({ debts, ready, activeVersion, latestVers
   const [uncertain, setUncertain] = useState(false), [conflict, setConflict] = useState(false);
   const pending = useRef<FinancialSaveAttempt | null>(null);
   const unresolved = useRef(false);
-  const editingLocked = busy || uncertain || receiptUrl !== null || editor.locked;
+  const historical = activeVersion !== null && activeVersion !== latestVersion;
+  const editingLocked = historical || busy || uncertain || receiptUrl !== null || editor.locked;
   const needsWarning = receiptUrl === null && (JSON.stringify(rows) !== initialRows.current || busy || uncertain);
   useEffect(() => {
     if (!needsWarning) return;
@@ -33,9 +34,8 @@ export default function DebtsWorkbench({ debts, ready, activeVersion, latestVers
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [needsWarning]);
-  const historical = activeVersion !== null && activeVersion !== latestVersion;
   const editRows = (update: React.SetStateAction<Row[]>) => {
-    if (lock.current || unresolved.current || completed.current || !editor.acquire()) return;
+    if (historical || lock.current || unresolved.current || completed.current || !editor.acquire()) return;
     setRows(update);
   };
   const patch = (index: number, values: Partial<Row>) => editRows(old => old.map((r, i) => i === index ? { ...r, ...values } : r));
@@ -67,8 +67,8 @@ export default function DebtsWorkbench({ debts, ready, activeVersion, latestVers
   if (!ready) return <p className="card p-5" role="alert">دریافت بدهی‌ها انجام نشد؛ وضعیت آن‌ها صفر فرض نمی‌شود. صفحه را تازه کنید.</p>;
   const field = (i: number, key: keyof Row, label: string, type = "text") => <label className="space-y-1"><span className="text-xs">{label}</span><input className="input w-full" type={type} value={rows[i][key]} disabled={editingLocked} onChange={e => patch(i, { [key]: e.target.value })} /></label>;
   return <div className="space-y-5"><DebtList debts={debts} /><form className="card p-5 space-y-4" onSubmit={save}>
-    <h2 className="font-bold text-lg">ثبت و اصلاح بدهی</h2><p className="text-sm leading-7">ماندهٔ بدهی، مبلغ باقی‌مانده برای پرداخت است؛ مبلغ اولیهٔ وام را وارد نکنید. وام، قرض شخصی و بدهی اقساطی قابل ثبت‌اند. ضمانت و تعهد احتمالی به بدهی قطعی اضافه نمی‌شوند. مبالغ فرم هنگام بازکردن نسخه به تومان‌اند.</p>
-    {historical && <p role="alert">این نسخه سابقه است؛ برای اصلاح <a className="underline" href="/dashboard/holdings">آخرین نسخه</a> را باز کنید.</p>}
+    <h2 className="font-bold text-lg">{historical ? "جزئیات بدهی در این نسخه" : "ثبت و اصلاح بدهی"}</h2><p className="text-sm leading-7">ماندهٔ بدهی، مبلغ باقی‌مانده برای پرداخت است؛ مبلغ اولیهٔ وام را وارد نکنید. وام، قرض شخصی و بدهی اقساطی قابل ثبت‌اند. ضمانت و تعهد احتمالی به بدهی قطعی اضافه نمی‌شوند. مبالغ فرم هنگام بازکردن نسخه به تومان‌اند.</p>
+    {historical && <p className="text-sm">این نسخه سابقه است؛ برای اصلاح <a className="underline" href="/dashboard/holdings">آخرین نسخه</a> را باز کنید.</p>}
     {rows.map((r, i) => <fieldset key={r.debt_key} className="rounded-xl border p-4 space-y-3" style={{ borderColor: "var(--line)" }}><legend>بدهی {toPersianDigits(i + 1)}</legend><div className="grid grid-cols-1 md:grid-cols-3 gap-3">
       {field(i, "title", "عنوان بدهی")}
       <label className="space-y-1"><span className="text-xs">نوع بدهی</span><select className="input w-full" value={r.kind} disabled={editingLocked} onChange={e => patch(i, { kind: e.target.value as DebtKind })}>{Object.entries(DEBT_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>

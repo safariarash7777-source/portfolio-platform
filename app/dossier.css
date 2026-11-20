@@ -1,0 +1,843 @@
+/* The member dossier V2 palette and geometry, shared by the private dossier and
+   public entry. Colors copied from the selected design, not fabricated chart data. */
+.dos {
+  --folio-linework: #ffffff13;
+  --folio-echo: #ffffff04;
+  --folio-tint: #eaf1ef;
+  --folio-button: #173656;
+  --folio-track: #478174;
+  --folio-dark-ochre: #e8c978;
+  --folio-on-navy: #f6f7f2;
+  --folio-badge-line: #496173;
+  --folio-ochre: #77591b;
+  --folio-dark-tint: #253b40;
+  --folio-dark-muted: #b6c4cd;
+  --folio-badge-ink: #f8e0a3;
+  --folio-button-hover: #254c72;
+  --folio-dark-ink: #f0f1e9;
+  --folio-ink: #152b45;
+  --folio-navy-rule: #526278;
+  --folio-dark-paper: #172636;
+  --folio-navy: #12284a;
+  --folio-badge: #233d59;
+  --folio-badge-dot: #e4bb68;
+  --folio-rule: #d6dedf;
+  --folio-dark-note: #312e22;
+  --folio-navy-muted: #c9d6e0;
+  --folio-brand: #13284c;
+  --folio-dark-chart: #8bc9b8;
+  --folio-navy-glow: #284c6a;
+  --folio-navy-label: #c8d5df;
+  --folio-dark-rule: #3f505c;
+  --folio-note: #fcf6e6;
+  --folio-headline: #dae2eb;
+  --folio-muted: #566574;
+  --folio-focus: #a87912;
+  --folio-chart: #296d65;
+  --folio-paper: #fff;
+}
+.dos {
+  --dk: var(--folio-brand);
+  --surface: var(--dos-paper,var(--folio-paper));
+  --ink: var(--dos-ink,var(--folio-ink));
+  --muted: var(--dos-muted,var(--folio-muted));
+  --rule: var(--dos-rule,var(--folio-rule));
+  --tint: var(--dos-tint,var(--folio-tint));
+  --note: var(--dos-note,var(--folio-note));
+  --goldink: var(--dos-goldink,var(--folio-ochre));
+  max-width: 1176px;
+  margin: auto;
+  padding: 32px 26px 24px;
+  color: var(--ink);
+  font-family: var(--font-body),Vazirmatn,Tahoma,sans-serif;
+  text-align: start;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+.dark .dos {
+  --dos-paper: var(--folio-dark-paper);
+  --dos-ink: var(--folio-dark-ink);
+  --dos-muted: var(--folio-dark-muted);
+  --dos-rule: var(--folio-dark-rule);
+  --dos-tint: var(--folio-dark-tint);
+  --dos-note: var(--folio-dark-note);
+  --dos-goldink: var(--folio-dark-ochre);
+}
+.dos * {
+  box-sizing: border-box;
+}
+.dos h1,.dos h2,.dos p,.dos ul {
+  margin: 0;
+}
+.dos h1,.dos h2,.dos strong,.dos b {
+  font-weight: 750;
+}
+.dos h1,.dos h2 {
+  font-family: var(--font-display),Vazirmatn,Tahoma,sans-serif;
+}
+.dos a {
+  text-decoration: none;
+}
+.dos a:focus-visible,.dos-legacy>summary:focus-visible {
+  outline: 3px solid var(--folio-focus);
+  outline-offset: 4px;
+}
+.dos-heading,.dos-headline,.dos-panel>header,.dos-rows li,.dos-label,.dos-link,.dos-cta,.dos-kicker,.dos-version {
+  display: flex;
+  align-items: center;
+}
+.dos-heading,.dos-headline,.dos-panel>header,.dos-rows li,.dos-cta {
+  justify-content: space-between;
+  gap: 12px;
+}
+.dos-heading {
+  align-items: flex-end;
+  margin-bottom: 23px;
+}
+.dos-kicker {
+  color: var(--goldink);
+  gap: 9px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.dos-kicker span {
+  width: 23px;
+  height: 2px;
+  background: currentColor;
+}
+.dos-kicker i,.dos-version i {
+  width: 3px;
+  height: 3px;
+  background: currentColor;
+  border-radius: 50%;
+}
+.dos h1 {
+  font-size: clamp(31px,4.15vw,52px);
+  letter-spacing: -.055em;
+  line-height: 1.32;
+  margin: 6px 0 3px;
+}
+.dos-heading p,.dos-muted,.dos-action p {
+  color: var(--muted);
+}
+.dos-version {
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  flex-wrap: wrap;
+}
+.dos-top,.dos-grid {
+  display: grid;
+  gap: 16px;
+}
+.dos-top {
+  grid-template-columns: minmax(0,1.65fr) minmax(0,1fr);
+}
+.dos-main,.dos-action,.dos-panel {
+  position: relative;
+  border-radius: 19px;
+  min-width: 0;
+  padding: 22px 25px;
+}
+.dos-main {
+  background: var(--folio-navy);
+  color: var(--folio-on-navy);
+  overflow: hidden;
+  background-image: radial-gradient(ellipse at -12% 110%,var(--folio-navy-glow) 0,transparent 61%);
+}
+.dos-main:before {
+  content: "";
+  position: absolute;
+  width: 45%;
+  height: 145%;
+  inset: -60% auto auto -12%;
+  border: 1px solid var(--folio-linework);
+  transform: rotate(-30deg);
+  border-radius: 35%;
+  box-shadow: 0 0 0 15px var(--folio-echo),0 0 0 32px var(--folio-echo),0 0 0 52px var(--folio-echo),0 0 0 75px var(--folio-echo);
+  pointer-events: none;
+}
+.dos-headline {
+  position: relative;
+  margin-bottom: 17px;
+}
+.dos-headline>span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 650;
+}
+.dos-headline .dos-badge {
+  background: var(--folio-badge);
+  color: var(--folio-badge-ink);
+  border: 1px solid var(--folio-badge-line);
+  border-radius: 20px;
+  padding: 2px 9px;
+  font-size: 11px;
+}
+.dos-badge i {
+  background: var(--folio-badge-dot);
+  border-radius: 50%;
+  width: 6px;
+  height: 6px;
+}
+.dos-main h2 {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--folio-headline);
+}
+.dos-amount {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.dos-amount bdi {
+  font-weight: 780;
+  font-size: clamp(29px,4.1vw,54px);
+  line-height: 1.35;
+  letter-spacing: -.036em;
+  font-variant-numeric: tabular-nums;
+}
+.dos-amount small,.dos-foot small,.dos-due small,.dos-rows strong small {
+  font-size: 12px;
+  font-weight: 500;
+}
+.dos-main p {
+  color: var(--folio-navy-muted);
+  font-size: 12px;
+}
+.dos-foot {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--folio-navy-rule);
+  margin-top: 15px;
+  padding-top: 12px;
+  gap: 10px;
+}
+.dos-foot>div+div {
+  border-inline-start: 1px solid var(--folio-navy-rule);
+  padding-inline-start: 16px;
+}
+.dos-foot span,.dos-foot strong,.dos-rows li small,.dos-ledgers small,.dos-due strong,.dos-due b {
+  display: block;
+}
+.dos-foot span {
+  color: var(--folio-navy-label);
+  font-size: 11px;
+}
+.dos-foot strong {
+  font-size: 17px;
+}
+.dos-action {
+  background: var(--note);
+  border: 1px solid color-mix(in srgb,var(--goldink) 30%,var(--surface));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.dos-label {
+  gap: 9px;
+  color: var(--goldink);
+  font-weight: 650;
+  font-size: 13px;
+}
+.dos-sign {
+  display: grid;
+  place-items: center;
+  width: 33px;
+  height: 33px;
+  border: 1px solid color-mix(in srgb,var(--goldink) 35%,transparent);
+  border-radius: 10px;
+}
+.dos-action h2 {
+  font-size: clamp(19px,2.4vw,29px);
+  line-height: 1.45;
+  margin: 14px 0 4px;
+}
+.dos-action p {
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+.dos-cta {
+  margin-top: auto;
+  background: var(--folio-button);
+  color: white!important;
+  border-radius: 8px;
+  padding: 10px 14px;
+  min-height: 44px;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 18px;
+}
+.dos-cta:hover {
+  background: var(--folio-button-hover);
+}
+.dos-grid {
+  grid-template-columns: minmax(0,1.3fr) minmax(0,1fr);
+  margin-top: 16px;
+}
+.dos-panel {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.dos-panel h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 21px;
+}
+.dos-panel>header {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.dos-panel>header span {
+  font-size: 11px;
+  color: var(--muted);
+  border: 1px solid var(--rule);
+  border-radius: 15px;
+  padding: 2px 8px;
+}
+.dos-track {
+  height: 7px;
+  margin-top: 15px;
+  border-radius: 9px;
+  overflow: hidden;
+  background: var(--tint);
+}
+.dos-track i {
+  height: 100%;
+  display: block;
+  background: var(--folio-track);
+  border-radius: inherit;
+}
+.dos-rows {
+  padding: 0;
+  list-style: none;
+}
+.dos-rows li {
+  padding: 9px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.dos-rows li small,.dos-ledgers small {
+  color: var(--muted);
+  font-size: 11px;
+}
+.dos-rows strong {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.dos-date,.dos-link {
+  color: var(--goldink);
+  font-size: 12px;
+  font-weight: 650;
+}
+.dos-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.dos-due {
+  margin: 13px 0 6px;
+}
+.dos-due b {
+  font-size: 15px;
+}
+.dos-due strong {
+  font-size: 23px;
+}
+.dos-muted {
+  font-size: 12px;
+  margin-top: 8px!important;
+}
+.dos-link {
+  align-self: flex-start;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 0 0;
+  margin-top: auto;
+}
+.dos-link:hover,.dos-ledgers a:hover b {
+  text-decoration: underline;
+}
+.dos-ledgers {
+  margin-top: 19px;
+}
+.dos-ledgers h2 {
+  font-size: 20px;
+  margin-bottom: 9px;
+}
+.dos-ledgers nav {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  border-radius: 13px;
+  padding: 6px;
+  gap: 4px;
+}
+.dos-ledgers a {
+  padding: 10px;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  border-radius: 9px;
+}
+.dos-ledgers a:hover {
+  background: var(--tint);
+}
+.dos-ledgers a>svg:last-child {
+  margin-inline-start: auto;
+  color: var(--muted);
+}
+.dos-legacy {
+  max-width: 1124px;
+  margin: 0 auto 20px;
+}
+.dos-legacy>summary {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 8px 15px;
+  font-weight: bold;
+}
+.dos-compact .dos {
+  padding-block: 16px;
+}
+.dos-compact .dos-main,.dos-compact .dos-action,.dos-compact .dos-panel {
+  padding: 14px 18px;
+}
+.dos-compact .dos-rows li {
+  padding-block: 5px;
+}
+@media(max-width:800px) {
+  .dos {
+    padding: 24px 16px;
+  }
+  .dos-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .dos-top {
+    grid-template-columns: 1.4fr 1fr;
+  }
+  .dos-ledgers nav {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media(max-width:580px) {
+  .dos {
+    padding: 17px 12px;
+  }
+  .dos h1 {
+    font-size: 34px;
+  }
+  .dos-heading {
+    margin-bottom: 13px;
+  }
+  .dos-top,.dos-grid {
+    grid-template-columns: minmax(0,1fr);
+    gap: 10px;
+  }
+  .dos-grid {
+    margin-top: 10px;
+  }
+  .dos-main,.dos-action,.dos-panel {
+    padding: 16px;
+    border-radius: 14px;
+  }
+  .dos-headline {
+    margin-bottom: 10px;
+  }
+  .dos-amount bdi {
+    font-size: 35px;
+  }
+  .dos-action h2 {
+    margin-top: 8px;
+  }
+  .dos-sign {
+    width: 27px;
+    height: 27px;
+  }
+  .dos-cta {
+    width: 100%;
+  }
+  .dos-ledgers nav {
+    grid-template-columns: 1fr;
+  }
+  .dos-panel h2 {
+    font-size: 19px;
+  }
+  .dos-foot strong {
+    font-size: 15px;
+  }
+  .dos-rows strong {
+    font-size: 13px;
+  }
+  .dos-legacy {
+    margin-inline: 12px;
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  .dos * {
+    scroll-behavior: auto;
+    animation: none!important;
+    transition: none!important;
+  }
+}
+/* V2: legible analytical panels. No motion or hue-only encodings. */
+.dos {
+  --chart-stroke: var(--folio-chart);
+}
+.dark .dos {
+  --chart-stroke: var(--folio-dark-chart);
+}
+.dos-monitor {
+  display: grid;
+  grid-template-columns: minmax(0,1.34fr) minmax(0,1fr);
+  gap: 16px;
+  margin: 16px 0;
+}
+.dos-panel>header h2 {
+  font-size: 20px;
+}
+.dos-trendstats {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 13px;
+}
+.dos-trendstats>b {
+  font-weight: 700;
+  color: var(--ink);
+  font-size: 17px;
+}
+.dos-trendstats small,.dos-axis,.dos-detail small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.dos-plot {
+  width: 100%;
+  height: 103px;
+  margin-top: 5px;
+  color: var(--muted);
+}
+.dos-axis {
+  display: flex;
+  justify-content: space-between;
+}
+.dos-detail {
+  margin-top: 8px;
+  border-top: 1px solid var(--rule);
+}
+.dos-detail summary {
+  padding: 10px 0;
+  min-height: 44px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--goldink);
+  font-weight: 700;
+}
+.dos-detail summary:focus-visible {
+  outline: 3px solid var(--goldink);
+  outline-offset: 1px;
+}
+.dos-detail ul,.dos-bars,.dos-instructions {
+  list-style: none;
+  padding: 0;
+}
+.dos-detail li {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px 12px;
+  flex-wrap: wrap;
+  padding: 5px 0;
+  border-top: 1px solid var(--rule);
+  font-size: 12px;
+}
+.dos-detail small {
+  flex-basis: 100%;
+}
+.dos-bars li {
+  margin: 11px 0;
+}
+.dos-bars li>div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+}
+.dos-bars li span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.dos-rail {
+  height: 8px;
+  border-radius: 9px;
+  background: var(--tint);
+  overflow: hidden;
+}
+.dos-rail i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+.dos-empty {
+  margin: 15px 0!important;
+  font-size: 14px;
+  color: var(--muted);
+}
+.dos-obligations .dos-panel {
+  display: grid;
+  grid-template-columns: minmax(175px,1fr) minmax(200px,1.1fr) minmax(120px,1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+.dos-obligations .dos-panel>header,.dos-obligations .dos-due {
+  margin: 0;
+}
+.dos-obligations .dos-panel>header {
+  align-items: start;
+  flex-direction: column;
+}
+.dos-obligations .dos-link {
+  margin: 0;
+  align-self: center;
+}
+.dos-instructions li {
+  display: grid;
+  grid-template-columns: 90px 1fr;
+  gap: 8px;
+  border-bottom: 1px solid var(--rule);
+  padding: 8px 0;
+  font-size: 13px;
+}
+.dos-instructions span {
+  color: var(--muted);
+}
+.dos-notetitle {
+  font-size: 18px;
+  margin-top: 15px;
+}
+.dos-note dl {
+  display: flex;
+  gap: 12px 20px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.dos-note dt {
+  font-size: 11px;
+  color: var(--muted);
+}
+.dos-note dd {
+  margin: 0;
+  font-weight: bold;
+  font-size: 13px;
+}
+.dos-lower .dos-link {
+  margin-top: auto;
+}
+.dos-panel .dos-muted {
+  line-height: 1.6;
+}
+@media(max-width:850px) {
+  .dos-obligations .dos-panel {
+    grid-template-columns: 1fr 1fr;
+  }
+  .dos-obligations .dos-panel>header {
+    flex-direction: row;
+  }
+}
+@media(max-width:650px) {
+  .dos-monitor {
+    grid-template-columns: minmax(0,1fr);
+    margin: 10px 0;
+    gap: 10px;
+  }
+  .dos-obligations .dos-panel {
+    display: flex;
+    align-items: stretch;
+  }
+  .dos-obligations .dos-due {
+    margin: 5px 0;
+  }
+  .dos-obligations .dos-link {
+    align-self: start;
+  }
+  .dos-obligations .dos-panel>header {
+    align-items: center;
+  }
+  .dos-instructions li {
+    grid-template-columns: 85px 1fr;
+  }
+  .dos-panel>header h2 {
+    font-size: 18px;
+  }
+}
+.dos-editorlinks {
+  display: flex;
+  gap: 12px 25px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.dos-editorlinks .dos-link {
+  margin: 0;
+}
+.dos-jump {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px 14px;
+  margin: 7px 0 -9px;
+}
+.dos-jump a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--goldink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.dos [id^=dos-] {
+  scroll-margin-top: 85px;
+}
+.dos [tabindex="-1"]:focus-visible {
+  outline: 2px solid var(--goldink);
+  outline-offset: 3px;
+}
+.dos h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 740;
+  margin: 0;
+}
+.dos .dos-cta svg,.dos-link svg,.dos-ledgers svg {
+  flex-shrink: 0;
+}
+.dos .dos-editorlinks a,.dos-cta,.dos-jump a {
+  min-height: 44px;
+}
+.dos-sections {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+.dos .dos-main a {
+  color: var(--gold-light);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  gap: 7px;
+  font-weight: 650;
+}
+.dos .dos-main a:focus-visible {
+  outline-color: var(--gold-light);
+}
+.dos .dos-heading p {
+  line-height: 1.8;
+}
+.dos .dos-amount bdi {
+  overflow-wrap: anywhere;
+}
+.dos .dos-amount bdi[data-unknown=true] {
+  font-size: clamp(23px,3vw,36px);
+}
+.dos-home {
+  max-width: none;
+  padding-inline: 0;
+  margin-bottom: 42px;
+}
+.dos-home .dos-main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 204px;
+}
+.dos-home .dos-main h2 {
+  color: var(--text-on-navy);
+  font-family: var(--font-display);
+  font-size: clamp(25px,3.2vw,39px);
+  line-height: 1.55;
+  max-width: 22ch;
+}
+.dos-home .dos-main p {
+  font-size: 14px;
+  max-width: 54ch;
+  line-height: 1.95;
+  margin: 5px 0;
+}
+.dos-summary-value {
+  font-size: 18px;
+  font-weight: 750;
+}
+.dos .dos-bars li {
+  margin: 8px 0;
+}
+.dos .dos-rail i {
+  background: var(--chart-stroke);
+}
+.dos .dos-ledgers nav {
+  padding: 5px;
+}
+.dos .dos-panel li {
+  overflow-wrap: anywhere;
+}
+.dos .dos-label svg {
+  flex-shrink: 0;
+}
+.dos-amounts a,.dos-action a {
+  align-self: flex-start;
+}
+@media(max-width:580px) {
+  .dos-home {
+    padding-inline: 0;
+    margin-bottom: 26px;
+  }
+  .dos-home .dos-main {
+    min-height: 0;
+  }
+  .dos-home .dos-main p {
+    font-size: 13px;
+  }
+}
+.dos-ledger-cell {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  padding: 4px 6px;
+  min-width: 0;
+}
+.dos-ledger-cell svg {
+  flex-shrink: 0;
+  color: var(--goldink);
+}
+.dos-ledger-cell>div {
+  position: relative;
+  min-width: 0;
+}
+.dos-ledgers .dos-ledger-cell a {
+  padding: 0;
+  min-height: 44px;
+  align-items: flex-start;
+  font-size: 13px;
+  font-weight: 680;
+}
+.dos-ledgers .dos-ledger-cell small {
+  position: absolute;
+  bottom: 0;
+  pointer-events: none;
+}
