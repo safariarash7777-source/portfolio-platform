@@ -28,7 +28,7 @@ export function SalesReadNotice({ readState, checkedAt, label }: {
   const unknown = !Number.isFinite(stamp) || stamp > now + MONTHLY_SCREEN_FRESH_MS;
   if (!retained && !unknown && now <= expires) return null;
   return <p role="status" className="rounded-lg border border-[var(--line-strong)] bg-[var(--surface-2)] px-3 py-2 text-sm">
-    {retained ? "خواندن تازه کامل نشد. آخرین نتیجهٔ کامل نمایش داده شده است." :
+    {retained ? "نتیجهٔ خواندن تازه در دسترس نیست. آخرین نتیجهٔ کامل نمایش داده شده است." :
       unknown ? "زمان آخرین خواندن کامل قابل تأیید نیست." : "زمان بازبینی این نتیجه رسیده است."}
     {" "}{label} · آخرین خواندن کامل {unknown ? "نامشخص" : screenTimestamp(checkedAt) + " (تهران)"}
   </p>;

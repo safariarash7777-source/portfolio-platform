@@ -63,11 +63,11 @@ test("retention and elapsed read age show the original clock without inventing a
   const render = (state: "fresh" | "retained", stamp: string | undefined) =>
     renderToStaticMarkup(React.createElement(SalesReadNotice, {label:"غربال فروش", checkedAt:stamp, readState:state}));
   const retained = render("retained", asOf);
-  assert.ok(retained.includes("خواندن تازه کامل نشد"));
+  assert.ok(retained.includes("نتیجهٔ خواندن تازه در دسترس نیست"));
   assert.ok(retained.includes("۱۴۰۵/۰۲/۰۹"));
   const aged = render("fresh", asOf);
   assert.ok(aged.includes("زمان بازبینی این نتیجه رسیده است"));
-  assert.ok(!aged.includes("خواندن تازه کامل نشد"));
+  assert.ok(!aged.includes("نتیجهٔ خواندن تازه در دسترس نیست"));
   assert.equal(render("fresh", new Date().toISOString()), "");
   assert.ok(render("retained",undefined).includes("آخرین خواندن کامل نامشخص"));
 });
