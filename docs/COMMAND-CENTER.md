@@ -2865,3 +2865,10 @@ migrationها روی staging (`B-004`، `D-002`) → cutover (`D-003`).
 | Editable whole-market research rule | Offline; synthetic fixtures (2 checks) | Same-month threshold evaluation retains the source pair and separates match, non-match, unresolved and not applicable; a zero is not missing. | Product lane: connect validated input to the existing screener, persist rules and verify a real multi-industry preview. The analysis agent does not substitute for deterministic collection or change live rules. |
 
 Private consultation remains an independent v0.4 deliverable; no production status change in this checkpoint.
+
+
+#### Stock-board screener preview, 20 November 2026
+
+| Output | Link and environment | Running version | Actual action tested | Result evidence | Remaining gate |
+|---|---|---|---|---|---|
+| Editable stock-board screener, **ready for visual review** | [Vercel preview](https://portfolio-platform-6sw3auyko-safariarash7777-4463s-projects.vercel.app/market/screener), isolated ref `codex/market-wide-screener-20261120` | `a5493c0e5a1635e8819f452d4bf293a5f7a6724f`, Vercel deployment `dpl_FUBJKvRXUczFmYkC8fvhdLHCpVxT` | Applied volume ≥ 1,000,000 to the full displayed population, saved locally, reloaded, restored, then cleared the rule | 782 initial → 686 matched, 96 excluded, zero unknown for this filter → restored 686 → cleared 782. Exact stored board receipt 20 Nov 13:22:33 UTC; this is not the source price timestamp. | Preview-only ordinary data binding did not return a board. A dated capture of existing public data is clearly labeled as not live. Official monthly/fiscal comparisons and continuous collector-to-page publish are still open; the 782 board rows are not the eligible filing universe. Production unchanged. |
