@@ -5,7 +5,7 @@ const START = [
   { href: "/codal", title: "گزارش شرکت‌ها", context: "اطلاعیه‌های کدال", Icon: Files },
   { href: "/dashboard/holdings", title: "دارایی و سبد من", context: "ثبت دارایی و بدهی", Icon: Layers3 },
   { href: "/dashboard/cashflow", title: "دفتر مالی من", context: "درآمد، هزینه و بودجه", Icon: Wallet },
-  { href: "#waitlist", title: "مشاوره با آرش", context: "درخواست جلسه", Icon: MessagesSquare },
+  { href: "#waitlist", title: "مشاوره با آرش", context: "فهرست انتظار مشاوره", Icon: MessagesSquare },
 ] as const;
 
 export default function PublicHome() {

@@ -3,6 +3,8 @@ import { withDeadline } from "../deadline";
 import { positionFromStored } from "./balanceSheet";
 import type { HoldingPosition } from "./contracts";
 import { valuePositions } from "./valuation";
+import { paymentReferenceDay } from "./paymentSchedule";
+import { dateInput } from "./financialInput";
 
 export type DossierVersion = { id: string; version: number; date: string };
 export type HistoryPoint = DossierVersion & { amount: number | null; estimated: boolean };
@@ -15,8 +17,13 @@ type Client = Awaited<ReturnType<typeof createClient>>;
  * are gaps, not zero. This is a recorded asset value, not profit or return. */
 export function historicalValue(version: DossierVersion, positions: readonly HoldingPosition[]): HistoryPoint {
   const time = Date.parse(version.date);
-  const valid = Number.isFinite(time) && positions.length > 0 && positions.every(p =>
-    p.valuationMode === "declared" && !!p.valuationAsOf && Date.parse(p.valuationAsOf) <= time);
+  // valuation_as_of is a calendar DATE in the member UI; created_at is an instant.
+  // Comparing at UTC midnight incorrectly drops records made just after midnight in Iran.
+  const recordedDay = paymentReferenceDay(new Date(time));
+  const valid = recordedDay !== null && positions.length > 0 && positions.every(p => {
+    if (p.valuationMode !== "declared" || !p.valuationAsOf) return false;
+    try { return dateInput(p.valuationAsOf) <= recordedDay; } catch { return false; }
+  });
   const valuation = valid ? valuePositions(positions, [], new Date(time)) : null;
   return { ...version, amount: valuation?.fullCoverage ? valuation.totalValue : null, estimated: !!valuation?.estimatedCount };
 }

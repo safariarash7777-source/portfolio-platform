@@ -40,3 +40,20 @@ test("empty and first version do not query unrelated history",async()=>{
   assert.equal((await readDossierHistory(c,"owner",[],[])).state,"empty");
   assert.equal((await readDossierHistory(c,"owner",[current],[position])).points[0].amount,50_000);
 });
+
+test("historical declarations compare Tehran calendar dates, not UTC-midnight instants", () => {
+  const version = { id: "v", version: 1, date: "2026-11-19T21:00:00Z" }; // 00:30, Nov 20 in Tehran
+  const value = (day: string, date = version.date) => historicalValue({ ...version, date },
+    [{ ...position, valuationAsOf: day }]).amount;
+  assert.equal(value("2026-11-20"), 50_000);
+  assert.equal(value("2026-11-19"), 50_000);
+  assert.equal(value("2026-11-21"), null);
+  assert.equal(value("2026-11-20", "2026-11-19T20:29:59Z"), null);
+  assert.equal(value("2026-11-20", "2026-11-19T20:30:00Z"), 50_000);
+  for (const date of ["2026-11-19T23:59:59Z","2026-11-20T00:00:00Z"]) {
+    assert.equal(value("2026-11-20", date), 50_000);
+    assert.equal(value("2026-11-21", date), null);
+  }
+  assert.equal(value("2026-02-30"), null);
+  assert.equal(value("2026-11-20", "bad-date"), null);
+});
