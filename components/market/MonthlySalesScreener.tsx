@@ -85,12 +85,12 @@ export function SalesScreenResults({ result, symbol = "" }: { result: MonthlySal
       </div>
       <p role="status" className="text-sm">{formatCount(rows.length)} نماد · {toPersianDigits(result.period)} در مقایسه با {toPersianDigits(result.previousPeriod)} · مبالغ به میلیون ریال</p>
       <div className="overflow-x-auto"><table className="w-full border-collapse whitespace-nowrap text-start text-sm">
-        <thead className="bg-[var(--surface-2)] text-start"><tr>{["مقایسه","نماد",...(visible.industry ? ["صنعت"] : []),...(visible.current ? [columns.current] : []),...(visible.previous ? [columns.previous] : []),"رشد و مستندات"].map(s => <th scope="col" className="p-2 text-start" key={s}>{s}</th>)}</tr></thead>
+        <thead className="bg-[var(--surface-2)] text-start"><tr>{["مقایسه","نماد","رشد و مستندات",...(visible.industry ? ["صنعت"] : []),...(visible.current ? [columns.current] : []),...(visible.previous ? [columns.previous] : [])].map(s => <th scope="col" className="p-2 text-start" key={s}>{s}</th>)}</tr></thead>
         {rows.slice(start, start + 40).map(row => <tbody key={row.symbol} className="border-b border-[var(--line)]">
           <tr><td className="p-2"><label className="inline-flex min-h-11 min-w-11 items-center justify-center"><input aria-label={"مقایسه " + row.symbol} type="checkbox" checked={selected.includes(row.symbol)} disabled={!selected.includes(row.symbol) && selected.length >= 2} onChange={() => compare(row.symbol)}/></label></td>
             <th scope="row" className="p-2 text-start"><Link prefetch={false} className="underline" href={"/symbol/" + encodeURIComponent(row.symbol) + "?from=" + encodeURIComponent(from) + "#fundamental"}>{row.symbol}</Link></th>
+            <td className="p-2"><button className="min-h-11 max-w-36 whitespace-normal text-start underline" aria-expanded={open === row.symbol} onClick={() => setOpen(open === row.symbol ? null : row.symbol)}>{row.growth === null ? row.reason || "علت کنارگذاری" : number.format(row.growth) + "٪"}</button></td>
             {visible.industry && <td className="p-2">{row.industry || "نامشخص"}</td>}{visible.current && <td className="p-2">{row.current ? number.format(row.current.amount) : "—"}</td>}{visible.previous && <td className="p-2">{row.previous ? number.format(row.previous.amount) : "—"}</td>}
-            <td className="p-2"><button className="min-h-11 underline" aria-expanded={open === row.symbol} onClick={() => setOpen(open === row.symbol ? null : row.symbol)}>{row.growth === null ? row.reason || "علت کنارگذاری" : number.format(row.growth) + "٪"}</button></td>
           </tr>{open === row.symbol && <tr><td className="whitespace-normal bg-[var(--surface-2)] p-3" colSpan={3 + Number(visible.industry) + Number(visible.current) + Number(visible.previous)}><GrowthEvidence row={row} result={result}/></td></tr>}
         </tbody>)}
       </table></div>
