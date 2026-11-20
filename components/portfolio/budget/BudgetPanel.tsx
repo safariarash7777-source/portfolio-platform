@@ -24,11 +24,11 @@ export default function BudgetPanel({ data, stale = false, dirty = false }: { da
   const report = snapshot ? buildBudget({ period: snapshot.payload.period, scope: { ownerId: data.ownerId, accountKeys: snapshot.payload.scopeAccountKeys },
     readState: stale ? "unavailable" : "ready", opening: snapshot.payload.opening, coverage: snapshot.payload.coverage,
     entries: snapshot.payload.entries.map(entry => ({ ...entry, ownerId: data.ownerId })) }) : null;
-  return <section id="period-budget" aria-label="بودجهٔ دوره" className="card min-w-0 scroll-mt-6 space-y-4 p-5">
-    <h2 className="font-display text-xl font-bold">بودجهٔ دوره: برنامه در برابر عملکرد</h2>
+  return <section aria-label="مقایسهٔ بودجهٔ دوره" className="card min-w-0 scroll-mt-6 space-y-4 p-5">
+    <h2 className="font-display text-xl font-bold">برنامه در برابر عملکرد</h2>
     <p className="text-sm leading-7">برای بودجه، درآمد و هزینهٔ مورد انتظار را در فرم پایین با وضعیت «برنامه‌ریزی‌شده» و پرداخت‌ها را جدا با وضعیت «واقعی» ثبت کنید؛ نام دسته‌ها را یکسان بنویسید. انتقال بین حساب‌ها درآمد یا هزینه نیست و در این مقایسه نمی‌آید.</p>
     <p className="text-sm leading-7">باقی‌ماندهٔ هزینه = برنامه منهای واقعی؛ اختلاف درآمد = واقعی منهای برنامه. این اعداد موجودی قابل خرج نیستند. مقایسهٔ قطعی فقط با پوشش کامل و اطلاعات معتبر هر دو بخش نمایش داده می‌شود.</p>
-    {!snapshot && <p role="status">بودجه‌ای برای این دوره ثبت نشده است؛ نبود اطلاعات به معنی بودجهٔ صفر نیست.</p>}
+    {!stale && !snapshot && <p role="status">بودجه‌ای برای این دوره ثبت نشده است؛ نبود اطلاعات به معنی بودجهٔ صفر نیست.</p>}
     {snapshot && <p className="text-sm leading-7">مبنا: نسخهٔ {toPersianDigits(snapshot.version)} جریان نقد، ثبت‌شده در <time dateTime={snapshot.createdAt}>{formatJalali(snapshot.createdAt)}</time>؛ دورهٔ <time dateTime={data.period.startOn}>{formatJalali(data.period.startOn)}</time> تا <time dateTime={data.period.endOn}>{formatJalali(data.period.endOn)}</time>. {data.latest.state === "ready" && data.latest.version !== snapshot.version ? "این نسخه تاریخی و فقط خواندنی است." : ""}</p>}
     {dirty && <p role="status" className="text-sm leading-7">فرم تغییر کرده است؛ بودجهٔ زیر هنوز از نسخهٔ ذخیره‌شده خوانده می‌شود و پیش‌نویس را شامل نمی‌شود.</p>}
     {stale && <p role="alert">خواندن تازه تأیید نشده است؛ محاسبهٔ بودجه تا بازخوانی موفق نمایش داده نمی‌شود.</p>}

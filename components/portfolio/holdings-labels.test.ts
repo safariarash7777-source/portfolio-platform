@@ -47,3 +47,33 @@ test("associated labels retain per-row editing and do not bypass a locked form",
   assert.equal(relevant.length, 8);
   assert.ok(relevant.every(node => node.props.disabled === true));
 });
+
+test("historical route binds the saved version, distinguishes latest quotes, and never compares against today's target", async () => {
+  const { holdingsHistoryMarkup } = await import("./holdings-history.fixture");
+  const { formatToman, formatJalali } = await import("../../lib/format");
+  for (const revision of [2, 3]) {
+    const { html, seen, date } = await holdingsHistoryMarkup("v1", revision);
+    assert.deepEqual(seen, ["debts:v1", "scope:v1"]);
+    assert.match(html, /نسخهٔ بایگانی‌شدهٔ ۱/);
+    assert.ok(html.includes(formatJalali(date)) && html.includes("قلم آزمایشی v1") && html.includes("بدهی آزمایشی v1"));
+    assert.ok(html.includes(formatToman(2 * revision * 100)) && html.includes("latest-quote"));
+    assert.ok(html.includes(formatToman(0)), "recorded zero debt is not missing");
+    assert.match(html, /href="\?v=v1" aria-current="page"/);
+    assert.match(html, /هدفِ زمان ثبت این نسخه مشخص نیست/);
+    assert.doesNotMatch(html, /synthetic-latest-target|اختلاف وزن \(هدف|old-quote|قلم آزمایشی v2|بدهی آزمایشی v2/);
+    assert.match(html, /<input[^>]+disabled=""[^>]+aria-label="نماد دارایی"/);
+    assert.doesNotMatch(html, /<input(?![^>]* disabled=)[^>]*>/);
+    // Current via default URL or the newest receipt URL keeps its normal editing/comparison path.
+    const current = await holdingsHistoryMarkup(revision === 2 ? undefined : "v2", revision);
+    assert.deepEqual(current.seen, ["debts:v2", "scope:v2"]);
+    assert.ok(current.html.includes("synthetic-latest-target-" + revision) && current.html.includes(formatToman(4 * revision * 100)));
+    assert.match(current.html, /اختلاف وزن \(هدف|فاصله ارزش/);
+    assert.doesNotMatch(current.html, /نسخهٔ بایگانی‌شدهٔ|هدفِ زمان ثبت این نسخه مشخص نیست/);
+    assert.match(current.html, /<input(?![^>]* disabled=)[^>]+aria-label="نماد دارایی"/);
+  }
+  const gap = await holdingsHistoryMarkup("v1", 2, true);
+  assert.match(gap.html, /قیمت ناموجود؛ این قلم حفظ شده و ارزش آن صفر فرض نشده است/);
+  assert.match(gap.html, /ارزش سهم شما: نامعلوم/);
+  const invalid = await holdingsHistoryMarkup("not-mine");
+  assert.match(invalid.html, /در دسترس حساب شما نیست/); assert.doesNotMatch(invalid.html, /نسخهٔ بایگانی‌شدهٔ|قلم آزمایشی/);
+});
