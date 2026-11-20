@@ -1,0 +1,50 @@
+[
+  {
+    "reportId": 98,
+    "symbol": "شبندر",
+    "periodEnd": "1404-07-30",
+    "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=BZ6ajwQWoyKxLf3pdGAfMA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+    "amendment": true,
+    "unit": "میلیون ریال",
+    "amount": 454185630,
+    "trace": 1428954,
+    "hash": "a140d8b7f2d1c2196031c422b8f36fbe49d111e4e2233d193f9e7adff846236a",
+    "checkedAt": "2026-11-20T21:09:13.253Z"
+  },
+  {
+    "reportId": 296,
+    "symbol": "شپنا",
+    "periodEnd": "1404-07-30",
+    "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=JqTvEloWCIJi5uX87ZzHrA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+    "amendment": false,
+    "unit": "میلیون ریال",
+    "amount": 619812393,
+    "trace": 1426561,
+    "hash": "0ca0a9d8d52857f188ce8043985888aad8d71a4db36c07bf79b6786443a1d113",
+    "checkedAt": "2026-11-20T21:10:58.387Z"
+  },
+  {
+    "reportId": 310,
+    "symbol": "دالبر",
+    "periodEnd": "1404-07-30",
+    "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=CnPOLWyR8uQQQaQQQpRI3prsOOObOOODzA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+    "amendment": false,
+    "unit": "میلیون ریال",
+    "amount": 5595929,
+    "trace": 1426485,
+    "hash": "bd89f883a1fb48b1e6d468bb593bd575acdc4a27cc83f31d003fd5e6fa88ab36",
+    "checkedAt": "2026-11-20T21:11:11.130Z"
+  },
+  {
+    "reportId": 324,
+    "symbol": "دلر",
+    "periodEnd": "1404-07-30",
+    "sourceUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=5BXsVcOdMEyLm7bSr2b7gQ%3d%3d&rt=0&let=58&ct=0&ft=-1",
+    "amendment": false,
+    "unit": "میلیون ریال",
+    "amount": 6045991,
+    "trace": 1428334,
+    "hash": "9927029d0990ee70d15074cb399893aaf1eef1cd3dc7967f53d6428254294ba0",
+    "checkedAt": "2026-11-20T21:11:21.158Z"
+  }
+]

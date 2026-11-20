@@ -1,3 +1,4 @@
+import { previewVerifiedUnits } from "@/lib/fundamental/reviewed-units-preview";
 import { NextResponse } from "next/server";
 import { jalaliYmdToGregorian } from "@/lib/core/jalali";
 import { fundamentalReadPair } from "@/lib/fundamental/read-config.server";
@@ -108,10 +109,11 @@ async function load(db:BoundedBinding, period:string, symbol:string|null, univer
     const feed=new URLSearchParams({select:"id,symbol,title,link",category:"eq.ماهانه"});
     if (symbol) { reports.set("symbol","eq."+symbol); feed.set("symbol","eq."+symbol); }
     else feed.set("or","("+[...monthPatterns(prior),...monthPatterns(period)].join(",")+")");
-    const [filings,notices,rosters] = await Promise.all([
+    const [storedFilings,notices,rosters] = await Promise.all([
       pages<SalesFiling>(db,"codal_reports",reports),pages<SalesNotice & {id:number}>(db,"codal_feed",feed),
       symbol ? [] : read<{stocks:ScreenIssuer[];receivedAt:number|null}>(db,"ir_market_snapshots",new URLSearchParams({select:"stocks:payload->stocks,receivedAt:payload->snapshotQuality->families->stocks->receivedAt",key:"eq.latest",limit:"1"})),
     ]);
+    const filings = previewVerifiedUnits(storedFilings);
     if (symbol) return {...salesHistory(period,symbol,filings,notices), checkedAt:new Date().toISOString()};
     if (!Array.isArray(rosters[0]?.stocks) || !rosters[0].stocks.length) throw new Error("Missing stock roster");
     const familyClock = rosters[0].receivedAt;
@@ -138,7 +140,7 @@ export async function GET(req:Request) {
     // The hosted Next data cache shares complete snapshots across cold workers.
     // Only public results enter it; neither credentials nor thresholds enter its key.
     const hosted = process.env.VERCEL === "1"
-      ? unstable_cache(refresh,["monthly-sales-complete-v1",key],{revalidate:MONTHLY_SCREEN_FRESH_MS/1000})
+      ? unstable_cache(refresh,["monthly-sales-units-preview-4-324",key],{revalidate:MONTHLY_SCREEN_FRESH_MS/1000})
       : refresh;
     const {snapshot,readState} = await cached(key,hosted);
     const body = "rows" in snapshot ? applySalesThreshold(snapshot,minGrowth) : snapshot;

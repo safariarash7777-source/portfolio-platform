@@ -1,3 +1,4 @@
+import reviewed from "@/lib/fundamental/reviewed-units-preview.json";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
@@ -35,6 +36,17 @@ export default async function SalesScreenerPage({ searchParams }: {
         <h1 className="font-display text-3xl font-bold">غربال فروش ماهانه</h1>
         <p className="mt-2 text-sm" style={{color:"var(--text-2)"}}>رشد مبلغ فروش هر شرکت در مقایسه با همان ماه سال قبل</p>
       </header>
+      {process.env.VERCEL_ENV === "preview" && <aside className="card p-4">
+        <h2 className="font-bold">پیش‌نمایش اصلاح واحد گزارش‌های تاریخی</h2>
+        <p>واحد فروش {reviewed.length.toLocaleString("fa-IR")} گزارش زیر با سند رسمی سنجیده شده است. نتیجهٔ جدول و مقایسه در این نسخه، اثر این اصلاح را پیش از ثبت در دیتابیس اصلی نشان می‌دهد.</p>
+        <details className="mt-2"><summary>شواهد و شمارهٔ پیگیری گزارش‌ها</summary>
+          <ul className="space-y-2">{reviewed.map(p => <li key={p.reportId}>
+            <a href={p.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">{p.symbol} · سند کدال</a>
+            {" · "}{p.periodEnd} · {p.amount.toLocaleString("fa-IR")} {p.unit} · پیگیری {p.trace}
+            <small className="block" dir="ltr">SHA-256 {p.hash}</small>
+          </li>)}</ul>
+        </details>
+      </aside>}
       <MonthlySalesScreener key={[period,minGrowth,symbol,outside].join(":")} outside={outside} period={period} minGrowth={minGrowth} symbol={symbol} />
     </main>
     <Footer />
