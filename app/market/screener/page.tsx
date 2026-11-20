@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getStoredIrMarket } from "@/lib/market-ir";
 import { iranReadQuality } from "@/lib/market-quality";
 import Screener from "./Screener";
+import publicBoardCapture from "./public-board-capture.json";
 import type { Row } from "./rules";
 
 export const dynamic = "force-dynamic";
@@ -24,9 +25,10 @@ export default async function MarketScreenerPreview() {
       volume: number(item.volume), pe: number(item.pe),
     });
   }
-  const receipt = iranReadQuality(market).families?.stocks.receivedAt;
+  const backup = market === null;
+  const receipt = backup ? Date.parse(publicBoardCapture.receivedAt) : iranReadQuality(market).families.stocks.receivedAt;
   const received = receipt
     ? new Intl.DateTimeFormat("fa-IR-u-ca-persian", { timeZone: "Asia/Tehran", dateStyle:"short", timeStyle:"short" }).format(receipt)
     : null;
-  return <Screener rows={rows} received={received} unavailable={market === null} />;
+  return <Screener rows={backup ? publicBoardCapture.rows : rows} received={received} backup={backup} />;
 }

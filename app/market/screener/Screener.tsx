@@ -10,7 +10,7 @@ const control = "w-full rounded-lg border border-[var(--line)] bg-[var(--surface
 const btn = "rounded-lg border border-[var(--line)] px-3 py-2 text-sm font-semibold disabled:opacity-40";
 const PAGE = 24;
 
-export default function Screener({ rows, received, unavailable }: { rows: Row[]; received: string | null; unavailable: boolean }) {
+export default function Screener({ rows, received, backup }: { rows: Row[]; received: string | null; backup: boolean }) {
   const [query, setQuery] = useState("");
   const [industry, setIndustry] = useState("");
   const [filters, setFilters] = useState<Filter[]>([emptyFilter()]);
@@ -52,12 +52,12 @@ export default function Screener({ rows, received, unavailable }: { rows: Row[];
         <p className="text-sm font-semibold text-[var(--text-2)]">پیش‌نمایش پژوهش بازار</p>
         <h1 className="mt-1 text-3xl font-black sm:text-4xl">دیده‌بان سهام</h1>
         <p className="mt-3 text-sm leading-7 text-[var(--text-2)]">همهٔ نمادهای موجود در تابلوی دریافتی را با آستانه‌های خودت غربال کن. تعداد نمادهای تابلو معادل پوشش رسمی کل بورس نیست.</p>
-        <p className="mt-2 text-sm text-[var(--text-2)]">آخرین دریافت تابلو: {received ?? "نامشخص"} <span className="whitespace-nowrap">(زمان معامله نیست)</span></p>
+        <p className="mt-2 text-sm text-[var(--text-2)]">{backup ? "زمان ثبت نسخهٔ ذخیره‌شده" : "زمان دریافت تابلو"}: {received ?? "نامشخص"} <span className="whitespace-nowrap">(زمان معامله نیست)</span></p>
       </header>
       <aside className="rounded-2xl border border-[var(--line)] p-4 text-sm leading-6 text-[var(--text-2)]">
         این نسخه از دادهٔ تابلو استفاده می‌کند. فیلتر فروش ماهانه، حاشیهٔ سود فصلی و حجم در سطح قیمت هنوز به این صفحه وصل نیست.
       </aside>
-      {unavailable ? <p role="alert" className="rounded-2xl border p-4">دریافت تابلوی بازار در پیش‌نمایش ممکن نشد. <a className="underline" href="https://portfolio-platform-fawn.vercel.app/market/stocks">تابلوی سایت اصلی</a></p> : null}
+      {backup ? <p role="status" className="rounded-2xl border border-[var(--line)] p-4 text-sm">نسخهٔ ذخیره‌شدهٔ تابلوی عمومی است؛ داده‌ها زنده نیستند. <a className="underline" href="https://portfolio-platform-fawn.vercel.app/market/stocks">تابلوی سایت اصلی</a></p> : null}
       <section className="space-y-3 rounded-3xl border border-[var(--line)] bg-[var(--surface)] p-4 sm:p-6" aria-label="فیلترها">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="text-sm">جست‌وجوی نماد یا شرکت<input type="search" className={control} value={query} onChange={(e)=>{setQuery(e.target.value);setPage(0);}} /></label>
@@ -90,11 +90,11 @@ export default function Screener({ rows, received, unavailable }: { rows: Row[];
           <table className="w-full text-sm">
             <thead><tr>{["نماد","صنعت","قیمت (تومان)","تغییر (%)","حجم","P/E"].map((h)=><th key={h} scope="col" className="whitespace-nowrap p-3 text-right">{h}</th>)}</tr></thead>
             <tbody>{ordered.slice(page*PAGE,(page+1)*PAGE).map((row)=><tr key={row.id} className="border-t border-[var(--line)]">
-              <th scope="row" className="whitespace-nowrap p-3 text-right"><a className="font-bold underline underline-offset-4" href={`/symbol/${encodeURIComponent(row.id)}`}>{row.id}</a><span className="block text-xs font-normal text-[var(--text-2)]">{row.name}</span></th>
+              <th scope="row" className="whitespace-nowrap p-3 text-right"><a className="font-bold underline underline-offset-4" href={`https://portfolio-platform-fawn.vercel.app/symbol/${encodeURIComponent(row.id)}`}>{row.id}</a><span className="block text-xs font-normal text-[var(--text-2)]">{row.name}</span></th>
               <td className="whitespace-nowrap p-3">{row.industry ?? "—"}</td>{[row.price,row.change,row.volume,row.pe].map((v,i)=><td key={i} className="whitespace-nowrap p-3">{fmt(v)}</td>)}
             </tr>)}</tbody>
           </table>
-        </div> : <p className="rounded-xl border border-[var(--line)] p-4">{unavailable ? "دادهٔ قابل نمایش در دسترس نیست." : "ردیفی با این تنظیمات پیدا نشد."}</p>}
+        </div> : <p className="rounded-xl border border-[var(--line)] p-4">ردیفی با این تنظیمات پیدا نشد.</p>}
         {ordered.length > PAGE && <nav aria-label="صفحه‌بندی" className="flex items-center gap-2"><button className={btn} disabled={page===0} onClick={()=>setPage(page-1)}>قبلی</button><span className="text-sm">{nf.format(page+1)} از {nf.format(Math.ceil(ordered.length/PAGE))}</span><button className={btn} disabled={(page+1)*PAGE>=ordered.length} onClick={()=>setPage(page+1)}>بعدی</button></nav>}
       </section>
     </main>
