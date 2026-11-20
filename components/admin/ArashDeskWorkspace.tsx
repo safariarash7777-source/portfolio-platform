@@ -41,6 +41,7 @@ import {
 } from "@/lib/desk/preferences";
 import { useDeskAccountPreferences } from "./useDeskAccountPreferences";
 import s from "./ArashDeskWorkspace.module.css";
+import AdminWorkdayPath from "./AdminWorkdayPath";
 
 const LAYOUTS = ["دید بازار", "میز پژوهش", "پایش ریسک"];
 const RULE_LABELS = {
@@ -296,6 +297,7 @@ export default function ArashDeskWorkspace({ data }: { data: ArashDeskData }) {
           </button>
         </div>
       </header>
+      <AdminWorkdayPath data={data} />
       <nav className={s.toolbar} aria-label="چیدمان میز">
         <div className={s.tabs}>
           {LAYOUTS.map((name, index) => (
