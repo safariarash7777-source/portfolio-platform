@@ -76,6 +76,8 @@ export async function GET(req:Request) {
   const text=params.get("minGrowth") ?? "0";
   const minGrowth=Number(text);
   const symbol=params.get("symbol");
+  const universe=params.get("universe") ?? "board";
+  if (universe !== "board" && universe !== "reported-outside") return NextResponse.json({error:"جامعهٔ نامعتبر"},{status:400});
   if (!/^(13\d{2}|14\d{2})-(0[1-9]|1[0-2])$/.test(period) || !text.trim() || !Number.isFinite(minGrowth) ||
       (symbol !== null && !/^[\p{L}\p{N}‌ -]{1,40}$/u.test(symbol))) return NextResponse.json({error:"دوره، حد رشد یا نماد معتبر نیست"},{status:400});
   const db=binding();
@@ -96,7 +98,7 @@ export async function GET(req:Request) {
     if (!Array.isArray(rosters[0]?.stocks) || !rosters[0].stocks.length) throw new Error("Missing stock roster");
     const familyClock = rosters[0].receivedAt;
     const rosterReceivedAt = typeof familyClock === "number" && Number.isSafeInteger(familyClock) && familyClock > 0 && familyClock <= Date.now() ? new Date(familyClock).toISOString() : null;
-    return NextResponse.json(monthlySalesScreen(period,minGrowth,rosters[0].stocks,filings,notices,new Date().toISOString(),rosterReceivedAt),{headers});
+    return NextResponse.json(monthlySalesScreen(period,minGrowth,rosters[0].stocks,filings,notices,new Date().toISOString(),rosterReceivedAt,universe),{headers});
   } catch {
     return NextResponse.json({error:"خواندن کامل گزارش‌ها یا جامعهٔ بازار ممکن نشد."},{status:503,headers:{"Cache-Control":"no-store"}});
   }

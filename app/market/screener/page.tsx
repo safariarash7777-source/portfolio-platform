@@ -25,6 +25,7 @@ export default async function SalesScreenerPage({ searchParams }: {
   const params = await searchParams;
   const period = typeof params.period === "string" ? params.period : lastCompletedMonth();
   const minGrowth = typeof params.minGrowth === "string" ? params.minGrowth : "0";
+  const outside = params.universe === "reported-outside";
   const symbol = typeof params.symbol === "string" && params.symbol.length <= 64 ? params.symbol.trim() : "";
   return <>
     <Navbar />
@@ -34,7 +35,7 @@ export default async function SalesScreenerPage({ searchParams }: {
         <h1 className="font-display text-3xl font-bold">غربال فروش ماهانه</h1>
         <p className="mt-2 text-sm" style={{color:"var(--text-2)"}}>رشد مبلغ فروش هر شرکت در مقایسه با همان ماه سال قبل</p>
       </header>
-      <MonthlySalesScreener key={[period,minGrowth,symbol].join(":")} period={period} minGrowth={minGrowth} symbol={symbol} />
+      <MonthlySalesScreener key={[period,minGrowth,symbol,outside].join(":")} outside={outside} period={period} minGrowth={minGrowth} symbol={symbol} />
     </main>
     <Footer />
   </>;

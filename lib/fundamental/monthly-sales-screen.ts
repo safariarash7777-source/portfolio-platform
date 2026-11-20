@@ -27,7 +27,9 @@ export interface ScreenRow {
   symbol: string; industry: string | null; eligible: boolean; reason: string | null;
   current: SalesPoint | null; previous: SalesPoint | null; growth: number | null; passed: boolean | null;
 }
+export type ScreenUniverse = "board" | "reported-outside";
 export interface MonthlySalesScreen {
+  universeKind?: ScreenUniverse;
   period: string; previousPeriod: string; minGrowth: number; checkedAt: string;
   rows: ScreenRow[];
   coverage: { universe: number; eligible: number; calculable: number; passed: number;
@@ -150,18 +152,26 @@ export function salesHistory(period: string, symbol: string, filings: SalesFilin
   }
   return {symbol,points};
 }
-export function monthlySalesScreen(period:string,minGrowth:number,roster:ScreenIssuer[],filings:SalesFiling[],notices:SalesNotice[],checkedAt:string,rosterUpdatedAt:string|null): MonthlySalesScreen {
+export function monthlySalesScreen(period:string,minGrowth:number,roster:ScreenIssuer[],filings:SalesFiling[],notices:SalesNotice[],checkedAt:string,rosterUpdatedAt:string|null, universeKind:ScreenUniverse = "board"): MonthlySalesScreen {
   const previousPeriod = monthOffset(period,-12);
   const reports=group(filings,periodOf);
   const feed=group(notices,n=>titleDate(n.title)?.slice(0,7) ?? null);
-  const coverage: MonthlySalesScreen["coverage"]={universe:0,eligible:0,calculable:0,passed:0,excluded:{},
-    universeSource:"نمادهای سهام در آخرین تابلوی ذخیره‌شده؛ شمول فروش با سند فروش محصول یا صنعت تولیدی و معدنی تعیین می‌شود.",rosterUpdatedAt};
+  const board = new Set(roster.map(issuer => issuerKey(issuer.id)));
+  if (board.has("") || board.size !== roster.length) throw new Error("Ambiguous stock roster");
+  const reported = new Set([
+    ...filings.filter(r => periodOf(r) === period).map(r => issuerKey(r.symbol)),
+    ...notices.filter(r => titleDate(r.title)?.slice(0,7) === period).map(r => issuerKey(r.symbol)),
+  ]);
+  const outside = [...reported].filter(symbol => symbol && !board.has(symbol));
+  const population: ScreenIssuer[] = universeKind === "board" ? roster : outside.map(id => ({id}));
+  const universeSource = universeKind === "board"
+    ? "نمادهای سهام در آخرین تابلوی ذخیره‌شده؛ شمول فروش با سند فروش محصول یا صنعت تولیدی و معدنی تعیین می‌شود."
+    : "ناشران دارای گزارش یا اطلاعیهٔ ماهانهٔ ذخیره‌شده برای دورهٔ انتخابی که در آخرین تابلوی سهام دیده نشدند. وضعیت پذیرش این ناشران در بورس یا فرابورس نامشخص است.";
+  const coverage: MonthlySalesScreen["coverage"] = {universe:population.length,eligible:0,calculable:0,passed:0,
+    excluded:{},universeSource,rosterUpdatedAt,outsideRoster:outside.length};
   const rows:ScreenRow[]=[];
-  const seen = new Set<string>();
-  for (const issuer of roster) {
+  for (const issuer of population) {
     const symbol=issuerKey(issuer.id);
-    if (!symbol || seen.has(symbol)) throw new Error("Ambiguous stock roster");
-    seen.add(symbol);
     const records = (month:string)=>reports.get(symbol+"|"+month) ?? [];
     const noticesFor = (month:string)=>feed.get(symbol+"|"+month) ?? [];
     const currentRows=records(period), previousRows=records(previousPeriod);
@@ -192,12 +202,6 @@ export function monthlySalesScreen(period:string,minGrowth:number,roster:ScreenI
     rows.push({symbol,industry:issuer.industry ?? null,eligible,reason,current,previous,growth,passed,
       ...(unitReview.length ? {unitReview} : {})});
   }
-  coverage.universe=rows.length;
-  const reportingSymbols = new Set([
-    ...filings.filter(r => periodOf(r) === period).map(r => issuerKey(r.symbol)),
-    ...notices.filter(r => titleDate(r.title)?.slice(0,7) === period).map(r => issuerKey(r.symbol)),
-  ]);
-  coverage.outsideRoster = [...reportingSymbols].filter(symbol => symbol && !seen.has(symbol)).length;
   rows.sort((a,b)=> (b.growth ?? -Infinity)-(a.growth ?? -Infinity) || a.symbol.localeCompare(b.symbol,"fa"));
-  return {period,previousPeriod,minGrowth,coverage,rows,checkedAt};
+  return {period,previousPeriod,minGrowth,coverage,rows,checkedAt,universeKind};
 }

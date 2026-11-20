@@ -279,6 +279,8 @@ const BACK_TARGETS: ReadonlyArray<BackTargetSpec> = [
     },
   },
   { href: "/market/screener", label: "غربال فروش ماهانه", params: {
+    universe: isEnum(["board","reported-outside"]),
+    symbol: isFreeText(64),
     period: v => /^1\d{3}-(0[1-9]|1[0-2])$/.test(v),
     minGrowth: v => /^-?\d{1,9}(\.\d{1,5})?$/.test(v),
   } },

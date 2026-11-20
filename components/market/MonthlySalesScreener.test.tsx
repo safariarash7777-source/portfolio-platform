@@ -41,5 +41,18 @@ test("an incomplete issuer deep link expands its source disclosure outside the d
   assert.deepEqual(headers.slice(0,3), ["مقایسه","نماد","رشد و مستندات"]);
   assert.ok(html.includes("نمونه · مبنای محاسبه"));
   assert.ok(html.includes("پیوند این ردیف"));
-  assert.ok(html.includes("شمولشان جداگانه باید بررسی شود · ۳"));
+  assert.ok(html.includes("گزارش‌دهندگان خارج از آخرین تابلو · ۳"));
+});
+
+test("off-board row and issuer return preserve the separate population and selected filter", () => {
+  const row:ScreenRow={symbol:"نمونه",industry:null,eligible:true,growth:null,passed:null,reason:"گزارش ماه موجود نیست",current:point,previous:null};
+  const result:MonthlySalesScreen={period:"1405-01",previousPeriod:"1404-01",minGrowth:5,checkedAt:"2026-05-01T00:00:00Z",rows:[row],coverage:{universe:1,eligible:1,passed:0,calculable:0,excluded:{},universeSource:"اطلاعیه",rosterUpdatedAt:null,outsideRoster:1}};
+  const html=renderToStaticMarkup(React.createElement(SalesScreenResults,{result,symbol:row.symbol,outside:true}));
+  assert.ok(html.includes("پوشش ناشران خارج از تابلو"));
+  assert.ok(html.includes("وضعیت پذیرش بورسی این ناشران احراز نشده است"));
+  assert.ok(html.includes("universe=reported-outside&amp;symbol="));
+  const back=resolveBackTarget("/market/screener?period=1405-01&minGrowth=5&symbol=نمونه&universe=reported-outside",{href:"/market",label:"بازار"});
+  const params=new URL(back.href,"https://site.test").searchParams;
+  assert.equal(params.get("symbol"),row.symbol);
+  assert.equal(params.get("universe"),"reported-outside");
 });

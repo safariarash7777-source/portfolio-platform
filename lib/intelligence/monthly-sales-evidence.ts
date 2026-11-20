@@ -16,6 +16,7 @@ export function monthlyResearchEvidence(screen: MonthlySalesScreen, symbol: stri
   if ((growth === null) !== (row.passed === null) ||
       (growth !== null && (!Number.isFinite(growth) || documents.length !== 2))) throw new Error("invalid_screen_decision");
   const query = new URLSearchParams({period: screen.period, minGrowth: String(screen.minGrowth), symbol});
+  if (screen.universeKind === "reported-outside") query.set("universe", screen.universeKind);
   const packet: ResearchPacket = { version: "research-v1", observations: [{
     evidence: "E1", bands: {monthly_sales_growth: maskGrowth(growth)},
   }] };

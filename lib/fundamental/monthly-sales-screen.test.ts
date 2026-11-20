@@ -50,3 +50,17 @@ test("outside-board filings and notices count once, separately from the roster",
  const out=run([now,prior,external],[{symbol:"سایر",title:now.title,link:now.source_url}]);
  assert.equal(out.coverage.outsideRoster,1); assert.equal(out.coverage.universe,3);
 });
+test("outside population applies source and same-month rules independently, including a notice-only issuer",()=>{
+ const issuer=(r:SalesFiling,symbol:string)=>({...r,symbol,reportSymbol:symbol});
+ const rows=[now,prior,issuer(now,"سایر"),issuer(prior,"سایر"),issuer(prior,"فقط‌قدیم")];
+ const notices=[{symbol:"تازه",title:now.title,link:now.source_url},{symbol:"سایر",title:now.title,link:now.source_url}];
+ const outside=monthlySalesScreen("1405-07",50,stocks,rows,notices,"now",null,"reported-outside");
+ assert.equal(outside.universeKind,"reported-outside");
+ assert.deepEqual([outside.coverage.universe,outside.coverage.eligible,outside.coverage.calculable,outside.coverage.passed],[2,2,1,1]);
+ assert.deepEqual(outside.rows.map(r=>[r.symbol,r.growth]),[["سایر",50],["تازه",null]]);
+ assert.equal(outside.rows[0].current?.sourceUrl,now.source_url);
+ assert.equal(outside.rows.every(r=>r.industry===null),true);
+ const board=run(rows,notices);
+ assert.equal(board.coverage.outsideRoster,2); assert.equal(board.coverage.universe,3);
+ assert.equal(board.rows.some(r=>outside.rows.some(x=>x.symbol===r.symbol)),false);
+});
