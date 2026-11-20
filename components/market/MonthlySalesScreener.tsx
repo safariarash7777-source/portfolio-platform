@@ -62,6 +62,13 @@ export function SalesScreenResults({ result, symbol = "", outside = false, initi
     if (status === "missing") return row.passed === null;
     return true;
   });
+  const incomplete = result.coverage.eligible - result.coverage.calculable;
+  let emptyMessage = "هیچ نمادی با این انتخاب پیدا نشد.";
+  if (!query && status === "pass" && result.coverage.passed === 0) {
+    if (result.coverage.eligible === 0) emptyMessage = "ناشر مشمول فروش ماهانه در این جامعه و دوره شناسایی نشد.";
+    else if (result.coverage.calculable === 0) emptyMessage = "دادهٔ این دوره برای محاسبهٔ رشد هیچ ناشر مشمولی کافی نیست.";
+    else emptyMessage = `از ${formatCount(result.coverage.calculable)} ناشر قابل محاسبه هیچ‌کدام از حد رشد عبور نکردند.`;
+  }
   const pages = Math.max(1, Math.ceil(rows.length / 40));
   const start = (page - 1) * 40;
   const from = "/market/screener?" + screenQuery(result.period,String(result.minGrowth),outside,symbol,selected);
@@ -78,7 +85,7 @@ export function SalesScreenResults({ result, symbol = "", outside = false, initi
     <SalesReadNotice label="غربال فروش" readState={result.readState} checkedAt={result.checkedAt}/>
     <details className="card p-4"><summary className="cursor-pointer font-bold">پوشش {outside ? "ناشران خارج از تابلو" : "تابلوی سهام"} · {formatCount(result.coverage.calculable)} قابل محاسبه از {formatCount(result.coverage.eligible)} ناشر مشمول</summary>
       <p className="mt-3 text-sm">{result.coverage.universeSource} آخرین دریافت فهرست نمادها {screenTimestamp(result.coverage.rosterUpdatedAt)}</p>
-      <p className="py-2 text-sm">جامعهٔ بررسی {formatCount(result.coverage.universe)} · مشمول {formatCount(result.coverage.eligible)} · عبورکرده {formatCount(result.coverage.passed)}</p>
+      <p className="py-2 text-sm">جامعهٔ بررسی {formatCount(result.coverage.universe)} · مشمول {formatCount(result.coverage.eligible)} · عبورکرده {formatCount(result.coverage.passed)} · زیر حد {formatCount(result.coverage.calculable - result.coverage.passed)} · مشمول با دادهٔ ناکافی {formatCount(incomplete)}</p>
       {outside ? <p className="mb-2 text-sm">مخرج این غربال فقط ناشران گزارش‌دهندهٔ خارج از آخرین تابلو است. وضعیت پذیرش بورسی این ناشران احراز نشده است.</p>
         : <p className="mb-2 text-sm">گزارش‌دهندگان خارج از آخرین تابلو · {result.coverage.outsideRoster === undefined ? "نامشخص" : formatCount(result.coverage.outsideRoster)} · <Link prefetch={false} className="underline" href={"/market/screener?" + screenQuery(result.period,String(result.minGrowth),true)}>بررسی جداگانهٔ این ناشران</Link></p>}
       <ul className="list-inside list-disc text-sm">{Object.entries(result.coverage.excluded).map(([reason, count]) => <li key={reason}>{reason} · {formatCount(count)}</li>)}</ul>
@@ -104,7 +111,9 @@ export function SalesScreenResults({ result, symbol = "", outside = false, initi
           </tr>{open === row.symbol && <tr><td className="whitespace-normal bg-[var(--surface-2)] p-3" colSpan={3 + Number(visible.industry) + Number(visible.current) + Number(visible.previous)}><GrowthEvidence row={row} result={result} outside={outside}/></td></tr>}
         </tbody>)}
       </table></div>
-      {!rows.length && <p>هیچ نمادی با این انتخاب پیدا نشد.</p>}
+      {!rows.length && <div className="space-y-2"><p>{emptyMessage}</p>
+        {!query && status === "pass" && incomplete > 0 && <button className="min-h-11 underline" onClick={() => {setStatus("missing");setPage(1);}}>مشاهدهٔ علت‌های کنارگذاری</button>}
+      </div>}
       {pages > 1 && <nav aria-label="صفحه‌های نتیجه" className="flex items-center gap-3"><button className={control} disabled={page === 1} onClick={() => setPage(p => p - 1)}>قبلی</button><span>{formatCount(page)} از {formatCount(pages)}</span><button className={control} disabled={page === pages} onClick={() => setPage(p => p + 1)}>بعدی</button></nav>}
     </section>
   </div>;
