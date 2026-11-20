@@ -1,4 +1,4 @@
-import { isKind, isPlatform, type ContentItem } from "../content-hub";
+import { detectPlatform, isKind, isPlatform, type ContentItem } from "../content-hub";
 import { uniqueMedia, sourceUrl } from "./presentation";
 import { sourcePublishedAt } from "../telegram-feed";
 
@@ -16,7 +16,7 @@ export function publicMediaItems(items: readonly unknown[], now = Date.now()): C
     const item = row as unknown as ContentItem;
     const published = sourcePublishedAt(item.published_at);
     const url = sourceUrl(item.content_url);
-    const publicSource = url !== null && (item.platform !== "telegram" || /^https:\/\/t\.me\/(?:s\/)?arashsafariiiiiiii\/\d+\/?$/i.test(url));
+    const publicSource = url !== null && detectPlatform(url) === item.platform && (item.platform !== "telegram" || /^https:\/\/t\.me\/(?:s\/)?arashsafariiiiiiii\/\d+\/?$/i.test(url));
     const visible = publicContentId(item.id) && published !== null && Date.parse(published) <= now &&
       row.deleted_at == null && row.is_private !== true &&
       (row.visibility === undefined || row.visibility === "public") &&

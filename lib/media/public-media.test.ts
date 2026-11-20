@@ -17,7 +17,7 @@ test("the reading lead needs a substantial standalone body; a caption and a podc
 test("archive and deep links accept only publicly published rows from the public Telegram channel", () => {
   const denied = [{ is_private:true }, { visibility:"paid" }, { audience:"members" },
     { deleted_at:"2026-11-11" }, { published_at:"2099-11-11T12:00:00Z" },
-    { content_url:"https://t.me/c/1111/29" }, { content_url:"https://t.me/course_channel/29" }];
+    { content_url:"https://t.me/c/1111/29" }, { content_url:"https://t.me/course_channel/29" }, { platform:"instagram", content_url:"https://t.me/course_channel/29" }];
   for(const patch of denied) assert.deepEqual(publicMediaItems([{...post,...patch}]),[]);
   assert.equal(publicMediaItems([post])[0]?.id,post.id);
 });
