@@ -940,7 +940,7 @@ async function fetchAnnouncements(symbol, category) {
     const res = await fetch(`${BRSAPI_BASE}/Codal/Announcement.php?${qs}`, {
       headers: HDRS, signal: AbortSignal.timeout(20000),
     });
-    if (!res.ok) throw new Error(`announcement HTTP ${res.status}`);
+    if (!res.ok) throw Object.assign(new Error(`announcement HTTP ${res.status}`), { status: res.status });
     json = await res.json();
   }
   return announcementRows(json);
@@ -1154,7 +1154,7 @@ export async function fetchAnnouncementsPage({ l18, category, page = 1, date_sta
     const res = await fetch(`${BRSAPI_BASE}/Codal/Announcement.php?${qs}`, {
       headers: HDRS, signal: AbortSignal.timeout(25000),
     });
-    if (!res.ok) throw new Error(`announcement HTTP ${res.status}`);
+    if (!res.ok) throw Object.assign(new Error(`announcement HTTP ${res.status}`), { status: res.status });
     json = await res.json();
   }
   return announcementRows(json);

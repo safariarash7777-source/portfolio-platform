@@ -44,6 +44,7 @@ async function fixture(options = {}) {
     calls.pages.push(Number(job.params.page));
     calls.announcementCategories.push(job.params.category ?? null);
     if (!job.params.l18 && Number(job.params.page) === options.failSearchPage) {
+      if (options.providerHttpStatus) throw Object.assign(new Error("provider response"), { status: options.providerHttpStatus });
       throw Object.assign(new Error("429 provider fixture"), { noRetry: true });
     }
     if (options.announcementErrorCode) throw Object.assign(new Error(options.announcementErrorCode), { code: options.announcementErrorCode });
@@ -241,6 +242,36 @@ test('invalid statement retry ledger is never cached as valid state on a later c
     assert.equal(f.calls.saves.length, 0);
   }
 });
+test("provider access and rate responses stop page retries and preserve the confirmed watermark", async () => {
+  for (const [status, reason] of [[429, "provider_rate_limited"], [403, "provider_forbidden"]]) {
+    const f = await fixture({ pages: [[announcement(1)]], failSearchPage: 2, providerHttpStatus: status });
+    await f.engine.runEngineCycle();
+    assert.equal(f.calls.pages.filter(p => p === 2).length, 1);
+    assert.equal(f.engine.engineStatus.feed.incompleteReason, reason);
+    assert.deepEqual(f.persisted.watermark, watermark);
+    assert.equal(f.calls.feedWrites[0].rows[0].link, announcement(1).link);
+  }
+});
+
+test("legacy announcement adapter preserves only the HTTP status on provider refusal", async () => {
+  const previous = process.env.BRSAPI_BASE;
+  process.env.BRSAPI_BASE = "https://status-fixture.invalid";
+  try {
+    const legacy = await import("./codal.mjs?legacy-status-fixture");
+    for (const status of [403, 429]) {
+      globalThis.fetch = async input => {
+        assert.equal(new URL(input).hostname, "status-fixture.invalid");
+        return new Response("private refusal text", { status });
+      };
+      await assert.rejects(legacy.fetchAnnouncementsPage(), err =>
+        err.status === status && !err.message.includes("private refusal text"));
+    }
+  } finally {
+    process.env.BRSAPI_BASE = previous;
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test('failed provider page retains discovered notices without falsely advancing the watermark', async () => {
   const a=financial(1);
   const f=await fixture({pages:[[a]],failSearchPage:2});

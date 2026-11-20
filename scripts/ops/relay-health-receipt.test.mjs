@@ -231,7 +231,7 @@ test('Codal exact reasons and versioned diagnostics preserve real counts without
   assert.equal(out.archive.lastCycle.persistenceUnconfirmed, 1);
   assert.equal(out.archive.lastCycle.downloaded, null);
   assert.equal(JSON.stringify(out).includes(secret), false);
-  for (const reason of ['page_limit', 'feed_write_failure', 'blocked_report', 'download_limit', 'report_failure', 'feed_failure']) {
+  for (const reason of ['page_limit', 'feed_write_failure', 'blocked_report', 'download_limit', 'report_failure', 'feed_failure', 'provider_rate_limited', 'provider_forbidden']) {
     assert.equal(sanitizeDebug({codalEngine:{feed:{incompleteReason:reason}}}).codal.feed.incompleteReasonCode, reason);
   }
 });

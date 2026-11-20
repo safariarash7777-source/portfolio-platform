@@ -61,7 +61,7 @@ function safeErrorCodes(value) {
 }
 const integer = x => Number.isSafeInteger(x) && x >= 0 ? x : null;
 const integerCounts = (value, names) => Object.fromEntries(names.map(name => [name, integer(value?.[name])]));
-const incompleteReasons = ['page_limit', 'invalid_order_or_identity', 'feed_write_failure', 'blocked_report', 'download_limit', 'report_failure', 'feed_failure', 'local_deferred'];
+const incompleteReasons = ['page_limit', 'invalid_order_or_identity', 'feed_write_failure', 'blocked_report', 'download_limit', 'report_failure', 'feed_failure', 'provider_rate_limited', 'provider_forbidden', 'local_deferred'];
 function diagnostics(value, shape) {
   const valid = value?.version === 1;
   const project = name => Object.fromEntries(Object.entries(shape).map(([group, names]) =>
