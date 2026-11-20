@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { createConsultationAttempt, readConsultation, sendConsultationAttempt } from "@/lib/consultation/request";
 import { validateCashFlowPeriod } from "@/lib/portfolio/cashFlowApiContract";
-import ServiceRequests from "./ServiceRequests";
+import ServiceRequests, { type UnsentServiceDraft } from "./ServiceRequests";
 import ConsultationPanel from "./ConsultationPanel";
 import { emptyPanelDrafts, mayRestorePanelDrafts, type PanelDrafts } from "./draft";
 import { receiptVisible } from "./readback";
@@ -22,6 +22,7 @@ export default function ConsultationWorkspace({ expectedActorId, initialRelation
   const [message, setMessage] = useState(""), [dirty, setDirty] = useState(false), [revision, setRevision] = useState(0);
   const live = useRef(false), revoked = useRef(false), initialized = useRef(false), sequence = useRef(0), abort = useRef<AbortController | null>(null);
   const [drafts, setDrafts] = useState(emptyPanelDrafts), [recovering, setRecovering] = useState(false);
+  const serviceDraft = useRef<UnsentServiceDraft | null>(null);
   const draftsRef = useRef(drafts), restoreFrom = useRef<Read | null>(null), lastRead = useRef<Read | null>(null);
   const receiptRef = useRef<ConsultationReceipt | null>(null);
   const period = useRef<{ startOn?: string; endOn?: string }>({});
@@ -34,7 +35,7 @@ export default function ConsultationWorkspace({ expectedActorId, initialRelation
   };
   const clearIdentity = useCallback(() => {
     live.current = false; revoked.current = true; abortReads(); pending.current = null; receiptRef.current = null;
-    restoreFrom.current = null; lastRead.current = null; clearDrafts(); setRecovering(false);
+    restoreFrom.current = null; lastRead.current = null; serviceDraft.current = null; clearDrafts(); setRecovering(false);
     setData(null); setMessage(""); setError(""); setSelectionDenied(false); setSaving(false); setReading(false); setUncertain(false); setConfirmed(false); setReadbackVerified(false); setIdentity("changed");
   }, [abortReads, clearDrafts]);
   const load = useCallback(async (relationshipId?: string) => {
@@ -46,13 +47,14 @@ export default function ConsultationWorkspace({ expectedActorId, initialRelation
       if (!live.current || revoked.current || generation !== sequence.current) return false;
       if (result.status === "error") {
         if (result.error.code === "AUTH_REQUIRED" || result.error.code === "ACTOR_CHANGED") { clearIdentity(); return false; }
-        if (result.httpStatus === 403 || result.httpStatus === 404) { restoreFrom.current = null; lastRead.current = null; clearDrafts(); setRecovering(false); setData(null); setSelectionDenied(Boolean(relationshipId)); }
+        if (result.httpStatus === 403 || result.httpStatus === 404) { restoreFrom.current = null; lastRead.current = null; serviceDraft.current = null; clearDrafts(); setRecovering(false); setData(null); setSelectionDenied(Boolean(relationshipId)); }
         setError("خواندن پرونده انجام نشد؛ نبود اطلاعات یا دسترسی تأیید نشده است. نتیجهٔ قبلی، خواندن تازه نیست."); return false;
       }
       if (result.data.actor.id !== expectedActorId) { clearIdentity(); return false; }
       if (receiptRef.current && !receiptVisible(result.data, receiptRef.current)) { setData(result.data); setError("رسید ثبت حفظ شده است، اما اثر همان درخواست در بازخوانی هنوز دیده نشد. ثبت را تکرار نکنید؛ بازخوانی را بررسی کنید."); return false; }
       if (receiptRef.current) setReadbackVerified(true);
       const previous = restoreFrom.current;
+      if (previous && (previous.actor.isAdvisor !== result.data.actor.isAdvisor || previous.actor.isOwner !== result.data.actor.isOwner)) serviceDraft.current = null;
       restoreFrom.current = null; lastRead.current = result.data; setRecovering(false);
       setData(result.data); selected.current = result.data.selected?.id ?? relationshipId; if (result.data.dossier) period.current = result.data.dossier.basis.cashFlowPeriod;
       if (!previous || !mayRestorePanelDrafts(previous, result.data, draftsRef.current)) clearDrafts();
@@ -125,7 +127,7 @@ export default function ConsultationWorkspace({ expectedActorId, initialRelation
     {confirmed && !readbackVerified && !error && !reading && <section className="card space-y-3 p-4"><p role="status">رسید ثبت محفوظ است؛ بازخوانی مستقل همان اثر هنوز تأیید نشده است. ثبت دوباره انجام نمی‌شود.</p><button className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" disabled={saving} onClick={() => void load(selected.current)}>دوباره خواندن پرونده</button></section>}
     {confirmed && readbackVerified && !error && !reading && <button className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" disabled={saving} onClick={() => { if (!live.current || revoked.current || !readbackVerified) return; receiptRef.current = null; setConfirmed(false); setReadbackVerified(false); setMessage(""); }}>ادامه با پروندهٔ بازخوانی‌شده</button>}
     {dirty && !saving && !reading && !uncertain && !confirmed && <section className="card space-y-3 p-4"><p className="text-sm leading-7">برای تغییر پرونده، دوره یا لغو دسترسی مشاور، تغییرات فرم‌ها را ثبت یا کنار بگذارید. کنارگذاشتن فرم‌ها هیچ سابقه یا دسترسی ثبت‌شده‌ای را تغییر نمی‌دهد.</p><button type="button" className="btn !whitespace-normal max-w-full min-w-0 break-words btn-outline" onClick={discardDrafts}>کنارگذاشتن تغییرات ثبت‌نشدهٔ فرم‌ها</button></section>}
-    {!recovering && serviceRequests && data && <ServiceRequests key={data.actor.id} actor={data.actor.id} advisor={data.actor.isAdvisor} selected={data.selected?.id} locked={locked || dirty} onSelect={id => { if (!locked && !dirty) void load(id); }} />}
+    {!recovering && serviceRequests && data && <ServiceRequests key={data.actor.id} draftMemory={serviceDraft} actor={data.actor.id} advisor={data.actor.isAdvisor} selected={data.selected?.id} locked={locked || dirty} onSelect={id => { if (!locked && !dirty) void load(id); }} />}
     {!recovering && data && <ConsultationPanel drafts={drafts} updateDrafts={updateDrafts} serviceRequests={serviceRequests} key={revision} data={data} locked={locked} onDirty={() => { if (!locked) setDirty(true); }} onCommand={command => send(command)} onSelect={relationshipId => { if (!locked && !dirty) { setData(null); setMessage(""); void load(relationshipId); } }} selectionLocked={locked || dirty} onPeriod={next => { if (!locked && !dirty) { try { period.current = validateCashFlowPeriod(next); } catch { setMessage("دوره معتبر نیست؛ پروندهٔ فعلی حفظ شد. فاصلهٔ شروع و پایان حداکثر ۳۶۵ روز باشد."); return; } setMessage(""); setData(null); void load(selected.current); } }} onDiscard={discardDrafts} />}
   </div>;
 }
