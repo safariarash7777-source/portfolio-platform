@@ -1,0 +1,41 @@
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import Link from "next/link";
+import MonthlySalesScreener from "@/components/market/MonthlySalesScreener";
+import { pageMetadata } from "@/lib/metadata";
+
+export const metadata = pageMetadata({
+  title: "غربال فروش ماهانه",
+  description: "مقایسهٔ فروش هم‌دورهٔ شرکت‌ها با دسترسی به گزارش کدال و نمودار روند فروش.",
+  path: "/market/screener",
+});
+
+function lastCompletedMonth() {
+  const date = new Intl.DateTimeFormat("en-US-u-ca-persian-nu-latn", {
+    year: "numeric", month: "numeric", timeZone: "Asia/Tehran",
+  }).formatToParts(new Date());
+  const year = Number(date.find(part => part.type === "year")?.value);
+  const month = Number(date.find(part => part.type === "month")?.value);
+  return `${month === 1 ? year - 1 : year}-${String(month === 1 ? 12 : month - 1).padStart(2, "0")}`;
+}
+
+export default async function SalesScreenerPage({ searchParams }: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const period = typeof params.period === "string" ? params.period : lastCompletedMonth();
+  const minGrowth = typeof params.minGrowth === "string" ? params.minGrowth : "0";
+  const symbol = typeof params.symbol === "string" && params.symbol.length <= 64 ? params.symbol.trim() : "";
+  return <>
+    <Navbar />
+    <main dir="rtl" className="mx-auto min-h-screen max-w-7xl space-y-5 px-4 pb-16 pt-8 sm:px-6">
+      <Link href="/market/stocks" className="text-sm underline">تابلوی سهام</Link>
+      <header>
+        <h1 className="font-display text-3xl font-bold">غربال فروش ماهانه</h1>
+        <p className="mt-2 text-sm" style={{color:"var(--text-2)"}}>رشد مبلغ فروش هر شرکت در مقایسه با همان ماه سال قبل</p>
+      </header>
+      <MonthlySalesScreener key={[period,minGrowth,symbol].join(":")} period={period} minGrowth={minGrowth} symbol={symbol} />
+    </main>
+    <Footer />
+  </>;
+}
