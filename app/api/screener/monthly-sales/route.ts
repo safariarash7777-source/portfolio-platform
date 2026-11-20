@@ -105,7 +105,7 @@ async function load(db:BoundedBinding, period:string, symbol:string|null, univer
     const prior=monthOffset(period,-12);
     const ranges=symbol ? [interval(monthOffset(period,-11),period)] : [interval(prior,prior),interval(period,period)];
     const reports=new URLSearchParams({select:projection, report_kind:"eq.ن-۳۰",data:"not.is.null",or:"("+ranges.join(",")+")"});
-    const feed=new URLSearchParams({select:"id,symbol,title,link",category:"eq.ماهانه"});
+    const feed=new URLSearchParams({select:"id,symbol,title,link,report_code",category:"eq.ماهانه"});
     if (symbol) { reports.set("symbol","eq."+symbol); feed.set("symbol","eq."+symbol); }
     else feed.set("or","("+[...monthPatterns(prior),...monthPatterns(period)].join(",")+")");
     const [filings,notices,rosters] = await Promise.all([
@@ -138,7 +138,7 @@ export async function GET(req:Request) {
     // The hosted Next data cache shares complete snapshots across cold workers.
     // Only public results enter it; neither credentials nor thresholds enter its key.
     const hosted = process.env.VERCEL === "1"
-      ? unstable_cache(refresh,["monthly-sales-complete-v1",key],{revalidate:MONTHLY_SCREEN_FRESH_MS/1000})
+      ? unstable_cache(refresh,["monthly-sales-complete-v2",key],{revalidate:MONTHLY_SCREEN_FRESH_MS/1000})
       : refresh;
     const {snapshot,readState} = await cached(key,hosted);
     const body = "rows" in snapshot ? applySalesThreshold(snapshot,minGrowth) : snapshot;
