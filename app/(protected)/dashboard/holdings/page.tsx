@@ -22,9 +22,9 @@ export const dynamic = "force-dynamic";
 export default async function HoldingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ v?: string }>;
+  searchParams: Promise<{ v?: string; position?: string }>;
 }) {
-  const { v } = await searchParams;
+  const { v, position } = await searchParams;
   const snapshot = await loadPortfolioSnapshot(v);
   const selected = snapshot.history.find(item => item.id === snapshot.holdings?.id);
   const historical = !!selected && selected.id !== snapshot.history[0]?.id;
@@ -68,6 +68,7 @@ export default async function HoldingsPage({
         history={snapshot.history}
         activeVersion={snapshot.holdings?.version ?? null}
         activePositions={snapshot.holdings?.positions ?? []}
+        focusPosition={position}
         rows={[]}
         gaps={[]}
         definitive={false}

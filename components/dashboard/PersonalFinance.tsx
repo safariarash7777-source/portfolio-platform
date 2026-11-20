@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowUpLeft, Bookmark, CalendarDays, PieChart, ClipboardList, Compass, Folder, Layers3, MessagesSquare, Wallet } from "lucide-react";
+import { ArrowLeft, Bookmark, CalendarDays, PieChart, ClipboardList, Compass, Folder, Layers3, MessagesSquare, Wallet } from "lucide-react";
 import ReadError from "@/components/dashboard/ReadError";
 import { formatJalali, formatPercent, formatToman, toPersianDigits } from "@/lib/format";
+import DossierTrend from "./DossierTrend";
 import type { HistoryPoint } from "@/lib/portfolio/dossier-history";
 import type { RecordedPayment } from "@/lib/portfolio/paymentSchedule";
 
@@ -44,10 +45,12 @@ export default function PersonalFinance({ summary }: { summary?: MemberFinanceSu
   const failed = !summary || summary.assetsState === "error", empty = summary?.assetsState === "empty";
   const p = failed || empty ? undefined : summary?.picture;
   const known = p?.positions.filter(row => row.amount !== null) ?? [];
+  const missing = p?.positions.find(row => row.amount === null);
+  const missingHref = missing ? `/dashboard/holdings?position=${encodeURIComponent(missing.id)}#position-${encodeURIComponent(missing.id)}` : asset;
   const next = failed ? ["بازخوانی پرونده", "دریافت دارایی‌ها تأیید نشده است.", "/dashboard", "بازخوانی اطلاعات"]
     : empty || summary?.assetCount === 0 ? ["اولین دارایی را ثبت کنید", "عنوان، مقدار یا ارزش و سهم مالکیت کافی است.", asset, "ثبت دارایی"]
     : p?.pricesFailed ? ["منبع قیمت را بررسی کنید", "دریافت قیمت از منبع فعلاً ممکن نیست؛ ثبت‌های شما محفوظ‌اند.", asset, "مشاهدهٔ دارایی‌ها"]
-    : p?.positions.some(row => row.amount === null) ? ["ارزش دارایی ناقص را تکمیل کنید", "ارزش، تاریخ و منبع را در دفتر دارایی بررسی کنید.", asset, "تکمیل ارزش‌گذاری"]
+    : p?.positions.some(row => row.amount === null) ? [`ثبت ارزش ${missing!.name}`, "مقدار، مالکیت، تاریخ و منبع همین قلم را پیش از ثبت بررسی کنید.", missingHref, "اصلاح همین دارایی"]
     : summary?.debtsState === "error" ? ["دفتر تعهدها را بررسی کنید", "مانده و موعد هنوز تأیید نشده است.", debt, "بازکردن دفتر بدهی"]
     : p?.due ? ["قسط ثبت‌شده را مرور کنید", "مبلغ و موعد را با دفتر بدهی مقایسه کنید.", debt, "مشاهدهٔ تعهد"]
     : summary?.scopeState === "unconfirmed" ? ["محدودهٔ سبدتان را مشخص کنید", "انتخاب کنید کدام دارایی‌ها جزو سبد سرمایه‌گذاری‌اند.", scope, "تعیین محدودهٔ سبد"]
@@ -64,9 +67,10 @@ export default function PersonalFinance({ summary }: { summary?: MemberFinanceSu
       <div className="dos-main">
         <div className="dos-headline"><span><Wallet size={17} aria-hidden />تصویر مالی</span><span className="dos-badge"><i />{badge}</span></div>
         <h2>{net ? "خالص دارایی‌های ثبت‌شده" : "ارزش بخش قیمت‌دار"}</h2>
+        {p && <p>{toPersianDigits(known.length)} از {toPersianDigits(p.positions.length)} دارایی قیمت معتبر دارد.</p>}
         <div className="dos-amount"><bdi data-unknown={value == null}>{value == null ? empty ? "هنوز ثبت نشده" : "قابل محاسبه نیست" : formatToman(value).split(" ")[0]}</bdi>{value != null && <small>تومان</small>}</div>
         <p>{net ? "ارزش اقلام همین نسخه پس از کسر ماندهٔ بدهی‌های ثبت‌شده." : "فقط ارزش اقلام دارای منبع؛ این عدد کل ثروت شما نیست."}{p?.estimated && " این نسخه شامل ارزش تخمینی است."}</p>
-        <div className="dos-foot"><div><span>داراییِ قیمت‌دار</span><strong>{money(p?.assets)}</strong></div><div><span>ماندهٔ بدهی ثبت‌شده</span><strong>{money(p?.debts)}</strong></div></div>
+        <div className="dos-foot"><div><span>داراییِ قیمت‌دار</span><strong>{net ? money(p?.assets) : toPersianDigits(known.length) + " قلم"}</strong></div><div><span>ماندهٔ بدهی ثبت‌شده</span><strong>{money(p?.debts)}</strong></div></div>
       </div>
       <aside className="dos-action"><div className="dos-label"><span className="dos-sign"><Compass size={17} aria-hidden /></span> اقدام بعدی</div>
         <h2>{next[0]}</h2><p>{next[1]}</p><Link prefetch={false} href={next[2]} className="dos-cta">{next[3]}<ArrowLeft size={16} aria-hidden /></Link>
@@ -75,7 +79,7 @@ export default function PersonalFinance({ summary }: { summary?: MemberFinanceSu
     <nav className="dos-jump" aria-label="بخش‌های پرونده"><a href="#dos-monitor">پایش دارایی</a><a href="#dos-register">ثبت و اصلاح</a><a href="#dos-ledgers">دفترهای من</a></nav>
     <div className="dos-monitor" id="dos-monitor" tabIndex={-1}>
       <div className="dos-panel"><header><h2><CalendarDays size={19} aria-hidden /> ارزش دارایی در زمان</h2><span>نسخه‌های ثبت‌شده</span></header>
-        <RecordedTrend history={!failed ? p?.history : undefined} />
+        <DossierTrend history={!failed ? p?.history : undefined} />
 
       </div>
       <div className="dos-panel"><header><h2><PieChart size={19} aria-hidden /> ترکیب دارایی</h2><span>{failed ? "نامشخص" : `${toPersianDigits(known.length)} از ${toPersianDigits(summary?.assetCount ?? 0)} قلم`}</span></header>
@@ -107,33 +111,3 @@ export default function PersonalFinance({ summary }: { summary?: MemberFinanceSu
 }
 
 
-// Each date is positioned on an elapsed-time axis; an unknown version breaks the
-// line, and equal-timestamp records remain in the accessible detail table.
-function RecordedTrend({ history }: { history?: DossierPicture["history"] }) {
-  const points = history?.points ?? [];
-  const timed = points.filter(pt => Number.isFinite(Date.parse(pt.date))).sort((a,b) => Date.parse(a.date) - Date.parse(b.date));
-  const values = timed.filter((pt): pt is HistoryPoint & {amount:number} => pt.amount !== null);
-  const from = Date.parse(timed[0]?.date ?? ""), to = Date.parse(timed.at(-1)?.date ?? "");
-  const show = values.length > 1 && to > from && new Set(values.map(p => Date.parse(p.date))).size > 1;
-  const max = Math.max(...values.map(v => v.amount), 1);
-  // The readable table is the accessible equivalent of the drawing.
-  const x = (pt: HistoryPoint) => 8 + (Date.parse(pt.date) - from) / (to - from) * 284;
-  const y = (v: number) => 82 - v / max * 67;
-  const segments: string[][] = [];
-  if (show) for (const pt of timed) {
-    if (pt.amount === null) { segments.push([]); continue; }
-    if (!segments.length) segments.push([]);
-    segments[segments.length-1].push(`${x(pt)},${y(pt.amount)}`);
-  }
-  return <>
-    {show ? <><p className="dos-muted">ارزش اظهارشده هنگام ثبت هر نسخه؛ تغییر ارزش، سود نیست. واریز و برداشت هم اثر دارند.</p>
-      <svg className="dos-plot" viewBox="0 0 300 94" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-        <line x1="8" x2="292" y1="82" y2="82" stroke="var(--rule)" />
-        {segments.filter(seg => seg.length > 1).map((seg,i) => <polyline key={i} points={seg.join(" ")} fill="none" stroke="var(--chart-stroke)" strokeWidth="2" vectorEffect="non-scaling-stroke" />)}
-        {values.map(pt => <circle key={pt.id} cx={x(pt)} cy={y(pt.amount)} r="2.6" fill="var(--chart-stroke)" />)}
-      </svg><p className="dos-axis" dir="ltr"><span>{date(timed[0].date)}</span><span>{date(timed.at(-1)!.date)}</span></p>
-    </> : <p className="dos-empty">{history?.state === "unavailable" ? "خواندن نسخه‌های قبلی کامل نشد؛ نسخهٔ فعلی جداگانه نمایش داده می‌شود." : "برای رسم روند، دست‌کم دو نسخه با ارزش کامل و تاریخ متفاوت لازم است."} تغییر ارزش، سود سرمایه‌گذاری نیست.</p>}
-    {points.length > 0 && <details className="dos-detail"><summary>جدول تاریخ، مبلغ و منبع</summary>
-      <ul>{points.map(pt => <li key={pt.id}><Link href={`/dashboard/holdings?v=${encodeURIComponent(pt.id)}`} className="dos-link">نسخهٔ {toPersianDigits(pt.version)} · {date(pt.date)}<ArrowUpLeft size={13} aria-hidden /></Link><b>{money(pt.amount)}</b><small>{pt.amount === null ? "فاقد ارزش‌گذاری کامل در زمان ثبت" : pt.estimated ? "ارزش اظهارشدهٔ نسخه · شامل برآورد" : "ارزش اظهارشدهٔ نسخه در زمان ثبت"}</small></li>)}</ul></details>}
-  </>;
-}

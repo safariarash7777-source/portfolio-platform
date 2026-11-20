@@ -134,6 +134,7 @@ function LoginPageContent() {
         </div>
 
         <div className="card-elevated p-8">
+          <Link href={`/login/phone?next=${encodeURIComponent(returnTo)}`} className="btn btn-outline w-full mb-5" aria-disabled={loading || recoveryRequired} tabIndex={loading || recoveryRequired ? -1 : undefined} onClick={event => { if (loading || recoveryRequired) event.preventDefault(); }}>ورود با موبایل تأییدشده</Link>
           <p className="text-sm leading-7 mb-5">این مسیر با رمز خود سایت کار می‌کند. رمز Google یا Gmail جای رمز سایت نیست.</p>
           {searchParams.get('error')==='auth_unavailable' && <p role="alert" className="text-sm leading-7 mb-5" style={{color:'var(--danger)'}}>بررسی نشست در سرور پاسخ نداد. رمز را تغییر ندهید؛ کمی بعد دوباره ورود را امتحان کنید.</p>}
           {searchParams.get('error')==='auth_callback_failed' && <p role="alert" className="text-sm leading-7 mb-5" style={{color:'var(--danger)'}}>تأیید ورود کامل نشد. دوباره از صفحهٔ ورود اقدام کنید؛ اگر مشکل ادامه داشت، با پشتیبانی تماس بگیرید.</p>}

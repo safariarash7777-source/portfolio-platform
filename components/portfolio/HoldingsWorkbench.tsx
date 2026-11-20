@@ -9,6 +9,7 @@ import { toPersianDigits, toLatinDigits, formatToman, formatJalali } from "@/lib
 import type { AssetClassRow, CoverageGap, HoldingPosition } from "@/lib/portfolio/contracts";
 import { normalisePosition } from "@/lib/portfolio/financialInput";
 import { positionFromStored } from "@/lib/portfolio/balanceSheet";
+import { valuePositions } from "@/lib/portfolio/valuation";
 import HoldingsImportPreview from "./HoldingsImportPreview";
 import { financialSaveAttempt, sendFinancialAttempt, type FinancialSaveAttempt } from "@/lib/portfolio/saveAttempt";
 
@@ -94,6 +95,7 @@ export default function HoldingsWorkbench({
   history,
   activeVersion,
   activePositions,
+  focusPosition,
   rows: comparison,
   gaps,
   definitive,
@@ -109,6 +111,7 @@ export default function HoldingsWorkbench({
   activeVersion: number | null;
   /** ریزِ اقلامِ نسخهٔ انتخابی — مستقل از قیمت و هدف نمایش داده می‌شود. */
   activePositions: readonly HoldingPosition[];
+  focusPosition?: string;
   rows: readonly AssetClassRow[];
   gaps: readonly CoverageGap[];
   definitive: boolean;
@@ -194,6 +197,11 @@ export default function HoldingsWorkbench({
     const nonblank = rows.filter(r => r.label || r.qty || r.costBasis || r.title || r.declaredValue);
     importCurrent = nonblank.map(r => positionFromStored(normalisePosition(draftInput(r))));
   } catch { /* Incomplete unsaved rows must not disappear when a file is applied. */ }
+
+  const draftValue = importCurrent && valuePositions(importCurrent, [], new Date());
+  useEffect(() => {
+    if (focusPosition) document.getElementById("position-" + focusPosition)?.focus();
+  }, [focusPosition]);
 
   const submit = async () => {
     if (saveLock.current || completed.current || conflict || activeVersion !== null && activeVersion !== latestVersion || !editor.acquire()) return;
@@ -290,7 +298,7 @@ export default function HoldingsWorkbench({
 
         <div className="space-y-3">
           {rows.map((r, i) => (
-            <fieldset key={i} className="rounded-xl border p-4 space-y-3" style={{ borderColor: "var(--line)" }}>
+            <fieldset key={i} id={r.positionKey ? "position-" + r.positionKey : undefined} tabIndex={-1} className="rounded-xl border p-4 space-y-3" style={{ borderColor: "var(--line)" }}>
             <legend className="text-sm font-bold">دارایی {toPersianDigits(i + 1)}</legend>
             <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end">
               <label className="md:col-span-2 space-y-1">
@@ -368,6 +376,7 @@ export default function HoldingsWorkbench({
           <Plus size={13} /> افزودن قلم
         </button>
 
+        {draftValue && <p aria-live="polite">پس از ذخیره، جمع ارزش اقلام اظهارشده با سهم مالکیت شما {draftValue.subtotal === null ? "نامشخص" : formatToman(draftValue.subtotal)} خواهد بود. پوشش ارزش اظهارشده {toPersianDigits(draftValue.positions.filter(p => p.value !== null).length)} از {toPersianDigits(draftValue.positions.length)} قلم است.</p>}
         {error && (
           <div role="alert" className="flex items-center gap-2 text-sm" style={{ color: "var(--danger)" }}>
             <AlertCircle size={15} /> {error}

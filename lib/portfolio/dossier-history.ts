@@ -7,7 +7,7 @@ import { paymentReferenceDay } from "./paymentSchedule";
 import { dateInput } from "./financialInput";
 
 export type DossierVersion = { id: string; version: number; date: string };
-export type HistoryPoint = DossierVersion & { amount: number | null; estimated: boolean };
+export type HistoryPoint = DossierVersion & { amount: number | null; estimated: boolean; pricedAmount?: number | null; pricedCount?: number; assetCount?: number };
 export const DOSSIER_VERSION_LIMIT = 6;
 const MAX_ROWS = 500;
 type Client = Awaited<ReturnType<typeof createClient>>;
@@ -24,8 +24,12 @@ export function historicalValue(version: DossierVersion, positions: readonly Hol
     if (p.valuationMode !== "declared" || !p.valuationAsOf) return false;
     try { return dateInput(p.valuationAsOf) <= recordedDay; } catch { return false; }
   });
-  const valuation = valid ? valuePositions(positions, [], new Date(time)) : null;
-  return { ...version, amount: valuation?.fullCoverage ? valuation.totalValue : null, estimated: !!valuation?.estimatedCount };
+  const declared = positions.filter(p => {
+    try { return recordedDay !== null && p.valuationMode === "declared" && !!p.valuationAsOf && dateInput(p.valuationAsOf) <= recordedDay; } catch { return false; }
+  });
+  const coverage = valuePositions(declared, [], new Date(time));
+  const valuation = valid ? coverage : null;
+  return { ...version, amount: valuation?.fullCoverage ? valuation.totalValue : null, estimated: coverage.estimatedCount > 0, pricedAmount: coverage.subtotal, pricedCount: coverage.positions.filter(p => p.value !== null).length, assetCount: positions.length };
 }
 
 /** Only called with version IDs from an authenticated member's bounded,
