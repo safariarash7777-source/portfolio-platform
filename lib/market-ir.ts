@@ -1,4 +1,5 @@
 import { withDeadline, DeadlineError } from "./deadline";
+import { readFundClassEvidence, type FundClassEvidence } from "./core/fundUnitClass";
 import { hasRealPrice } from "./market-price";
 import { validTimestamp, parseSnapshotQuality, type SnapshotQuality } from "./market-quality";
 // دادهٔ بازارِ ایران (طلا/سکه، ارزِ تومانی، صندوق‌ها، سهام، شاخص، کریپتو).
@@ -31,6 +32,8 @@ export interface IrRow {
 
 /** ردیفِ غنی‌شدهٔ سهام/صندوق — شامل اطلاعات معاملاتی */
 export interface IrStockRow extends IrRow {
+  classEvidence?: FundClassEvidence | null;
+  navClassEvidence?: FundClassEvidence | null;
   closingPrice?: number;
   closingChangePercent?: number | null;
   volume?: number;
@@ -271,6 +274,8 @@ export function asStockRows(v: unknown): IrStockRow[] {
       nav: typeof r.nav === "number" && isFinite(r.nav) && r.nav > 0 ? r.nav : null,
       navIssue:
         typeof r.navIssue === "number" && isFinite(r.navIssue) && r.navIssue > 0 ? r.navIssue : null,
+      ...(r.classEvidence ? { classEvidence: readFundClassEvidence(r.classEvidence) } : {}),
+      ...(r.navClassEvidence ? { navClassEvidence: readFundClassEvidence(r.navClassEvidence) } : {}),
       navStatus: typeof r.navStatus === "string" ? r.navStatus : null,
       navDate: typeof r.navDate === "string" ? r.navDate : null,
       navTime: typeof r.navTime === "string" ? r.navTime : null,
