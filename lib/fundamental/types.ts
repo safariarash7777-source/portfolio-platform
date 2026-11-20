@@ -159,6 +159,7 @@ export interface SymbolFundamentals {
   n10: { data: CodalN10Data; source: ReportSource } | null;
   n30: { data: CodalN30Data[]; source: ReportSource } | null;
   /** Stored monthly reports omitted from calculations because the amount unit is unknown. */
+  reviewedProductReports?: {report: CodalN30Data; record: NonNullable<ReportSource["records"]>[number]; workbook: string; sha256: string}[];
   n30Unavailable?: { unitUnknown: number; latestPeriod: string | null };
   /** Selected stored N10 rows excluded from calculations; never rewritten. */
   n10Unavailable?: { unitUnknown: number; scopeUnknown: number; scopeAmbiguous: number; latestPeriod: string | null };
@@ -167,7 +168,7 @@ export interface SymbolFundamentals {
    * برای کارت انتخاب کرده (حسابرسی ← اصلاحیه ← زمانِ انتشار ← id). انتخابِ
    * دوباره در پایین‌دست ممنوع است؛ دو قاعده یعنی دو پاسخ در یک صفحه.
    */
-  n10Periods?: Array<{ id: number; data: CodalN10Data; scope?: ReportScope }>;
+  n10Periods?: Array<{ id: number; data: CodalN10Data; record?: NonNullable<ReportSource["records"]>[number]; scope?: ReportScope }>;
   /** Legacy summary; the reader now quarantines ambiguous/unknown period scopes. */
   n10PeriodsScope?: "company" | "consolidated_ambiguous";
 }

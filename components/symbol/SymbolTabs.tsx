@@ -23,13 +23,15 @@ export default function SymbolTabs({
   fundamental,
   reports,
   assembly,
+  initialTab = "overview",
 }: {
   overview: ReactNode;
   fundamental: ReactNode;
   reports: ReactNode;
   assembly: ReactNode;
+  initialTab?: TabKey;
 }) {
-  const [active, setActive] = useState<TabKey>("overview");
+  const [active, setActive] = useState<TabKey>(initialTab);
   const tabId = useId();
 
   // خواندن hash اولیه (لینک مستقیم به تب)

@@ -1,3 +1,4 @@
+import { reviewedProductRows } from "./reviewed-product-rows";
 // خواندن گزارش‌های کدال از Supabase (جدول codal_reports که رلهٔ لیارا پر می‌کند).
 // قرارداد خروجی همان SymbolFundamentals رجیستری است تا UI بدون تغییر کار کند.
 //
@@ -475,11 +476,16 @@ function buildFundamentals(symbol: string, rows: CodalRow[]): SymbolFundamentals
   const periodRows = n10all.filter(
     (r) => reportScope(r.title) === "company" && fiscalChainKey(r.data as CodalN10Data) !== null,
   );
-  const n10Periods = periodRows.map((r) => ({ id: r.id, data: r.data as CodalN10Data, scope: "company" as const }));
+  const n10Periods = periodRows.map((r) => ({ id: r.id, data: r.data as CodalN10Data, record: rowProvenance(r), scope: "company" as const }));
   const scopeUnknown = n10all.filter(r => reportScope(r.title) === "unknown").length;
   const scopeAmbiguous = n10all.filter(r => reportScope(r.title) === "consolidated_ambiguous").length;
 
+  const reviewedProductReports = monthlySelected.flatMap(row => {
+    const found = reviewedProductRows(row.data as CodalN30Data, rowProvenance(row));
+    return found ? [found] : [];
+  });
   return {
+    ...(reviewedProductReports.length ? {reviewedProductReports} : {}),
     symbol,
     n10,
     n30,

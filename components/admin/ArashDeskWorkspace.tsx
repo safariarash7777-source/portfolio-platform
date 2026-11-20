@@ -319,6 +319,8 @@ export default function ArashDeskWorkspace({ data }: { data: ArashDeskData }) {
                 ? "چیدمان حساب شما"
                 : "چیدمان موقت"}
         </span>
+        <Link href="/symbol/فولاد#fundamental">تحلیل عملکرد فولاد <ArrowUpLeft size={14} aria-hidden /></Link>
+        <Link href="/admin/consultation">پرونده‌های مشاوره <ArrowUpLeft size={14} aria-hidden /></Link>
         <Link href="/admin/desk?classic=1">
           گردش کار هوشمندی <ArrowUpLeft size={14} aria-hidden />
         </Link>

@@ -124,17 +124,17 @@ function LoginPageContent() {
           <div className="flex justify-center mb-4">
             <Logo href="/" />
           </div>
-          <span className="eyebrow">ورود به پلتفرم</span>
+
           <h1
             className="font-display text-2xl font-bold mt-2"
-            style={{ color: "var(--navy-deep)" }}
+            style={{ color: "var(--heading)" }}
           >
-            خوش آمدید
+            ورود به حساب
           </h1>
         </div>
 
-        <div className="card-elevated p-8">
-          <p className="text-sm leading-7 mb-5">این مسیر با رمز خود سایت کار می‌کند. رمز Google یا Gmail جای رمز سایت نیست.</p>
+        <div className="card-elevated arash-login-panel p-5 sm:p-8">
+          <p className="text-sm leading-7 mb-5">با ایمیل و رمز همین سایت وارد شوید.</p>
           {searchParams.get('error')==='auth_unavailable' && <p role="alert" className="text-sm leading-7 mb-5" style={{color:'var(--danger)'}}>بررسی نشست در سرور پاسخ نداد. رمز را تغییر ندهید؛ کمی بعد دوباره ورود را امتحان کنید.</p>}
           {searchParams.get('error')==='auth_callback_failed' && <p role="alert" className="text-sm leading-7 mb-5" style={{color:'var(--danger)'}}>تأیید ورود کامل نشد. دوباره از صفحهٔ ورود اقدام کنید؛ اگر مشکل ادامه داشت، با پشتیبانی تماس بگیرید.</p>}
           <form onSubmit={handleSubmit} noValidate className="space-y-5">

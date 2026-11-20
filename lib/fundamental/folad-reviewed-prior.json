@@ -1,0 +1,78 @@
+{
+  "symbol": "فولاد",
+  "period": "1404-07-30",
+  "record": 93,
+  "source": "https://codal.ir/Reports/Decision.aspx?LetterSerial=5nKO45yY4Zr5NLhxicMKgA%3d%3d&rt=0&let=58&ct=0&ft=-1",
+  "workbook": "https://excel.codal.ir/service/Excel/GetAll/5nKO45yY4Zr5NLhxicMKgA%3d%3d/0",
+  "sha256": "2fa968d278c7c8f6c895f72d91c55b1f10d48a8f14765c48db741221ca2340c5",
+  "total": 269323842,
+  "table": 1,
+  "quantityColumn": "O",
+  "amountColumn": "Q",
+  "rows": [
+    {
+      "product": "محصولات سرد",
+      "market": "داخلی",
+      "unit": "هزار تن",
+      "quantity": 101,
+      "amount": 42111800,
+      "row": 4
+    },
+    {
+      "product": "محصولات گرم",
+      "market": "داخلی",
+      "unit": "هزار تن",
+      "quantity": 262,
+      "amount": 99450950,
+      "row": 5
+    },
+    {
+      "product": "محصولات پوشش دار",
+      "market": "داخلی",
+      "unit": "هزار تن",
+      "quantity": 33,
+      "amount": 14540765,
+      "row": 6
+    },
+    {
+      "product": "تختال",
+      "market": "داخلی",
+      "unit": "هزارتن",
+      "quantity": 104,
+      "amount": 31111908,
+      "row": 7
+    },
+    {
+      "product": "محصولات پوشش دار",
+      "market": "صادراتی",
+      "unit": "هزار تن",
+      "quantity": 2,
+      "amount": 738913,
+      "row": 11
+    },
+    {
+      "product": "محصولات گرم",
+      "market": "صادراتی",
+      "unit": "هزار تن",
+      "quantity": 43,
+      "amount": 13843324,
+      "row": 12
+    },
+    {
+      "product": "محصولات سرد",
+      "market": "صادراتی",
+      "unit": "هزار تن",
+      "quantity": 4,
+      "amount": 1588167,
+      "row": 13
+    },
+    {
+      "product": "تختال",
+      "market": "صادراتی",
+      "unit": "هزارتن",
+      "quantity": 33,
+      "amount": 9169420,
+      "row": 14
+    }
+  ]
+}

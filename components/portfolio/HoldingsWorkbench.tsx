@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useFinancialEditor } from "./FinancialEditors";
 import { paymentReferenceDay } from "@/lib/portfolio/paymentSchedule";
 import { Plus, Trash2, Save, AlertCircle, CheckCircle2, History, Info } from "lucide-react";
-import { toPersianDigits, toLatinDigits, formatToman, formatJalali } from "@/lib/format";
+import { holdingUnitLabel, toPersianDigits, toLatinDigits, formatToman, formatJalali } from "@/lib/format";
 import type { AssetClassRow, CoverageGap, HoldingPosition } from "@/lib/portfolio/contracts";
 import { normalisePosition } from "@/lib/portfolio/financialInput";
 import { positionFromStored } from "@/lib/portfolio/balanceSheet";
@@ -65,7 +65,8 @@ const ASSET_LABEL: Record<string, string> = {
   fixed_income: "درآمد ثابت",
   equity_ir: "سهام ایران",
   fx: "ارز",
-  cash: "نقد",
+  cash: "وجه نقد",
+  other: "سایر دارایی‌ها",
 };
 
 function assetLabel(assetClass: string): string {
@@ -78,9 +79,9 @@ const blank = (): Row => {
   positionKey: "",
   label: "",
   kind: "symbol",
-  assetClass: "gold",
+  assetClass: "equity_ir",
   qty: "",
-  unit: "عدد",
+  unit: "سهم",
   costBasis: "",
   asOf: day,
   title: "", ownershipPct: "100", valuationMode: "market", declaredValue: "", currency: "IRT", valuationSource: "", valuationAsOf: day, valuationStatus: "estimated",
@@ -142,6 +143,7 @@ export default function HoldingsWorkbench({
   // ذخیره‌شده اصلاً هیچ‌جا دیده نمی‌شد.
   const [rows, setRows] = useState<Row[]>(() => fromPositions(activePositions));
   const completed = useRef(false);
+  const editorFields = useRef<HTMLDivElement>(null);
   const initialRows = useRef(JSON.stringify(rows));
   const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const [seededFrom, setSeededFrom] = useState<number | null>(activeVersion);
@@ -276,6 +278,9 @@ export default function HoldingsWorkbench({
         editRows(fromPositions(positions.map(positionFromStored)));
       }} />}
       {showImport && importCurrent === null && <p role="status">برای ورود فایل، ابتدا ردیف‌های نیمه‌کارهٔ فرم را تکمیل کنید؛ ورودی فعلی شما حفظ شده است.</p>}
+      <datalist id="holding-quantity-units">
+        {["گرم","کیلوگرم","مثقال","قطعه","سهم","واحد","تومان","ریال","دلار آمریکا","یورو","عدد"].map(unit => <option key={unit} value={unit} />)}
+      </datalist>
       {/* ثبت */}
       <div className="card-elevated p-6 space-y-4">
         <h3 className="font-display font-bold text-lg" style={{ color: "var(--navy-deep)" }}>
@@ -287,24 +292,26 @@ export default function HoldingsWorkbench({
         </details>
         {activeVersion !== null && activeVersion !== latestVersion && <p role="alert">در حال مشاهدهٔ سابقه هستید؛ برای اصلاح، <a className="underline" href="/dashboard/holdings">آخرین نسخه</a> را باز کنید.</p>}
 
-        <div className="space-y-3">
+        <div className="holding-presets" aria-label="افزودن دارایی متداول">
+          {([
+            ["طلای آب‌شده", "gold", "گرم", "manual"], ["سکه", "gold", "قطعه", "manual"],
+            ["سهام", "equity_ir", "سهم", "symbol"], ["صندوق طلا", "gold", "واحد", "symbol"],
+            ["دلار آمریکا", "fx", "دلار آمریکا", "manual"], ["وجه نقد", "cash", "تومان", "manual"],
+          ] as const).map(([label, assetClass, unit, kind]) => (
+            <button key={label} type="button" className="btn btn-outline" disabled={editingLocked} onClick={() => {
+              const row = { ...blank(), assetClass, unit, kind, label: kind === "manual" ? label : "", valuationMode: kind === "manual" ? "unpriced" as const : "market" as const };
+              editRows(previous => previous.length === 1 && JSON.stringify(previous[0]) === JSON.stringify(blank()) ? [row] : [...previous, row]);
+              requestAnimationFrame(() => editorFields.current?.lastElementChild?.querySelector<HTMLInputElement>(
+                kind === "manual" ? 'input[aria-label="مقدار کل دارایی"]' : 'input[aria-label="نماد دارایی"]'
+              )?.focus());
+            }}>{label}<small>{unit === label ? "ارز" : unit}</small></button>
+          ))}
+        </div>
+        <div className="space-y-3" ref={editorFields}>
           {rows.map((r, i) => (
             <fieldset key={i} className="rounded-xl border p-4 space-y-3" style={{ borderColor: "var(--line)" }}>
-            <legend className="text-sm font-bold">دارایی {toPersianDigits(i + 1)}</legend>
+            <legend className="text-sm font-bold">دارایی {toPersianDigits(i + 1)}{r.label.trim() && <span className="asset-row-name"> · {r.label}</span>}</legend>
             <div className="grid grid-cols-1 md:grid-cols-6 gap-2 items-end">
-              <label className="md:col-span-2 space-y-1">
-                <span className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>
-                  {r.kind === "symbol" ? "نماد" : "برچسب دستی"}
-                </span>
-                <input
-                  className="input"
-                  value={r.label}
-                  onChange={(e) => patch(i, { label: e.target.value })}
-                  disabled={editingLocked}
-                  dir="rtl"
-                  aria-label={r.kind === "symbol" ? "نماد دارایی" : "عنوان دارایی دستی"}
-                />
-              </label>
               <label className="space-y-1">
                 <span className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>نوع</span>
                 <select className="input" value={r.kind} disabled={editingLocked}
@@ -312,6 +319,20 @@ export default function HoldingsWorkbench({
                   <option value="symbol">نماد واقعی</option>
                   <option value="manual">دارایی دستی</option>
                 </select>
+              </label>
+              <label className="md:col-span-2 space-y-1">
+                <span className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>
+                  {r.kind === "symbol" ? "نماد" : "نام دارایی"}
+                </span>
+                <input
+                  className="input"
+                  value={r.label}
+                  placeholder={r.kind === "symbol" ? "مثلاً فولاد" : "مثلاً طلای شخصی"}
+                  onChange={(e) => patch(i, { label: e.target.value })}
+                  disabled={editingLocked}
+                  dir="rtl"
+                  aria-label={r.kind === "symbol" ? "نماد دارایی" : "عنوان دارایی دستی"}
+                />
               </label>
               <label className="space-y-1">
                 <span className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>دسته</span>
@@ -326,12 +347,12 @@ export default function HoldingsWorkbench({
               </label>
               <label className="space-y-1">
                 <span className="block text-xs font-bold" style={{ color: "var(--text-2)" }}>مقدار</span>
-                <input className="input" value={r.qty} inputMode="decimal" disabled={editingLocked} aria-label="مقدار کل دارایی"
+                <input className="input" value={toPersianDigits(r.qty)} inputMode="decimal" disabled={editingLocked} aria-label="مقدار کل دارایی"
                   onChange={(e) => patch(i, { qty: e.target.value })} />
               </label>
               <div className="flex items-end gap-2">
                 <label className="min-w-0 flex-1 space-y-1"><span className="block text-xs font-bold">واحد</span>
-                <input className="input" value={r.unit} disabled={editingLocked}
+                <input className="input" value={holdingUnitLabel(r.unit)} list="holding-quantity-units" disabled={editingLocked}
                   aria-label="واحد"
                   onChange={(e) => patch(i, { unit: e.target.value })} /></label>
                 <button type="button" aria-label="حذف قلم از نسخهٔ تازه" disabled={editingLocked}
@@ -447,7 +468,7 @@ export default function HoldingsWorkbench({
                       {assetLabel(p.assetClass)}
                     </td>
                     <td className="py-2" style={{ color: "var(--text-2)" }}>
-                      {p.qty === null ? "فقط ارزش اظهارشده" : `${toPersianDigits(p.qty)} ${p.unit}`}
+                      {p.qty === null ? "فقط ارزش اظهارشده" : `${toPersianDigits(p.qty)} ${holdingUnitLabel(p.unit)}`}
                     </td>
                     <td className="py-2" style={{ color: "var(--text-3)" }}>
                       {formatJalali(p.asOf)}

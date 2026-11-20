@@ -152,7 +152,7 @@ function RegisterPageContent() {
           <div className="flex justify-center mb-4">
             <Logo href="/" />
           </div>
-          <span className="eyebrow">ایجاد حساب کاربری</span>
+          
           <h1
             className="font-display text-2xl font-bold mt-2"
             style={{ color: "var(--navy-deep)" }}
@@ -161,7 +161,7 @@ function RegisterPageContent() {
           </h1>
         </div>
 
-        <div className="card-elevated p-8">
+        <div className="card-elevated arash-login-panel p-5 sm:p-8">
           <form onSubmit={handleSubmit} noValidate className="space-y-5">
             {/* full_name */}
             <Field

@@ -1,0 +1,46 @@
+[
+  {
+    "stored": {
+      "id": 13834,
+      "symbol": "شپدیس",
+      "period_end": "2026-10-22",
+      "source_url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=IysBiBJD5If1wqv5zbL6ew%3d%3d&rt=0&let=58&ct=0&ft=-1#pv2",
+      "captured_at": "2026-11-17T15:50:26.303786+00:00",
+      "unit": "میلیون ریال",
+      "report_period": "1405-07-30"
+    },
+    "officialAnnouncement": {
+      "symbol": "شپدیس",
+      "title": "گزارش فعالیت ماهانه دوره ۱ ماهه منتهی به  ۱۴۰۵/۰۷/۳۰",
+      "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=IysBiBJD5If1wqv5zbL6ew%3d%3d&rt=0&let=58&ct=0&ft=-1",
+      "datePublished": "1405/08/06",
+      "timePublished": "15:12:11"
+    },
+    "site": "https://portfolio-platform-fawn.vercel.app/symbol/%D8%B4%D9%BE%D8%AF%DB%8C%D8%B3",
+    "selectedSourceSerialInPage": true,
+    "samePeriodInPage": true,
+    "readAtUtc": "2026-11-17T19:46:34.706885+00:00"
+  },
+  {
+    "stored": {
+      "id": 13832,
+      "symbol": "کی بی سی",
+      "period_end": "2026-10-22",
+      "source_url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=ENvoXfX5exv7M34fcbnpNA%3d%3d&rt=5&let=58&ct=0&ft=-1#pv2",
+      "captured_at": "2026-11-17T15:34:27.511269+00:00",
+      "unit": "میلیون ریال",
+      "report_period": "1405-07-30"
+    },
+    "officialAnnouncement": {
+      "symbol": "کی بی سی",
+      "title": "گزارش فعالیت ماهانه دوره ۱ ماهه منتهی به  ۱۴۰۵/۰۷/۳۰",
+      "url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=ENvoXfX5exv7M34fcbnpNA%3d%3d&rt=5&let=58&ct=0&ft=-1",
+      "datePublished": "1405/08/06",
+      "timePublished": "15:06:20"
+    },
+    "site": "https://portfolio-platform-fawn.vercel.app/symbol/%DA%A9%DB%8C%20%D8%A8%DB%8C%20%D8%B3%DB%8C",
+    "selectedSourceSerialInPage": true,
+    "samePeriodInPage": true,
+    "readAtUtc": "2026-11-17T19:46:36.639889+00:00"
+  }
+]
