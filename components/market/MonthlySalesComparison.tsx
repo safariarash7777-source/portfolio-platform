@@ -44,7 +44,7 @@ export default function MonthlySalesComparison({ symbols, period }: { symbols: s
   if (error) return <p role="alert">دریافت تاریخچه ممکن نشد. <button className="underline" onClick={() => {setError(false); setAttempt(n => n + 1);}}>تلاش دوباره</button></p>;
   if (!histories) return <p role="status">در حال دریافت تاریخچهٔ فروش…</p>;
   const data = alignMonths(period, histories);
-  return <section aria-label="مقایسه فروش ماهانه" className="card space-y-3 p-4">
+  return <section id="sales-comparison" aria-label="مقایسه فروش ماهانه" className="card scroll-mt-24 space-y-3 p-4">
     <h2 className="text-lg font-bold">{symbols.join(" و ")} · فروش ماهانه</h2>
     {histories.map(h => <SalesReadNotice key={h.symbol} label={"تاریخچهٔ " + h.symbol} readState={h.readState} checkedAt={h.checkedAt}/>)}
     <p className="text-sm">۱۲ ماه منتهی به {toPersianDigits(period)} · میلیون ریال</p>

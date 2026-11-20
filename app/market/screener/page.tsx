@@ -2,6 +2,7 @@ import reviewed from "@/lib/fundamental/reviewed-units-preview.json";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Link from "next/link";
+import { monthlyComparisonSymbols } from "@/lib/fundamental/monthly-comparison-link";
 import MonthlySalesScreener from "@/components/market/MonthlySalesScreener";
 import { pageMetadata } from "@/lib/metadata";
 
@@ -27,6 +28,7 @@ export default async function SalesScreenerPage({ searchParams }: {
   const period = typeof params.period === "string" ? params.period : lastCompletedMonth();
   const minGrowth = typeof params.minGrowth === "string" ? params.minGrowth : "0";
   const outside = params.universe === "reported-outside";
+  const compare = monthlyComparisonSymbols(typeof params.compare === "string" ? params.compare : null);
   const symbol = typeof params.symbol === "string" && params.symbol.length <= 64 ? params.symbol.trim() : "";
   return <>
     <Navbar />
@@ -47,7 +49,7 @@ export default async function SalesScreenerPage({ searchParams }: {
           </li>)}</ul>
         </details>
       </aside>}
-      <MonthlySalesScreener key={[period,minGrowth,symbol,outside].join(":")} outside={outside} period={period} minGrowth={minGrowth} symbol={symbol} />
+      <MonthlySalesScreener key={[period,minGrowth,symbol,outside,compare.join(",")].join(":")} compare={compare} outside={outside} period={period} minGrowth={minGrowth} symbol={symbol} />
     </main>
     <Footer />
   </>;
