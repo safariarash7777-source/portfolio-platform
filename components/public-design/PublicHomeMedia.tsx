@@ -11,6 +11,7 @@ import { formatJalali } from "@/lib/format";
 import { editorialCover, sourceUrl } from "@/lib/media/presentation";
 import type { HomeMediaRead } from "@/lib/public-design/home-media";
 import PublicMediaArtwork from "./PublicMediaArtwork";
+import { publicArticleHref } from "@/lib/media/public-media";
 import s from "./PublicDesign.module.css";
 
 function dateLabel(value: string | null) {
@@ -50,8 +51,9 @@ function MediaCard({ item }: { item: ContentItem }) {
         <PublicMediaArtwork src={editorialCover(item)} />
       )}
       <div className={s.homeMediaCopy}>
-        <h3>{item.title || "محتوای بدون عنوان"}</h3>
+        <h3><Link href={publicArticleHref(item)}>{item.title || "محتوای بدون عنوان"}</Link></h3>
         <p>تاریخ ثبت‌شده: {dateLabel(item.published_at)}</p>
+        <Link href={publicArticleHref(item)}>خواندن متن <ArrowUpLeft size={15} aria-hidden /></Link>
         {url && (
           <a href={url} target="_blank" rel="noopener noreferrer">
             مشاهده در {meta.label}
@@ -143,7 +145,7 @@ export default function PublicHomeMedia({ read }: { read: HomeMediaRead }) {
       <details className={s.mediaProvenance}><summary>منبع و تاریخ این فهرست</summary><p>
         تاریخ ثبت‌شدهٔ قبلی الزاماً زمان انتشار در منبع نیست. زمان انتشار و
         آخرین همگام‌سازی جداگانه در این فهرست موجود نیستند. خواندن این صفحه:{" "}
-        {dateLabel(read.readAt)}. تصویر اصلی یا فایل قابل‌پخش از این اتصال
+        {dateLabel(read.readAt)}. آخرین دریافت ذخیره‌شده: {dateLabel(read.lastStoredAt ?? null)}؛ این زمان آخرین اجرای همگام‌سازی نیست. تصویر اصلی یا فایل قابل‌پخش از این اتصال
         دریافت نشده است.
       </p></details>
     </section>

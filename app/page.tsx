@@ -9,7 +9,8 @@ import PublicDesignFrame from "@/components/public-design/PublicDesignFrame";
 import PublicHome from "@/components/public-design/PublicHome";
 import PublicHomeMedia from "@/components/public-design/PublicHomeMedia";
 import { createClient } from "@/lib/supabase/server";
-import { readHomeMedia } from "@/lib/public-design/home-media";
+import { readPublicMedia } from "@/lib/media/public-read.server";
+import { latestPublicArticle } from "@/lib/media/public-media";
 import PublicMarketProvenance from "@/components/public-design/PublicMarketProvenance";
 import MarketKpiRow from "@/components/market/MarketKpiRow";
 import { publicMarketClient, publicMarketOverride } from "@/lib/fundamental/public-market-client.server";
@@ -42,7 +43,7 @@ export default async function LandingPage({
   const supabase = await createClient();
   const [market, media, appearance] = await Promise.all([
     readIranMarket(publicMarketOverride()),
-    readHomeMedia(supabase),
+    readPublicMedia(),
     readSiteAppearance(supabase, sp, publicMarketOverride()?.pair ? publicMarketClient() : supabase),
   ]);
   const headline = buildMarketHeadline({
@@ -58,8 +59,8 @@ export default async function LandingPage({
       navigation={<Navbar />}
       footer={<Footer />}
     >
-      <PublicHome />
-      <PublicHomeMedia read={media} />
+      <PublicHome analysis={latestPublicArticle(media.items)} mediaState={media.state} />
+      <PublicHomeMedia read={{ ...media, items: media.items.slice(0, 4) }} />
       <section className={s.homeMarket} id="market-glance">
         <header>
           <h2>نمای عمومی بازار</h2>

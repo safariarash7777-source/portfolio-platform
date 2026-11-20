@@ -16,6 +16,7 @@ import { editorialCover, sourceUrl, uniqueMedia } from "../media/presentation";
 import { formatJalali } from "../format";
 import type { HomeMediaRead } from "./home-media";
 import { withDeadline } from "../deadline";
+import { articleText, articleTitle, publicArticleHref } from "../media/public-media";
 import {
   approvedCodalUrl,
   type DeskCompanyReport,
@@ -145,6 +146,8 @@ function component(
       __esModule: true,
     },
     "@/lib/public-design/layout": { publicLayout, publicLayoutHref },
+    "@/lib/media/public-media": { articleText, articleTitle, publicArticleHref },
+    "@/lib/format": { formatJalali },
     "./SiteLayoutPreview": { __esModule: true, default: PreviewSlot },
     "./SiteAppearanceWarning": { __esModule: true, default: WarningSlot },
     "./PublicDesign.module.css": {

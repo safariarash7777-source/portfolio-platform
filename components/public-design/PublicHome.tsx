@@ -1,5 +1,9 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowUpLeft, BookOpen, Files, Wallet, Layers3, MessagesSquare, Compass } from "lucide-react";
+import type { ContentItem } from "@/lib/content-hub";
+import { articleText, articleTitle, publicArticleHref } from "@/lib/media/public-media";
+import { formatJalali } from "@/lib/format";
+import s from "./PublicDesign.module.css";
 
 const START = [
   { href: "/codal", title: "گزارش شرکت‌ها", context: "اطلاعیه‌های کدال", Icon: Files },
@@ -8,7 +12,7 @@ const START = [
   { href: "#waitlist", title: "مشاوره با آرش", context: "فهرست انتظار مشاوره", Icon: MessagesSquare },
 ] as const;
 
-export default function PublicHome() {
+export default function PublicHome({ analysis = null, mediaState = "empty" }: { analysis?: ContentItem | null; mediaState?: "ready" | "empty" | "unavailable" }) {
   return (
     <section className="dos dos-home" aria-labelledby="public-home-title">
       <header className="dos-heading">
@@ -20,11 +24,18 @@ export default function PublicHome() {
         <Link href="/about" className="dos-link">دربارهٔ من و روش کارم <ArrowUpLeft size={16} aria-hidden /></Link>
       </header>
       <div className="dos-top">
-        <div className="dos-main">
-          <div className="dos-headline"><span><BookOpen size={17} aria-hidden /> از دفتر آرش</span></div>
-          <h2>بازار ایران از نگاه من</h2>
-          <p>از اثر سیاست بر قیمت‌ها می‌نویسم و از اینکه این تغییرها برای سبد سرمایه‌گذاری ما چه معنایی دارند.</p>
-          <a href="#home-media">خواندن رسانهٔ آرش <ArrowLeft size={17} aria-hidden /></a>
+        <div className={`dos-main ${s.homeHero}`}>
+          <div className="dos-headline"><span><BookOpen size={17} aria-hidden /> آخرین تحلیل مکتوب آرش</span></div>
+          {analysis ? <>
+            <h2 className={s.homeArticleTitle}><Link href={publicArticleHref(analysis)}>{articleTitle(analysis)}</Link></h2>
+            <p><time dateTime={analysis.published_at!}>انتشار: {formatJalali(analysis.published_at!)}</time> · تلگرام عمومی آرش</p>
+            <p>{(analysis.description || articleText(analysis)).slice(0, 220)}{(analysis.description || articleText(analysis)).length > 220 ? "…" : ""}</p>
+            <Link href={publicArticleHref(analysis)}>خواندن تحلیل <ArrowLeft size={17} aria-hidden /></Link>
+          </> : <>
+            <h2>نوشته‌های منتشرشدهٔ آرش</h2>
+            <p>{mediaState === "unavailable" ? "دریافت فهرست اکنون ممکن نیست؛ نوشته‌ها را از آرشیو یا رسانهٔ رسمی دنبال کنید." : "هنوز نوشتهٔ عمومیِ قابل‌خواندنی در این فهرست ثبت نشده است."}</p>
+            <Link href="/insights">رفتن به آرشیو رسانه <ArrowLeft size={17} aria-hidden /></Link>
+          </>}
         </div>
         <div className="dos-action">
           <div className="dos-label"><span className="dos-sign"><Compass size={17} aria-hidden /></span> فضای خصوصی عضو</div>
