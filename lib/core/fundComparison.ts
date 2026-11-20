@@ -2,12 +2,8 @@ import type { PriceReturnObservation, ReturnWindowKey } from "./fundReturns";
 import { bubblePercent as computeBubblePercent, MAX_PAIRING_GAP_HOURS } from "./fundBubble";
 import { sourceTime } from "../market-quality";
 
-/** A source-attested class is required; a symbol/category is never a class mapping. */
-export type FundUnitClass = "etf-tradable" | "ordinary-subscription" | "preferred-tradable";
-export interface FundClassEvidence {
-  unitClass: FundUnitClass;
-  source: string;
-}
+import { evidencedClass, type FundClassEvidence } from "./fundUnitClass";
+export { evidencedClass, UNIT_CLASS_LABELS, type FundClassEvidence, type FundUnitClass } from "./fundUnitClass";
 
 export interface FundComparisonRow {
   id: string;
@@ -45,16 +41,6 @@ export interface FundComparison {
 }
 
 export const MAX_FUND_COMPARISON = 5;
-
-export const UNIT_CLASS_LABELS: Record<FundUnitClass, string> = {
-  "etf-tradable": "واحد قابل معامله",
-  "ordinary-subscription": "واحد عادی صدور و ابطال",
-  "preferred-tradable": "واحد ممتاز قابل معامله",
-};
-
-export function evidencedClass(evidence: FundClassEvidence | null | undefined): FundUnitClass | null {
-  return evidence?.source?.trim() && Object.hasOwn(UNIT_CLASS_LABELS, evidence.unitClass) ? evidence.unitClass : null;
-}
 
 /** Only exact provider type/currency matches are selectable together; no broad-category approximation. */
 export function fundSelectionIssue(anchor: FundComparisonRow | undefined, candidate: FundComparisonRow): string | null {

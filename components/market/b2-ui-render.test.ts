@@ -12,7 +12,8 @@ import { formatRialAsToman, formatSignedPercent, toPersianDigits } from "../../l
 import type { IrOptionRow } from "../../lib/market-ir";
 Object.assign(globalThis, { React });
 const now = Date.parse("2026-09-30T10:00:00Z");
-const fund = { id: "fund-fixture", faName: "نمونهٔ آزمون", unit: "toman" as const, type: "سهامی", price: 110, closingPrice: 110, nav: 100, navStatus: "ready", navDate: "1405-07-08", navTime: "13:25:00", sourceDate: "1405-07-08", sourceTime: "13:25:00", bubblePercent: 999 };
+const classEvidence = { unitClass: "etf-tradable" as const, source: "fixture provider" };
+const fund = { classEvidence, navClassEvidence: classEvidence, id: "fund-fixture", faName: "نمونهٔ آزمون", unit: "toman" as const, type: "سهامی", price: 110, closingPrice: 110, nav: 100, navStatus: "ready", navDate: "1405-07-08", navTime: "13:25:00", sourceDate: "1405-07-08", sourceTime: "13:25:00", bubblePercent: 999 };
 
 function withRouter(child: React.ReactNode) {
   const router = { back() {}, forward() {}, push() {}, replace() {}, refresh() {}, hmrRefresh() {}, async prefetch() {} };

@@ -4,7 +4,8 @@ import Module, { createRequire } from "node:module";
 import { withValidNav } from "./market-quality";
 
 const navNow = Date.parse("2026-09-30T10:00:00Z");
-const navRow = { id: "synthetic-fund", faName: "نمونه", unit: "toman" as const, price: 110, nav: 100, navIssue: 101, navDate: "1405-07-08", navTime: "13:25:00", sourceDate: "1405-07-08", sourceTime: "13:25:00", bubblePercent: 999 };
+const classEvidence = { unitClass: "etf-tradable" as const, source: "fixture provider" };
+const navRow = { classEvidence, navClassEvidence: classEvidence, id: "synthetic-fund", faName: "نمونه", unit: "toman" as const, price: 110, nav: 100, navIssue: 101, navDate: "1405-07-08", navTime: "13:25:00", sourceDate: "1405-07-08", sourceTime: "13:25:00", bubblePercent: 999 };
 
 test("a rejected source NAV cannot become a live bubble through fresh-looking clocks", () => {
   for (const navStatus of ["stale", "invalid-time", "invalid-unit", "unavailable", "unexpected-status"]) {
@@ -17,6 +18,19 @@ test("a rejected source NAV cannot become a live bubble through fresh-looking cl
     assert.equal(result.price, row.price); assert.equal(result.nav, row.nav); assert.equal(result.navIssue, row.navIssue);
     assert.equal(result.navDate, row.navDate); assert.equal(result.navTime, row.navTime); assert.equal(result.navStatus, navStatus);
     assert.equal(row.bubblePercent, 999, "source row is not mutated");
+  }
+});
+
+test("synchronized values need a common traded unit class and currency", () => {
+  for (const changes of [
+    { classEvidence: null },
+    { navClassEvidence: { unitClass: "preferred-tradable" as const, source: "fixture provider" } },
+    { unit: "usd" as const },
+  ]) {
+    const result = withValidNav({ ...navRow, ...changes }, null, navNow);
+    assert.equal(result.bubblePercent, null);
+    assert.equal(result.navState, "unavailable");
+    assert.equal(result.nav, 100);
   }
 });
 

@@ -1,11 +1,11 @@
 /** Failure-only telemetry; never serialize an Error, URL, symbol or headers. */
 export type StoredReadPhase = 'request' | 'headers' | 'body';
-const routes = ['codal-list', 'symbol-detail'];
+const routes = ['codal-list', 'symbol-detail', 'monthly-sales'];
 const names = ['Error', 'TypeError', 'TimeoutError', 'AbortError', 'SyntaxError', 'AggregateError'];
 const codes = ['UND_ERR_CONNECT_TIMEOUT', 'UND_ERR_HEADERS_TIMEOUT', 'UND_ERR_BODY_TIMEOUT', 'UND_ERR_SOCKET', 'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND', 'EAI_AGAIN', 'ENETUNREACH', 'EHOSTUNREACH', 'CERT_HAS_EXPIRED', 'CERT_NOT_YET_VALID', 'ERR_TLS_CERT_ALTNAME_INVALID', 'DEPTH_ZERO_SELF_SIGNED_CERT', 'SELF_SIGNED_CERT_IN_CHAIN', 'UNABLE_TO_VERIFY_LEAF_SIGNATURE', 'UNABLE_TO_GET_ISSUER_CERT_LOCALLY'];
 const allowed = (value: unknown, list: string[]) => typeof value === 'string' && list.includes(value) ? value : 'unknown';
 export function logStoredReadFailure(input: {
-  route: 'codal-list' | 'symbol-detail'; phase: StoredReadPhase;
+  route: 'codal-list' | 'symbol-detail' | 'monthly-sales'; phase: StoredReadPhase;
   elapsedMs: number; upstreamStatus?: number; error?: unknown;
 }, emit: (event: string, fields: Record<string, unknown>) => void = console.warn): void {
   try {
