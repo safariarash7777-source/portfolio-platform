@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import MemberLogout from "@/components/dashboard/MemberLogout";
 import DashboardClient from "./DashboardClient";
 import PersonalFinance, { type MemberFinanceSummary } from "@/components/dashboard/PersonalFinance";
 import AccessStatusCard from "@/components/dashboard/AccessStatusCard";
@@ -175,6 +176,7 @@ export default async function DashboardPage() {
             <a href="/dashboard" className="btn btn-outline">تلاش دوباره</a>
           </div>
           <PersonalFinance summary={memberFinance} />
+          <MemberLogout />
         </main>
         <Footer />
       </>
