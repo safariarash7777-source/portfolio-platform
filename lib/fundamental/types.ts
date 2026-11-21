@@ -167,7 +167,7 @@ export interface SymbolFundamentals {
    * برای کارت انتخاب کرده (حسابرسی ← اصلاحیه ← زمانِ انتشار ← id). انتخابِ
    * دوباره در پایین‌دست ممنوع است؛ دو قاعده یعنی دو پاسخ در یک صفحه.
    */
-  n10Periods?: Array<{ id: number; data: CodalN10Data; scope?: ReportScope }>;
+  n10Periods?: Array<{ id: number; data: CodalN10Data; scope?: ReportScope; sourceUrl?: string | null }>;
   /** Legacy summary; the reader now quarantines ambiguous/unknown period scopes. */
   n10PeriodsScope?: "company" | "consolidated_ambiguous";
 }

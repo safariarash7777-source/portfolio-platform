@@ -1,5 +1,6 @@
 "use client";
 
+import QuarterlyComparison from "./QuarterlyComparison";
 import { useCallback, useState } from "react";
 import { useSalesRead } from "./useSalesRead";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -89,5 +90,6 @@ export default function MonthlySalesComparison({ symbols, period }: { symbols: s
         </tr>)}</tbody>
       </table>
     </details>
+    <QuarterlyComparison symbols={symbols} period={period} />
   </section>;
 }
