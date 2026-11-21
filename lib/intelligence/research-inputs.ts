@@ -1,5 +1,5 @@
 import { computeRatios } from '../core/engine';
-import { jalaliYmdToGregorian } from '../core/jalali';
+import { validJalali } from '../core/jalali';
 import { dedupeByPeriod, latestParserRows, reportScope, publishKey, fetchQueries, FETCH_LIMITS, type CodalRow } from '../fundamental/supabase';
 import { isMillionRialUnit } from '../fundamental/units';
 import type { CodalN10Data } from '../fundamental/types';
@@ -19,17 +19,6 @@ export interface ResearchInputs {
   excluded: { symbol: string; reason: string }[];
 }
 const finite = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
-const persianDate = new Intl.DateTimeFormat('en-US-u-ca-persian', { timeZone: 'Asia/Tehran', year: 'numeric', month: '2-digit', day: '2-digit' });
-
-/** Roundtrip closes permissive dates such as the thirty-first day of a short month. */
-function validJalali(value: string): string | null {
-  const gregorian = jalaliYmdToGregorian(value);
-  if (!gregorian) return null;
-  const parts = persianDate.formatToParts(new Date(`${gregorian}T12:00:00Z`));
-  const get = (type: string) => parts.find(p => p.type === type)?.value;
-  return `${get('year')}-${get('month')}-${get('day')}` === value.replaceAll('/', '-') ? gregorian : null;
-}
-
 /** Require a complete source clock; Date.parse alone normalizes impossible days. */
 function timestamp(value: unknown): number {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,9})?(?:Z|[+-](?:[01]\d|2[0-3]):[0-5]\d)$/.test(value)) return NaN;

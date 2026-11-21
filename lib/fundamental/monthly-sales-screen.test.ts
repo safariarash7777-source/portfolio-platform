@@ -31,6 +31,23 @@ test("zero denominator, wrong unit, period, missing month amount, and bank incom
  }
  assert.equal(run([{...prior,amount:10},{...now,amount:0}]).rows.find(x=>x.symbol==="الف")!.growth,-100);
 });
+
+test("amendments on different valid publication days do not require an older clock", () => {
+ const older = {...now, title:now.title+" (اصلاحیه)", publicationDate:"۱۴۰۵/۰۷/۲۹", publicationTime:null};
+ const newer = {...older, id:55, source_url:older.source_url.replace("Serial=1","Serial=55"),
+   publicationDate:"۱۴۰۵/۰۸/۳۰", amount:180};
+ const selected = (a:SalesFiling,b:SalesFiling) => run([b,prior,a]).rows.find(x=>x.symbol==="الف")!.current;
+ assert.equal(selected(older,newer)?.reportId,55);
+ assert.equal(selected(older,newer)?.publishedAt,"۱۴۰۵/۰۸/۳۰");
+ assert.equal(selected({...older,publicationDate:"۱۴۰۳/۱۲/۳۰"},newer)?.reportId,55);
+ for (const publicationDate of ["۱۴۰۵/۰۷/۳۱","۱۴۰۴/۱۲/۳۰",null]) {
+   assert.equal(selected({...older,publicationDate},newer),null);
+ }
+ const sameDay = {...older,publicationDate:newer.publicationDate,publicationTime:"09:30:00"};
+ assert.equal(selected(sameDay,newer),null);
+ assert.equal(selected(sameDay,{...newer,publicationTime:"09:30:00"}),null);
+ assert.equal(selected(sameDay,{...newer,publicationTime:"۱۰:۲۵:۵۶"})?.reportId,55);
+});
 test("history shares revision selection and does not fill missing months",()=>{
  const {points}=salesHistory("1405-07","الف",[now,prior],[]);assert.deepEqual(points.map(p=>p.period),["1405-07"]);
 });
