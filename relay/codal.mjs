@@ -1544,11 +1544,11 @@ function normalizeMonthlyDecision(source,meta,profile) {
   }};
 }
 
-export async function readIndustrialMonthlyDecision(a) {
+export async function readIndustrialMonthlyDecision(a, {timeoutMs=15000}={}) {
   if (!isIndustrialMonthlyWorkbook(a)) return null;
   const meta = metaFrom(a, "ن-۳۰");
   if (meta.period_months !== 1 || !meta.period_end) return null;
-  const source = await loadMonthlyDecision(a, meta);
+  const source = await loadMonthlyDecision(a, meta, {timeoutMs});
   if (!source) return null;
   const tables = source.sheet.tables.filter(t => t?.code === 1197 && t.aliasName === "ProductionAndSales");
   if (tables.length !== 1) return null;

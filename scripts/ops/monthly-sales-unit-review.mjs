@@ -51,7 +51,7 @@ export async function verifyCandidate(item, row) {
   const meta = metaFromAnnouncement(a, "ن-۳۰");
   if (!isIndustrialMonthlyWorkbook(a) || meta.period_end !== item.periodEnd || meta.period_months !== 1 ||
       row.period_end !== jalaliYmdToGregorian(...item.periodEnd.split("-").map(Number))) throw new Error("Inconsistent scope or period");
-  const data = await readIndustrialMonthlyDecision(a);
+  const data = await readIndustrialMonthlyDecision(a, {timeoutMs:35000});
   if (!data || canonical(data.symbol) !== item.symbol || data.period_end !== item.periodEnd ||
       data.unit !== "میلیون ریال" || data.period_total_amount !== row.data.period_total_amount ||
       data.monthly_source?.sheet_code !== 1000000 || data.monthly_source?.table_code !== 1197 ||

@@ -123,7 +123,9 @@ async function inventoryAndVerify({screen,directory,limit=0,reader}) {
       // response bodies must never be included in a receipt.
       const throttled=/429|403|codal_source_challenge/.test(failure);
       const hold=throttled ? Math.max(codalAccess.snapshot(),Date.now()+6*3600000) : 0;
-      result={outcome:"failed",reason:throttled?"publisher_hold":failure==="Official document did not verify the stored period, amount and unit"?"document_mismatch":"verification_incomplete",holdUntil:hold};
+      const providerStatus=failure.match(/^codal_statement_http_(\d{3})$/)?.[1];
+      const timeout = error?.name === "TimeoutError" || ["UND_ERR_CONNECT_TIMEOUT","UND_ERR_HEADERS_TIMEOUT","UND_ERR_BODY_TIMEOUT","ETIMEDOUT"].includes(error?.cause?.code);
+      result={outcome:"failed",reason:throttled?"publisher_hold":failure==="Official document did not verify the stored period, amount and unit"?"document_mismatch":providerStatus?"publisher_http_"+providerStatus:timeout?"read_timeout":"verification_incomplete",holdUntil:hold};
     }
     await save(stem+".result.json",{item,checkedAt:new Date().toISOString(),...result});
     summary[result.outcome]++;

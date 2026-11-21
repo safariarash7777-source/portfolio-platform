@@ -296,13 +296,14 @@ export const admitInterimStatement=(income,equity,meta,announcement)=>admitState
 let requestTail=Promise.resolve();
 // Request spacing measures elapsed time, independent of calendar-clock adjustments.
 let nextRequest=0;
-async function captureDecision(url,fetchImpl,request={},reportPath=INTERIM_PATH){
+async function captureDecision(url,fetchImpl,request={},reportPath=INTERIM_PATH,timeoutMs=15000){
+ if(!Number.isInteger(timeoutMs)||timeoutMs<1000||timeoutMs>35000)throw Error('codal_statement_timeout_invalid');
  const operation=async()=>{
   codalAccess.check();
   await sleep(Math.max(0,nextRequest-performance.now()));
   codalAccess.check();
   nextRequest=performance.now()+2100;
-  let response=await fetchImpl(url,{...request,redirect:'manual',signal:AbortSignal.timeout(15000)});
+  let response=await fetchImpl(url,{...request,redirect:'manual',signal:AbortSignal.timeout(timeoutMs)});
   if([301,302,307,308].includes(response.status)){
    const location=response.headers.get('location');
    if(!location)throw Error('codal_statement_redirect_unsupported');
@@ -317,7 +318,7 @@ async function captureDecision(url,fetchImpl,request={},reportPath=INTERIM_PATH)
       (!alternateView && redirect.pathname!==original.pathname)||!sameReport||redirect.username||redirect.password||redirect.port||redirect.hash)throw Error('codal_statement_redirect_unsupported');
    await response.body?.cancel();
    await sleep(2100);nextRequest=performance.now()+2100;
-   response=await fetchImpl(redirect.href,{redirect:'error',signal:AbortSignal.timeout(15000)});
+   response=await fetchImpl(redirect.href,{redirect:'error',signal:AbortSignal.timeout(timeoutMs)});
    url=redirect.href;
   }
   if(!response.ok)throw Error(`codal_statement_http_${response.status}`);
@@ -417,13 +418,13 @@ export async function loadDecisionStatement(announcement,meta,{fetchImpl=globalT
  return admitDecisionStatement(income,equity,meta,bound);
 }
 
-export async function loadMonthlyDecision(announcement, meta, {fetchImpl=globalThis.fetch}={}) {
+export async function loadMonthlyDecision(announcement, meta, {fetchImpl=globalThis.fetch,timeoutMs=15000}={}) {
  const original=new URL(announcement.link);
  if(original.hostname==='www.codal.ir')original.hostname='codal.ir';
  const serial=reportSerial(original.href,true);
  const type=original.searchParams.get('rt');
  if(original.searchParams.get('let')!=='58'||!['0','1','5','6','8','9'].includes(type))return null;
- const capture=await captureDecision(original.href,fetchImpl,{},MONTHLY_PATH);
+ const capture=await captureDecision(original.href,fetchImpl,{},MONTHLY_PATH,timeoutMs);
  try{
   const capturedPath=new URL(capture.url).pathname;
   const viewPath=['0','1','5','6'].includes(type)&&capturedPath===DECISION_PATH ? DECISION_PATH : MONTHLY_PATH;
