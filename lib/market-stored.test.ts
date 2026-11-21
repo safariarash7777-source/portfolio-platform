@@ -7,7 +7,7 @@ import vm from 'node:vm';
 import { createHash } from 'node:crypto';
 import ts from 'typescript';
 import { toMarket } from './market-ir';
-import { iranReadQuality } from './market-quality';
+import { iranReadQuality, withValidNav } from './market-quality';
 import { computeMoneyFlow } from './core/marketToday';
 
 test('stored zero individual counts remain observed zero while per-capita zero denominators remain unavailable', () => {
@@ -107,6 +107,19 @@ const snapshot = (id = 'only-test', sourceDate: string | null = null) => ({
   gold:[],currency:[],stocks:[],crypto:[],options:[],indices:null,fetchedAt:Date.parse('2026-10-31T08:00:00Z'),
   funds:[{id,faName:'Synthetic fund only',price:101,unit:'toman',sourceDate,sourceTime:'11:30:00',nav:100,navDate:'1405-08-09',navTime:'11:30:00'}],
 });
+const fundsAliases = [
+  'funds:payload->funds', 'stocks:payload->stocks', 'indices:payload->indices::text',
+  'fetchedAt:payload->fetchedAt', 'snapshotQuality:payload->snapshotQuality::text',
+];
+function databaseRow(url: string, payload: Record<string, unknown>) {
+  const select = new URL(url).searchParams.get('select');
+  if (select === 'payload') return [{ payload }];
+  assert.deepEqual(select?.split(','), fundsAliases);
+  return [Object.fromEntries(fundsAliases.map(alias => {
+    const key = alias.split(':')[0];
+    return [key, alias.endsWith('::text') ? JSON.stringify(payload[key]) ?? null : payload[key] ?? null];
+  }))];
+}
 function deferred<T>() { let done!: (value:T)=>void; const promise=new Promise<T>(resolve=>{done=resolve;});return{promise,done}; }
 const observationKeys = ['event','selector','scope','state','reason','status','readAt','urlPresent','keyPresent','selectedPair','fundCount'].sort();
 function privateReader(environment: Environment = {}, cap = 5000) {
@@ -114,7 +127,7 @@ function privateReader(environment: Environment = {}, cap = 5000) {
   const observations: Readonly<Record<string, unknown>>[] = [];
   let warningSink = (_record: Readonly<Record<string, unknown>>) => {};
   const clock={now:Date.parse('2026-10-31T08:00:00Z')};
-  let responder: (url:string,init:RequestInit)=>Promise<Response> = async()=>Response.json([{payload:snapshot()}]);
+  let responder: (url:string,init:RequestInit)=>Promise<Response> = async url=>Response.json(databaseRow(url, snapshot()));
   // Real SHA-256, without thread-pool scheduling in cache-order tests. Slow
   // digest/expiry scenarios still supply their explicit deferred overrides.
   let digester: (algorithm:AlgorithmIdentifier,data:BufferSource)=>Promise<ArrayBuffer> = async(algorithm,data)=>{
@@ -139,7 +152,7 @@ function privateReader(environment: Environment = {}, cap = 5000) {
       Date:PrivateDate,performance,process:{env:environment},
       crypto:{subtle:{digest:(algorithm:AlgorithmIdentifier,data:BufferSource)=>digester(algorithm,data)}},
       fetch:(url:string,init:RequestInit)=>{calls.push({url:new URL(String(url)),init});return responder(String(url),init);},
-      setTimeout:(fn:()=>void,ms:number)=>{deadlines.push(ms);return setTimeout(fn,Math.min(ms,cap));},clearTimeout,
+      setTimeout:(fn:()=>void,ms:number)=>{deadlines.push(ms);return setTimeout(fn,ms===5100 && cap<5000 ? cap+5 : Math.min(ms,cap));},clearTimeout,
       console:{warn(...args: unknown[]){
         assert.equal(args.length,1);const record=args[0] as Readonly<Record<string,unknown>>;
         assert.deepEqual(Object.keys(record).sort(),observationKeys);assert.equal(record.event,'funds_read_failure');assert.ok(Object.isFrozen(record));
@@ -185,6 +198,121 @@ test('absent adapter override delegates to unchanged legacy fallback while store
   const legacy=await h.readFunds({environment:{}});assert.equal(legacy.data?.funds[0].id,'legacy-relay');assert.equal(h.calls.length,2);
   assert.equal(await h.market.getStoredIrMarket(),null);assert.equal(h.calls.length,3);assert.equal(h.calls[2].url.host,'old.invalid');
   const failed=await h.readFunds({environment:{FUNDAMENTAL_READ_URL:origin}});assert.equal(failed.data,null);assert.equal(h.calls.length,3);
+});
+
+test('legacy funds projection uses the same approved row with one narrower GET and unchanged source clocks', async()=>{
+  const h = privateReader({ NEXT_PUBLIC_SUPABASE_URL:'https://database.invalid', NEXT_PUBLIC_SUPABASE_ANON_KEY:'dummy' });
+  const receipt = h.clock.now - 300_000;
+  const fundClock = '11:28:00';
+  const row = { ...snapshot('clockless').funds[0], sourceTime: fundClock, navTime: '11:29:00', bubblePercent: 999 };
+  const stock = { id:'stock-only', faName:'Sample stock', price:201, unit:'toman', sourceDate:'1405-08-09', sourceTime:'11:30:00' };
+  const payload = {
+    ...snapshot(), funds:[row], stocks:[stock], fetchedAt:receipt, indices:{ total:100, date:stock.sourceDate, time:stock.sourceTime, state:'reported' },
+    options:Array.from({length:1370}, (_, i)=>({ id:`option-${i}`, type:'call', faName:'Unused option', price:123, sourceDate:stock.sourceDate, sourceTime:stock.sourceTime })),
+    snapshotQuality:{ version:1, state:'partial', attemptedAt:h.clock.now, families:{
+      funds:{ state:'received', receivedAt:receipt - 60_000, retained:false },
+      stocks:{ state:'received', receivedAt:receipt, retained:false },
+      indices:{ state:'received', receivedAt:receipt, retained:false },
+    } },
+  };
+  let bytesFull = 0, bytesFunds = 0;
+  h.respond(async url => {
+    const body = JSON.stringify(databaseRow(url, payload));
+    if (new URL(url).searchParams.get('select') === 'payload') bytesFull = Buffer.byteLength(body);
+    else bytesFunds = Buffer.byteLength(body);
+    return new Response(body);
+  });
+  const funds = await h.readFunds({ environment:{} });
+  const overview = await h.market.getIrMarket();
+  assert.equal(h.calls.length,2);
+  const { url, init } = h.calls[0];
+  assert.equal(url.origin, 'https://database.invalid');
+  assert.equal(url.pathname, '/rest/v1/ir_market_snapshots');
+  assert.deepEqual([...url.searchParams.keys()], ['key','select']);
+  assert.equal(url.searchParams.get('key'), 'eq.latest');
+  assert.equal(init.method, 'GET'); assert.equal(init.redirect, 'error'); assert.equal(init.credentials, 'omit'); assert.equal(init.cache, 'no-store');
+  assert.ok(bytesFunds > 0 && bytesFunds < bytesFull, 'not a repeated download of options and other unused families');
+  assert.deepEqual(funds.data?.funds, overview?.funds);
+  assert.deepEqual(funds.data?.stocks, overview?.stocks, 'the shared search retains the same stock rows');
+  assert.deepEqual(funds.data?.indices, overview?.indices, 'the existing market session badge retains its input');
+  assert.equal(funds.availability.readAt, h.clock.now);
+  assert.equal(funds.data?.fetchedAt, receipt);
+  assert.equal(funds.availability.families?.funds.receivedAt, receipt - 60_000);
+  assert.equal(funds.availability.families?.funds.state, 'unknown-time');
+  assert.equal(funds.availability.families?.funds.validAt, null);
+  assert.equal(funds.data?.funds[0].sourceDate, null);
+  assert.equal(funds.data?.funds[0].sourceTime, fundClock);
+  assert.equal(funds.data?.funds[0].navTime, '11:29:00');
+  const preserved = funds.data!.funds[0];
+  assert.equal(withValidNav(preserved, null, funds.availability.readAt).bubblePercent, null);
+  assert.equal(withValidNav({ ...preserved, sourceDate:preserved.navDate, navTime:'25:00:00' }, null, funds.availability.readAt).bubblePercent, null);
+  assert.equal(funds.data?.options.length,0);
+  assert.equal(h.market.getCachedIrMarket()?.options.length,1370,'the dedicated projection cannot poison the full-market cache');
+  assert.equal(h.market.getLastIrDiag()?.counts?.funds,1);
+  assert.ok(h.deadlines.every(ms=>ms===2000 || ms===5000 || ms===5100));
+});
+
+test('a healthy stored snapshot already cached by the full reader avoids a duplicate funds GET', async()=>{
+  const h = privateReader({ NEXT_PUBLIC_SUPABASE_URL:'https://database.invalid', NEXT_PUBLIC_SUPABASE_ANON_KEY:'dummy' });
+  const overview = await h.market.getIrMarket();
+  const funds = await h.readFunds({ environment:{} });
+  assert.equal(h.calls.length,1);
+  assert.equal(funds.data,overview);
+  assert.equal(funds.data?.fetchedAt,overview?.fetchedAt);
+  assert.equal(h.market.getLastIrDiag('funds')?.fromCache,true);
+  assert.equal(h.market.getLastIrDiag()?.fromCache,false);
+});
+
+test('funds cache and single-flight are isolated and a timeout retains only the prior fund receipt as stale', async()=>{
+  const h = privateReader({ NEXT_PUBLIC_SUPABASE_URL:'https://database.invalid', NEXT_PUBLIC_SUPABASE_ANON_KEY:'dummy' }, 50);
+  const started = deferred<void>(), body = deferred<unknown>();
+  let mode = 'hold';
+  const marketPayload = { ...snapshot('fund-observed', '1405-08-09'),
+    snapshotQuality:{ version:1,state:'partial',attemptedAt:h.clock.now,families:{
+      funds:{ state:'received',receivedAt:h.clock.now,retained:false },
+    } } };
+  h.respond(async url => {
+    if (new URL(url).searchParams.get('select') === 'payload') return Response.json([{ payload:snapshot('whole-market') }]);
+    if (mode==='timeout') return { ok:true, status:200, json:()=>new Promise(()=>{}) } as Response;
+    started.done();
+    return { ok:true, status:200, json:()=>body.promise } as Response;
+  });
+  const first = h.readFunds({ environment:{} }); await started.promise;
+  const second = h.readFunds({ environment:{} });
+  const full = await h.market.getIrMarket();
+  const projectedUrl = String(h.calls[0].url);
+  body.done(databaseRow(projectedUrl, marketPayload));
+  assert.equal((await first).data, (await second).data);
+  assert.equal(full?.funds[0].id, 'whole-market');
+  assert.equal(h.calls.length,2);
+  assert.equal(h.market.getCachedIrMarket('funds')?.funds[0].id,'fund-observed');
+  h.clock.now += 61_000; mode = 'timeout';
+  const stale = await h.readFunds({ environment:{} });
+  assert.equal(stale.availability.state,'stale');
+  assert.equal(stale.availability.reason,'read-timeout');
+  assert.equal(stale.availability.families?.funds.state,'stale');
+  assert.equal(stale.availability.families?.funds.receivedAt,marketPayload.fetchedAt);
+  assert.equal(stale.data?.funds[0].sourceTime, marketPayload.funds[0].sourceTime);
+  assert.equal(h.market.getLastIrDiag()?.error,null);
+  assert.equal(h.market.getLastIrDiag('funds')?.error,'DeadlineError');
+  await h.readFunds({ environment:{} });
+  assert.equal(h.calls.length,3,'no new full read, body retry, or cooldown bypass');
+});
+
+test('projection distinguishes absent legacy metadata from explicit null and requires actual empty input', async()=>{
+  const env = { NEXT_PUBLIC_SUPABASE_URL:'https://database.invalid', NEXT_PUBLIC_SUPABASE_ANON_KEY:'dummy' };
+  for (const mode of ['metadata-absent','metadata-null','missing-funds','confirmed-empty'] as const) {
+    const h = privateReader(env), payload = snapshot('good-fund','1405-08-09');
+    const quality = { version:1, state:'partial', attemptedAt:h.clock.now, families:{ funds:{ state:'empty',receivedAt:h.clock.now,retained:false } } };
+    const raw = mode === 'metadata-absent' ? payload : mode === 'metadata-null' ? { ...payload, snapshotQuality:null } :
+      { ...payload, funds:mode === 'confirmed-empty' ? [] : null, stocks:payload.funds, snapshotQuality:quality };
+    h.respond(async url=>Response.json(databaseRow(url,raw)));
+    const result = await h.readFunds({ environment:{} });
+    assert.equal(h.calls.length,1);
+    assert.equal(result.data?.fetchedAt,h.clock.now);
+    assert.equal(result.availability.families?.funds.state,mode === 'metadata-absent' ? 'ready' : mode === 'metadata-null' ? 'unknown-time' : mode === 'missing-funds' ? 'unavailable' : 'empty');
+    assert.equal(result.availability.families?.funds.receivedAt,mode === 'confirmed-empty' || mode === 'metadata-absent' ? h.clock.now : null);
+  }
 });
 
 test('same explicit pair shares only its inflight GET and successful results are never cached', async()=>{
@@ -333,7 +461,7 @@ test('successful empty and unknown-clock reads remain silent with unchanged expl
       const h=privateReader({NEXT_PUBLIC_SUPABASE_URL:'https://database.invalid',NEXT_PUBLIC_SUPABASE_ANON_KEY:'test-only',IR_MARKET_RELAY_URL:'https://relay.invalid'});
       const at=h.clock.now;
       const payload=kind==='empty'?{...snapshot(),funds:[],snapshotQuality:{version:1,state:'partial',families:{funds:{state:'empty',receivedAt:at,retained:false}}}}:snapshot('PRIVATE_PAYLOAD_SENTINEL',kind==='rows'?'1405-08-09':null);
-      h.respond(async()=>Response.json([{payload}]));
+      h.respond(async url=>Response.json(databaseRow(url, payload)));
       const result=await h.readFunds({environment:mode==='explicit'?environmentPair():{}});
       assert.equal(h.calls.length,1);assert.equal(result.data?.funds.length,kind==='empty'?0:1);assert.equal(h.observations.length,0);
       assert.equal(result.availability.families?.funds.state,kind==='empty'?'empty':kind==='rows'?'ready':'unknown-time');
@@ -359,7 +487,7 @@ test('throwing or mutating the logging sink cannot change result identity, retai
   for(const selector of ['explicit','legacy'] as const){
     const environment={NEXT_PUBLIC_SUPABASE_URL:'https://database.invalid',NEXT_PUBLIC_SUPABASE_ANON_KEY:'test-only',IR_MARKET_RELAY_URL:'https://relay.invalid'};
     const h=privateReader(environment);
-    h.respond(async()=>Response.json([{payload:snapshot()}]));
+    h.respond(async url=>Response.json(databaseRow(url, snapshot())));
     if(selector==='legacy'){await h.readFunds({environment:{}});h.clock.now+=61000;}
     h.respond(async()=>new Response(null,{status:503}));
     h.warn(record=>{assert.throws(()=>{(record as Record<string,unknown>).reason='changed';},TypeError);throw Error('LOGGER_PRIVATE_SENTINEL');});

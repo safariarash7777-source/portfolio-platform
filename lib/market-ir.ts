@@ -190,14 +190,22 @@ export interface IrDiag {
 
 const CACHE_MS = 60 * 1000; // کشِ کوتاهِ سایت؛ رله هر ~۵دقیقه به Supabase می‌نویسد.
 const READ_TIMEOUT_MS = 5000;
-let cache: IrMarket | null = null;
-let cacheAt = 0;
-let cacheSource: "supabase" | "relay" | null = null;
-let lastDiag: IrDiag | null = null;
+export type IranMarketScope = "market" | "funds";
+interface LegacyReadState {
+  cache: IrMarket | null;
+  cacheAt: number;
+  cacheSource: IrDiag["source"];
+  lastDiag: IrDiag | null;
+  inflight: Promise<IrMarket | null> | null;
+  retryAt: number;
+}
+const newLegacyState = (): LegacyReadState => ({ cache: null, cacheAt: 0, cacheSource: null, lastDiag: null, inflight: null, retryAt: 0 });
+// A funds projection must never replace a full-market result (or its cooldown / diagnostics).
+const legacyState = { market: newLegacyState(), funds: newLegacyState() };
 
 /** آخرین خلاصهٔ تشخیصی (برای /api/market?diag=1). بدونِ سکرت. */
-export function getLastIrDiag(): IrDiag | null {
-  return lastDiag;
+export function getLastIrDiag(scope: IranMarketScope = "market"): IrDiag | null {
+  return legacyState[scope].lastDiag;
 }
 
 function countsOf(m: IrMarket): NonNullable<IrDiag["counts"]> {
@@ -453,13 +461,17 @@ export async function fetchStoredMarketRows(url: string, init: RequestInit & { s
   throw new Error('Market read exhausted');
 }
 
-async function readSupabase(diag: IrDiag, signal: AbortSignal, explicit?: StoredTransport): Promise<IrMarket | null> {
+// Keep the complete input rows used by the fund board, shared search and session badge.
+const FUNDS_SELECT = "funds:payload->funds,stocks:payload->stocks,indices:payload->indices::text,fetchedAt:payload->fetchedAt,snapshotQuality:payload->snapshotQuality::text";
+async function readSupabase(diag: IrDiag, signal: AbortSignal, explicit?: StoredTransport, scope: IranMarketScope = "market"): Promise<IrMarket | null> {
   const url = explicit === undefined ? process.env.NEXT_PUBLIC_SUPABASE_URL : explicit.pair.url;
   const anon = explicit === undefined ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY : explicit.pair.anon;
   if (!url || !anon) return null;
   diag.supabaseConfigured = true;
+  const projection = scope === "funds";
+  const select = projection ? encodeURIComponent(FUNDS_SELECT) : "payload";
   const res = await fetchStoredMarketRows(
-    `${url.replace(/\/+$/, "")}/rest/v1/ir_market_snapshots?key=eq.latest&select=payload`,
+    `${url.replace(/\/+$/, "")}/rest/v1/ir_market_snapshots?key=eq.latest&select=${select}`,
     {
       headers: { apikey: anon, Authorization: `Bearer ${anon}`, Accept: "application/json" },
       cache: "no-store",
@@ -475,11 +487,26 @@ async function readSupabase(diag: IrDiag, signal: AbortSignal, explicit?: Stored
   if (explicit && (!Array.isArray(rows) || rows.length > 1 || (rows.length === 1 && (!rows[0] || typeof rows[0] !== "object" || Array.isArray(rows[0]) || !Object.hasOwn(rows[0], "payload"))))) {
     diag.error = "empty_source"; return null;
   }
-  const payload = Array.isArray(rows) && rows[0] ? rows[0].payload : null;
+  const payload = Array.isArray(rows) && rows[0]
+    ? projection ? projectedFundsPayload(rows[0]) : rows[0].payload
+    : null;
   if (!payload) { diag.error = "empty_source"; if (explicit) explicit.reason = payload == null ? "absent" : "body"; return null; }
   const data = toMarket(payload);
   if (!data.ok) diag.error = "empty_source";
   return data.ok ? data : null;
+}
+
+function projectedFundsPayload(row: unknown): object | null {
+  if (row === null || typeof row !== "object" || Array.isArray(row)) return null;
+  const { funds, stocks, indices, fetchedAt, snapshotQuality } = row as Record<string, unknown>;
+  // SQL NULL (key absent) and the text "null" (explicit JSON null) have
+  // different quality meanings for the metadata and the index row.
+  const decode = (value: unknown): unknown => {
+    if (value === null) return undefined;
+    if (typeof value !== "string") throw new TypeError("Invalid market projection");
+    return JSON.parse(value);
+  };
+  return { funds, stocks, indices: decode(indices), fetchedAt, snapshotQuality: decode(snapshotQuality) };
 }
 
 // DB-only views must not borrow the legacy reader's relay cache or in-flight job.
@@ -591,7 +618,8 @@ async function readRelay(diag: IrDiag, signal: AbortSignal): Promise<IrMarket | 
 }
 
 /** دادهٔ بازار ایران؛ Supabase (اول) → رله (دوم) → null. در خطا کشِ کهنه یا null. */
-async function loadIrMarket(signal: AbortSignal): Promise<IrMarket | null> {
+async function loadIrMarket(signal: AbortSignal, scope: IranMarketScope): Promise<IrMarket | null> {
+  const state = legacyState[scope];
   const started = Date.now();
   const diag: IrDiag = {
     at: started,
@@ -608,29 +636,38 @@ async function loadIrMarket(signal: AbortSignal): Promise<IrMarket | null> {
     ms: 0,
   };
   const finish = <T>(value: T): T => {
-    if (cache?.fetchedAt != null) diag.ageSec = Math.round((Date.now() - cache.fetchedAt) / 1000);
+    if (state.cache?.fetchedAt != null) diag.ageSec = Math.round((Date.now() - state.cache.fetchedAt) / 1000);
     diag.ms = Date.now() - started;
-    lastDiag = diag;
+    state.lastDiag = diag;
     return value;
   };
-  if (cache && cacheAt && Date.now() - cacheAt < CACHE_MS) {
-    diag.source = cacheSource;
+  const full = legacyState.market;
+  // When a healthy full snapshot is already warm in this instance, reuse it
+  // rather than issuing a second GET. Do not join its larger in-flight read.
+  if (scope === "funds" && full.cache && full.cacheSource === "supabase" && !full.lastDiag?.error
+      && full.cacheAt > state.cacheAt && started - full.cacheAt < CACHE_MS) {
+    state.cache = full.cache;
+    state.cacheAt = full.cacheAt;
+    state.cacheSource = full.cacheSource;
+  }
+  if (state.cache && state.cacheAt && Date.now() - state.cacheAt < CACHE_MS) {
+    diag.source = state.cacheSource;
     diag.fromCache = true;
     diag.ok = true;
-    diag.counts = countsOf(cache);
-    return finish(cache);
+    diag.counts = countsOf(state.cache);
+    return finish(state.cache);
   }
   // منبعِ اول: Supabase
   try {
-    const fromSupabase = await readSupabase(diag, signal);
+    const fromSupabase = await readSupabase(diag, signal, undefined, scope);
     if (fromSupabase && !signal.aborted) {
       diag.error = null;
       diag.source = "supabase";
       diag.ok = true;
       diag.counts = countsOf(fromSupabase);
-      cache = fromSupabase;
-      cacheAt = Date.now();
-      cacheSource = "supabase";
+      state.cache = fromSupabase;
+      state.cacheAt = Date.now();
+      state.cacheSource = "supabase";
       return finish(fromSupabase);
     }
   } catch (e) {
@@ -644,33 +681,32 @@ async function loadIrMarket(signal: AbortSignal): Promise<IrMarket | null> {
       diag.source = "relay";
       diag.ok = true;
       diag.counts = countsOf(fromRelay);
-      cache = fromRelay;
-      cacheAt = Date.now();
-      cacheSource = "relay";
+      state.cache = fromRelay;
+      state.cacheAt = Date.now();
+      state.cacheSource = "relay";
       return finish(fromRelay);
     }
   } catch (e) {
     if (!diag.error) diag.error = e instanceof Error ? e.name || e.message : String(e);
   }
   // هیچ منبعی نداد → کشِ کهنه بهتر از هیچ؛ اگر کش هم نبود، null.
-  if (cache) {
-    diag.source = cacheSource;
+  if (state.cache) {
+    diag.source = state.cacheSource;
     diag.fromCache = true;
     diag.ok = true;
-    diag.counts = countsOf(cache);
+    diag.counts = countsOf(state.cache);
   }
-  return finish(cache);
+  return finish(state.cache);
 }
 
-let inflight: Promise<IrMarket | null> | null = null;
-let retryAt = 0;
-export function getCachedIrMarket(): IrMarket | null { return cache; }
-export async function getIrMarket(): Promise<IrMarket | null> {
-  if (Date.now() < retryAt) return cache;
-  if (inflight) return inflight;
-  inflight = withDeadline(loadIrMarket, READ_TIMEOUT_MS).catch(() => {
-    lastDiag = { at: Date.now(), source: cacheSource, supabaseConfigured: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL), relayUrlConfigured: Boolean(process.env.IR_MARKET_RELAY_URL), reached: false, status: null, ok: Boolean(cache), fromCache: Boolean(cache), ageSec: cache?.fetchedAt ? Math.round((Date.now() - cache.fetchedAt) / 1000) : null, counts: cache ? countsOf(cache) : null, error: "DeadlineError", ms: READ_TIMEOUT_MS };
-    return cache;
-  }).then(result => { retryAt = lastDiag?.error ? Date.now() + 30000 : 0; return result; }).finally(() => { inflight = null; });
-  return inflight;
+export function getCachedIrMarket(scope: IranMarketScope = "market"): IrMarket | null { return legacyState[scope].cache; }
+export async function getIrMarket(scope: IranMarketScope = "market"): Promise<IrMarket | null> {
+  const state = legacyState[scope];
+  if (Date.now() < state.retryAt) return state.cache;
+  if (state.inflight) return state.inflight;
+  state.inflight = withDeadline(signal => loadIrMarket(signal, scope), READ_TIMEOUT_MS).catch(() => {
+    state.lastDiag = { at: Date.now(), source: state.cacheSource, supabaseConfigured: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL), relayUrlConfigured: Boolean(process.env.IR_MARKET_RELAY_URL), reached: false, status: null, ok: Boolean(state.cache), fromCache: Boolean(state.cache), ageSec: state.cache?.fetchedAt ? Math.round((Date.now() - state.cache.fetchedAt) / 1000) : null, counts: state.cache ? countsOf(state.cache) : null, error: "DeadlineError", ms: READ_TIMEOUT_MS };
+    return state.cache;
+  }).then(result => { state.retryAt = state.lastDiag?.error ? Date.now() + 30000 : 0; return result; }).finally(() => { state.inflight = null; });
+  return state.inflight;
 }
