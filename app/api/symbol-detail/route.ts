@@ -1,3 +1,4 @@
+import { publicMarketOverride } from "@/lib/fundamental/read-config.node.mjs";
 import { logStoredReadFailure, type StoredReadPhase } from "@/lib/stored-read-diagnostics";
 import { NextResponse } from "next/server";
 
@@ -39,8 +40,9 @@ export async function GET(req: Request) {
   if (!l18) {
     return NextResponse.json({ error: "l18 required" }, { status: 400 });
   }
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const source = publicMarketOverride();
+  const url = source === undefined ? process.env.NEXT_PUBLIC_SUPABASE_URL : source.pair?.url;
+  const anon = source === undefined ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY : source.pair?.anon;
   if (!url || !anon) {
     return NextResponse.json({ error: "supabase not configured" }, { status: 503 });
   }

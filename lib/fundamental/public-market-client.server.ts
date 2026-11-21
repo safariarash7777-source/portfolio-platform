@@ -1,12 +1,7 @@
 import "server-only";
 import { createClient as anonymousClient } from "@supabase/supabase-js";
-import { fundamentalReadPair } from "./read-config.server";
-
-export function publicMarketOverride() {
-  if (process.env.FUNDAMENTAL_READ_URL === undefined && process.env.FUNDAMENTAL_READ_ANON_KEY === undefined) return undefined;
-  const pair = fundamentalReadPair(process.env);
-  return {pair: pair && pair.expiresAt > Date.now()/1000 ? pair : null};
-}
+import { publicMarketOverride } from "./read-config.node.mjs";
+export { publicMarketOverride };
 
 export function publicMarketClient() {
   const override = publicMarketOverride();
