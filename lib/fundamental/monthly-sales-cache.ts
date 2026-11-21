@@ -23,13 +23,18 @@ export function createMonthlyCache<T extends Completed>(now = Date.now, capacity
     if (!Number.isFinite(age) || age < -1000 || age > MONTHLY_SCREEN_RETAIN_MS) return null;
     return { snapshot, readState: age <= MONTHLY_SCREEN_FRESH_MS ? "fresh" : "retained" };
   }
-  return async function read(key:string, load:()=>Promise<T>):Promise<SnapshotRead<T>> {
+  return async function read(key:string, load:()=>Promise<T>, reloadExpired?:()=>Promise<T>):Promise<SnapshotRead<T>> {
     const old = complete.get(key);
     const saved = old && state(old);
     if (saved?.readState === "fresh") return saved;
     const pending = running.get(key);
     if (pending) return pending;
-    const request = Promise.resolve().then(load).then(value => {
+    const request = Promise.resolve().then(load).then(async value => {
+      // A cold worker can receive yesterday's value while Next revalidates in
+      // the background. Read the database once before reporting unavailability.
+      if (reloadExpired && now() - Date.parse(value.checkedAt) > MONTHLY_SCREEN_RETAIN_MS) {
+        value = await reloadExpired();
+      }
       const read = state(value);
       if (!read) throw new MonthlySourceFailure(true);
       complete.delete(key);

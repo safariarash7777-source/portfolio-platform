@@ -140,7 +140,7 @@ export async function GET(req:Request) {
     const hosted = process.env.VERCEL === "1"
       ? unstable_cache(refresh,["monthly-sales-complete-v2",key],{revalidate:MONTHLY_SCREEN_FRESH_MS/1000})
       : refresh;
-    const {snapshot,readState} = await cached(key,hosted);
+    const {snapshot,readState} = await cached(key,hosted,hosted === refresh ? undefined : refresh);
     const body = "rows" in snapshot ? applySalesThreshold(snapshot,minGrowth) : snapshot;
     return NextResponse.json({...body,readState},{headers:{"Cache-Control":readState==="retained"?"no-store":"public, max-age=0, s-maxage=30, must-revalidate"}});
   } catch {
