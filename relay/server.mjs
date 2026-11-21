@@ -4,7 +4,7 @@ import { brsFetch as fetch } from "./brsapi-transport.mjs";
 import { brsTransportMetrics, isBrsLocalDeferral, waitForBrsReadiness } from "./brsapi-transport.mjs";
 import { isBrsBudgetDeferral } from "./brsapi-policy.mjs";
 import { createNavRefreshSequence } from "./nav-refresh-sequence.mjs";
-import { selectNavRefreshTargets, selectPriorityNavTargets } from "./nav-refresh-targets.mjs";
+import { selectNavRefreshTargets, selectPriorityNavTargets, navSourceDay, needsNavRefresh } from "./nav-refresh-targets.mjs";
 import { writeDailyFx } from "./daily-fx.mjs";
 import { retainMarketFamilies, retainCommoditySnapshot, mergeStoredBaseline, sourceErrorCategory, validStoredSnapshot, NAV_STALE_MS } from "./market-retention.mjs";
 // ─────────────────────────────────────────────────────────────────────────────
@@ -611,10 +611,11 @@ async function refreshNavCompletion(funds, attempted = new Set()) {
   // فقط صندوق‌هایی که NAV تازه ندارند (خارج از کش یا کهنه)
   // C1 — زیرنماد، حق تقدم و بلک‌لیست دائمی هرگز وارد دور تکمیلی نمی‌شوند
   // (ریشهٔ اخطار BrsApi: ریکوئست NAV برای نمادهای فاقد NAV مثل آوند4).
+  const today = navSourceDay(now);
   const missing = selectNavRefreshTargets(funds
     .filter((f) => !attempted.has(f.id))
     .filter((f) => !isSubTicker(f.id) && !isRightsIssue(f.id) && !isNavBlacklisted(f.id))
-    .filter((f) => { const c = navCache.get(f.id); return !c || c.at > now || now - c.at >= NAV_STALE_MS; }),
+    .filter(f => needsNavRefresh(navCache.get(f.id), now, today, NAV_COMPLETION_MS, NAV_STALE_MS)),
     navCache, { now, limit: NAV_COMPLETION_CAP });
   navCompletionState = { lastRoundAt: now, targeted: missing.length, updated: 0, failed: 0, skipped: null };
   if (missing.length === 0) return;

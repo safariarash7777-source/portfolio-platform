@@ -15,3 +15,20 @@ export function selectNavRefreshTargets(funds, cache, { now, limit }) {
   return [...funds].sort((a, b) => receipt(a.id) - receipt(b.id) || byValue(a, b))
     .slice(0, limit);
 }
+
+const tehranDay = new Intl.DateTimeFormat('en-US-u-ca-persian-nu-latn', {
+  timeZone: 'Asia/Tehran', year: 'numeric', month: '2-digit', day: '2-digit',
+});
+
+export function navSourceDay(now) {
+  const parts = Object.fromEntries(tehranDay.formatToParts(now).map(p => [p.type, p.value]));
+  return [parts.year, parts.month, parts.day].join('-');
+}
+
+export function needsNavRefresh(entry, now, today, retryInterval, maxReceiptAge) {
+  if (!entry || !Number.isFinite(entry.at) || entry.at <= 0 || entry.at > now) return true;
+  const age = now - entry.at;
+  if (age >= maxReceiptAge) return true;
+  const day = typeof entry.navDate === 'string' ? entry.navDate.replaceAll('/', '-') : '';
+  return age >= retryInterval && /^14[0-9]{2}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/.test(day) && day < today;
+}
