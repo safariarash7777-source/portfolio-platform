@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { useSalesRead } from "./useSalesRead";
 import Link from "next/link";
 import { formatCount, toLatinDigits, toPersianDigits } from "@/lib/format";
 import { normalizeFa } from "@/lib/market-nav";
@@ -120,22 +121,15 @@ export function SalesScreenResults({ result, symbol = "", outside = false, initi
 }
 
 export default function MonthlySalesScreener({ period, minGrowth, symbol, outside, compare }: {period:string; minGrowth:string; symbol:string; outside:boolean; compare:string[]}) {
-  const [result, setResult] = useState<MonthlySalesScreen | null>(null);
-  const [error, setError] = useState("");
-  const [attempt, setAttempt] = useState(0);
-  useEffect(() => {
-    const controller = new AbortController();
+  const load = useCallback(async (signal: AbortSignal) => {
     const query = screenQuery(toLatinDigits(period),toLatinDigits(minGrowth).replace("٫","."),outside);
-    async function load() {
-      const response = await fetch("/api/screener/monthly-sales?" + query, { signal:controller.signal });
-      if (!response.ok) throw new Error(response.status === 400 ? "دوره یا حد رشد معتبر نیست." : "خواندن داده‌های غربالگر ممکن نشد.");
-      const data: MonthlySalesScreen = await response.json();
-      if (outside && data.universeKind !== "reported-outside") throw new Error("جامعهٔ درخواستی برای این خواندن تأیید نشد.");
-      if (!controller.signal.aborted) setResult(data);
-    }
-    load().catch(e => {if (!controller.signal.aborted) setError(e instanceof Error ? e.message : "دریافت داده ممکن نشد.");});
-    return () => controller.abort();
-  }, [period, minGrowth, outside, attempt]);
+    const response = await fetch("/api/screener/monthly-sales?" + query, { signal, cache: "no-store" });
+    if (!response.ok) throw new Error(response.status === 400 ? "دوره یا حد رشد معتبر نیست." : "خواندن داده‌های غربالگر ممکن نشد.");
+    const data: MonthlySalesScreen = await response.json();
+    if (outside && data.universeKind !== "reported-outside") throw new Error("جامعهٔ درخواستی برای این خواندن تأیید نشد.");
+    return {data, clocks: [data.checkedAt]};
+  }, [period, minGrowth, outside]);
+  const { data: result, error, retry } = useSalesRead(load);
   return <>
     <form action="/market/screener" className="card flex flex-wrap items-end gap-3 p-4">
       <label className="grid gap-1 text-sm">جامعهٔ بررسی<select name="universe" defaultValue={outside ? "reported-outside" : "board"} className={control}>
@@ -145,7 +139,7 @@ export default function MonthlySalesScreener({ period, minGrowth, symbol, outsid
       <label className="grid gap-1 text-sm">حداقل رشد (درصد)<input className={control} name="minGrowth" dir="ltr" required defaultValue={minGrowth} inputMode="decimal" maxLength={12}/></label>
       <button className="min-h-11 rounded-lg bg-[var(--navy)] px-5 text-white">اعمال فیلتر</button>
     </form>
-    {error ? <p role="alert" className="card p-4">{error} <button className="underline" onClick={() => {setError(""); setAttempt(n => n + 1);}}>تلاش دوباره</button></p>
-      : result ? <SalesScreenResults result={result} symbol={symbol} outside={outside} initialCompare={compare}/> : <p className="card p-4" role="status">در حال خواندن جامعهٔ ناشران و گزارش‌های کدال…</p>}
+    {error && <p role="alert" className="card p-4">{error} {result && "آخرین نتیجهٔ کامل نمایش داده شده است."} <button className="underline" onClick={retry}>تلاش دوباره</button></p>}
+    {result ? <SalesScreenResults result={result} symbol={symbol} outside={outside} initialCompare={compare}/> : !error && <p className="card p-4" role="status">در حال خواندن جامعهٔ ناشران و گزارش‌های کدال…</p>}
   </>;
 }

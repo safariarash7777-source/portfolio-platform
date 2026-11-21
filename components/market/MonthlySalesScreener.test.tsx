@@ -89,3 +89,12 @@ test("a successful empty result distinguishes a threshold miss, incomplete histo
   assert.ok(render(5,0).includes("دادهٔ این دوره برای محاسبهٔ رشد هیچ ناشر مشمولی کافی نیست"));
   assert.ok(render(0,0).includes("ناشر مشمول فروش ماهانه در این جامعه و دوره شناسایی نشد"));
 });
+test("browser retention expires a comparison at its oldest verified complete read", async () => {
+  const {salesResultExpiry} = await import("./useSalesRead");
+  const {MONTHLY_SCREEN_RETAIN_MS: retention} = await import("../../lib/fundamental/monthly-sales-clocks");
+  const now = Date.UTC(2026, 10, 21, 7);
+  const iso = (at: number) => new Date(at).toISOString();
+  assert.equal(salesResultExpiry([iso(now), iso(now - retention + 1)], now), now + 1);
+  for (const clocks of [[], [undefined], [iso(now + 2000)], [iso(now), iso(now - retention)]])
+    assert.equal(salesResultExpiry(clocks, now), null);
+});
