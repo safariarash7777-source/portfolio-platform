@@ -67,10 +67,20 @@ const stagedMemberReview = process.env.VERCEL_ENV === "preview" &&
   process.env.VERCEL_GIT_COMMIT_REF === "codex/fundamental-read-reconnect-20261114";
 module.exports = stagedMemberReview ? async () => {
   const endpoint = "https://62.60.191.24:8443";
-  const response = await fetch(endpoint + "/member-stage-discovery-20261121.json", {
-    credentials:"omit", redirect:"error", signal:AbortSignal.timeout(12000),
-  });
-  if (!response.ok) throw new Error("Isolated member configuration unavailable");
+  let response;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      response = await fetch(endpoint + "/member-stage-discovery-20261121.json", {
+        credentials:"omit", redirect:"error", signal:AbortSignal.timeout(12000),
+      });
+    } catch (error) {
+      if (attempt === 2) throw error;
+    }
+    if (response?.ok) break;
+    if (response && response.status < 500) break;
+    if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 1500 * (attempt + 1)));
+  }
+  if (!response?.ok) throw new Error("Isolated member configuration unavailable");
   const config = await response.json();
   if (config.url !== endpoint + "/supabase" || typeof config.anonKey !== "string" ||
       Object.keys(config).some(k => k !== "url" && k !== "anonKey")) {
