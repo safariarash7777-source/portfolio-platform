@@ -16,15 +16,17 @@ const unavailable = <T>(data: T, reason: string): DeskRead<T> => ({
   state: "unavailable",
   reason,
 });
-async function chart(client: Client): Promise<ArashDeskData["chart"]> {
+async function chart(client: Client, signal: AbortSignal): Promise<ArashDeskData["chart"]> {
   try {
     const { data, error } = await client
       .from("index_history")
       .select("jdate,total_index,equal_weight_index,trade_value")
       .order("jdate", { ascending: false })
-      .limit(180);
-    if (error) return unavailable([], "خواندن تاریخچهٔ شاخص ممکن نیست.");
-    const rows = (data ?? []) as IndexHistRow[];
+      .limit(180)
+      .abortSignal(signal);
+    signal.throwIfAborted();
+    if (error || !Array.isArray(data)) return unavailable([], "خواندن تاریخچهٔ شاخص ممکن نیست.");
+    const rows = data as IndexHistRow[];
     const series = buildIndexSeries(rows);
     if (rows.length && !series.length)
       return unavailable(
@@ -37,10 +39,11 @@ async function chart(client: Client): Promise<ArashDeskData["chart"]> {
       reason: null,
     };
   } catch {
+    signal.throwIfAborted();
     return unavailable([], "تاریخچهٔ شاخص در دسترس نیست.");
   }
 }
-async function reports(client: Client): Promise<ArashDeskData["reports"]> {
+async function reports(client: Client, signal: AbortSignal): Promise<ArashDeskData["reports"]> {
   try {
     const { data, error } = await client
       .from("codal_feed")
@@ -48,10 +51,12 @@ async function reports(client: Client): Promise<ArashDeskData["reports"]> {
       .order("sent_date", { ascending: false, nullsFirst: false })
       .order("sent_time", { ascending: false, nullsFirst: false })
       .order("id", { ascending: false })
-      .limit(20);
-    if (error)
+      .limit(20)
+      .abortSignal(signal);
+    signal.throwIfAborted();
+    if (error || !Array.isArray(data))
       return unavailable([], "خواندن فید گزارش‌های شرکت‌ها ممکن نیست.");
-    const rows: DeskCompanyReport[] = (data ?? []).map((row) => ({
+    const rows: DeskCompanyReport[] = data.map((row) => ({
       id: String(row.id),
       symbol: row.symbol,
       title: row.title,
@@ -63,6 +68,7 @@ async function reports(client: Client): Promise<ArashDeskData["reports"]> {
     }));
     return { data: rows, state: rows.length ? "ready" : "empty", reason: null };
   } catch {
+    signal.throwIfAborted();
     return unavailable([], "فید گزارش‌ها در دسترس نیست.");
   }
 }
@@ -98,8 +104,8 @@ export async function loadArashDeskData(): Promise<
   }
   const data = await collectDeskReads({
     market: readIranMarket,
-    chart: () => chart(client),
-    reports: () => reports(client),
+    chart: (signal) => chart(client, signal),
+    reports: (signal) => reports(client, signal),
     research: loadResearchDraftsView,
   });
   return { authorized: true, data };

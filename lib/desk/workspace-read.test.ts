@@ -86,3 +86,54 @@ test("all source failures preserve separate unavailable states and unknown sourc
   assert.equal(data.reports.state, "unavailable");
   assert.ok(data.research.unavailableReason);
 });
+
+for (const stalled of [["chart"], ["reports"], ["chart", "reports"]] as const) {
+  test(`only stalled ${stalled.join(" and ")} time out, then a new read recovers`, async t => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+    const signals = new Map<string, AbortSignal>(), late: Array<() => void> = [];
+    const calls: string[] = [];
+    function section<K extends "chart" | "reports">(source: K) {
+      return async (signal: AbortSignal): Promise<Awaited<ReturnType<DeskReaders[K]>>> => {
+        calls.push(source);
+        signals.set(source, signal);
+        const result = await healthy[source](signal);
+        if ((stalled as readonly string[]).includes(source)) {
+          // Like an SDK body that does not settle when the transport is aborted.
+          await new Promise<void>(resolve => { late.push(resolve); });
+        }
+        return result as Awaited<ReturnType<DeskReaders[K]>>;
+      };
+    }
+    const request = collectDeskReads({ ...healthy, chart: section("chart"), reports: section("reports") }, clock);
+    // Flush the healthy siblings through Promise.race/finally first.
+    await new Promise<void>(resolve => setImmediate(resolve));
+    assert.deepEqual(calls, ["chart", "reports"]);
+    assert.notEqual(signals.get("chart"), signals.get("reports"), "no shared abort controller");
+    let settled = false;
+    void request.then(() => { settled = true; });
+    t.mock.timers.tick(3999);
+    await new Promise<void>(resolve => setImmediate(resolve));
+    assert.equal(settled, false);
+    t.mock.timers.tick(1);
+    const page = await request;
+    assert.equal(page.readAt, clock().toISOString());
+    assert.equal(page.market.availability.state, "empty");
+    assert.equal(page.market.availability.validAt, null);
+    assert.equal(page.research.invalidCount, 2);
+    for (const source of ["chart", "reports"] as const) {
+      const timedOut = (stalled as readonly string[]).includes(source);
+      assert.equal(signals.get(source)?.aborted, timedOut);
+      assert.equal(page[source].state, timedOut ? "unavailable" : "ready");
+      if (timedOut) {
+        assert.match(page[source].reason ?? "", /در مهلت مقرر کامل نشد/);
+        assert.deepEqual(page[source].data, []);
+      }
+    }
+    assert.equal(calls.length, 2, "no retries");
+    late.forEach(release => release());
+    const refreshed = await collectDeskReads(healthy, clock);
+    assert.equal(refreshed.chart.state, "ready");
+    assert.equal(refreshed.reports.state, "ready");
+    for (const source of stalled) assert.equal(page[source].state, "unavailable");
+  });
+}
