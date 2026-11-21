@@ -4,6 +4,8 @@ import MarketSearch from "@/components/market/MarketSearch";
 import { MARKET_SECTIONS, type MarketSearchEntry } from "@/lib/market-nav";
 import type { SourceAvailability } from "@/lib/market-bounded";
 import { marketQualityLabel } from "@/lib/market-quality";
+import { formatJalali, formatTehranClock } from "@/lib/format";
+import { marketOverviewLabel } from "@/lib/public-design/market-status";
 import s from "./PublicDesign.module.css";
 
 export default function PublicMarketHeader({
@@ -25,10 +27,17 @@ export default function PublicMarketHeader({
           <p className={s.eyebrow}>بازار، با منبع و زمان روشن</p>
           <h1>نمای کلان بازار</h1>
           <p className={s.quality}>
-            {marketQualityLabel(
-              availability.state === "timeout" ? "error" : availability.state,
-            )}
+            {marketOverviewLabel(availability)}
           </p>
+          {availability.families && (
+            <p className={s.quality}>
+              شاخص: {marketQualityLabel(availability.families.indices.state)}
+              {availability.families.indices.validAt && (
+                <> · زمان شاخص در منبع: {formatJalali(availability.families.indices.validAt)}، {formatTehranClock(availability.families.indices.validAt)}</>
+              )}
+              {" · "}سهام: {marketQualityLabel(availability.families.stocks.state)}
+            </p>
+          )}
           {availability.families?.indices.state === "ready" && boardState && (
             <p className={s.boardState}>{boardState}</p>
           )}
