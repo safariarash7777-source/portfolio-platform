@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useSalesRead } from "./useSalesRead";
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { SalesReadNotice } from "./SalesReadNotice";
 import { toPersianDigits } from "@/lib/format";
@@ -25,26 +26,28 @@ export function alignMonths(period: string, histories: History[]) {
 }
 
 export default function MonthlySalesComparison({ symbols, period }: { symbols: string[]; period: string }) {
-  const [histories, setHistories] = useState<History[] | null>(null);
-  const [error, setError] = useState(false);
-  const [attempt, setAttempt] = useState(0);
-  useEffect(() => {
-    const controller = new AbortController();
-    Promise.all(symbols.map(async symbol => {
+  const load = useCallback(async (signal: AbortSignal) => {
+    const data = await Promise.allSettled(symbols.map(async symbol => {
       const query = new URLSearchParams({ symbol, period });
-      const response = await fetch("/api/screener/monthly-sales?" + query, { signal: controller.signal });
-      if (!response.ok) throw new Error("history read failed");
+      const response = await fetch("/api/screener/monthly-sales?" + query, { signal, cache: "no-store" });
+      if (!response.ok) throw new Error("دریافت تاریخچه ممکن نشد.");
       const history: History = await response.json();
-      if (history.symbol !== symbol || !Array.isArray(history.points)) throw new Error("invalid history");
+      if (history.symbol !== symbol || !Array.isArray(history.points)) throw new Error("تاریخچهٔ نماد قابل تأیید نیست.");
       return history;
-    })).then(data => { if (!controller.signal.aborted) setHistories(data); })
-      .catch(() => { if (!controller.signal.aborted) setError(true); });
-    return () => controller.abort();
-  }, [symbols, period, attempt]);
-  if (error) return <p role="alert">دریافت تاریخچه ممکن نشد. <button className="underline" onClick={() => {setError(false); setAttempt(n => n + 1);}}>تلاش دوباره</button></p>;
+    }));
+    const histories = data.map(item => {
+      if (item.status === "rejected") throw item.reason;
+      return item.value;
+    });
+    return {data: histories, clocks: histories.map(h => h.checkedAt)};
+  }, [symbols, period]);
+  const { data: histories, error, retry } = useSalesRead(load);
+  const warning = error && <p role="alert">{error} {histories && "آخرین نتیجهٔ کامل نمایش داده شده است."} <button className="underline" onClick={retry}>تلاش دوباره</button></p>;
+  if (!histories && warning) return warning;
   if (!histories) return <p role="status">در حال دریافت تاریخچهٔ فروش…</p>;
   const data = alignMonths(period, histories);
   return <section aria-label="مقایسه فروش ماهانه" className="card space-y-3 p-4">
+    {warning}
     <h2 className="text-lg font-bold">{symbols.join(" و ")} · فروش ماهانه</h2>
     {histories.map(h => <SalesReadNotice key={h.symbol} label={"تاریخچهٔ " + h.symbol} readState={h.readState} checkedAt={h.checkedAt}/>)}
     <p className="text-sm">۱۲ ماه منتهی به {toPersianDigits(period)} · میلیون ریال</p>

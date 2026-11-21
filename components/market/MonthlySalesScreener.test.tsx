@@ -71,3 +71,13 @@ test("retention and elapsed read age show the original clock without inventing a
   assert.equal(render("fresh", new Date().toISOString()), "");
   assert.ok(render("retained",undefined).includes("آخرین خواندن کامل نامشخص"));
 });
+
+test("browser retention expires a comparison at its oldest verified complete read", async () => {
+  const {salesResultExpiry} = await import("./useSalesRead");
+  const {MONTHLY_SCREEN_RETAIN_MS: retention} = await import("../../lib/fundamental/monthly-sales-clocks");
+  const now = Date.UTC(2026, 10, 21, 7);
+  const iso = (at: number) => new Date(at).toISOString();
+  assert.equal(salesResultExpiry([iso(now), iso(now - retention + 1)], now), now + 1);
+  for (const clocks of [[], [undefined], [iso(now + 2000)], [iso(now), iso(now - retention)]])
+    assert.equal(salesResultExpiry(clocks, now), null);
+});
