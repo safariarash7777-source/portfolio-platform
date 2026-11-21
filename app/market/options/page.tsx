@@ -1,3 +1,4 @@
+import { publicMarketOverride } from "@/lib/fundamental/public-market-client.server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import OptionsBoard from "@/components/market/OptionsBoard";
@@ -15,7 +16,7 @@ export const metadata = pageMetadata({
 });
 
 export default async function OptionsPage() {
-  const { data: ir, availability } = await readIranMarket();
+  const { data: ir, availability } = await readIranMarket(publicMarketOverride());
   return (
     <>
       <Navbar />

@@ -33,8 +33,8 @@ interface SlimRow {
  * بازده‌های دوره‌ای همهٔ نمادهای دارای داده در ~۱۰۵ روز اخیر.
  * خروجی: Map نماد → PeriodicReturns. نماد بدون داده در Map نیست.
  */
-export async function getBulkReturns(symbols?: readonly string[]): Promise<Map<string, PeriodicReturns>> {
-  const e = env();
+export async function getBulkReturns(symbols?: readonly string[], binding?: {url: string; anon: string} | null): Promise<Map<string, PeriodicReturns>> {
+  const e = binding === undefined ? env() : binding;
   if (!e) return new Map();
   if (symbols && (symbols.length > 1000 || symbols.some(s => typeof s !== "string" || !s || s.length > 100 || /[\x00-\x1f]/.test(s)))) return new Map();
   const selected = symbols ? [...new Set(symbols)].sort() : null;

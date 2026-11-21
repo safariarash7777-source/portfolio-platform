@@ -1,3 +1,4 @@
+import { publicMarketOverride } from "@/lib/fundamental/public-market-client.server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import FundsFullBoard from "@/components/market/FundsFullBoard";
@@ -20,7 +21,7 @@ export const metadata = pageMetadata({
 
 export default async function FundsPage() {
   const [{ data: ir, availability }, access] = await Promise.all([readFundsMarket(), getAccess()]);
-  const returns = await getBulkReturns((ir?.funds ?? []).map(row => row.id));
+  const returns = await getBulkReturns((ir?.funds ?? []).map(row => row.id), publicMarketOverride()?.pair);
 
   // M6: بازدهٔ دوره‌ای فقط برای نمادهای دارای تاریخچه — بقیه undefined می‌ماند (در UI «—»).
   // Validate each row's own price/NAV clocks before table, rankings or stats;

@@ -1,3 +1,4 @@
+import { publicMarketOverride } from "@/lib/fundamental/public-market-client.server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import StocksBoard from "@/components/market/StocksBoard";
@@ -16,7 +17,7 @@ export const metadata = pageMetadata({
 });
 
 export default async function StocksPage() {
-  const { data: ir, availability } = await readIranMarket();
+  const { data: ir, availability } = await readIranMarket(publicMarketOverride());
   const stocks = ir?.stocks ?? [];
   const indices = ir?.indices ?? null;
   const fetchedAt = availability.families?.stocks.receivedAt ?? null;

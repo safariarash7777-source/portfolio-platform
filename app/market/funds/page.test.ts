@@ -41,6 +41,7 @@ async function actualPage(rows: Record<string, unknown>[], state = "unknown-time
   let searchRows: Record<string, unknown>[] = [];
   const availability = availabilityOverride ?? { readAt, families: { funds: { state, receivedAt: now }, indices: { state: "stale" } } };
   const stubs: Record<string, unknown> = {
+    "@/lib/fundamental/public-market-client.server": { publicMarketOverride: () => undefined },
     "@/lib/market-funds-read.server": { readFundsMarket: readMarket ?? (async () => ({ data: dataPresent ? { funds: rows, stocks: [] } : null, availability })) },
     "@/lib/market-quality": { withValidNav },
     "@/lib/core/bulkReturns": { getBulkReturns: async () => new Map([[valid.id, { w1: 1, m1: 2, m3: 3 }]]) },

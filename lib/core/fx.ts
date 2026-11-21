@@ -9,7 +9,7 @@ export interface FxRate {
 }
 
 const REVALIDATE_MS = 30 * 60 * 1000;
-let cached: { at: number; value: FxRate[] } | null = null;
+let cached: { key: string; at: number; value: FxRate[] } | null = null;
 
 function env(): { url: string; anon: string } | null {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -19,10 +19,11 @@ function env(): { url: string; anon: string } | null {
 }
 
 /** آخرین نرخ‌های دلار (نزولی بر اساس تاریخ). جدول غایب/خطا → آرایهٔ خالی. */
-export async function getFxRates(limit = 400): Promise<FxRate[]> {
-  if (cached && Date.now() - cached.at < REVALIDATE_MS) return cached.value;
-  const e = env();
+export async function getFxRates(limit = 400, binding?: {url: string; anon: string} | null): Promise<FxRate[]> {
+  const e = binding === undefined ? env() : binding;
   if (!e) return [];
+  const key = JSON.stringify([e.url, e.anon, limit]);
+  if (cached?.key === key && Date.now() - cached.at < REVALIDATE_MS) return cached.value;
   try {
     const res = await fetch(
       `${e.url}/rest/v1/fx_rates?select=rate_date,usd_toman,source&order=rate_date.desc&limit=${limit}`,
@@ -35,7 +36,7 @@ export async function getFxRates(limit = 400): Promise<FxRate[]> {
     if (!res.ok) return []; // 404 = جدول هنوز ساخته نشده — حالت خالی صادقانه
     const rows = (await res.json()) as FxRate[];
     const value = rows.filter((r) => typeof r.usd_toman === "number" && r.usd_toman > 0);
-    cached = { at: Date.now(), value };
+    cached = { key, at: Date.now(), value };
     return value;
   } catch {
     return [];

@@ -32,13 +32,13 @@ interface Row {
 }
 
 /** سری روزانهٔ NAV و قیمت صندوق، صعودی. دادهٔ ناموجود = آرایهٔ خالی. */
-export async function getNavHistory(symbol: string, days = 400): Promise<NavDay[]> {
-  const key = `${symbol}|${days}`;
+export async function getNavHistory(symbol: string, days = 400, binding?: {url: string; anon: string} | null): Promise<NavDay[]> {
+  const e = binding === undefined ? env() : binding;
+  if (!e) return [];
+  const key = JSON.stringify([e.url, e.anon, symbol, days]);
   const hit = cache.get(key);
   if (hit && Date.now() - hit.at < REVALIDATE_MS) return hit.value;
 
-  const e = env();
-  if (!e) return [];
 
   if (!Number.isSafeInteger(days) || days <= 0) return [];
   const qs = new URLSearchParams({

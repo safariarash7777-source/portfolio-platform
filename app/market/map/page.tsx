@@ -1,7 +1,8 @@
+import { publicMarketOverride } from "@/lib/fundamental/public-market-client.server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import MarketTreemap from "@/components/market/MarketTreemap";
-import { getIrMarket } from "@/lib/market-ir";
+import { readIranMarket } from "@/lib/market-bounded";
 import { formatJalali } from "@/lib/format";
 import { Map as MapIcon, Clock } from "lucide-react";
 import { pageMetadata } from "@/lib/metadata";
@@ -17,7 +18,7 @@ export const metadata = pageMetadata({
 });
 
 export default async function MarketMapPage() {
-  const ir = await getIrMarket();
+  const { data: ir } = await readIranMarket(publicMarketOverride());
   return (
     <>
       <Navbar />

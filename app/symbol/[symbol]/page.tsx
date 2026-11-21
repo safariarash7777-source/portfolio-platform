@@ -1,3 +1,4 @@
+import { publicMarketOverride } from "@/lib/fundamental/public-market-client.server";
 // صفحهٔ واحد نماد — T2 ممیزی: ادغام /data/[symbol] در /symbol/[symbol].
 // سکشن‌ها: سرصفحهٔ قیمت زنده + آمار روز + (NAV/حباب صندوق) + تاریخچهٔ قیمت و جریان پول
 // + دانلود CSV + کارت امتیاز (به‌زودی) + نمودارهای بنیادی کدال.
@@ -101,12 +102,13 @@ export default async function SymbolPage({ params, searchParams }: PageProps) {
   const sym = decodeURIComponent(symbol);
   const sp = searchParams ? await searchParams : {};
 
+  const source = publicMarketOverride();
   const [ir, historyRead, fundamentalRead, fxRates, navHistory, access, monthlyPilot] = await Promise.all([
-    getStoredIrMarket(),
-    readSymbolHistory(sym, 400),
+    source === undefined ? getStoredIrMarket() : getStoredIrMarket(source).then(result => result.data),
+    readSymbolHistory(sym, 400, source?.pair),
     readFundamentals(sym),
-    getFxRates(),
-    getNavHistory(sym, 400),
+    getFxRates(400, source?.pair),
+    getNavHistory(sym, 400, source?.pair),
     getAccess(),
     sym === "فولاد" ? readApprovedMonthlyPilot() : Promise.resolve(null),
   ]);

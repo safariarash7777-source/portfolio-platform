@@ -44,14 +44,15 @@ export async function getSymbolHistory(symbol: string, days = 400): Promise<Hist
 /** The routed page distinguishes unavailable/incomplete reads from verified empty history. */
 export async function readSymbolHistory(
   symbol: string,
-  days = 400
+  days = 400,
+  binding?: {url: string; anon: string} | null
 ): Promise<SymbolHistoryRead> {
-  const key = `${symbol}|${days}`;
+  const e = binding === undefined ? env() : binding;
+  if (!e) return { data: [], state: "error" };
+  const key = JSON.stringify([e.url, e.anon, symbol, days]);
   const hit = cache.get(key);
   if (hit && Date.now() - hit.at < REVALIDATE_MS) return { data: hit.value, state: hit.value.length ? "ready" : "empty" };
 
-  const e = env();
-  if (!e) return { data: [], state: "error" };
 
   if (!Number.isSafeInteger(days) || days <= 0) return { data: [], state: "error" };
   const qs = new URLSearchParams({ select: SELECT_COLS, symbol: `eq.${symbol}` });
