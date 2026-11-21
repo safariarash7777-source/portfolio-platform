@@ -2,6 +2,7 @@ import type { IrMarket } from "@/lib/market-ir";
 import type { SourceAvailability } from "@/lib/market-bounded";
 import { formatJalali, formatTehranClock, toPersianDigits } from "@/lib/format";
 import { marketQualityLabel } from "@/lib/market-quality";
+import { marketOverviewLabel } from "@/lib/public-design/market-status";
 import s from "./PublicDesign.module.css";
 const stamp = (value: number | null) =>
   value && Number.isFinite(value)
@@ -18,9 +19,7 @@ export default function PublicMarketProvenance({
     <details className={`${s.panel} ${s.provenance}`}>
       <summary>
         منبع و زمان داده ·{" "}
-        {marketQualityLabel(
-          availability.state === "timeout" ? "error" : availability.state,
-        )}
+        {marketOverviewLabel(availability)}
       </summary>
       <p>
         منبع: فید بازار ایران و تاریخچهٔ ثبت‌شدهٔ سکو. زمان دریافت با زمان قیمت
@@ -39,9 +38,7 @@ export default function PublicMarketProvenance({
           <dt>دریافت شاخص</dt>
           <dd>
             {stamp(
-              availability.families
-                ? availability.families.indices.receivedAt
-                : availability.receivedAt,
+              availability.families?.indices.receivedAt ?? null,
             )}
           </dd>
         </div>

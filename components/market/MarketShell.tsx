@@ -59,7 +59,9 @@ function FreshnessBadge({ fetchedAt, qualityState }: Pick<MarketShellProps, "fet
     >
       {/* رنگ تنها حاملِ معنا نیست: متنِ کنارش همیشه وضعیت را می‌گوید. */}
       <span aria-hidden className="inline-block rounded-full" style={{ width: 6, height: 6, background: tone.dot }} />
-      {qualityState ? marketQualityLabel(qualityState === "timeout" ? "error" : qualityState) : f.label}
+      {qualityState === "unknown-time" && fetchedAt
+        ? "زمان کامل قیمت از منبع مشخص نیست"
+        : qualityState ? marketQualityLabel(qualityState === "timeout" ? "error" : qualityState) : f.label}
     </span>
   );
 }
@@ -93,7 +95,7 @@ export default function MarketShell({
           <div className="flex flex-wrap items-center gap-2">
             {fetchedAt ? (
               <span className="text-[11px]" style={{ color: "var(--text-3)" }}>
-                {formatJalali(fetchedAt)} · ساعت {formatTehranClock(fetchedAt)} تهران
+                دریافت تابلو: {formatJalali(fetchedAt)} · ساعت {formatTehranClock(fetchedAt)} تهران
               </span>
             ) : null}
             {boardState ? (
