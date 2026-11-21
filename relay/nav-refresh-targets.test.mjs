@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { selectNavRefreshTargets, selectPriorityNavTargets } from './nav-refresh-targets.mjs';
+import { selectNavRefreshTargets, selectPriorityNavTargets, navSourceDay, needsNavRefresh } from './nav-refresh-targets.mjs';
 
 test('ten leaders stay prioritized while four bounded rounds rotate through the rest', () => {
   const funds=Array.from({length:346},(_,i)=>({id:String(i),value:346-i}));
@@ -23,4 +23,16 @@ test('missing, invalid and future receipts are not mistaken for fresh NAV', () =
   const cache=new Map([['fresh',{at:900}],['old',{at:100}],['future',{at:1100}]]);
   const rows=selectNavRefreshTargets(funds,cache,{now:1000,limit:3});
   assert.deepEqual(new Set(rows.map(r=>r.id)),new Set(['old','missing','future']));
+});
+
+test('old source day gets another scheduled opportunity without retrying recent receipts', () => {
+  const now = Date.parse('2026-11-21T08:00:00Z');
+  const hour = 3600000;
+  assert.equal(navSourceDay(now), '1405-08-30');
+  const due = (date, age) => needsNavRefresh({navDate:date, at:now-age*hour}, now, navSourceDay(now), 6*hour, 24*hour);
+  assert.equal(due('1405/08/27', 6), true);
+  assert.equal(due('1405-08-27', 5), false);
+  assert.equal(due('1405-08-30', 6), false);
+  assert.equal(due(null, 6), false);
+  assert.equal(due('1405-08-30', 24), true);
 });
