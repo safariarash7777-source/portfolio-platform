@@ -36,3 +36,17 @@ test("changing the threshold reprojects outcomes consistently without modifying 
   assert.equal(projected.coverage.passed,1);assert.equal(projected.checkedAt,"old");assert.equal(base.coverage.passed,2);
   assert.equal(base.rows[1].passed,true);
 });
+
+test("an expired hosted snapshot triggers one shared direct reread, without renewing the old clock",async()=>{
+  const now = Date.UTC(2026,10,21,7);
+  const read = createMonthlyCache(() => now);
+  const yesterday = {checkedAt:new Date(now - MONTHLY_SCREEN_RETAIN_MS - 1).toISOString()};
+  const today = {checkedAt:new Date(now).toISOString()};
+  let reloads = 0;
+  const reload = async () => {reloads++; return today;};
+  const requests = await Promise.all([1,2].map(() => read("same",async()=>yesterday,reload)));
+  assert.equal(reloads,1);
+  for (const result of requests) assert.deepEqual(result,{snapshot:today,readState:"fresh"});
+  await assert.rejects(read("failed",async()=>yesterday,async()=>{throw new MonthlySourceFailure(true);}));
+  await assert.rejects(read("still-old",async()=>yesterday,async()=>yesterday));
+});
