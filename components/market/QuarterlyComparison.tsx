@@ -25,13 +25,18 @@ export default function QuarterlyComparison({symbols,period}:{symbols:string[];p
     return ()=>controller.abort();
   },[open,symbols,attempt]);
   const periods=[...new Set(series.flatMap(s=>s.points.map(p=>p.end)).filter(p=>p.slice(0,7)<=period))].sort().slice(-12);
-  const chart=periods.map(end=>Object.fromEntries([["end",end],...series.map((s,i)=>[String(i),s.points.find(p=>p.end===end)?.margin??null])]));
+  const monthIndex=(end:string)=>Number(end.slice(0,4))*12+Number(end.slice(5,7));
+  const chart=periods.flatMap((end,index)=>{
+    const row=Object.fromEntries([["end",end],...series.map((s,i)=>[String(i),s.points.find(p=>p.end===end)?.margin??null])]);
+    // If neither issuer reported the intervening quarter, break both lines.
+    return index>0 && monthIndex(end)-monthIndex(periods[index-1])>3 ? [{end:"",0:null,1:null},row] : [row];
+  });
   const end=periods.includes(selected)?selected:periods.at(-1);
   return <details className="card space-y-3 p-4" onToggle={e=>setOpen(e.currentTarget.open)}><summary className="cursor-pointer py-2 font-bold">مقایسهٔ حاشیهٔ سود خالص فصلی</summary>
     {open && (error?<p role="alert">خواندن گزارش فصلی ممکن نشد. <button onClick={()=>setAttempt(a=>a+1)}>تلاش دوباره</button></p>:!series.length?<p role="status">در حال خواندن صورت‌های مالی…</p>:!end?<p>در بازهٔ انتخابی گزارش فصلی قابل مقایسه موجود نیست.</p>:<>
     <p>صورت مستقل شرکت · سود خالص فصل تقسیم بر درآمد همان فصل × ۱۰۰</p>
     {series.some(s=>s.state==="stale"||s.state==="partial")&&<p>بخشی از داده‌های خوانده‌شده قدیمی یا ناقص است.</p>}
-    <div style={{height:200}} dir="ltr"><ResponsiveContainer width="100%" height="100%"><LineChart data={chart} onClick={state=>{if(typeof state.activeLabel==="string")setSelected(state.activeLabel)}}><XAxis dataKey="end"/><YAxis unit="%"/><Tooltip/>{series.map((s,i)=><Line key={s.symbol} name={s.symbol} type="linear" dataKey={String(i)} connectNulls={false} stroke={i?"#a86b26":"#225778"} isAnimationActive={false}/>)}</LineChart></ResponsiveContainer></div>
+    <div style={{height:200}} dir="ltr"><ResponsiveContainer width="100%" height="100%"><LineChart data={chart} onClick={state=>{if(typeof state.activeLabel==="string" && periods.includes(state.activeLabel))setSelected(state.activeLabel)}}><XAxis dataKey="end"/><YAxis unit="%"/><Tooltip/>{series.map((s,i)=><Line key={s.symbol} name={s.symbol} type="linear" dataKey={String(i)} connectNulls={false} stroke={i?"#a86b26":"#225778"} isAnimationActive={false}/>)}</LineChart></ResponsiveContainer></div>
     <label>پایان فصل <select value={end} onChange={e=>setSelected(e.target.value)}>{periods.map(p=><option key={p}>{p}</option>)}</select></label>
     <ul aria-live="polite">{series.map(s=>{const p=s.points.find(v=>v.end===end);return <li key={s.symbol} className="py-2"><strong>{s.symbol}</strong> · {p?.margin==null?"دادهٔ قابل مقایسه ندارد":fmt(p.margin)+"٪"}{p&&<><p>سود خالص {fmt(p.profit)} · درآمد {fmt(p.revenue)} میلیون ریال</p>{p.docs.map(d=><span key={d.id} className="me-3">{d.url?<a className="underline" href={d.url} target="_blank" rel="noreferrer">سند {fmt(d.months)}ماههٔ {d.end}</a>:"شناسهٔ گزارش "+d.id}</span>)}</>}</li>})}</ul></>)}
   </details>;
