@@ -12,7 +12,7 @@ const START = [
   { href: "#waitlist", title: "مشاوره با آرش", context: "فهرست انتظار مشاوره", Icon: MessagesSquare },
 ] as const;
 
-export default function PublicHome({ analysis = null, mediaState = "empty" }: { analysis?: ContentItem | null; mediaState?: "ready" | "empty" | "unavailable" }) {
+export default function PublicHome({ analysis = null, recovered = false, mediaState = "empty" }: { analysis?: ContentItem | null; recovered?: boolean; mediaState?: "ready" | "empty" | "unavailable" }) {
   return (
     <section className="dos dos-home" aria-labelledby="public-home-title">
       <header className="dos-heading">
@@ -25,7 +25,7 @@ export default function PublicHome({ analysis = null, mediaState = "empty" }: { 
       </header>
       <div className="dos-top">
         <div className={`dos-main ${s.homeHero}`}>
-          <div className="dos-headline"><span><BookOpen size={17} aria-hidden /> آخرین تحلیل مکتوب آرش</span></div>
+          <div className="dos-headline"><span><BookOpen size={17} aria-hidden /> {recovered ? "آخرین تحلیل عمومیِ قابل بازیابی" : "آخرین تحلیل مکتوب آرش"}</span></div>
           {analysis ? <>
             <h2 className={s.homeArticleTitle}><Link href={publicArticleHref(analysis)}>{articleTitle(analysis)}</Link></h2>
             <p><time dateTime={analysis.published_at!}>انتشار: {formatJalali(analysis.published_at!)}</time> · تلگرام عمومی آرش</p>

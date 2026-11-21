@@ -21,3 +21,16 @@ test("archive and deep links accept only publicly published rows from the public
   for(const patch of denied) assert.deepEqual(publicMediaItems([{...post,...patch}]),[]);
   assert.equal(publicMediaItems([post])[0]?.id,post.id);
 });
+
+test("a remembered public ID must still pass a fresh public read during an archive outage", async () => {
+  const {createHomeArticleReader} = await import("./home-article-reader");
+  const reader = createHomeArticleReader();
+  const ready = {state:"ready" as const, items:[post], readAt:new Date().toISOString()};
+  const missing = {...ready, state:"unavailable" as const, items:[]};
+  const absent = {...missing, state:"empty" as const};
+  await reader(ready, async()=>{throw Error("unnecessary read")});
+  assert.equal((await reader(missing, async id=>{assert.equal(id,post.id);return ready})).article?.published_at,post.published_at);
+  assert.equal((await reader(missing, async()=>missing)).article,null);
+  assert.equal((await reader(missing, async()=>absent)).article,null);
+  assert.equal((await reader(missing, async()=>{throw Error("revoked ID retried")})).article,null);
+});

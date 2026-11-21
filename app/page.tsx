@@ -10,7 +10,7 @@ import PublicHome from "@/components/public-design/PublicHome";
 import PublicHomeMedia from "@/components/public-design/PublicHomeMedia";
 import { createClient } from "@/lib/supabase/server";
 import { readPublicMedia } from "@/lib/media/public-read.server";
-import { latestPublicArticle } from "@/lib/media/public-media";
+import { createHomeArticleReader } from "@/lib/media/home-article-reader";
 import PublicMarketProvenance from "@/components/public-design/PublicMarketProvenance";
 import MarketKpiRow from "@/components/market/MarketKpiRow";
 import { publicMarketClient, publicMarketOverride } from "@/lib/fundamental/public-market-client.server";
@@ -34,6 +34,8 @@ export const revalidate = 0;
  * FinalCTA (+ PortfolioPreviewCardِ مرده). دلیلِ هر کدام در
  * `docs/P2-PUBLIC-REBASELINE-AUDIT.md`.
  */
+const readHomeArticle = createHomeArticleReader();
+
 export default async function LandingPage({
   searchParams,
 }: {
@@ -46,6 +48,7 @@ export default async function LandingPage({
     readPublicMedia(),
     readSiteAppearance(supabase, sp, publicMarketOverride()?.pair ? publicMarketClient() : supabase),
   ]);
+  const { article, recovered } = await readHomeArticle(media, readPublicMedia);
   const headline = buildMarketHeadline({
     indices: market.data?.indices ?? null,
     stocks: market.data?.stocks ?? [],
@@ -59,7 +62,7 @@ export default async function LandingPage({
       navigation={<Navbar />}
       footer={<Footer />}
     >
-      <PublicHome analysis={latestPublicArticle(media.items)} mediaState={media.state} />
+      <PublicHome analysis={article} recovered={recovered} mediaState={media.state} />
       <PublicHomeMedia read={{ ...media, items: media.items.slice(0, 4) }} />
       <section className={s.homeMarket} id="market-glance">
         <header>
