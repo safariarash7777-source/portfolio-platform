@@ -1,6 +1,6 @@
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { computeFreshness, computeTickerFreshness, STALE_AFTER_MIN } from "./market-freshness";
+import { computeFreshness, computeMarketTabFreshness, computeTickerFreshness, STALE_AFTER_MIN } from "./market-freshness";
 
 const NOW = 1_700_000_000_000;
 const minsAgo = (m: number) => NOW - m * 60_000;
@@ -128,4 +128,16 @@ describe("متنِ نمایش", () => {
   test("حالتِ کهنه صراحتاً «کهنه» می‌گوید", () => {
     assert.match(computeFreshness({ irFetchedAt: minsAgo(90), usesIr: true, usesGlobal: false, now: NOW }).label, /کهنه/);
   });
+});
+
+test("home panel uses the selected family clocks, including mixed gold origins", () => {
+  const ready = {state: "ready" as const, validAt: NOW, receivedAt: NOW};
+  const old = {...ready, state: "stale" as const, validAt: minsAgo(80)};
+  assert.equal(computeMarketTabFreshness(old, true, true, NOW, NOW).ageMin, 80);
+  assert.equal(computeMarketTabFreshness(old, true, true, NOW, NOW).showLiveDot, false);
+  assert.equal(computeMarketTabFreshness({...ready, state: "stale"}, true, false, null, NOW).state, "stale");
+  assert.equal(computeMarketTabFreshness({...ready, validAt: null}, true, true, NOW, NOW).state, "unknown");
+  assert.equal(computeMarketTabFreshness(ready, true, false, null, NOW).state, "fresh");
+  assert.equal(computeMarketTabFreshness(ready, true, true, null, NOW).state, "unknown");
+  assert.equal(computeMarketTabFreshness(undefined, false, true, NOW, NOW).state, "fresh");
 });

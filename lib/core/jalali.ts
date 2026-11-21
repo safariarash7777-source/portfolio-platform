@@ -42,3 +42,14 @@ export function jalaliYmdToGregorian(jymd: string): string | null {
   if (jy < 1300 || jy > 1500 || jm < 1 || jm > 12 || jd < 1 || jd > 31) return null;
   return jalaliToGregorian(jy, jm, jd);
 }
+
+const persianDate = new Intl.DateTimeFormat('en-US-u-ca-persian', { timeZone: 'Asia/Tehran', year: 'numeric', month: '2-digit', day: '2-digit' });
+
+/** Roundtrip closes permissive dates such as the thirty-first day of a short month. */
+export function validJalali(value: string): string | null {
+  const gregorian = jalaliYmdToGregorian(value);
+  if (!gregorian) return null;
+  const parts = persianDate.formatToParts(new Date(`${gregorian}T12:00:00Z`));
+  const get = (type: string) => parts.find(p => p.type === type)?.value;
+  return `${get('year')}-${get('month')}-${get('day')}` === value.replaceAll('/', '-') ? gregorian : null;
+}

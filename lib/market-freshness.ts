@@ -133,3 +133,20 @@ export function computeTickerFreshness(payload: TickerFreshnessPayload, now: num
   const result = computeFreshness({ usesIr: selected.size > 0, usesGlobal: assets.some(a => a.origin === 'global'), irFetchedAt: missing || !stamps.length ? null : Math.min(...stamps), globalFetchedAt: payload.fetchedAt, now });
   return retained && result.state !== 'unknown' ? { ...result, state: 'stale', showLiveDot: false, label: 'دادهٔ کهنه · نسخهٔ قبلی حفظ شده است' } : result;
 }
+
+/** A recent family receipt alone cannot date a quote on a public tab. */
+export function computeMarketTabFreshness(
+  family: Pick<import("./market-quality").FamilyAvailability, "state" | "validAt" | "receivedAt"> | undefined,
+  usesIr: boolean, usesGlobal: boolean, globalFetchedAt: number | null, now: number,
+): Freshness {
+  const sourceAt = family?.validAt;
+  const receipt = family?.receivedAt;
+  const usable = family?.state === "ready" || family?.state === "stale";
+  const irFetchedAt = usable && sourceAt != null && receipt != null &&
+    validAge(sourceAt, now) !== null && validAge(receipt, now) !== null
+    ? Math.min(sourceAt, receipt) : null;
+  const result = computeFreshness({irFetchedAt, globalFetchedAt, usesIr, usesGlobal, now});
+  if (usesIr && family?.state === "stale" && result.state === "fresh")
+    return { ...result, state: "stale", label: "دادهٔ کهنه · آخرین دادهٔ ثبت‌شده", showLiveDot: false };
+  return result;
+}

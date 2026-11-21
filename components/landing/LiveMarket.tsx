@@ -6,7 +6,8 @@ import { ArrowLeft } from "lucide-react";
 import Reveal from "./Reveal";
 import { hasRealPrice } from "@/lib/market-price";
 import { hasRealChange } from "@/lib/market-ticker-select";
-import { computeFreshness } from "@/lib/market-freshness";
+import type { SourceAvailability } from "@/lib/market-bounded";
+import { computeMarketTabFreshness } from "@/lib/market-freshness";
 import {
   formatToman, formatUsd, formatSignedPercent, describeDelta, deltaColor,
 } from "@/lib/format";
@@ -26,7 +27,9 @@ interface IrRow {
   change?: number | null;
   changePercent?: number | null;
 }
+type Category = "gold" | "currency" | "funds" | "stocks" | "crypto";
 interface MarketPayload {
+  availability?: { iran?: SourceAvailability; global?: SourceAvailability };
   crypto: GlobalRow[];
   goldGlobal?: GlobalRow[];
   fetchedAt: number;
@@ -46,6 +49,7 @@ interface DisplayRow {
   id: string;
   faName: string;
   sub?: string;
+  origin: "ir" | "global";
   priceText: string;
   change: number | null;
 }
@@ -64,16 +68,16 @@ const safeChange = (v: unknown): number | null => (hasRealChange(v) ? v : null);
 
 const toDisplay = {
   global: (r: GlobalRow): DisplayRow => ({
-    id: r.id, faName: r.faName, sub: r.symbol, priceText: formatUsd(r.price), change: safeChange(r.change24h),
+    origin: "global", id: r.id, faName: r.faName, sub: r.symbol, priceText: formatUsd(r.price), change: safeChange(r.change24h),
   }),
   ir: (r: IrRow): DisplayRow => ({
-    id: r.id, faName: r.faName,
+    origin: "ir", id: r.id, faName: r.faName,
     priceText: r.unit === "usd" ? formatUsd(r.price) : formatToman(r.price),
     change: safeChange(r.changePercent), // درصد (نه مقدارِ مطلقِ تومان)
   }),
   // C1 — UI نمادمحور: سهام/صندوق فقط نماد (طلا/ارز/کریپتو نماد بورسی نیستند — نام می‌ماند).
   irTicker: (r: IrRow): DisplayRow => ({
-    id: r.id, faName: r.id,
+    origin: "ir", id: r.id, faName: r.id,
     priceText: r.unit === "usd" ? formatUsd(r.price) : formatToman(r.price),
     change: safeChange(r.changePercent),
   }),
@@ -122,12 +126,8 @@ export default function LiveMarket() {
   const cats = useMemo(() => {
     if (!data) return [];
     const ir = data.ir;
-    // `usesIr` / `usesGlobal`: هر تب از کدام فید می‌خواند. تازگیِ هر تب با مهرِ
-    // زمانیِ همان فید سنجیده می‌شود — تبِ «ارز» نباید با ساعتِ CoinGecko
-    // برچسب بخورد و تبِ «کریپتو» نباید با ساعتِ رله.
     const list: {
-      key: string; label: string; rows: DisplayRow[]; note?: string;
-      usesIr: boolean; usesGlobal: boolean;
+      key: Category; label: string; rows: DisplayRow[]; note?: string;
     }[] = [
       {
         key: "gold",
@@ -136,37 +136,27 @@ export default function LiveMarket() {
           ...(ir?.gold ?? []).filter((r) => hasRealPrice(r.price)).map(toDisplay.ir),
           ...(data.goldGlobal ?? []).filter((r) => hasRealPrice(r.price)).map(toDisplay.global),
         ],
-        usesIr: (ir?.gold ?? []).some((r) => hasRealPrice(r.price)),
-        usesGlobal: (data.goldGlobal ?? []).some((r) => hasRealPrice(r.price)),
       },
       {
         key: "currency",
         label: "ارز",
         rows: (ir?.currency ?? []).filter((r) => hasRealPrice(r.price)).map(toDisplay.ir),
-        usesIr: true,
-        usesGlobal: false,
       },
       {
         key: "funds",
         label: "صندوق‌ها",
         rows: (ir?.funds ?? []).filter((r) => hasRealPrice(r.price)).map(toDisplay.irTicker),
         note: "NAV و بازدهِ روزانهٔ صندوق‌های طلا",
-        usesIr: true,
-        usesGlobal: false,
       },
       {
         key: "stocks",
         label: "سهام",
         rows: (ir?.stocks ?? []).filter((r) => hasRealPrice(r.price)).map(toDisplay.irTicker),
-        usesIr: true,
-        usesGlobal: false,
       },
       {
         key: "crypto",
         label: "کریپتو",
         rows: data.crypto.filter((r) => hasRealPrice(r.price)).map(toDisplay.global),
-        usesIr: false,
-        usesGlobal: true,
       },
     ];
     return list.filter((c) => c.rows.length > 0);
@@ -176,13 +166,12 @@ export default function LiveMarket() {
 
   // «کهنه» حالتِ سومی است بینِ سالم و در دسترس نبودن. بدونِ آن، دادهٔ دو ساعته
   // دقیقاً مثلِ دادهٔ لحظه‌ای به نظر می‌رسید.
-  const freshness = computeFreshness({
-    irFetchedAt: data?.ir?.fetchedAt ?? null,
-    globalFetchedAt: data?.fetchedAt ?? null,
-    usesIr: active?.usesIr ?? false,
-    usesGlobal: active?.usesGlobal ?? false,
-    now,
-  });
+  const shown = active?.rows.slice(0, SHOW) ?? [];
+  const family = active && data?.availability?.iran?.families?.[active.key];
+  const freshness = computeMarketTabFreshness(
+    family, shown.some(row => row.origin === "ir"), shown.some(row => row.origin === "global"),
+    data?.ok && data.availability?.global?.state === "ready" ? data.fetchedAt : null, now,
+  );
   const isStale = freshness.state === "stale";
 
   return (
@@ -280,7 +269,7 @@ export default function LiveMarket() {
               </ul>
             ) : (
               <ul>
-                {active.rows.slice(0, SHOW).map((r, i) => (
+                {shown.map((r, i) => (
                   <li
                     key={r.id}
                     className="flex items-center justify-between gap-4 px-5 py-3.5 transition-colors hover:bg-[color:var(--surface-2)]"
