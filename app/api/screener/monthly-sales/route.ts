@@ -138,7 +138,7 @@ export async function GET(req:Request) {
     // The hosted Next data cache shares complete snapshots across cold workers.
     // Only public results enter it; neither credentials nor thresholds enter its key.
     const hosted = process.env.VERCEL === "1"
-      ? unstable_cache(refresh,["monthly-sales-complete-v1",key],{revalidate:MONTHLY_SCREEN_FRESH_MS/1000})
+      ? unstable_cache(refresh,["monthly-sales-complete-v2",key],{revalidate:MONTHLY_SCREEN_FRESH_MS/1000})
       : refresh;
     const {snapshot,readState} = await cached(key,hosted,hosted === refresh ? undefined : refresh);
     const body = "rows" in snapshot ? applySalesThreshold(snapshot,minGrowth) : snapshot;

@@ -1,5 +1,5 @@
 import { approvedCodalUrl } from "../desk/workspace-model";
-import { jalaliYmdToGregorian } from "../core/jalali";
+import { jalaliYmdToGregorian, validJalali } from "../core/jalali";
 import { isMillionRialUnit } from "./units";
 import { isAmendmentTitle, publishKey } from "./supabase";
 
@@ -102,10 +102,22 @@ function selectPoint(period: string, filings: SalesFiling[], notices: SalesNotic
     return (!ref || !docs.has(ref.serial)) && (!amendments.length || isAmendmentTitle(n.title));
   })) return fail("اطلاعیهٔ این دوره هنوز تطبیق و پردازش نشده است");
   if (!candidates.length) return fail(missing);
-  if (candidates.length > 1 && (!amendments.length || candidates.some(row => !pub(row)))) return fail(ambiguous);
-  candidates.sort((a,b) => (pub(b) ?? "").localeCompare(pub(a) ?? ""));
-  if (candidates.length > 1 && pub(candidates[0]) === pub(candidates[1])) return fail(ambiguous);
-  const row = candidates[0];
+  let row = candidates[0];
+  if (candidates.length > 1) {
+    if (!amendments.length) return fail(ambiguous);
+    const dated = candidates.map(filing => ({
+      filing, day: validJalali(latin(filing.publicationDate ?? "").trim()),
+    }));
+    if (dated.some(entry => !entry.day)) return fail(ambiguous);
+    dated.sort((a,b) => b.day!.localeCompare(a.day!));
+    const latest = dated.filter(entry => entry.day === dated[0].day).map(entry => entry.filing);
+    if (latest.length > 1) {
+      if (latest.some(filing => !pub(filing))) return fail(ambiguous);
+      latest.sort((a,b) => pub(b)!.localeCompare(pub(a)!));
+      if (pub(latest[0]) === pub(latest[1])) return fail(ambiguous);
+    }
+    row = latest[0];
+  }
   const nextMonthStart = jalaliYmdToGregorian(monthOffset(period, 1) + "-01");
   const endOfCalendarMonth = nextMonthStart ? new Date(Date.parse(nextMonthStart + "T00:00:00Z") - 86400000).toISOString().slice(0, 10) : null;
   const date = row.reportPeriod?.replaceAll("/", "-");
