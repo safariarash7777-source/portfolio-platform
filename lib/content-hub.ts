@@ -16,6 +16,8 @@ export interface ContentItem {
   title: string | null;
   description: string | null;
   published_at: string | null;
+  /** Row creation/receipt time, when supplied by the public reader. Not last-sync time. */
+  stored_at?: string | null;
 }
 
 /** متادیتای نمایشیِ هر پلتفرم — برچسبِ فارسی، توکنِ رنگ و لینکِ دنبال‌کردن. */

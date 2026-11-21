@@ -17,6 +17,7 @@ import { marketOverviewLabel } from "./market-status";
 import { formatJalali, formatTehranClock } from "../format";
 import type { HomeMediaRead } from "./home-media";
 import { withDeadline } from "../deadline";
+import { articleText, articleTitle, publicArticleHref } from "../media/public-media";
 import {
   approvedCodalUrl,
   type DeskCompanyReport,
@@ -146,6 +147,8 @@ function component(
       __esModule: true,
     },
     "@/lib/public-design/layout": { publicLayout, publicLayoutHref },
+    "@/lib/media/public-media": { articleText, articleTitle, publicArticleHref },
+    "@/lib/format": { formatJalali },
     "./SiteLayoutPreview": { __esModule: true, default: PreviewSlot },
     "./SiteAppearanceWarning": { __esModule: true, default: WarningSlot },
     "./PublicDesign.module.css": {
@@ -569,4 +572,27 @@ test("actual home reader keeps Twitter aliases and one canonical Telegram post i
     ]),
   );
   assert.equal(onlyTwitter.state, "ready");
+});
+
+
+test("home consultation shortcut and its email form disclose waitlist-only scope before and after submission", () => {
+  const shortcut = elements(component("PublicHome")({}))
+    .find(el => el.props.href === "#waitlist");
+  assert.ok(shortcut);
+  assert.match(renderToStaticMarkup(shortcut), /فهرست انتظار مشاوره/);
+
+  const Form = (status: "idle" | "success") => component("../landing/WaitlistForm", {
+    react: {
+      useId: () => "fixture-waitlist-scope",
+      useState: (initial: unknown) => [initial === "idle" ? status : initial, () => {}],
+    },
+  });
+  const idle = renderToStaticMarkup(Form("idle")({}));
+  assert.match(idle, /id="fixture-waitlist-scope"/);
+  assert.match(idle, /aria-describedby="fixture-waitlist-scope"/);
+  assert.match(idle, /نوبت رزرو نمی‌کند و دسترسی ویژه‌ای فعال نمی‌شود/);
+  assert.match(idle, /عضویت در فهرست انتظار/);
+  const success = renderToStaticMarkup(Form("success")({}));
+  assert.match(success, /ایمیلتان در فهرست انتظار مشاوره ثبت شد/);
+  assert.match(success, /هنوز جلسه‌ای رزرو نشده/);
 });

@@ -30,17 +30,18 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/analyses", label: "کارنامه" },
       { href: "/notes", label: "یادداشت روزانه" },
-      { href: "/insights", label: "تحلیل‌های اجتماعی" },
+      { href: "/insights", label: "رسانهٔ آرش" },
     ],
   },
   {
     key: "products",
-    label: "محصولات",
+    label: "خدمات",
     items: [
       { href: "/webinars", label: "وبینار" },
       { href: "/#waitlist", label: "مشاورهٔ اختصاصی" },
     ],
   },
+  { key: "learn", label: "یادگیری", href: "/learn" },
   { key: "about", label: "دربارهٔ آرش", href: "/about" },
 ];
 
@@ -48,6 +49,8 @@ export default function Navbar({ prefetch }: { prefetch?: boolean } = {}) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
+  const mobileButton = useRef<HTMLButtonElement>(null);
+  const menuTrigger = useRef<HTMLButtonElement | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -63,7 +66,14 @@ export default function Navbar({ prefetch }: { prefetch?: boolean } = {}) {
       if (navRef.current && !navRef.current.contains(e.target as Node)) setOpenGroup(null);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpenGroup(null);
+      if (e.key !== "Escape") return;
+      if (mobileButton.current?.getAttribute("aria-expanded") === "true") {
+        setOpen(false);
+        mobileButton.current.focus();
+      } else if (menuTrigger.current?.getAttribute("aria-expanded") === "true") {
+        setOpenGroup(null);
+        menuTrigger.current.focus();
+      }
     };
     const onFocusOut = (e: FocusEvent) => {
       const next = e.relatedTarget as Node | null;
@@ -121,8 +131,8 @@ export default function Navbar({ prefetch }: { prefetch?: boolean } = {}) {
                   className="inline-flex items-center gap-1 rounded-md px-3 text-sm font-medium transition-colors hover:bg-[color:var(--surface-2)]"
                   style={{ color: isOpen ? "var(--navy)" : "var(--text-2)", minHeight: 44 }}
                   aria-expanded={isOpen}
-                  aria-haspopup="menu"
-                  onClick={() => setOpenGroup((v) => (v === g.key ? null : g.key))}
+                  aria-controls={isOpen ? `nav-${g.key}` : undefined}
+                  onClick={(event) => { menuTrigger.current = event.currentTarget; setOpenGroup((v) => (v === g.key ? null : g.key)); }}
                 >
                   {g.label}
                   <ChevronDown
@@ -137,7 +147,7 @@ export default function Navbar({ prefetch }: { prefetch?: boolean } = {}) {
 
                 {isOpen && g.items && (
                   <div
-                    role="menu"
+                    id={`nav-${g.key}`}
                     className="absolute top-full z-50 mt-1 min-w-[190px] rounded-xl p-1.5"
                     style={{
                       insetInlineStart: 0,
@@ -149,7 +159,6 @@ export default function Navbar({ prefetch }: { prefetch?: boolean } = {}) {
                     {g.items.map((item) => (
                       <Link prefetch={prefetch}
                         key={item.href}
-                        role="menuitem"
                         href={item.href}
                         onClick={() => setOpenGroup(null)}
                         className="block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors hover:bg-[color:var(--surface-2)]"
@@ -185,16 +194,17 @@ export default function Navbar({ prefetch }: { prefetch?: boolean } = {}) {
               className="inline-flex items-center rounded-md px-3 text-sm font-medium transition-colors hover:bg-[color:var(--surface-2)]"
               style={{ color: "var(--text-2)", minHeight: 44 }}
             >
-              ورود
+              حساب من
             </Link>
           </div>
 
           <button
             type="button"
+            ref={mobileButton}
             className="md:hidden btn btn-ghost"
             aria-label={open ? "بستن منو" : "باز کردن منو"}
             aria-expanded={open}
-            aria-controls="mobile-menu"
+            aria-controls={open ? "mobile-menu" : undefined}
             onClick={() => setOpen((v) => !v)}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -249,7 +259,7 @@ export default function Navbar({ prefetch }: { prefetch?: boolean } = {}) {
                 درخواست مشاوره
               </Link>
               <Link prefetch={prefetch} href="/dashboard" onClick={() => setOpen(false)} className="btn btn-outline w-full">
-                ورود
+                حساب من
               </Link>
             </div>
           </div>

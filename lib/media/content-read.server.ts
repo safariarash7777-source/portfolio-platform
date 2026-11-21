@@ -5,8 +5,8 @@ import { isKind, isPlatform, type ContentItem } from "../content-hub";
 
 interface ContentReadResult { data: ContentItem[] | null; error: unknown }
 type LegacyRead = (signal: AbortSignal) => PromiseLike<ContentReadResult>;
-interface ContentReadOptions { environment: Readonly<Record<string, string | undefined>> }
-const projection = "id,platform,kind,content_url,title,description,published_at";
+interface ContentReadOptions { environment?: Readonly<Record<string, string | undefined>>; contentId?: string }
+const projection = "id,platform,kind,content_url,title,description,published_at,created_at";
 
 function contentRows(value: unknown): ContentItem[] | null {
   if (!Array.isArray(value) || value.length > 60) return null;
@@ -19,6 +19,7 @@ function contentRows(value: unknown): ContentItem[] | null {
   return value.flatMap(row => isPlatform(row.platform) && isKind(row.kind) ? [{
     id: row.id, platform: row.platform, kind: row.kind, content_url: row.content_url,
     title: row.title, description: row.description, published_at: row.published_at,
+    ...(typeof row.created_at === "string" && Number.isFinite(Date.parse(row.created_at)) ? { stored_at: row.created_at } : {}),
   }] : []);
 }
 
@@ -28,6 +29,7 @@ function contentRows(value: unknown): ContentItem[] | null {
  */
 export async function readMediaContent(legacyRead: LegacyRead, options?: ContentReadOptions): Promise<ContentReadResult> {
   const failed: ContentReadResult = { data: null, error: true };
+  if (options?.contentId !== undefined && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(options.contentId)) return failed;
   let pair: ReturnType<typeof fundamentalReadPair>;
   try {
     // Direct field access is deliberate: build-time env replacement must see it.
@@ -52,8 +54,9 @@ export async function readMediaContent(legacyRead: LegacyRead, options?: Content
     if (selected.expiresAt <= Date.now() / 1000) return failed;
     const query = new URLSearchParams({
       select: projection, deleted_at: "is.null", published_at: "not.is.null",
-      order: "published_at.desc", limit: "60",
+      order: "published_at.desc", limit: options?.contentId ? "1" : "60",
     });
+    if (options?.contentId) query.set("id", `eq.${options.contentId}`);
     const response = await fetch(`${selected.url}/rest/v1/content_hub?${query}`, {
       method: "GET", headers: { apikey: selected.anon, Authorization: `Bearer ${selected.anon}` },
       cache: "no-store", credentials: "omit", redirect: "error", signal,

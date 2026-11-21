@@ -2,10 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import MediaHub from "@/components/insights/MediaHub";
-import { type ContentItem, isPlatform, isKind } from "@/lib/content-hub";
 import { readSiteAppearance } from "@/lib/appearance/site-layout-server";
 import { pageMetadata } from "@/lib/metadata";
-import { readMediaContent } from "@/lib/media/content-read.server";
+import { readPublicMedia } from "@/lib/media/public-read.server";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -23,30 +22,10 @@ export default async function InsightsPage({
 }) {
   const search = searchParams ? await searchParams : {};
   const supabase = await createClient();
-  const [{ data, error: contentError }, setting] = await Promise.all([
-    readMediaContent(async (signal) => await supabase
-      .from("content_hub")
-      .select(
-        "id, platform, kind, content_url, title, description, published_at",
-      )
-      .is("deleted_at", null)
-      .not("published_at", "is", null)
-      .order("published_at", { ascending: false })
-      .limit(60)
-      .abortSignal(signal)),
+  const [media, setting] = await Promise.all([
+    readPublicMedia(),
     readSiteAppearance(supabase, search),
   ]);
-  const items: ContentItem[] = (data ?? [])
-    .filter((r) => isPlatform(r.platform) && isKind(r.kind))
-    .map((r) => ({
-      id: r.id,
-      platform: r.platform,
-      kind: r.kind,
-      content_url: r.content_url,
-      title: r.title,
-      description: r.description,
-      published_at: r.published_at,
-    }));
   // Only the RPC defines the initial default. A failed read is not a guessed
   // global decision, and browser prefs/hash cannot override a successful read.
   const layout =
@@ -57,12 +36,12 @@ export default async function InsightsPage({
     <>
       <Navbar />
       <MediaHub
-        items={items}
+        items={media.items}
         globalLayout={layout}
         appearancePreview={setting.previewLayout !== null}
         appearanceReadFailed={setting.state === "unavailable"}
         sourceMode="existing"
-        initialMode={contentError ? "error" : "ready"}
+        initialMode={media.state === "unavailable" ? "error" : "ready"}
       />
       <Footer />
     </>

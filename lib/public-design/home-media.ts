@@ -8,6 +8,7 @@ export interface HomeMediaRead {
   state: "ready" | "empty" | "unavailable";
   items: ContentItem[];
   readAt: string;
+  lastStoredAt?: string | null;
 }
 
 /** Same existing published-content projection and current session/RLS as home.

@@ -64,7 +64,7 @@ test("approved binding sends one exact bounded anonymous GET and preserves the e
   const { url, init } = calls[0];
   assert.equal(url.origin + url.pathname, `${origin}/rest/v1/content_hub`);
   assert.deepEqual(Object.fromEntries(url.searchParams), {
-    select: "id,platform,kind,content_url,title,description,published_at", deleted_at: "is.null",
+    select: "id,platform,kind,content_url,title,description,published_at,created_at", deleted_at: "is.null",
     published_at: "not.is.null", order: "published_at.desc", limit: "60",
   });
   assert.equal(init.method, "GET"); assert.equal(init.cache, "no-store");
@@ -205,7 +205,7 @@ test("compiled default reader captures direct binding fields rather than unmappe
   }
 });
 
-test("insights consumer retains the exact legacy query and independent appearance client", async () => {
+test("insights uses the anonymous public reader and keeps appearance on its independent session client", async () => {
   const calls: unknown[][] = [];
   let clientCalls = 0, appearanceCalls = 0;
   const chain = {
@@ -216,14 +216,13 @@ test("insights consumer retains the exact legacy query and independent appearanc
     limit: (...args: unknown[]) => { calls.push(["limit", ...args]); return chain; },
     abortSignal: async (signal: AbortSignal) => { assert(signal instanceof AbortSignal); return { data: [row()], error: null }; },
   };
-  const client = { from: (table: string) => { calls.push(["from", table]); return chain; } };
-  const realRead = reader(async () => { throw new Error("unexpected public GET without override"); });
+  const client = { from: () => { throw new Error("Session must never supply public article content"); } };
   const page = evaluate(compile(readFileSync(new URL("../../app/insights/page.tsx", import.meta.url), "utf8")), {
     "react/jsx-runtime": require("react/jsx-runtime"),
     "@/lib/supabase/server": { createClient: async () => { clientCalls++; return client; } },
     "@/components/layout/Navbar": { default: "navbar" }, "@/components/layout/Footer": { default: "footer" },
     "@/components/insights/MediaHub": { default: "media-hub" }, "@/lib/content-hub": contentHub,
-    "@/lib/media/content-read.server": { readMediaContent: realRead },
+    "@/lib/media/public-read.server": { readPublicMedia: async () => { calls.push(["anonymous-public-reader"]); return { state: "ready", items: [row()], readAt: "2026-11-20T00:00:00Z" }; } },
     "@/lib/metadata": { pageMetadata: () => ({}) },
     "@/lib/appearance/site-layout-server": { readSiteAppearance: async (receivedClient: unknown) => {
       appearanceCalls++; assert.equal(receivedClient, client);
@@ -232,12 +231,23 @@ test("insights consumer retains the exact legacy query and independent appearanc
   }).default as (props: { searchParams: Promise<Record<string, string>> }) => Promise<{ props: { children: { type: string; props: Record<string, unknown> }[] } }>;
   const output = await page({ searchParams: Promise.resolve({}) });
   assert.equal(clientCalls, 1); assert.equal(appearanceCalls, 1);
-  assert.equal(JSON.stringify(calls), JSON.stringify([
-    ["from", "content_hub"], ["select", "id, platform, kind, content_url, title, description, published_at"],
-    ["is", "deleted_at", null], ["not", "published_at", "is", null],
-    ["order", "published_at", { ascending: false }], ["limit", 60],
-  ]));
+  assert.equal(JSON.stringify(calls), JSON.stringify([["anonymous-public-reader"]]));
   const media = output.props.children.find(child => child.type === "media-hub")!;
   assert.equal(media.props.globalLayout, 2); assert.equal(media.props.initialMode, "ready");
   assert.equal(JSON.stringify(media.props.items), JSON.stringify([row()]));
+});
+
+test("a deep article requests exactly one published undeleted public ID; malformed IDs never dispatch", async () => {
+  const id = "00000000-0000-4000-8000-000000000001";
+  const read = reader(async input => {
+    const url = new URL(String(input));
+    assert.equal(url.searchParams.get("id"), `eq.${id}`);
+    assert.equal(url.searchParams.get("limit"), "1");
+    assert.equal(url.searchParams.get("deleted_at"), "is.null");
+    return Response.json([{ ...row(id), created_at: "2026-11-05T00:00:00Z" }]);
+  });
+  const result = await read(forbiddenLegacy, { environment: pair(), contentId: id });
+  assert.equal(result.data?.[0].stored_at, "2026-11-05T00:00:00Z");
+  const blocked = reader(async () => { throw new Error("invalid ID must not fetch"); });
+  assert.equal((await blocked(forbiddenLegacy, { environment: pair(), contentId: "private-or-injected&id=other" })).error, true);
 });
