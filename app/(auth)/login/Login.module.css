@@ -1,0 +1,70 @@
+.page {
+  --navy: #203d55;
+  --navy-deep: #142d43;
+  --heading: #142d43;
+  --text-2: #33495a;
+  --text-3: #526170;
+  --text-on-navy: #fffaf0;
+  --danger: #a02727;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: clamp(16px, 5vw, 72px);
+  color: var(--navy-deep);
+  background: #eeeae0;
+  color-scheme: light;
+}
+.sheet {
+  display: grid;
+  grid-template-columns: minmax(220px, .8fr) minmax(0, 1.2fr);
+  width: min(100%, 890px);
+  overflow: hidden;
+  border: 1px solid #d8d2c5;
+  border-radius: 20px;
+  background: #fffdf7;
+  box-shadow: 0 18px 52px rgb(23 41 51 / 9%);
+}
+.brand {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  padding: clamp(28px, 4vw, 54px);
+  background: var(--navy-deep);
+}
+.brand::after {
+  position: absolute;
+  content: "";
+  z-index: -1;
+  inset: auto auto -63px -28px;
+  width: 190px;
+  height: 374px;
+  background: url("/brand/mark.png") center / contain no-repeat;
+  opacity: .16;
+}
+.content { padding: clamp(26px, 4vw, 54px); }
+.content input {
+  min-height: 48px;
+  color: var(--navy-deep);
+  background: #fff;
+  border: 1px solid #aaa99e;
+  font-size: 16px;
+}
+.content input::placeholder { color: #68737b; }
+.content button[type="submit"] {
+  min-height: 48px;
+  color: #fffaf0;
+  background: var(--navy-deep);
+  border: 1px solid var(--navy-deep);
+}
+.page :is(a, button, input):focus-visible {
+  outline: 3px solid #ac813c;
+  outline-offset: 3px;
+}
+@media (max-width: 680px) {
+  .sheet { grid-template-columns: minmax(0, 1fr); max-width: 450px; }
+  .brand { padding: 20px 24px; }
+  .brand::after { width: 75px; height: 150px; inset: -19px auto auto 18px; }
+  .content { padding: 24px 20px; }
+}

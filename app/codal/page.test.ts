@@ -84,11 +84,18 @@ function pendingReadFixture(path: typeof publicReaders[number], pending: boolean
       compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
     }).outputText;
     vm.runInNewContext(compiled, {
-      exports: actual, Buffer, URLSearchParams, process: { env: { VERCEL_ENV: 'production' } },
+      exports: actual, Buffer, URLSearchParams, process: { env: { VERCEL_ENV: 'production', NEXT_PUBLIC_SUPABASE_URL: 'https://fixture.invalid', NEXT_PUBLIC_SUPABASE_ANON_KEY: 'fixture.' + Buffer.from(JSON.stringify({role:'anon',iss:'supabase',exp:4102444800})).toString('base64url') + '.fixture' } },
       require(name: string) { assert.ok(Object.hasOwn(imports, name), `unexpected server dependency: ${name}`); return imports[name]; },
     });
     return actual;
   };
+  const contentReader = () => serverModule('lib/media/content-read.server.ts', {
+      'server-only': {}, '../deadline': { withDeadline: boundedDeadline },
+      '../content-hub': require('../../lib/content-hub'),
+      '../fundamental/read-config.server': serverModule('lib/fundamental/read-config.server.ts', {
+        'server-only': {}, '../liara-public-env.js': require('../../lib/liara-public-env.js'),
+      }),
+    });
   const code = ts.transpileModule(readFileSync(path, 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
   }).outputText;
@@ -96,12 +103,10 @@ function pendingReadFixture(path: typeof publicReaders[number], pending: boolean
     if (name === 'server-only') return {};
     if (name === '@/lib/supabase/server') return { createClient: async () => client };
     if (name === '@/lib/deadline') return { withDeadline: boundedDeadline };
-    if (name === '@/lib/media/content-read.server') return serverModule('lib/media/content-read.server.ts', {
-      'server-only': {}, '../deadline': { withDeadline: boundedDeadline },
-      '../content-hub': require('../../lib/content-hub'),
-      '../fundamental/read-config.server': serverModule('lib/fundamental/read-config.server.ts', {
-        'server-only': {}, '../liara-public-env.js': require('../../lib/liara-public-env.js'),
-      }),
+    if (name === '@/lib/media/content-read.server') return contentReader();
+    if (name === '@/lib/media/public-read.server') return serverModule('lib/media/public-read.server.ts', {
+      'server-only': {}, './content-read.server': contentReader(), './public-media': require('../../lib/media/public-media'),
+      '@supabase/supabase-js': { createClient: () => client },
     });
     if (name === '@/lib/appearance/site-layout-server') return { readSiteAppearance: async () => ({ state: 'ready', globalLayout: 2, previewLayout: null }) };
     if (name === '@/lib/metadata') return { pageMetadata: () => ({}) };

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import Logo from "@/components/ui/Logo";
+
 import { accountEntryHref, normalizeReturnPath } from "@/components/account/returnPath";
 
 // The SDK may persist a session before resolving. Keep this document's lease
@@ -32,7 +32,7 @@ export default function LoginPage() {
 
 function AuthPageFallback({ label }: { label: string }) {
   return (
-    <div className="min-h-screen flex items-center justify-center px-5" style={{ background: "var(--bg)", color: "var(--text-3)" }}>
+    <div className="w-full" style={{ color: "var(--text-3)" }}>
       <p className="text-sm" role="status">{label}</p>
     </div>
   );
@@ -115,25 +115,10 @@ function LoginPageContent() {
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-5"
-      style={{ background: "var(--bg)" }}
-    >
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <Logo href="/" />
-          </div>
-          <span className="eyebrow">ورود به پلتفرم</span>
-          <h1
-            className="font-display text-2xl font-bold mt-2"
-            style={{ color: "var(--navy-deep)" }}
-          >
-            خوش آمدید
-          </h1>
-        </div>
-
-        <div className="card-elevated p-8">
+    <div className="w-full">
+      <div>
+        <h1 className="font-display text-2xl font-bold mb-3">ورود به حساب کاربری</h1>
+        <div>
           <p className="text-sm leading-7 mb-5">این مسیر با رمز خود سایت کار می‌کند. رمز Google یا Gmail جای رمز سایت نیست.</p>
           {searchParams.get('error')==='auth_unavailable' && <p role="alert" className="text-sm leading-7 mb-5" style={{color:'var(--danger)'}}>بررسی نشست در سرور پاسخ نداد. رمز را تغییر ندهید؛ کمی بعد دوباره ورود را امتحان کنید.</p>}
           {searchParams.get('error')==='auth_callback_failed' && <p role="alert" className="text-sm leading-7 mb-5" style={{color:'var(--danger)'}}>تأیید ورود کامل نشد. دوباره از صفحهٔ ورود اقدام کنید؛ اگر مشکل ادامه داشت، با پشتیبانی تماس بگیرید.</p>}
@@ -253,7 +238,7 @@ function LoginPageContent() {
               ثبت‌نام کنید
             </Link>
           </div>
-                  </div>
+        </div>
       </div>
     </div>
   );

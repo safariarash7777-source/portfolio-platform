@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 
 type Status = "idle" | "loading" | "success" | "error";
@@ -10,6 +10,7 @@ type Status = "idle" | "loading" | "success" | "error";
  * همان endpoint (`/api/waitlist`)، همان بدنهٔ درخواست و همان وضعیت‌ها.
  */
 export default function WaitlistForm({ tone = "light" }: { tone?: "light" | "onNavy" }) {
+  const scopeId = useId();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -51,6 +52,9 @@ export default function WaitlistForm({ tone = "light" }: { tone?: "light" | "onN
         حلقه می‌گیرد. رنگ از توکن می‌آید و `boxShadow`ِ inline حذف شد تا
         `ring` بتواند اعمال شود.
       */}
+      <p id={scopeId} className="mb-2 text-sm leading-7" style={{ color: hintColor }}>
+        با ثبت ایمیل فقط به فهرست انتظار مشاوره می‌پیوندید. این کار نوبت رزرو نمی‌کند و دسترسی ویژه‌ای فعال نمی‌شود.
+      </p>
       <form
         onSubmit={handleSubmit}
         className="flex flex-col sm:flex-row gap-2 p-2 rounded-xl border transition-shadow focus-within:ring-2"
@@ -72,6 +76,7 @@ export default function WaitlistForm({ tone = "light" }: { tone?: "light" | "onN
           disabled={busy}
           dir="ltr"
           aria-label="آدرس ایمیل"
+          aria-describedby={scopeId}
           className="input flex-1"
           style={{
             border: "none",
@@ -88,16 +93,16 @@ export default function WaitlistForm({ tone = "light" }: { tone?: "light" | "onN
           {status === "loading"
             ? "در حال ثبت..."
             : status === "success"
-            ? "ثبت شدید ✓"
-            : "ثبت درخواست"}
+            ? "در فهرست ثبت شد"
+            : "عضویت در فهرست انتظار"}
           {status === "idle" && <ArrowLeft size={16} />}
         </button>
       </form>
 
-      <div className="h-6 mt-2 px-1">
+      <div className="min-h-6 mt-2 px-1" role="status" aria-live="polite">
         {status === "success" && (
           <p className="text-sm" style={{ color: onNavy ? "var(--gold-soft)" : "var(--success)" }}>
-            ثبت شد! برای هماهنگی مشاوره و خبرهای مهم، از همین ایمیل با شما در تماس خواهیم بود.
+            ایمیلتان در فهرست انتظار مشاوره ثبت شد. هنوز جلسه‌ای رزرو نشده است.
           </p>
         )}
         {status === "error" && (
