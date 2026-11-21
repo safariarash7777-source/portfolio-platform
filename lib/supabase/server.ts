@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { previewDossierFetch } from './preview-dossier-fetch'
+import { previewDossierFetch } from '../portfolio/preview-dossier-fetch'
 
 export async function createClient() {
   const cookieStore = await cookies()
