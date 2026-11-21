@@ -13,7 +13,8 @@ import type { HeadlineMetric } from "../core/marketHeadline";
 import { publicLayout, publicLayoutHref } from "./layout";
 import { isKind, isPlatform, KIND_LABEL, PLATFORM_META } from "../content-hub";
 import { editorialCover, sourceUrl, uniqueMedia } from "../media/presentation";
-import { formatJalali } from "../format";
+import { marketOverviewLabel } from "./market-status";
+import { formatJalali, formatTehranClock } from "../format";
 import type { HomeMediaRead } from "./home-media";
 import { withDeadline } from "../deadline";
 import {
@@ -320,6 +321,8 @@ test("actual market header shows raw board state only with independently ready i
       default: () => null,
     },
     "@/lib/market-nav": { MARKET_SECTIONS },
+    "@/lib/public-design/market-status": { marketOverviewLabel },
+    "@/lib/format": { formatJalali, formatTehranClock },
     "@/lib/market-quality": { marketQualityLabel },
   });
   const props = {
@@ -331,10 +334,21 @@ test("actual market header shows raw board state only with independently ready i
     const html = renderToStaticMarkup(
       Header({
         ...props,
-        availability: { state: "ready", families: { indices: { state } } },
+        availability: { state: "stale", families: { indices: { state, validAt: null }, stocks: { state: "unknown-time" } } },
       }),
     );
     assert.equal(html.includes("synthetic-board-open"), state === "ready");
+    assert.match(html, /بخشی از داده‌های بازار کهنه است/);
+    assert.ok(html.includes("سهام: " + marketQualityLabel("unknown-time")));
+    assert.doesNotMatch(html, /زمان شاخص در منبع/);
+  }
+  const validAt = Date.UTC(2026, 10, 21, 7);
+  for (const reason of ["old-price-time", "read-timeout"]) {
+    const html = renderToStaticMarkup(Header({ ...props, availability: {
+      state: "stale", reason, families: { indices: { state: "stale", validAt }, stocks: { state: "unknown-time" } },
+    } }));
+    assert.ok(html.includes(formatJalali(validAt)) && html.includes(formatTehranClock(validAt)));
+    assert.equal(html.includes("خواندن تازهٔ بازار ناموفق بود"), reason === "read-timeout");
   }
 });
 test("source failure changes only missing-value explanation, never any engine number or valid coverage", () => {
