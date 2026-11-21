@@ -1,0 +1,95 @@
+{
+  "readOnly": true,
+  "rows": [
+    {
+      "id": 12219,
+      "symbol": "دکوثر",
+      "period_end": "2024-01-20",
+      "captured_at": "2026-11-04T00:20:55.561141+00:00",
+      "source_url": "https://codal.ir/Reports/Decision.aspx?LetterSerial=mQQ4erpgBJfz2jYnmzK0cQ%3d%3d&rt=0&let=58&ct=0&ft=-1#pv2",
+      "published_at": null,
+      "sourceUrlStatus": "official_allowlisted",
+      "queryScope": "global"
+    }
+  ],
+  "counts": [
+    {
+      "feedId": 19270,
+      "exactReportCount": 0
+    },
+    {
+      "feedId": 22948,
+      "exactReportCount": 0
+    }
+  ],
+  "latestCompleteCycle": null,
+  "latestSourcePeriod": null,
+  "collectorBackend": null,
+  "http404Cause": null,
+  "clockMeaning": "created_at and captured_at retain database column names; neither is received_at by inference",
+  "before": {
+    "sourceId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+    "healthy": true,
+    "restartCount": 0
+  },
+  "metadataColumns": {
+    "id": "bigint",
+    "symbol": "text",
+    "report_type": null,
+    "type": null,
+    "report_code": null,
+    "period": null,
+    "period_end": "date",
+    "period_end_date": null,
+    "fiscal_year": null,
+    "created_at": null,
+    "captured_at": "timestamp with time zone",
+    "parser_version": null,
+    "source_url": "text",
+    "source": null,
+    "publish_date": null,
+    "published_at": "timestamp with time zone"
+  },
+  "missingFields": [
+    "report_type",
+    "type",
+    "report_code",
+    "period",
+    "period_end_date",
+    "fiscal_year",
+    "created_at",
+    "parser_version",
+    "source",
+    "publish_date"
+  ],
+  "indexes": [
+    {
+      "name": "codal_reports_pkey",
+      "definition": "CREATE UNIQUE INDEX codal_reports_pkey ON public.codal_reports USING btree (id)",
+      "valid": true
+    },
+    {
+      "name": "codal_reports_source_url_key",
+      "definition": "CREATE UNIQUE INDEX codal_reports_source_url_key ON public.codal_reports USING btree (source_url)",
+      "valid": true
+    },
+    {
+      "name": "idx_codal_reports_symbol",
+      "definition": "CREATE INDEX idx_codal_reports_symbol ON public.codal_reports USING btree (symbol, published_at DESC)",
+      "valid": true
+    }
+  ],
+  "orderColumn": "id",
+  "orderMeaning": "maximum stored id; not latest complete collection cycle or newest source period",
+  "status": "READ_ONLY_STORED_METADATA_OBSERVED",
+  "after": {
+    "sourceId": "9193dfe09afa17a6270bc6be4db0b08473cd82023b5d14fd11e3adaf863d855c",
+    "healthy": true,
+    "restartCount": 0
+  },
+  "atUtc": "2026-11-04T01:10:33.810015+00:00",
+  "observedAtUtc": "2026-11-04T01:10:33.177881+00:00",
+  "payloadSha256": "82ff58409a4820c8844a042a1f7634b4e2b507fe84cf84dae16e1b5c1c1536de",
+  "remoteWrites": false,
+  "automaticRetry": false
+}

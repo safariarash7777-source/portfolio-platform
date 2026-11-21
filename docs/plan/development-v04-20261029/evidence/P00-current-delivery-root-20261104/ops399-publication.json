@@ -1,0 +1,24 @@
+{
+  "observedAtUtc": "2026-11-04T01:25:53Z",
+  "main": "ff5c49ffca82f3338331596e262f8778e5e50960",
+  "tree": "93b0bc5d63e39df7a465a3c7e9b839522e0ff309",
+  "pr": 399,
+  "ciRun": 41750232507,
+  "actualCiCheckout": "f0b58c80d67c78abac051c38c8e90b86f60eb25b",
+  "requiredJobs": "5 PASS; full Core and DB logs independently read",
+  "optionalNative": "SKIPPED; not native acceptance",
+  "deployment": {
+    "id": "dpl_Hs4zu9cXzAzcFqUeaGy6S4Eff6sp",
+    "state": "READY",
+    "target": "production",
+    "url": "https://portfolio-platform-o40nba40r-safariarash7777-4463s-projects.vercel.app",
+    "alias": "https://portfolio-platform-fawn.vercel.app",
+    "gitSha": "ff5c49ffca82f3338331596e262f8778e5e50960"
+  },
+  "productCodeUnchangedSince": "a42c61c2739ea73aae071de7fa9ed2fa22041347",
+  "freshBrowserAcceptanceClaimed": false,
+  "runtimeProbeAdopted": false,
+  "discoveryAdopted": false,
+  "liveWebSocketAttempted": false,
+  "hermesInstalled": false
+}

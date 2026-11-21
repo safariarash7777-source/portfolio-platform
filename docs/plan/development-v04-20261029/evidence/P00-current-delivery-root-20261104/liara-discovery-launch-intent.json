@@ -1,0 +1,20 @@
+{
+  "atUtc": "2026-11-04T01:58:36.714010+00:00",
+  "request": {
+    "workflow": "relay-health.yml",
+    "ref": "main",
+    "expectedHead": "343b3c82a53a0963ebeaf80078e560c1ece62880",
+    "inputs": {
+      "operation": "discovery",
+      "note": "readonly-binding-discovery-4cbaa58218af4f5890153b385f166fc1"
+    },
+    "purpose": "READ_ONLY_EXISTING_RELAY_BINDING_DISCOVERY"
+  },
+  "automaticRetry": false,
+  "credentialSource": "EXISTING_GIT_CREDENTIAL_MEMORY_ONLY",
+  "workflowRegistryReadback": {
+    "id": 358636277,
+    "path": ".github/workflows/relay-health.yml",
+    "state": "active"
+  }
+}
