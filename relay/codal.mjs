@@ -946,6 +946,21 @@ async function fetchAnnouncements(symbol, category) {
   return announcementRows(json);
 }
 
+export function readV2AnnouncementPage(result, page) {
+  if (result?.successful !== true || result.code_http !== 200) {
+    throw Object.assign(new Error("Codal V2 rejected announcement request"), {
+      status: result?.code_http, noRetry: true,
+    });
+  }
+  if (result.page !== page || !Array.isArray(result.data) ||
+      !Number.isInteger(result.count_page) || result.count_page < 0 ||
+      !Number.isInteger(result.count_announcement) || result.count_announcement < 0 ||
+      (!result.data.length && result.count_announcement > 0 && page <= result.count_page)) {
+    throw Object.assign(new Error("Codal V2 inconsistent page"), { name: "AnnouncementSchemaError" });
+  }
+  return announcementRows({ announcement: result.data });
+}
+
 function announcementRows(json) {
   if (!Array.isArray(json?.announcement) || json.announcement.some(a =>
       !a || typeof a !== "object" || Array.isArray(a) || typeof a.link !== "string" || !a.link.trim())) {
@@ -1127,6 +1142,17 @@ export async function fetchAnnouncementsPage({ l18, category, page = 1, date_sta
     ? { producer: "codal-list", budgetClass: "standard" }
     : { producer: "codal-archive", budgetClass: "bulk" };
   if (process.env.CODAL_ANNOUNCEMENT_SOURCE === 'official') return readOfficialAnnouncements({ l18, category, page, date_start });
+  // V2 does not document legacy category or subsidiary filters. Migrate only
+  // unfiltered current discovery; a filtered archive has different semantics.
+  if (process.env.CODAL_CURRENT_FEED_V2 === "true" && purpose === "current" &&
+      !category && !l18 && !date_start) {
+    if (!budgetPorts.client) throw Object.assign(new Error("Codal V2 requires budget client"), { noRetry: true });
+    const result = await budgetPorts.client.request({
+      endpoint: "Codal/v2/Announcement.php", params: { page: String(page) },
+      ...allocation, priority: "background", dedupeTtlMs: 300_000, timeoutMs: 25_000,
+    });
+    return readV2AnnouncementPage(result, page);
+  }
   const qs = new URLSearchParams({
     key: BRSAPI_KEY, page: String(page),
     only_main_company: "true", only_subsidiaries: "false",

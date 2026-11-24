@@ -2169,3 +2169,19 @@ migrationها روی staging (`B-004`، `D-002`) → cutover (`D-003`).
 **انتشار بسته عملیاتی397 بسته شد:** [CI/درخت/main/Production واقعی](plan/development-v04-20261029/evidence/P00-current-delivery-root-20261104/ops397-publication.json)، پنجjobموفق/checkout1f640/treeف6bd برابرhead1bc وmain740؛ aliasREADY/dpl_DN8yRusEsRbmErjFzqzy7xEGU7FE. app/components/lib/relay/config/package نسبتa42آزموده‌شدهثابت؛ browserQAتکراریادعانشده. حالتv2installer فقطمنبعیمنتشرشده؛ nativeآنmode/SQLapply/captureprofile/حق/پذیرشکاملعضوباز. Bstagechild مستقل SOURCEPASS و adoption/CI باهمانمجری ادامه دارد؛ dispatchتازهندارد.
 
 **کشف هویت در ابزار خواندنی — فقط کد:** [بستهٔ discovery](plan/development-v04-20261029/evidence/P00-current-delivery-root-20261104/binding-discovery-source-receipt.json) با ۱۰ آزمون mock و بازبینی مستقل اضافه شد. فقط metadata پردازش و enumهای مصوب را در مرحلهٔ مجاز بعدی می‌خواند؛ هیچ env، کد برنامه، مسیر یا argv خام را نمی‌خواند/منتشر نمی‌کند. گیت عمومی آن هم پیش از getter بسته است؛ نه WS/فرمان زنده و نه فعال‌سازی خودکار binding انجام شده. این بسته با ابزار attestation غیرفعال و ۱۳ آزمون آن، در test:deploy ثبت شده و CI نهایی جدا پیگیری می‌شود.
+
+### BRSAPI contract review and Codal V2 candidate — 2026-11-24
+
+Base aa80a60. Reviewed the public service pages linked from the [provider rules](https://brsapi.ir/tsetmc-exchange-free-bourse-api-key-request/) and the [V2 contract](https://brsapi.ir/bourse-api-codal-webservice/). These findings concern the source tree. The public arsadata health URL required authentication (401).
+
+| Official service family | Evidence in the relay producer inventory / action |
+|---|---|
+| Symbol, index, ETF NAV, stock options, candles | Symbol/detail, market-index, NAV primary/completion, options and candle-backfill exist. Verify instrument, observation time and units from stored samples before certifying live parity. |
+| Physical commodity exchange, deposit certificates, global commodities | IME physical/certificate and commodity producers exist. Verify all egress IPs including the commodity key. |
+| History, transactions, shareholders, IME funds, futures and IME options | API pages exist. Dedicated consumers for these six services were not identified in the relay coverage manifest. Candles are a separate service. |
+| Codal | Opt-in CODAL_CURRENT_FEED_V2=true migrates unfiltered current discovery only when the budget client is installed. The official-direct source still takes precedence. Archive and company/category requests stay on their existing paths. V2 documents neither legacy category nor subsidiary filters. Preserve historical report identity and verify classification before migrating those jobs. |
+| Gold/currency and exchange-wide symbol list | Present in producer inventory. Complete their official contract mapping separately. |
+
+The general key gap is 300 ms (50 ms for AIO); each egress IP has an independent cap of 20 starts/s. The owner's account notice specifies 1500/5 min. No independent per-minute quota was identified. The code's process-local policy is more conservative (300 ms and 300/5 min), but does not prove shared enforcement across processes or keys on one IP. Do not raise it. Daily limits are service/account dependent; V2 exposes usage_today, usage_today_limit, usage_5min, usage_5min_limit. Unknown remains unknown. Rejected 429 requests may count; V2 current discovery must stop the job on refusal.
+
+Release pending: inventory actual writers and IPs, verify shared admission and account values on an authorized scheduled read, compare page envelope and existing watermark, then verify a natural cycle through the database, API and site. No upstream call or production configuration change in this candidate.
