@@ -712,6 +712,11 @@ export class BrsApiClient {
         }
         lastErr = new Error(`http ${res.status}`);
         lastErr.status = res.status;
+        if (res.status === 429 && job.endpoint === "Codal/v2/Announcement.php") {
+          // Rejected requests also count. Do not retry this page in the current job.
+          this.bucket.slowDown(Math.max(this.o.backoffBaseMs, Number(res.headers?.get?.("retry-after")) * 1000 || 0));
+          break;
+        }
         if (!isRetryable(res.status)) break;
 
         // `Retry-After` بر محاسبهٔ ما مقدم است — منبع بهتر می‌داند.
