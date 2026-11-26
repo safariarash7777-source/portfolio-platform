@@ -12,15 +12,25 @@ import BudgetPanel from "../budget/BudgetPanel";
 import { cashFlowDraft, draftPayload, type CashFlowDraft } from "./draft";
 
 type Period = { startOn: string; endOn: string };
-function url(period: Period, version?: string) {
+function sectionHash(hash?: string) {
+  return hash === "#period-budget" || hash === "#cashflow-editor" ? hash : "";
+}
+function url(period: Period, version?: string, hash = "") {
   const query = new URLSearchParams(period); if (version) query.set("version", version);
-  return `/dashboard/cashflow?${query}`;
+  return `/dashboard/cashflow?${query}${sectionHash(hash)}`;
 }
 
 export default function CashFlowWorkspace({ expectedOwnerId, initialPeriod, initialVersion }: {
   expectedOwnerId: string; initialPeriod: Period; initialVersion?: string;
 }) {
   const [identity, setIdentity] = useState<"checking" | "ready" | "error" | "changed">("checking");
+  const [fragment, setFragment] = useState("");
+  useEffect(() => {
+    const update = () => setFragment(sectionHash(window.location.hash));
+    update();
+    window.addEventListener("hashchange", update);
+    return () => window.removeEventListener("hashchange", update);
+  }, []);
   const [selection, setSelection] = useState(initialPeriod);
   const [data, setData] = useState<CashFlowRead | null>(null), current = useRef<CashFlowRead | null>(null);
   const [draft, setDraft] = useState<CashFlowDraft | null>(null), [dirty, setDirty] = useState(false);
@@ -76,7 +86,7 @@ export default function CashFlowWorkspace({ expectedOwnerId, initialPeriod, init
       } else {
         current.current = next; setData(next); setDraft(cashFlowDraft(next.period, next.snapshot?.payload)); setDirty(false);
         setSelection(next.period); setHistoryError(next.history.state === "error" ? "سابقه خوانده نشد؛ نسخهٔ انتخابی حفظ شده است." : "");
-        window.history.replaceState(null, "", url(next.period, next.snapshot?.id));
+        window.history.replaceState(null, "", url(next.period, next.snapshot?.id, window.location.hash));
       }
       return true;
     } catch {
@@ -151,21 +161,21 @@ export default function CashFlowWorkspace({ expectedOwnerId, initialPeriod, init
     {identity !== "checking" && <button type="button" className="btn btn-outline" onClick={() => window.location.reload()}>بازکردن دوبارهٔ صفحه و بررسی نشست</button>}
   </section>;
   return <div className="min-w-0 space-y-6">
-    <nav aria-label="بخش‌های جریان نقد و بودجه" className="flex flex-wrap gap-3"><a className="btn btn-outline" href="#period-budget">بودجهٔ دوره</a><a className="btn btn-outline" href="#cashflow-editor">ثبت برنامه و عملکرد</a></nav>
     <form className="card space-y-4 p-5" aria-label="انتخاب دورهٔ جریان نقد" onSubmit={event => { event.preventDefault(); if (!requestLocked && !reading) void load(selection); }}>
-      <h2 className="font-display text-xl font-bold">دورهٔ کدام روزها؟</h2>
+      <h3 className="font-display text-lg font-bold">انتخاب دوره</h3>
       <p className="text-sm leading-7">شروع و پایان با تقویم میلادی؛ هر دو روز در دوره‌اند. حداکثر {toPersianDigits(366)} روز. برای تغییر دوره ابتدا پیش‌نویس را لغو یا ثبت را تعیین تکلیف کنید.</p>
       <fieldset disabled={requestLocked || reading} className="grid min-w-0 grid-cols-1 items-end gap-3 sm:grid-cols-3"><legend className="sr-only">دورهٔ انتخابی</legend>
-        <label className="space-y-1 text-sm">شروع دوره (میلادی)<input type="date" className="input w-full min-w-0" value={selection.startOn} onChange={event => setSelection({ ...selection, startOn: event.target.value })} /></label>
-        <label className="space-y-1 text-sm">پایان دوره (میلادی)<input type="date" className="input w-full min-w-0" value={selection.endOn} onChange={event => setSelection({ ...selection, endOn: event.target.value })} /></label>
-        <button type="submit" className="btn btn-outline">خواندن این دوره</button>
+        <label className="space-y-1 text-sm">شروع دوره (میلادی)<input type="date" required className="input w-full min-w-0 min-h-11" value={selection.startOn} onChange={event => setSelection({ ...selection, startOn: event.target.value })} /></label>
+        <label className="space-y-1 text-sm">پایان دوره (میلادی)<input type="date" required className="input w-full min-w-0 min-h-11" value={selection.endOn} onChange={event => setSelection({ ...selection, endOn: event.target.value })} /></label>
+        <button type="submit" className="btn btn-outline min-h-11">خواندن این دوره</button>
       </fieldset>
     </form>
     {reading && <p role="status">در حال خواندن نسخه و پوشش همان دوره…</p>}
     {readError && <section className="card space-y-3 p-4"><p role="alert">{readError}{data && " نمایش زیر مربوط به خواندن قبلی است؛ دریافت تازه تأیید نشده است."}</p><button type="button" className="btn btn-outline" disabled={reading || saving || uncertain || conflict || dirty && !receipt} onClick={() => void load(requested.current.period, requested.current.version, requested.current.mode)}>دوباره خواندن نسخهٔ درخواست‌شده</button></section>}
     {!data && !reading && !readError && <p className="card p-5 text-sm leading-7">برای دیدن نسخه‌ها یا آغاز یک پیش‌نویس، دوره را انتخاب و بخوانید. هنوز نبود رکورد یا مبلغی تأیید نشده است.</p>}
+    {data && <BudgetPanel data={data} stale={reading || Boolean(readError)} dirty={dirty} />}
     {receipt && <section className="card space-y-3 p-5" aria-label="رسید ثبت جریان نقد"><p role="status">سرور ثبت نسخهٔ {toPersianDigits(receipt.version)} را تأیید کرد{receipt.reused ? "؛ همان تلاش قبلی بازیابی شد" : ""}. {data?.snapshot?.id === receipt.versionId && !readError ? "نسخهٔ تأییدشده مستقل بازخوانی شد." : "بازخوانی مستقل هنوز تأیید نشده است؛ رسید حفظ شده است."}</p>
-      <a className="btn btn-outline" href={url(data?.period ?? selection, receipt.versionId)}>بازکردن نسخهٔ رسید</a>
+      <a className="btn btn-outline" href={url(data?.period ?? selection, receipt.versionId, fragment)}>بازکردن نسخهٔ رسید</a>
       {data?.snapshot?.id === receipt.versionId && editable && !readError && <button type="button" className="btn btn-outline" disabled={reading || saving} onClick={() => { pending.current = null; setReceipt(null); setMessage(""); setDraft(cashFlowDraft(data.period, data.snapshot!.payload)); setDirty(false); }}>ویرایش نسخهٔ بازخوانی‌شده برای ثبت بعدی</button>}
     </section>}
     {data && <>
@@ -174,19 +184,18 @@ export default function CashFlowWorkspace({ expectedOwnerId, initialPeriod, init
         {data.snapshot && <p className="text-sm">تاریخ ثبت این نسخه: <time dateTime={data.snapshot.createdAt}>{formatJalali(data.snapshot.createdAt)}</time>؛ این تاریخ جای روز وقوع یا مشاهدهٔ منبع نیست.</p>}
         {data.state === "empty" && <p className="text-sm leading-7">خواندن موفق بود؛ نبود نسخه به معنی نداشتن درآمد، هزینه یا موجودی نیست. پیش‌نویس زیر هنوز ذخیره نشده و پوشش آن نامعلوم است.</p>}
         {data.latest.state === "error" ? <p role="alert">آخرین نسخه خوانده نشد؛ نسخهٔ انتخابی حفظ است ولی ثبت تازه مجاز نیست.</p> : !editable && <p role="status">این نسخه تاریخی و فقط خواندنی است. اصلاح از آخرین نسخه آغاز می‌شود؛ سابقه بازنویسی نمی‌شود.</p>}
-        <a className="btn btn-outline" href={url(data.period)} target="_blank" rel="noopener noreferrer">آخرین نسخه در صفحهٔ جدا</a>
+        <a className="btn btn-outline" href={url(data.period, undefined, fragment)} target="_blank" rel="noopener noreferrer">آخرین نسخه در صفحهٔ جدا</a>
         {historyError && <p role="alert">{historyError}</p>}
-        <ul className="flex flex-wrap gap-3" aria-label="نسخه‌های ثبت‌شده">{data.history.items.map(item => <li key={item.id}><a className="btn btn-outline" aria-current={item.id === data.snapshot?.id ? "page" : undefined} href={url(data.period, item.id)}>نسخهٔ {toPersianDigits(item.version)} · {formatJalali(item.createdAt)}</a></li>)}</ul>
+        <ul className="flex flex-wrap gap-3" aria-label="نسخه‌های ثبت‌شده">{data.history.items.map(item => <li key={item.id}><a className="btn btn-outline" aria-current={item.id === data.snapshot?.id ? "page" : undefined} href={url(data.period, item.id, fragment)}>نسخهٔ {toPersianDigits(item.version)} · {formatJalali(item.createdAt)}</a></li>)}</ul>
         {data.history.nextBeforeVersion !== null && <button type="button" className="btn btn-outline" disabled={reading || requestLocked} onClick={() => void load(data.period, data.snapshot?.id, "history", data.history.nextBeforeVersion!)}>نسخه‌های قدیمی‌تر</button>}
         {data.history.state === "error" && <button type="button" className="btn btn-outline" disabled={reading || requestLocked} onClick={() => void load(data.period, data.snapshot?.id, "history")}>دوباره خواندن سابقه</button>}
       </section>
       {data.report && <CashFlowSummary report={data.report} />}
-      <BudgetPanel data={data} stale={reading || Boolean(readError)} dirty={dirty} />
       {message && <p role="alert" className="card p-4 text-sm leading-7">{message}</p>}
       {saving && <p role="status">{receipt ? "رسید ثبت دریافت شد؛ در حال بازخوانی همان نسخه هستیم." : "در حال ارسال همان تلاش ثبت؛ هنوز موفقیت تأیید نشده است."}</p>}
-      {(uncertain || conflict) && <section className="card space-y-3 p-5"><p className="text-sm leading-7">ویرایش و تغییر دوره قفل است. شناسه، نسخهٔ پایه و محتوای همان درخواست حفظ شده‌اند؛ درخواست تازه‌ای ساخته نمی‌شود.</p>{!conflict && <button type="button" className="btn btn-gold" disabled={saving || reading} onClick={() => void save()}>بررسی دوبارهٔ همین ثبت</button>}<a className="btn btn-outline" href={url(data.period)} target="_blank" rel="noopener noreferrer">بررسی آخرین نسخه در صفحهٔ جدا</a></section>}
+      {(uncertain || conflict) && <section className="card space-y-3 p-5"><p className="text-sm leading-7">ویرایش و تغییر دوره قفل است. شناسه، نسخهٔ پایه و محتوای همان درخواست حفظ شده‌اند؛ درخواست تازه‌ای ساخته نمی‌شود.</p>{!conflict && <button type="button" className="btn btn-gold" disabled={saving || reading} onClick={() => void save()}>بررسی دوبارهٔ همین ثبت</button>}<a className="btn btn-outline" href={url(data.period, undefined, fragment)} target="_blank" rel="noopener noreferrer">بررسی آخرین نسخه در صفحهٔ جدا</a></section>}
       {data?.snapshot && <InstallmentPayments key={data.ownerId} data={data} disabled={locked || dirty || !editable} />}
-      {draft && <section id="cashflow-editor" className="scroll-mt-6 space-y-4"><p className="text-sm leading-7">خلاصهٔ بالا فقط نسخهٔ خوانده‌شده است؛ تغییرات فرم، عدد ذخیره‌شده را عوض نمی‌کند. دورهٔ فرم: <bdi>{toPersianDigits(draft.period.startOn)} — {toPersianDigits(draft.period.endOn)}</bdi>.</p><CashFlowEditor draft={draft} locked={locked} onChange={next => { if (!locked && live.current) { setDraft(next); setDirty(true); setMessage(""); } }} onSave={() => void save()} onCancel={() => { if (!locked && data) { setDraft(cashFlowDraft(data.period, data.snapshot?.payload)); setDirty(false); setMessage(""); } }} /></section>}
+      {draft && <section id="cashflow-editor" tabIndex={-1} className="scroll-mt-28 space-y-4"><p className="text-sm leading-7">خلاصهٔ بالا فقط نسخهٔ خوانده‌شده است؛ تغییرات فرم، عدد ذخیره‌شده را عوض نمی‌کند. دورهٔ فرم: <bdi>{toPersianDigits(draft.period.startOn)} — {toPersianDigits(draft.period.endOn)}</bdi>.</p><CashFlowEditor draft={draft} locked={locked} onChange={next => { if (!locked && live.current) { setDraft(next); setDirty(true); setMessage(""); } }} onSave={() => void save()} onCancel={() => { if (!locked && data) { setDraft(cashFlowDraft(data.period, data.snapshot?.payload)); setDirty(false); setMessage(""); } }} /></section>}
     </>}
   </div>;
 }

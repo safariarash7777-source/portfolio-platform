@@ -1,0 +1,23 @@
+/* Member-dossier design v3: the same quiet two-column folio, paper note and section rules.
+   Scoped to the two real consultation routes; no sample account data or globals. */
+.consult-folio{--cp-paper:#fff;--cp-ink:#152b45;--cp-muted:#566574;--cp-rule:#d6dedf;--cp-note:#fcf6e6;--cp-gold:#77591b;color:var(--cp-ink);line-height:1.7;overflow-wrap:anywhere;text-align:start}
+.dark .consult-folio{--cp-paper:#172636;--cp-ink:#f0f1e9;--cp-muted:#b6c4cd;--cp-rule:#3f505c;--cp-note:#312e22;--cp-gold:#e8c978}
+.consult-heading{margin-block-end:1.35rem}.consult-heading h1{font-family:var(--font-display),Vazirmatn,sans-serif;font-size:clamp(31px,4.15vw,52px);font-weight:750;letter-spacing:-.055em;line-height:1.32;margin:6px 0 3px}.consult-heading p{color:var(--cp-muted);font-size:14px}
+.consult-kicker,.consult-headline,.consult-headline span,.consult-label,.consult-cta,.consult-links{display:flex;align-items:center;gap:8px}
+.consult-kicker{color:var(--cp-gold);font-size:12px;font-weight:700}.consult-kicker:before{content:"";width:23px;height:2px;background:currentColor}
+.consult-links{flex-wrap:wrap;gap:4px 14px}.consult-links a{display:inline-flex;align-items:center;min-height:44px;color:var(--cp-gold);font-size:13px;font-weight:650}.consult-links a:hover{text-decoration:underline}
+.consult-overview{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:16px}
+.consult-main,.consult-next{position:relative;min-width:0;border-radius:19px;padding:22px 25px}
+.consult-main{overflow:hidden;background:radial-gradient(ellipse at -12% 110%,#284c6a 0,transparent 61%),#12284a;color:#f6f7f2}
+.consult-main:before{content:"";position:absolute;width:45%;height:145%;inset:-60% auto auto -12%;border:1px solid #ffffff13;transform:rotate(-30deg);border-radius:35%;box-shadow:0 0 0 15px #ffffff04,0 0 0 32px #ffffff04,0 0 0 52px #ffffff04,0 0 0 75px #ffffff04;pointer-events:none}
+.consult-main>*{position:relative}.consult-headline{justify-content:space-between;flex-wrap:wrap;font-size:12px;font-weight:650}.consult-headline small{color:#f8e0a3;border:1px solid #496173;border-radius:20px;padding:2px 9px;background:#233d59}
+.consult-main h2,.consult-next h2{font-family:var(--font-display),Vazirmatn,sans-serif;font-weight:750;line-height:1.45}.consult-main h2{font-size:clamp(23px,3vw,38px);margin:14px 0 4px}.consult-excerpt{color:#d3dee7;font-size:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.consult-facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;border-top:1px solid #526278;margin-top:15px;padding-top:12px}.consult-facts div+div{border-inline-start:1px solid #526278;padding-inline-start:16px}.consult-facts dt{color:#c8d5df;font-size:11px}.consult-facts dd{font-weight:700}
+.consult-next{display:flex;align-items:flex-start;flex-direction:column;background:var(--cp-note);border:1px solid color-mix(in srgb,var(--cp-gold) 30%,var(--cp-paper))}
+.consult-label{color:var(--cp-gold);font-weight:650;font-size:13px}.consult-label i{display:grid;place-items:center;width:33px;height:33px;border:1px solid color-mix(in srgb,var(--cp-gold) 35%,transparent);border-radius:10px}.consult-next h2{font-size:clamp(19px,2.4vw,29px);margin:14px 0 4px}.consult-next p{color:var(--cp-muted);font-size:13px;margin-bottom:14px}
+.consult-cta{margin-top:auto;background:#173656;color:white;border-radius:8px;padding:10px 14px;min-height:44px;font-size:13px;font-weight:700;justify-content:space-between;gap:18px}.consult-cta:hover{background:#254c72}
+.consult-folio :is(button,a,summary,[tabindex="-1"]):focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.consult-folio .card{border-color:var(--cp-rule);background:var(--cp-paper);border-radius:19px;box-shadow:none}
+.consult-folio :is([id^=consult-],article[id]){scroll-margin-block-start:6rem}
+.consult-folio summary{min-height:44px;align-content:center;cursor:pointer}
+@media(max-width:700px){.consult-overview{grid-template-columns:minmax(0,1fr);gap:10px}.consult-main,.consult-next{padding:16px}.consult-heading h1{font-size:32px}.consult-links{gap:0 12px}}

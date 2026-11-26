@@ -118,11 +118,12 @@ export default function HoldingsWorkbench({
   showImport?: boolean;
 }) {
 
+  const historical = activeVersion !== null && activeVersion !== latestVersion;
   const router = useRouter();
   const editor = useFinancialEditor("holdings");
   const fromPositions = (ps: readonly HoldingPosition[]): Row[] =>
     ps.length === 0
-      ? [blank()]
+      ? historical ? [] : [blank()]
       : ps.map((p) => ({
           positionKey: p.positionKey,
           label: p.symbol ?? p.manualLabel ?? p.positionKey,
@@ -157,7 +158,7 @@ export default function HoldingsWorkbench({
   const pending = useRef<FinancialSaveAttempt | null>(null);
   const unresolved = useRef(false);
   const [uncertain, setUncertain] = useState(false), [conflict, setConflict] = useState(false);
-  const editingLocked = saving || uncertain || receiptUrl !== null || editor.locked;
+  const editingLocked = historical || saving || uncertain || receiptUrl !== null || editor.locked;
   const needsWarning = receiptUrl === null && (JSON.stringify(rows) !== initialRows.current || saving || uncertain);
   useEffect(() => {
     if (!needsWarning) return;
@@ -172,7 +173,7 @@ export default function HoldingsWorkbench({
   const [token, setToken] = useState(() => crypto.randomUUID());
 
   const editRows = (update: React.SetStateAction<Row[]>) => {
-    if (saveLock.current || unresolved.current || completed.current || !editor.acquire()) return;
+    if (historical || saveLock.current || unresolved.current || completed.current || !editor.acquire()) return;
     setRows(update);
   };
   const patch = (i: number, p: Partial<Row>) =>
@@ -279,13 +280,13 @@ export default function HoldingsWorkbench({
       {/* ثبت */}
       <div className="card-elevated p-6 space-y-4">
         <h3 className="font-display font-bold text-lg" style={{ color: "var(--navy-deep)" }}>
-          ثبت و اصلاح دارایی
+          {historical ? "دارایی‌های ثبت‌شده در این نسخه" : "ثبت و اصلاح دارایی"}
         </h3>
         <details className="text-sm">
           <summary className="cursor-pointer">راهنمای مقدار و مالکیت</summary>
           <p className="text-sm leading-7">مقدار و ارزش اظهارشده، مربوط به کل قلم پیش از سهم مالکیت است. مثلاً دارایی ۱۰۰ میلیون تومانی با مالکیت ۵۰ درصد، ۵۰ میلیون تومان برای شما محاسبه می‌شود. برای ثبت فقط ارزش، روش «ارزش اظهارشده» را انتخاب و مقدار را خالی بگذارید. اصلاح، یک نسخهٔ تازه از دارایی و بدهی با هم می‌سازد.</p>
         </details>
-        {activeVersion !== null && activeVersion !== latestVersion && <p role="alert">در حال مشاهدهٔ سابقه هستید؛ برای اصلاح، <a className="underline" href="/dashboard/holdings">آخرین نسخه</a> را باز کنید.</p>}
+        {historical && <p className="text-sm">در حال مشاهدهٔ سابقه هستید؛ برای اصلاح، <a className="underline" href="/dashboard/holdings">آخرین نسخه</a> را باز کنید.</p>}
 
         <div className="space-y-3">
           {rows.map((r, i) => (
@@ -396,7 +397,7 @@ export default function HoldingsWorkbench({
           </h3>
           <div className="space-y-2">
             {history.map((h) => (
-              <a key={h.id} href={`?v=${h.id}`}
+              <a key={h.id} href={`?v=${h.id}`} aria-current={h.version === activeVersion ? "page" : undefined}
                 className="flex items-center justify-between rounded-xl px-4 py-2.5 text-sm"
                 style={{
                   background: h.version === activeVersion ? "var(--surface-3, var(--surface-2))" : "var(--surface-2)",
@@ -406,7 +407,7 @@ export default function HoldingsWorkbench({
                   نسخهٔ {toPersianDigits(h.version)}
                   {h.version === activeVersion ? " — در حال نمایش" : ""}
                 </span>
-                <span style={{ color: "var(--text-3)" }}>{formatJalali(h.createdAt)}</span>
+                <span style={{ color: "var(--text-3)" }}>{Number.isFinite(Date.parse(h.createdAt)) ? formatJalali(h.createdAt) : "تاریخ ثبت نامعلوم"}</span>
               </a>
             ))}
           </div>
@@ -420,8 +421,7 @@ export default function HoldingsWorkbench({
             ریز دارایی نسخهٔ {activeVersion === null ? "—" : toPersianDigits(activeVersion)}
           </h3>
           <p className="text-xs mb-4" style={{ color: "var(--text-3)" }}>
-            این فهرست بدون نیاز به قیمت یا سبد هدف نمایش داده می‌شود؛ فرم بالا هم از همین
-            اقلام پر شده تا بتوانید نسخهٔ اصلاحی بسازید.
+            این فهرست بدون نیاز به قیمت یا سبد هدف نمایش داده می‌شود. {historical ? "اقلام این نسخه فقط خواندنی‌اند." : "فرم بالا هم از همین اقلام پر شده تا بتوانید نسخهٔ اصلاحی بسازید."}
           </p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

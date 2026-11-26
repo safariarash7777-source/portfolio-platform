@@ -1,0 +1,4 @@
+.admin-work-shell .admin-work-caption{border-inline-start:2px solid var(--gold);margin:.65rem .5rem 0;padding-inline-start:.65rem;color:var(--text-2);font-size:.78rem}
+.admin-work-shell .admin-work-drawer{position:fixed;inset:0 0 0 auto;width:min(20rem,92vw);max-width:100vw;height:100dvh;max-height:none;margin:0;padding:0;border:0;border-inline-end:1px solid var(--line);background:var(--surface);color:var(--text);overflow:auto}
+.admin-work-drawer[open]{display:flex;flex-direction:column}.admin-work-drawer::backdrop{background:rgb(15 23 42 / .52)}
+.admin-work-shell :where(a,button,summary):focus-visible{outline:3px solid var(--focus);outline-offset:2px}

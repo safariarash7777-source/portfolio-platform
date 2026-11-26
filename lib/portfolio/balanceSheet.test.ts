@@ -113,9 +113,10 @@ test("actual installments panel separates reader error, first recording and empt
 
 test("actual holdings page connects its existing debt reader and a real edit anchor without another query", async () => {
   const calls: [string, unknown][] = [], holding = { id: "owned-v2", version: 2, positions: [asset] };
-  let history = [{ ...holding, version: 3 }];
+  let history = [{ ...holding, id: "owned-v3", version: 3, createdAt: "2026-10-19T12:00:00Z" }, { ...holding, createdAt: "2026-10-17T12:00:00Z" }];
   const panel = scheduleComponent();
   const page = actualComponent("app/(protected)/dashboard/holdings/page.tsx", {
+    "@/lib/format": format,
     "@/lib/portfolio/service": {
       async loadPortfolioSnapshot(id: string) { calls.push(["snapshot", id]); return { holdings: holding, history, ready: true, targetState: "empty", storedTarget: null }; },
       async loadVersionDebts(id: string) { calls.push(["debts", id]); return { ready: true, debts: [debt] }; },

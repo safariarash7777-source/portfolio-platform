@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import "./AdminShell.css";
+import "@/components/dashboard/private-workspace.css";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import {
@@ -103,6 +105,20 @@ export default function AdminShell({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const drawer = useRef<HTMLDialogElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const el = drawer.current;
+    if (!el) return;
+    if (!el.open) el.showModal();
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const closeWide = () => { if (desktop.matches && el.open) el.close(); };
+    desktop.addEventListener("change", closeWide);
+    closeWide();
+    return () => { desktop.removeEventListener("change", closeWide); };
+  }, [open]);
+  const closeDrawer = () => { drawer.current?.close(); };
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -112,6 +128,7 @@ export default function AdminShell({
     if (item.soon) return false;
     if (item.key === "dashboard") return pathname.startsWith("/admin/overview");
     if (item.key === "desk") return pathname.startsWith("/admin/desk");
+    if (item.key === "consultation") return pathname.startsWith("/admin/consultation");
     if (item.key === "research") return pathname.startsWith("/admin/research");
     if (item.key === "agents") return pathname.startsWith("/admin/agents");
     if (item.key === "drafts") return pathname.startsWith("/admin/drafts");
@@ -173,7 +190,7 @@ export default function AdminShell({
                 <Link
                   key={item.key}
                   href={item.href!}
-                  onClick={() => setOpen(false)}
+                  onClick={closeDrawer}
                   aria-current={active ? "page" : undefined}
                   className="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2"
                   style={{
@@ -196,6 +213,7 @@ export default function AdminShell({
     <>
       <div className="px-3 py-5">
         <Logo size={40} showText textVariant="navy" />
+        <p className="admin-work-caption">فضای مدیریت</p>
       </div>
       <div className="flex-1 px-3 overflow-y-auto">
         <NavList />
@@ -218,7 +236,7 @@ export default function AdminShell({
   );
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--bg)" }}>
+    <div className="admin-work-shell min-h-screen" dir="rtl" style={{ background: "var(--bg)" }}>
       {/* Mobile top bar */}
       <div
         className="lg:hidden sticky top-0 z-40 flex items-center justify-between px-4 h-16 border-b"
@@ -226,6 +244,10 @@ export default function AdminShell({
       >
         <button
           type="button"
+          ref={trigger}
+          aria-controls="admin-work-drawer"
+          aria-expanded={open}
+          aria-haspopup="dialog"
           onClick={() => setOpen(true)}
           aria-label="باز کردن منو"
           className="btn btn-ghost"
@@ -246,39 +268,25 @@ export default function AdminShell({
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 min-w-0 px-5 py-8 lg:px-8">{children}</main>
+        <main id="main-content" tabIndex={-1} className="flex-1 min-w-0 px-4 py-5 sm:px-5 lg:px-8 lg:py-8">{children}</main>
       </div>
 
       {/* Mobile drawer */}
-      {open && (
-        <div className="lg:hidden fixed inset-0 z-50">
-          <div
-            className="absolute inset-0"
-            style={{ background: "rgba(15,23,42,0.5)" }}
-            onClick={() => setOpen(false)}
-            aria-hidden
-          />
-          <aside
-            className="absolute top-0 right-0 h-full w-72 flex flex-col shadow-xl"
-            style={{ background: "var(--surface)" }}
-            role="dialog"
-            aria-label="منوی مدیریت"
-          >
-            <div className="flex justify-end p-3">
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                aria-label="بستن منو"
-                className="btn btn-ghost"
-                style={{ padding: "0.5rem" }}
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <SidebarInner />
-          </aside>
+      <dialog id="admin-work-drawer" ref={drawer} className="admin-work-drawer" aria-label="منوی مدیریت"
+        onClose={() => {
+          setOpen(false);
+          if (trigger.current?.getClientRects().length) trigger.current.focus();
+        }}
+        onClick={event => {
+          if (event.target !== event.currentTarget) return;
+          const bounds = event.currentTarget.getBoundingClientRect();
+          if (event.clientX < bounds.left || event.clientX >= bounds.right || event.clientY < bounds.top || event.clientY >= bounds.bottom) closeDrawer();
+        }}>
+        <div className="flex justify-end px-3 pt-3">
+          <button type="button" onClick={closeDrawer} aria-label="بستن منو" className="btn btn-ghost min-h-11 min-w-11"><X size={20} /></button>
         </div>
-      )}
+        <SidebarInner />
+      </dialog>
     </div>
   );
 }

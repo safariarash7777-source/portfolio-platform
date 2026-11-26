@@ -21,7 +21,7 @@ export default async function GoalsPage({ searchParams }: { searchParams: Promis
   } catch { unavailable = true; }
   if (!unavailable && !ownerId) redirect("/login");
   return <><Navbar /><main id="main-content" dir="rtl" className="mx-auto w-full max-w-6xl space-y-6 px-5 py-8">
-    <header className="space-y-2"><span className="eyebrow">فضای مالی شخصی · آرش صفری</span>
+    <header className="private-workspace-heading"><span className="eyebrow">فضای مالی شخصی · آرش صفری</span>
       <h1 className="font-display text-2xl font-bold md:text-3xl" style={{ color: "var(--navy-deep)" }}>هدف‌های مالی</h1>
       <p className="text-sm leading-7" style={{ color: "var(--text-2)" }}>برای هر هدف مبلغ و موعد مشخص کنید و مبلغ کنارگذاشته‌شده را با منبع و تاریخ ثبت کنید.</p>
     </header>

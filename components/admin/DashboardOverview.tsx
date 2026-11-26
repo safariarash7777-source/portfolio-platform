@@ -60,7 +60,9 @@ export default function DashboardOverview() {
       setGrowth((g.data as GrowthRow[]) ?? []);
       setDist((d.data as DistRow[]) ?? []);
       setLoading(false);
-    })();
+    })().catch(() => {
+      if (alive) { setErrMsg("ارتباط با منبع آمار برقرار نشد. صفحه را دوباره باز کنید."); setLoading(false); }
+    });
     return () => {
       alive = false;
     };
@@ -68,7 +70,8 @@ export default function DashboardOverview() {
 
   if (notInstalled) return <InstallBanner />;
   if (errMsg) return <ErrorState msg={errMsg} />;
-  if (loading || !stats) return <DashboardSkeleton />;
+  if (loading) return <DashboardSkeleton />;
+  if (!stats) return <p className="card p-5" role="status">خلاصهٔ آماری در این پاسخ موجود نیست. تعداد اعضا و پوشش پرتفوی هنوز مشخص نیست.</p>;
 
   const total = stats.total_users;
   const completion = total > 0 ? (stats.assessed_users / total) * 100 : null;
@@ -163,33 +166,10 @@ function EmptyChart({ msg }: { msg: string }) {
 
 function InstallBanner() {
   return (
-    <div
-      className="rounded-2xl p-6"
-      style={{
-        background: "var(--gold-tint)",
-        border: "1px solid rgba(184,134,11,0.35)",
-      }}
-    >
-      <div className="flex items-start gap-3">
-        <AlertTriangle size={22} style={{ color: "var(--warning)", flexShrink: 0, marginTop: 2 }} />
-        <div>
-          <h3 className="font-display font-bold text-base mb-1" style={{ color: "var(--navy-deep)" }}>
-            توابع آماری هنوز نصب نشده‌اند
-          </h3>
-          <p className="text-sm leading-7" style={{ color: "var(--text-2)" }}>
-            برای فعال‌شدنِ کارت‌ها و نمودارها، فایل زیر را در Supabase اجرا کن:
-          </p>
-          <code
-            dir="ltr"
-            className="mt-2 inline-block rounded-lg px-3 py-1.5 text-xs"
-            style={{ background: "var(--surface)", border: "1px solid var(--line)", color: "var(--navy-deep)" }}
-          >
-            sql/admin_dashboard_stats.sql
-          </code>
-          <p className="text-xs mt-2 leading-6" style={{ color: "var(--text-3)" }}>
-            مسیر: Supabase → SQL Editor → محتوای فایل را جای‌گذاری کن → Run. سپس این صفحه را تازه کن.
-          </p>
-        </div>
+    <div className="card flex items-start gap-3 p-5" role="status">
+      <Info size={20} aria-hidden style={{color:"var(--gold-ink)",flexShrink:0}} />
+      <div><h2 className="font-display font-bold">منبع آمار هنوز در دسترس نیست</h2>
+        <p className="mt-1 text-sm leading-7">منبعِ این گزارش پاسخ قابل استفاده‌ای نداد. تا بازیابی آن، تعداد اعضا و نرخ پوشش نامشخص‌اند.</p>
       </div>
     </div>
   );
@@ -198,7 +178,7 @@ function InstallBanner() {
 function ErrorState({ msg }: { msg: string }) {
   return (
     <div
-      className="rounded-2xl p-6 flex items-start gap-3"
+      role="alert" className="rounded-2xl p-6 flex items-start gap-3"
       style={{ background: "rgba(185,28,28,0.06)", border: "1px solid rgba(185,28,28,0.25)" }}
     >
       <AlertTriangle size={20} style={{ color: "var(--danger)", flexShrink: 0, marginTop: 2 }} />
@@ -206,7 +186,7 @@ function ErrorState({ msg }: { msg: string }) {
         <h3 className="font-display font-bold text-base mb-1" style={{ color: "var(--navy-deep)" }}>
           خطا در دریافت آمار
         </h3>
-        <p className="text-sm leading-7" dir="ltr" style={{ color: "var(--text-2)" }}>
+        <p className="text-sm leading-7" dir="auto" style={{ color: "var(--text-2)" }}>
           {msg}
         </p>
       </div>
@@ -216,7 +196,7 @@ function ErrorState({ msg }: { msg: string }) {
 
 function DashboardSkeleton() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" role="status" aria-busy="true"><p className="text-sm">در حال خواندن آمار اعضا…</p>
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="card p-5">

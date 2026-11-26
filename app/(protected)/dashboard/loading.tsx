@@ -14,6 +14,7 @@ function Bar({ className = "" }: { className?: string }) {
 export default function DashboardLoading() {
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-10" aria-busy="true" aria-label="در حال بارگذاری داشبورد">
+      <p role="status" className="mb-4 text-sm">در حال خواندن پروندهٔ مالی…</p>
       {/* header */}
       <div className="flex justify-between items-start gap-4 mb-8">
         <div className="space-y-2">
