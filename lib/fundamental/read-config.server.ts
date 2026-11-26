@@ -1,7 +1,11 @@
 import "server-only";
 import { liaraPublicEnv } from "../liara-public-env.js";
 
-const approvedOrigins = new Set(["https://62.60.191.24/liara-preview", "https://62-60-191-103.sslip.io/liara-preview"]);
+const approvedOrigins = new Set([
+  "https://62.60.191.24/liara-preview",
+  "https://62.60.191.103/liara-preview",
+  "https://62-60-191-103.sslip.io/liara-preview",
+]);
 
 /** Local configuration checks only; the upstream still verifies the JWT signature. */
 export function fundamentalReadPair(environment: Readonly<Record<string, string | undefined>>): { url: string; anon: string; expiresAt: number } | null {
