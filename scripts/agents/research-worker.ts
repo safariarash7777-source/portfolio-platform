@@ -19,7 +19,7 @@ async function atomic(name: string, value: unknown) {
 async function bridge<T>(request: unknown): Promise<T> {
   return new Promise((accept, reject) => {
     const child = execFile('ssh', ['-F', 'none', '-T', '-o', 'IdentitiesOnly=yes', '-o', 'IdentityAgent=none', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', '-o', 'StrictHostKeyChecking=yes',
-      '-i', join(root, 'bridge_ed25519'), 'root@62.60.191.24'],
+      '-p', '30222', '-i', join(root, 'bridge_ed25519'), 'root@62.60.191.103'],
     { timeout: 60000, maxBuffer: 24 * 1024 * 1024, windowsHide: true }, (error, stdout) => {
       if (error) return reject(new Error('research_transport_failed'));
       try { const response = JSON.parse(stdout); if (!response.ok) throw new Error(); accept(response.result as T); }
