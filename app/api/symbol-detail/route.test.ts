@@ -10,7 +10,8 @@ test("retained detail uses its own clock, never the latest batch clock, and bypa
   globalThis.fetch = async (input, init) => {
     assert.equal(new URL(String(input)).pathname, "/rest/v1/ir_market_snapshots");
     assert.equal(init?.cache, "no-store");
-    return Response.json([{ key: "symbol_details", payload: { at: Date.now(), details: { TEST: { at: entryAt, data: { marker: "synthetic" } } } } }]);
+    assert.equal(new URL(String(input)).searchParams.get("select"), 'key,entry:payload->details->"TEST",quote:payload->quotes->"TEST",schema:payload->>schema');
+    return Response.json([{ key: "symbol_details", entry: { at: entryAt, data: { marker: "synthetic" } } }]);
   };
   try {
     const req = new Request("https://site.example.test/api/symbol-detail?l18=TEST");
@@ -36,7 +37,7 @@ test('dated quote-only response preserves units and cannot masquerade as full li
   let candidate: Record<string, unknown> = quote;
   globalThis.fetch = async input => {
     assert.equal(new URL(String(input)).searchParams.get('key'), 'in.(symbol_details,mcpfarsi_quotes)');
-    return Response.json([{ key: 'mcpfarsi_quotes', payload: { schema: 'mcpfarsi-quotes.v1', quotes: { 'فملی': candidate } } }]);
+    return Response.json([{ key: 'mcpfarsi_quotes', schema: 'mcpfarsi-quotes.v1', quote: candidate }]);
   };
   try {
     const request = new Request('https://site.example.test/api/symbol-detail?l18=' + encodeURIComponent('فملی'));
