@@ -16,6 +16,22 @@ const REFRESH = 30_000;
 const PAGE = 8;
 type Motion = Record<string,{direction:"up"|"down"; seq:number}>;
 
+function RollingPrice({value, quote, animate, delay}: {value:number;quote:Quote;animate:boolean;delay:number}) {
+  const [pair,setPair]=useState({before:value,after:value});
+  if(pair.after!==value) setPair({before:pair.after,after:value});
+  const current=fmt(value,quote), previous=fmt(pair.before,quote);
+  const tone=value>pair.before ? "up":"down";
+  return <bdi dir="ltr" data-testid="quote-number" aria-label={current}>
+    {Array.from(current,(digit,i)=>{
+      const old=previous[i+previous.length-current.length];
+      if(!animate || old===digit || !/[۰-۹]/.test(digit)) return digit;
+      return <span key={current+"-"+i} className={s.digit} data-direction={tone} style={{animationDelay:delay+"ms"}}>
+        <span className={s.enterDigit} style={{animationDelay:delay+"ms"}}>{digit}</span>
+      </span>;
+    })}
+  </bdi>;
+}
+
 function Spark({points, large = false, tone = "neutral"}: {points:TrendPoint[];large?:boolean;tone?:string}) {
   const id = useId();
   if(points.length < 2) return <div className={s.nochart}>روند قابل نمایش نیست</div>;
@@ -43,6 +59,29 @@ export default function QuoteBoard({ initial = null, scope = "all", preview = fa
   const [simulated,setSimulated] = useState(false);
   const last = useRef<QuoteBoardFeed|null>(initial), seq = useRef(0);
   const [checkedAt,setCheckedAt] = useState<number|null>(null);
+  const [demoTicks,setDemoTicks]=useState(false);
+  const [sample,setSample]=useState<Record<string,number>>({});
+  useEffect(()=>{
+    if(!demoTicks)return;
+    let timer:ReturnType<typeof setTimeout>, cursor=0;
+    const schedule=()=>{
+      timer=setTimeout(()=>{
+        if(document.visibilityState==="visible"){
+          const available=new Map(quoteGroups(last.current).flatMap(g=>g.rows.map(q=>[q.id,q] as const)));
+          const ids=QUOTE_ORDER.filter(id=>available.has(id) && (scope!=="domestic" || id!=="bitcoin"));
+          if(ids.length){
+            const q=available.get(ids[cursor++%ids.length])!;
+            const step=Math.max(q.unit==="usd" ? 0.01 : 1,q.price*.0001);
+            const v=Math.max(step,q.price+step*(1+Math.floor(Math.random()*3))*(Math.random()<.5?-1:1));
+            setSample(old=>({...old,[q.id]:v}));
+          }
+        }
+        schedule();
+      },[1000,2000,5000][Math.floor(Math.random()*3)]);
+    };
+    schedule();
+    return ()=>clearTimeout(timer);
+  },[demoTicks,scope]);
   const master = useId();
   const accept = useCallback((next:QuoteBoardFeed,demo = false)=>{
     const previous = new Map(quoteGroups(last.current).flatMap(g=>g.rows.map(q=>[q.id,q] as const)));
@@ -55,6 +94,11 @@ export default function QuoteBoard({ initial = null, scope = "all", preview = fa
       const direction = quoteDirection(previous.get(q.id)?.price,q.price);
       if(direction) changed[q.id] = {direction,seq: ++seq.current};
     }
+    if(Object.keys(changed).length) setSample(old=>{
+      const copy={...old};
+      for(const id of Object.keys(changed)) delete copy[id];
+      return copy;
+    });
     last.current = next; setFeed(next); setMotion(changed); setStatus("ok");
   },[]);
   useEffect(()=>{
@@ -141,10 +185,11 @@ export default function QuoteBoard({ initial = null, scope = "all", preview = fa
       <div className={s.signals}>{preview && <span className={s.demo}>پیش‌نمایش طراحی</span>}
       <span className={s.status} role="status"><i aria-hidden/>{simulated?"تغییر نمونه · نه دادهٔ بازار":issue}</span>
       {checkedAt && <small>آخرین بررسی تابلو <time>{new Date(checkedAt).toLocaleTimeString("fa-IR",{timeZone:"Asia/Tehran"})}</time></small>}
+      {!preview && <button type="button" aria-pressed={demoTicks} className={s.demoControl} onClick={()=>{setSample({});setDemoTicks(!demoTicks)}}>{demoTicks?"پایان نمایش آزمایشی":"نمایش آزمایشی نوسان"}</button>}
       {preview && <button type="button" className={s.replay} onClick={demonstrate}><RefreshCw size={14}/>{simulated?"بازنشانی نمونه":"نمایش تغییر قیمت"}</button>}</div>
     </header>
     <div className={s.feature} data-testid="quote-feature">
-      {featured.map(q=>{
+      {featured.map((q,index)=>{
         const I=icons[q.id as keyof typeof icons] ?? CircleDollarSign, id=master+"-"+q.id;
         const points=trends.get(q.id)??(q.id==="bitcoin"?btcHistory:[]), m=motion[q.id];
         const historyDirection = points.length > 1 ? quoteDirection(points[0].price,points.at(-1)!.price) : null;
@@ -152,9 +197,7 @@ export default function QuoteBoard({ initial = null, scope = "all", preview = fa
         const min=points.length ? Math.min(...points.map(p=>p.price)):null, max=points.length ? Math.max(...points.map(p=>p.price)):null;
         return <Fragment key={q.id}><article className={s.card} data-expanded={expanded} data-asset={q.id}>
           <div className={s.cardHead}><span className={s.icon}><I size={21}/></span><div className={s.asset}><h3>{names[q.id]??q.faName}</h3><span>{unitNames[q.id]}</span></div>{delta(q)}</div>
-          <div className={s.price}><span key={m?.seq??0} className={m?s.flash:undefined} data-tick={m?.direction}>
-            <bdi data-testid="quote-number">{fmt(q.price,q)}</bdi>
-          </span><small>{q.unit==="usd"?"دلار":"تومان"}</small></div>
+          <div className={s.price}><RollingPrice key={String(demoTicks)} value={(demoTicks ? sample[q.id] : undefined)??q.price} quote={q} animate={demoTicks || !!m} delay={demoTicks ? 0:index*240}/><small>{q.unit==="usd"?"دلار":"تومان"}</small>{demoTicks && <small className={s.sampleTag}>شبیه‌سازی</small>}</div>
           <div className={s.meta}>{q.change == null || !Number.isFinite(q.change) ? <span>مقدار تغییر: —</span> : <span>مقدار تغییر: <bdi>{signed(q.change,2)}</bdi></span>}</div>
           {points.length > 1 ? <button className={s.chartButton} type="button" aria-expanded={expanded} aria-controls={id} onClick={()=>setOpen(expanded ? null:q.id)}>
             <Spark points={points} tone={historyDirection??"neutral"}/>
