@@ -1,6 +1,6 @@
 import Navbar from "@/components/layout/Navbar";
-import MarketTicker from "@/components/market/MarketTicker";
-import LiveMarket from "@/components/landing/LiveMarket";
+import QuoteBoard from "@/components/market/QuoteBoard";
+import { buildQuoteBubbles } from "@/lib/quote-board";
 import Method from "@/components/landing/Method";
 import TwoProducts from "@/components/landing/TwoProducts";
 import TrackRecordStrip from "@/components/landing/TrackRecordStrip";
@@ -76,8 +76,11 @@ export default async function LandingPage({
           availability={market.availability}
         />
         <div className={s.homeMarketTools}>
-          <MarketTicker />
-          <LiveMarket />
+          <QuoteBoard initial={market.data ? {
+            ir: { gold: market.data.gold, currency: market.data.currency },
+            quoteBubbles: buildQuoteBubbles(market.data.gold, market.data.currency, market.availability.readAt),
+            availability: { iran: market.availability },
+          } : null} />
         </div>
       </section>
       <div className={s.legacySections}>
