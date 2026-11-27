@@ -18,6 +18,7 @@
  * همهٔ داده اینجا یک بار خوانده و یک بار محاسبه می‌شود، بعد به نماها پاس
  * می‌رود. هیچ کامپوننتی دوباره `stocks.reduce(...)` نمی‌زند.
  */
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -68,6 +69,93 @@ export const metadata = pageMetadata({
   path: "/market",
 });
 
+function MarketSectionLoading() {
+  return <p className={s.empty} role="status">در حال خواندن داده…</p>;
+}
+
+async function MarketTrend({
+  index,
+  gold,
+}: {
+  index: ReturnType<typeof getIndexTrend>;
+  gold: ReturnType<typeof getGoldUsdTrend>;
+}) {
+  const [indexSeries, goldUsdSeries] = await Promise.all([index, gold]);
+  if (indexSeries.some((row) => row.points.length >= 2) || goldUsdSeries.some((row) => row.points.length >= 2)) {
+    return <FeaturedTrend indexSeries={indexSeries} goldUsdSeries={goldUsdSeries} />;
+  }
+  return (
+    <section className={s.panel}>
+      <h2>روند بازار</h2>
+      <p className={s.empty}>دادهٔ زمانی کافیِ قابل‌رسم در دسترس نیست. از نبود نمودار نمی‌توان نبود تاریخچه یا آرام‌بودن بازار را نتیجه گرفت.</p>
+    </section>
+  );
+}
+
+type IranMarketRead = Awaited<ReturnType<typeof readIranMarket>>;
+
+async function DomesticQuotes({
+  ir,
+  availability,
+  gold,
+}: {
+  ir: IranMarketRead["data"];
+  availability: IranMarketRead["availability"];
+  gold: ReturnType<typeof getGoldUsdTrend>;
+}) {
+  return <QuoteBoard scope="domestic" initial={{
+    ir: { gold: ir?.gold ?? [], currency: ir?.currency ?? [] },
+    quoteBubbles: buildQuoteBubbles(ir?.gold ?? [], ir?.currency ?? [], availability.readAt),
+    quoteTrends: await gold,
+    availability: { iran: availability },
+  }} />;
+}
+
+async function MarketDepthSection({
+  flowTrend,
+  ...props
+}: Omit<Parameters<typeof MarketDepthDetails>[0], "flowTrend"> & { flowTrend: ReturnType<typeof getFlowTrend> }) {
+  return <MarketDepthDetails {...props} flowTrend={await flowTrend} />;
+}
+
+async function ReportsSection({ reports }: { reports: ReturnType<typeof publicReports> }) {
+  return <PublicReports read={await reports} readAt={new Date().toISOString()} />;
+}
+
+async function MarketAccount({ access, returnTo }: { access: ReturnType<typeof getAccess>; returnTo: string }) {
+  return <AccountBridge access={await access} returnTo={returnTo} />;
+}
+
+async function GlobalMarketSection({
+  client,
+  access,
+  market,
+}: {
+  client: ReturnType<typeof createClient>;
+  access: ReturnType<typeof getAccess>;
+  market: ReturnType<typeof getMarketData>;
+}) {
+  const { userId } = await access;
+  const supabase = await client;
+  const [wlRes, alRes, tgRes, data] = await Promise.all([
+    userId ? supabase.from("watchlist_items").select("symbol").eq("market", "crypto") : null,
+    userId ? supabase
+      .from("price_alerts")
+      .select("id, symbol, market, condition, target_price, active")
+      .order("created_at", { ascending: false }) : null,
+    userId ? supabase.from("telegram_links").select("user_id").eq("user_id", userId).maybeSingle() : null,
+    market,
+  ]);
+  return <MarketClient
+    crypto={data.crypto}
+    sourceOk={data.ok}
+    isLoggedIn={Boolean(userId)}
+    telegramLinked={Boolean(tgRes?.data)}
+    initialWatchlist={(wlRes?.data ?? []).map((item) => item.symbol)}
+    initialAlerts={(alRes?.data ?? []) as Parameters<typeof MarketClient>[0]["initialAlerts"]}
+  />;
+}
+
 export default async function MarketPage({
   searchParams,
 }: {
@@ -86,64 +174,21 @@ export default async function MarketPage({
     { href: "/market", label: "میز بازار" },
   ).href;
 
-  const supabase = await createClient();
-  const [
-    {
-      data: { user },
-    },
-    market,
-    { data: ir, availability },
-    access,
-    appearance,
-  ] = await Promise.all([
-    supabase.auth.getUser(),
+  const client = createClient();
+  const access = getAccess();
+  const reports = client.then(publicReports);
+  const [flowTrend, goldUsdSeries, indexSeries, globalMarket] = [
+    getFlowTrend(90).catch(() => []),
+    getGoldUsdTrend(180).catch(() => []),
+    getIndexTrend(180).catch(() => []),
     getMarketData(),
+  ] as const;
+  const [{ data: ir, availability }, appearance] = await Promise.all([
     readIranMarket(),
-    getAccess(),
-    readSiteAppearance(supabase, sp),
+    client.then((supabase) => readSiteAppearance(supabase, sp)),
   ]);
-
-  let watchlist: string[] = [];
-  let alerts: {
-    id: string;
-    symbol: string;
-    market: string;
-    condition: string;
-    target_price: number;
-    active: boolean;
-  }[] = [];
-  let telegramLinked = false;
-
-  if (user) {
-    const [wlRes, alRes, tgRes] = await Promise.all([
-      supabase.from("watchlist_items").select("symbol").eq("market", "crypto"),
-      supabase
-        .from("price_alerts")
-        .select("id, symbol, market, condition, target_price, active")
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("telegram_links")
-        .select("user_id")
-        .eq("user_id", user.id)
-        .maybeSingle(),
-    ]);
-    watchlist = (wlRes.data ?? []).map((w) => w.symbol);
-    alerts = (alRes.data ?? []) as typeof alerts;
-    telegramLinked = Boolean(tgRes.data);
-  }
-
   const stocks = ir?.stocks ?? [];
   const funds = ir?.funds ?? [];
-
-  // سری‌های تاریخی — همه best-effort؛ نبودشان صفحه را نمی‌شکند.
-  const [flowTrend, goldUsdSeries, indexSeries, reportRead] = await Promise.all(
-    [
-      getFlowTrend(90).catch(() => []),
-      getGoldUsdTrend(180).catch(() => []),
-      getIndexTrend(180).catch(() => []),
-      publicReports(supabase),
-    ],
-  );
 
   // ── محاسبهٔ یک‌باره ──────────────────────────────────────────────────────
   const headline = buildMarketHeadline({
@@ -191,21 +236,9 @@ export default async function MarketPage({
 
         {/* ── ردیف ۳: نمودارِ منتخب + نبض بازار ──────────────────────── */}
         <div className={s.chartArea}>
-          {indexSeries.some((row) => row.points.length >= 2) ||
-          goldUsdSeries.some((row) => row.points.length >= 2) ? (
-            <FeaturedTrend
-              indexSeries={indexSeries}
-              goldUsdSeries={goldUsdSeries}
-            />
-          ) : (
-            <section className={s.panel}>
-              <h2>روند بازار</h2>
-              <p className={s.empty}>
-                دادهٔ زمانی کافیِ قابل‌رسم در دسترس نیست. از نبود نمودار
-                نمی‌توان نبود تاریخچه یا آرام‌بودن بازار را نتیجه گرفت.
-              </p>
-            </section>
-          )}
+          <Suspense fallback={<MarketSectionLoading />}>
+            <MarketTrend index={indexSeries} gold={goldUsdSeries} />
+          </Suspense>
         </div>
         <div className={s.pulseArea}>
           {pulse.totalTraded > 0 ? (
@@ -247,7 +280,9 @@ export default async function MarketPage({
           />
         </div>
         <div className={s.reportsArea}>
-          <PublicReports read={reportRead} readAt={new Date().toISOString()} />
+          <Suspense fallback={<MarketSectionLoading />}>
+            <ReportsSection reports={reports} />
+          </Suspense>
         </div>
         <div className={s.sourceArea}>
           <PublicMarketProvenance ir={ir} availability={availability} />
@@ -255,12 +290,9 @@ export default async function MarketPage({
         <div className={s.detailsArea}>
           {/* ── طلا و ارز ──────────────────────────────────────────────── */}
           <section id="gold-currency" className="scroll-mt-24">
-            <QuoteBoard scope="domestic" initial={{
-              ir: { gold: ir?.gold ?? [], currency: ir?.currency ?? [] },
-              quoteBubbles: buildQuoteBubbles(ir?.gold ?? [], ir?.currency ?? [], availability.readAt),
-              quoteTrends: goldUsdSeries,
-              availability: { iran: availability },
-            }} />
+            <Suspense fallback={<MarketSectionLoading />}>
+              <DomesticQuotes ir={ir} availability={availability} gold={goldUsdSeries} />
+            </Suspense>
           </section>
 
           {/* Commodity quotes read only from the stored market snapshot. */}
@@ -280,20 +312,24 @@ export default async function MarketPage({
               title="پراکندگی، جریان و روندِ بازار سهام"
               hint="گسترهٔ مشارکتِ نمادها، جریانِ حقیقی و روندِ ثبت‌شده"
             >
-              <TodayMarket stocks={stocks} fetchedAt={ir?.fetchedAt ?? null} />
+              <Suspense fallback={<MarketSectionLoading />}>
+                <TodayMarket stocks={stocks} fetchedAt={ir?.fetchedAt ?? null} />
+              </Suspense>
             </DetailDisclosure>
 
             <DetailDisclosure
               title="صف‌ها، روندِ پولِ حقیقی و برترین‌های امروز"
               hint="جزئیاتِ تخصصیِ تابلو — دفترِ سفارش، سریِ روزانه و صدرنشین‌ها"
             >
-              <MarketDepthDetails
-                from={selfHref}
-                queues={queues}
-                tops={tops}
-                flowTrend={flowTrend}
-                hasMarket={pulse.totalTraded > 0}
-              />
+              <Suspense fallback={<MarketSectionLoading />}>
+                <MarketDepthSection
+                  from={selfHref}
+                  queues={queues}
+                  tops={tops}
+                  flowTrend={flowTrend}
+                  hasMarket={pulse.totalTraded > 0}
+                />
+              </Suspense>
             </DetailDisclosure>
 
             {/* کریپتو — دسترسی حفظ می‌شود، ولی محورِ این صفحه بازارِ ایران
@@ -303,14 +339,9 @@ export default async function MarketPage({
               title="بازارهای جهانی و کریپتو"
               hint="قیمتِ ارزهای دیجیتال، واچ‌لیست و هشدارِ قیمت"
             >
-              <MarketClient
-                crypto={market.crypto}
-                sourceOk={market.ok}
-                isLoggedIn={Boolean(user)}
-                telegramLinked={telegramLinked}
-                initialWatchlist={watchlist}
-                initialAlerts={alerts}
-              />
+              <Suspense fallback={<MarketSectionLoading />}>
+                <GlobalMarketSection client={client} access={access} market={globalMarket} />
+              </Suspense>
             </DetailDisclosure>
           </div>
 
@@ -324,7 +355,9 @@ export default async function MarketPage({
           </p>
 
           {/* مسیرِ رفت‌وبرگشت به حسابِ کاربر — فقط لینک، بدونِ تغییر در گیتِ دسترسی. */}
-          <AccountBridge access={access} returnTo={selfHref} />
+          <Suspense fallback={null}>
+            <MarketAccount access={access} returnTo={selfHref} />
+          </Suspense>
         </div>
       </div>
     </PublicDesignFrame>

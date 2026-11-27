@@ -28,17 +28,37 @@ export interface WatchlistData {
 }
 
 let cached: { at: number; value: WatchlistData } | null = null;
+let cachedRegime: { at: number; value: RegimeResult } | null = null;
 const TTL = 10 * 60 * 1000;
+
+async function readMarketHistories() {
+  const symbols = await getHistorySymbols();
+  return Promise.all(
+    symbols.map(async (s) => ({ symbol: s, days: await getSymbolHistory(s, 400) }))
+  );
+}
+
+let historiesInFlight: ReturnType<typeof readMarketHistories> | null = null;
+function marketHistories() {
+  return historiesInFlight ??= readMarketHistories().finally(() => { historiesInFlight = null; });
+}
+
+function marketRegime(histories: Awaited<ReturnType<typeof readMarketHistories>>) {
+  const value = computeRegime(histories.filter((h) => h.days.length >= 60));
+  cachedRegime = { at: Date.now(), value };
+  return value;
+}
+
+export async function getWatchlistRegime(): Promise<RegimeResult> {
+  if (cachedRegime && Date.now() - cachedRegime.at < TTL) return cachedRegime.value;
+  return marketRegime(await marketHistories());
+}
 
 export async function buildWatchlist(): Promise<WatchlistData> {
   if (cached && Date.now() - cached.at < TTL) return cached.value;
 
-  const symbols = await getHistorySymbols();
-  const histories = await Promise.all(
-    symbols.map(async (s) => ({ symbol: s, days: await getSymbolHistory(s, 400) }))
-  );
-
-  const regime = computeRegime(histories.filter((h) => h.days.length >= 60));
+  const histories = await marketHistories();
+  const regime = marketRegime(histories);
 
   const rows: WatchRow[] = histories
     .filter((h) => h.days.length >= 30)

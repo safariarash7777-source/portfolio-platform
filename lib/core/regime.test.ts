@@ -5,6 +5,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { computeRegime, type RegimeInput } from "./regime";
 import type { HistoryDay } from "./engine";
+import { buildWatchlist, getWatchlistRegime } from "./watchlist";
 
 /** سری n روزه با قیمت تابع‌داده و جریان حقیقی ثابت */
 function series(
@@ -32,6 +33,39 @@ function series(
 
 const up = (i: number) => 1000 + i * 10; // صعودی یکنواخت → بالای SMA50، بازده ۲۰روزه مثبت
 const down = (i: number) => 3000 - i * 10; // نزولی یکنواخت → زیر SMA50، بازده ۲۰روزه منفی
+
+test("the market regime matches the full watchlist using the same eligible histories", async (t) => {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  process.env.NEXT_PUBLIC_SUPABASE_URL = "https://watchlist.invalid";
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "test";
+  t.after(() => {
+    if (url === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    else process.env.NEXT_PUBLIC_SUPABASE_URL = url;
+    if (key === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    else process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = key;
+  });
+
+  const inputs = [
+    { symbol: "Eligible", days: series(120, up, 100) },
+    { symbol: "Short", days: series(59, down, -100) },
+  ];
+  const request = t.mock.method(globalThis, "fetch", async (input: string) => {
+    const params = new URL(input).searchParams;
+    if (params.get("select") === "symbol") return Response.json(inputs.map(({ symbol }) => ({ symbol })));
+    if (params.has("or")) return Response.json([]);
+    const issuer = inputs.find(({ symbol }) => params.get("symbol") === "eq." + symbol);
+    assert.ok(issuer);
+    return Response.json(issuer.days.map((day, index) => ({ ...day, id: index + 1 })).reverse());
+  });
+
+  const [regime, watchlist] = await Promise.all([getWatchlistRegime(), buildWatchlist()]);
+  assert.deepEqual(regime, computeRegime(inputs.slice(0, 1)));
+  assert.deepEqual(regime, watchlist.regime);
+  assert.equal(watchlist.asOf, regime.as_of);
+  assert.ok(watchlist.rows.find(({ symbol }) => symbol === "Eligible")?.bt);
+  assert.equal(request.mock.callCount(), 5, "one roster and two pages per issuer shared by both readers");
+});
 
 test("رژیم سازنده: همهٔ نمادها صعودی با ورود پول → score بالا و برچسب سازنده", () => {
   const inputs: RegimeInput[] = Array.from({ length: 10 }, (_, k) => ({

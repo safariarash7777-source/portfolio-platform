@@ -3,7 +3,7 @@
 // بخش ۲: رژیم تاریخی با برچسب صریحِ اندازهٔ جهان («بر اساس N نماد دارای تاریخچه»).
 // قانون سخت: دادهٔ ناکافی → حالت خالی صادقانه؛ هیچ واژهٔ سیگنالی؛ ارقام فقط از lib/format.
 
-import { buildWatchlist } from "@/lib/core/watchlist";
+import { getWatchlistRegime } from "@/lib/core/watchlist";
 import { computeFlowAggregates, buildNarratives } from "@/lib/core/narrative";
 import { computeDailyBreadth } from "@/lib/core/breadth";
 import type { IrStockRow } from "@/lib/market-ir";
@@ -24,7 +24,7 @@ export default async function TodayMarket({
 }) {
   let regime = null;
   try {
-    regime = (await buildWatchlist()).regime;
+    regime = await getWatchlistRegime();
   } catch {
     regime = null;
   }
