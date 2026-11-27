@@ -89,7 +89,7 @@ export function computeFreshness(input: FreshnessInput): Freshness {
     return {
       state: "stale",
       ageMin,
-      label: `دادهٔ کهنه · ${toPersianDigits(ageMin)} دقیقه پیش`,
+      label: `دادهٔ کهنه · قدیمی‌ترین زمان داده ${toPersianDigits(ageMin)} دقیقه پیش`,
       showLiveDot: false,
     };
   }
@@ -149,4 +149,10 @@ export function computeMarketTabFreshness(
   if (usesIr && family?.state === "stale" && result.state === "fresh")
     return { ...result, state: "stale", label: "دادهٔ کهنه · آخرین دادهٔ ثبت‌شده", showLiveDot: false };
   return result;
+}
+
+export function receiptLabel(at: number | null | undefined, now: number): string | null {
+  const age = validAge(at, now);
+  if (age == null) return null;
+  return "دریافت از منبع: " + toPersianDigits(Math.floor(age / 60000)) + " دقیقه پیش";
 }

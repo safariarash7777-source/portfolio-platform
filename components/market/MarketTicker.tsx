@@ -5,9 +5,9 @@ import {
   formatToman, formatUsd, formatSignedPercent, describeDelta, deltaColor,
 } from "@/lib/format";
 import { selectTickerAssets, type TickerAsset } from "@/lib/market-ticker-select";
-import { computeTickerFreshness, type TickerFreshnessPayload } from "@/lib/market-freshness";
+import { browserPollEnvironment, startVisiblePoll } from "@/lib/visible-poll";
+import { receiptLabel, computeTickerFreshness, type TickerFreshnessPayload } from "@/lib/market-freshness";
 
-const REFRESH_MS = 5 * 60 * 1000; // هم‌گام با کشِ سرور
 const TICK_MS = 30 * 1000;        // فقط ساعتِ نمایش؛ درخواستِ تازه نمی‌زند
 
 /**
@@ -29,6 +29,7 @@ const TICK_MS = 30 * 1000;        // فقط ساعتِ نمایش؛ درخواس
  *     افقی اسکرول می‌شود تا محتوا با کیبورد و لمس در دسترس بماند.
  */
 export default function MarketTicker() {
+  const [readFailed, setReadFailed] = useState(false);
   const [assets, setAssets] = useState<TickerAsset[] | null>(null);
   const [payload, setPayload] = useState<TickerFreshnessPayload>({});
   const [now, setNow] = useState<number>(() => Date.now());
@@ -43,21 +44,19 @@ export default function MarketTicker() {
   }, []);
 
   useEffect(() => {
-    let alive = true;
-    const load = async () => {
+    return startVisiblePoll(async (signal) => {
       try {
-        const res = await fetch("/api/market");
+        const res = await fetch("/api/market", { signal, cache: "no-store" });
+        if (!res.ok) throw new Error("Market read failed");
         const json = await res.json();
-        if (!alive) return;
+        if (signal.aborted) return;
         setAssets(selectTickerAssets(json));
         setPayload(json);
+        setReadFailed(false);
       } catch {
-        if (alive) setAssets([]);
+        if (!signal.aborted) setReadFailed(true);
       }
-    };
-    load();
-    const t = setInterval(load, REFRESH_MS);
-    return () => { alive = false; clearInterval(t); };
+    }, browserPollEnvironment(), 60_000, true);
   }, []);
 
   // ساعتِ نمایش: بدونِ این، «۲ دقیقه پیش» تا refreshِ بعدی ثابت می‌ماند و
@@ -103,8 +102,8 @@ export default function MarketTicker() {
             borderInlineEnd: "1px solid var(--line)",
           }}
         >
-          {freshness.showLiveDot && <span className="live-dot" aria-hidden />}
-          {freshness.state === "fresh" ? (
+          {!readFailed && freshness.showLiveDot && <span className="live-dot" aria-hidden />}
+          {readFailed ? <span>آخرین دریافت ناموفق بود</span> : freshness.state === "fresh" ? (
             <>
               <span>وضعیت بازار</span>
               {/* مهرِ زمانی روی موبایل جا ندارد؛ حذفش ادعایی اضافه نمی‌کند. */}
@@ -114,7 +113,7 @@ export default function MarketTicker() {
             </>
           ) : (
             /* کهنه و نامشخص هر دو قیدند — روی موبایل هم باید دیده شوند. */
-            <span>{freshness.label}</span>
+            <span>{freshness.label}<small className="block">{receiptLabel(payload.ir?.fetchedAt, now)}</small></span>
           )}
         </div>
 
