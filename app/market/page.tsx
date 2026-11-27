@@ -22,7 +22,8 @@ import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import MarketClient from "@/components/market/MarketClient";
-import GoldCurrencyBoard from "@/components/market/GoldCurrencyBoard";
+import QuoteBoard from "@/components/market/QuoteBoard";
+import { buildQuoteBubbles } from "@/lib/quote-board";
 import CommodityBoard from "@/components/market/CommodityBoard";
 import TodayMarket from "@/components/market/TodayMarket";
 import MarketDesk from "@/components/market/MarketDesk";
@@ -253,20 +254,14 @@ export default async function MarketPage({
         </div>
         <div className={s.detailsArea}>
           {/* ── طلا و ارز ──────────────────────────────────────────────── */}
-          {ir && (ir.gold.length > 0 || ir.currency.length > 0) ? (
-            <section id="gold-currency" className="scroll-mt-24">
-              <GoldCurrencyBoard
-                gold={ir.gold}
-                currency={ir.currency}
-                fetchedAt={ir.fetchedAt}
-                availability={{
-                  gold: availability.families?.gold,
-                  currency: availability.families?.currency,
-                }}
-                now={availability.readAt}
-              />
-            </section>
-          ) : null}
+          <section id="gold-currency" className="scroll-mt-24">
+            <QuoteBoard scope="domestic" initial={{
+              ir: { gold: ir?.gold ?? [], currency: ir?.currency ?? [] },
+              quoteBubbles: buildQuoteBubbles(ir?.gold ?? [], ir?.currency ?? [], availability.readAt),
+              quoteTrends: goldUsdSeries,
+              availability: { iran: availability },
+            }} />
+          </section>
 
           {/* Commodity quotes read only from the stored market snapshot. */}
           <section id="commodities" className="scroll-mt-24">
