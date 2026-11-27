@@ -1,6 +1,7 @@
 {
   "git": {
     "deploymentEnabled": {
+      "codex/compact-reader-cutover-20261126": false,
       "codex/media-archive-filters-20261103": false,
       "codex/member-financial-input-release-20261103": false,
       "codex/p01-member-ledger-risk-release-20261103": false,
