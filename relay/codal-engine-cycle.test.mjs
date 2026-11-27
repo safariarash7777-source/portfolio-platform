@@ -43,6 +43,9 @@ async function fixture(options = {}) {
     budgetJobs.push({ producer: job.producer, budgetClass: job.budgetClass });
     calls.pages.push(Number(job.params.page));
     calls.announcementCategories.push(job.params.category ?? null);
+    if (job.params.l18 && options.rateLimitIssuer) {
+      throw Object.assign(new Error("provider response"), { status: 429 });
+    }
     if (!job.params.l18 && Number(job.params.page) === options.failSearchPage) {
       if (options.providerHttpStatus) throw Object.assign(new Error("provider response"), { status: options.providerHttpStatus });
       throw Object.assign(new Error("429 provider fixture"), { noRetry: true });
@@ -251,6 +254,37 @@ test("provider access and rate responses stop page retries and preserve the conf
     assert.deepEqual(f.persisted.watermark, watermark);
     assert.equal(f.calls.feedWrites[0].rows[0].link, announcement(1).link);
   }
+});
+
+test("a rate-limited issuer preserves its cursor and holds the issuer queue across process restarts", async () => {
+  const marketBody = [{ payload: { stocks: [{id: "الف"}, {id: "ب"}] } }];
+  const f = await fixture({ pages: [[]], marketBody, rateLimitIssuer: true });
+  await f.engine.runEngineCycle();
+  assert.deepEqual(f.calls.announcementCategories, [null, "1"]);
+  assert.equal(f.persisted.backfillCursor, 0);
+  assert.ok(f.persisted.issuerBackfillHoldUntil > Date.now());
+  assert.deepEqual(f.persisted.fails, {});
+
+  const restarted = await fixture({ pages: [[]], marketBody, initialState: f.persisted });
+  await restarted.engine.runEngineCycle();
+  assert.deepEqual(restarted.calls.announcementCategories, [null]);
+  assert.equal(restarted.persisted.backfillCursor, 0);
+
+  const expired = await fixture({ pages: [[]], marketBody, initialState: {
+    ...f.persisted, issuerBackfillHoldUntil: Date.now() - 1,
+  } });
+  await expired.engine.runEngineCycle();
+  assert.deepEqual(expired.calls.announcementCategories, [null, "1", "3", "1", "3"]);
+  assert.equal(expired.persisted.backfillCursor, 2);
+});
+
+test("a rate-limited current feed prevents issuer requests in the same cycle", async () => {
+  const f = await fixture({ failSearchPage: 1, providerHttpStatus: 429,
+    marketBody: [{ payload: { stocks: [{id: "الف"}] } }] });
+  await f.engine.runEngineCycle();
+  assert.deepEqual(f.calls.announcementCategories, [null]);
+  assert.equal(f.persisted.backfillCursor, 0);
+  assert.ok(f.persisted.issuerBackfillHoldUntil > Date.now());
 });
 
 test("legacy announcement adapter preserves only the HTTP status on provider refusal", async () => {
