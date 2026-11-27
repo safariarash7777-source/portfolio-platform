@@ -12,7 +12,7 @@ export default function PublicMarketProvenance({
   ir,
   availability,
 }: {
-  ir: IrMarket | null;
+  ir: Pick<IrMarket, "indices"> | null;
   availability: SourceAvailability;
 }) {
   return (

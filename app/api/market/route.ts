@@ -1,3 +1,4 @@
+import { homeMarketSummary } from "@/lib/public-design/home-market-summary";
 import { NextResponse } from "next/server";
 import { readGlobalMarket, readIranMarket } from "@/lib/market-bounded";
 import { withValidNav } from "@/lib/market-quality";
@@ -24,6 +25,7 @@ export async function GET(req: Request) {
       quoteBubbles: body.quoteBubbles, quoteTrends, availability: { iran: iran.availability },
     }, { headers: { "Cache-Control": "no-store" } });
   }
+  if (new URL(req.url).searchParams.has("headline")) body.headline = homeMarketSummary(iran.data, iran.availability);
   if (new URL(req.url).searchParams.get("diag") === "1") {
     body.irDiag = getLastIrDiag();
   }

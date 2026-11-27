@@ -3,6 +3,7 @@
 import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Activity, ArrowDownRight, ArrowUpLeft, Bitcoin, ChevronDown, ChevronLeft, ChevronRight, CircleDollarSign, Coins, Gem, RefreshCw, Search, Wallet } from "lucide-react";
 import { acceptsQuoteTick, quoteDirection, quoteGroups, QUOTE_ORDER, type QuoteBoardFeed, type QuoteGroup, type Quote } from "@/lib/quote-board";
+import type { HomeMarketSummary } from "@/lib/public-design/home-market-summary";
 import type { TrendPoint } from "@/lib/core/trend";
 import s from "./QuoteBoard.module.css";
 
@@ -49,7 +50,7 @@ function Spark({points, large = false, tone = "neutral"}: {points:TrendPoint[];l
   </svg>;
 }
 
-export default function QuoteBoard({ initial = null, scope = "all", preview = false }: {initial?:QuoteBoardFeed|null;scope?:"all"|"domestic";preview?:boolean}) {
+export default function QuoteBoard({ initial = null, scope = "all", preview = false, onSummary }: {initial?:QuoteBoardFeed|null;scope?:"all"|"domestic";preview?:boolean;onSummary?:(summary: HomeMarketSummary)=>void}) {
   const [feed,setFeed] = useState<QuoteBoardFeed|null>(initial);
   const [status,setStatus] = useState<"loading"|"ok"|"failed">(initial ? "ok" : "loading");
   const [group,setGroup] = useState<QuoteGroup>("gold"), [query,setQuery] = useState(""), [page,setPage] = useState(0);
@@ -75,17 +76,18 @@ export default function QuoteBoard({ initial = null, scope = "all", preview = fa
   },[]);
   useEffect(()=>{
     if(preview) return;
-    let alive=true, busy=false, nextTrendRead=0;
+    let alive=true, busy=false, nextTrendRead=onSummary ? Date.now()+REFRESH : 0;
     const controller=new AbortController();
     const pull=async()=>{
       if(busy || !navigator.onLine || document.visibilityState==="hidden")return;
       busy=true;
       try{
         const withTrends = Date.now() >= nextTrendRead;
-        const res=await fetch("/api/market?quoteTrends="+Number(withTrends)+(scope==="domestic"?"&quoteScope=domestic":""),{signal:controller.signal,cache:"no-store"});
+        const res=await fetch("/api/market?quoteTrends="+Number(withTrends)+(onSummary?"&headline=1":"")+(scope==="domestic"?"&quoteScope=domestic":""),{signal:controller.signal,cache:"no-store"});
         if(!res.ok)throw new Error("quote request failed");
-        const next=await res.json() as QuoteBoardFeed;
+        const next=await res.json() as QuoteBoardFeed & { headline?: HomeMarketSummary };
         if(!alive)return;
+        if(next.headline?.hasSnapshot) onSummary?.(next.headline);
         if(quoteGroups(next).some(g=>g.rows.length)){
           if(withTrends) nextTrendRead=Date.now()+300_000;
           else next.quoteTrends=last.current?.quoteTrends;
@@ -97,7 +99,7 @@ export default function QuoteBoard({ initial = null, scope = "all", preview = fa
     };
     void pull(); const timer=setInterval(pull,REFRESH);
     return ()=>{alive=false;controller.abort();clearInterval(timer);};
-  },[accept,preview,scope]);
+  },[accept,preview,scope,onSummary]);
   useEffect(()=>{
     if(preview || scope==="domestic")return;
     const controller=new AbortController();
