@@ -205,23 +205,30 @@ export default function DashboardClient({
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-5 py-10">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-8">
-        <div>
-          <span className="eyebrow">
-            آرش صفری · فضای مالی شخصی
-          </span>
-          <h1
-            className="font-display text-2xl md:text-3xl font-bold mt-1"
-            style={{ color: "var(--navy-deep)" }}
-          >
-            {`خوش آمدید، ${userName}`}
-          </h1>
-          <p className="text-sm mt-1" style={{ color: "var(--text-3)" }}>
-            {userEmail}
-          </p>
+    <div className="mx-auto w-full max-w-6xl py-4">
+      <PersonalFinance summary={memberFinance} />
+      {/* Risk-profile 180-day revalidation banner */}
+      {assessment && (
+        <div className="mb-6">
+          <RiskRevalidationBanner
+            isExpired={isExpired}
+            daysLeft={daysLeft}
+            onRetake={() => setShowQuiz(true)}
+          />
         </div>
+      )}
+
+      {/* Targeted announcements */}
+      {announcements.length > 0 && (
+        <div className="mb-6">
+          <Announcements items={announcements} />
+        </div>
+      )}
+
+      <details className="dos-legacy card" id="member-account">
+        <summary>تنظیمات حساب، ارزیابی ریسک و سوابق قبلی</summary>
+        <div className="p-4 space-y-4">
+        <p className="text-sm"><bdi>{userName}</bdi> · <bdi dir="ltr">{userEmail}</bdi></p>
         <div className="flex items-center gap-3 flex-shrink-0 flex-wrap justify-end">
           {isAdmin && (
             <Link
@@ -254,28 +261,6 @@ export default function DashboardClient({
             خروج
           </button>
         </div>
-      </div>
-
-      <PersonalFinance summary={memberFinance} />
-
-      {/* Risk-profile 180-day revalidation banner */}
-      {assessment && (
-        <div className="mb-6">
-          <RiskRevalidationBanner
-            isExpired={isExpired}
-            daysLeft={daysLeft}
-            onRetake={() => setShowQuiz(true)}
-          />
-        </div>
-      )}
-
-      {/* Targeted announcements */}
-      {announcements.length > 0 && (
-        <div className="mb-6">
-          <Announcements items={announcements} />
-        </div>
-      )}
-
       {assessment ? (
         <WithAssessment
           assessment={assessment}
@@ -320,6 +305,8 @@ export default function DashboardClient({
       <div className="mt-8 pt-8" style={{ borderTop: "1px solid var(--line)" }}>
         <LivePortfolio holdings={holdings} snapshots={snapshots} transactions={transactions} readErrors={financialReadErrors} />
       </div>
+        </div>
+      </details>
     </div>
   );
 }

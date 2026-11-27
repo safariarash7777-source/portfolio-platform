@@ -19,6 +19,7 @@ import {
   ShieldAlert,
   X,
 } from "lucide-react";
+import DeskFrontPage from "./DeskFrontPage";
 import IndexTrendChart from "@/components/market/IndexTrendChart";
 import {
   formatCount,
@@ -276,12 +277,7 @@ export default function ArashDeskWorkspace({ data }: { data: ArashDeskData }) {
       dir="rtl"
       className={`${s.workspace} ${s[`layout${prefs.draft.layout}`]}`}
     >
-      <header className={s.heading}>
-        <div>
-          <p className={s.eyebrow}>میز تحلیل آرش</p>
-          <h1>بازار، با تصویر روشن‌تر</h1>
-          <p>مشاهدهٔ بازار و شواهد پژوهش، در یک میز شخصی</p>
-        </div>
+      <DeskFrontPage quality={qualityLabel(quality.state)} observedAt={stamp(data.readAt)} controls={
         <div className={s.actions}>
           <button
             onClick={() => startRefresh(() => router.refresh())}
@@ -295,7 +291,7 @@ export default function ArashDeskWorkspace({ data }: { data: ArashDeskData }) {
             شخصی‌سازی میز
           </button>
         </div>
-      </header>
+      } />
       <nav className={s.toolbar} aria-label="چیدمان میز">
         <div className={s.tabs}>
           {LAYOUTS.map((name, index) => (

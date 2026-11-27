@@ -1,0 +1,10 @@
+/* Scoped to private editorial headings; public routes and the workbench
+   finance/control semantics retain their original styles and handlers. */
+.private-workspace-heading{line-height:1.7;border-block-end:1px solid var(--line);padding-block-end:1rem;overflow-wrap:anywhere}
+.private-workspace-heading>span{display:flex;align-items:center;gap:.55rem;font-size:.78rem;font-weight:700;color:var(--gold-ink)}
+.private-workspace-heading>span::before{content:"";width:1.45rem;height:2px;background:currentColor}
+.private-workspace-heading h1{font-family:var(--font-display),Vazirmatn,Tahoma,sans-serif;color:var(--heading);font-size:clamp(1.9rem,4vw,3.25rem);font-weight:750;letter-spacing:-.045em;line-height:1.34;margin:.3rem 0}
+.private-workspace-heading p{color:var(--text-2);font-size:.9rem}
+.private-workspace-heading nav{display:flex;flex-wrap:wrap;gap:0 1.15rem;margin-block-start:.65rem}
+.private-workspace-heading nav a{display:inline-flex;align-items:center;min-height:44px;color:var(--gold-ink);font-size:.86rem;font-weight:700}
+.private-workspace-heading nav a:hover{text-decoration:underline}.private-workspace-heading nav a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}

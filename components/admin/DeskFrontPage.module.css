@@ -1,0 +1,17 @@
+.front.front{max-width:none;margin:0;padding:0 0 1.1rem}
+.mast,.controls,.slug,.linkRow,.edition,.edition>div,.edition a,.primary,.textLink,.reviewLink{display:flex;align-items:center;gap:.55rem;flex-wrap:wrap}
+.mast{justify-content:space-between;align-items:flex-end;margin-bottom:1.15rem;gap:.8rem}
+.front .mast h1{margin:.28rem 0 0;font-size:clamp(2rem,4.2vw,3.15rem)}
+.spread{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:1rem}
+.lead,.review{min-width:0;position:relative;border-radius:20px;padding:clamp(1.1rem,2.3vw,1.85rem);display:flex;flex-direction:column;align-items:flex-start;overflow:hidden}
+.lead{background:radial-gradient(ellipse at 0 115%,var(--folio-navy-glow),transparent 64%),var(--folio-navy);color:var(--folio-on-navy)}
+.lead::before{content:"";width:48%;height:165%;position:absolute;inset:-78% auto auto -13%;border:1px solid var(--folio-linework);border-radius:35%;transform:rotate(-30deg);box-shadow:0 0 0 17px var(--folio-echo),0 0 0 36px var(--folio-echo),0 0 0 59px var(--folio-echo);pointer-events:none}
+.lead>*{position:relative}.slug{font-size:.78rem;font-weight:700}.lead .slug{color:var(--folio-badge-ink)}
+.front .spread h2{font-size:clamp(1.2rem,2.3vw,2.1rem);line-height:1.45;margin:.65rem 0 .3rem}
+.front .spread p{font-size:.87rem;line-height:1.9;margin-bottom:1rem}
+.lead p,.lead .textLink{color:var(--folio-navy-muted)}.review{background:var(--note);border:1px solid var(--rule);color:var(--ink)}.review p{color:var(--muted)}.review .slug{color:var(--goldink)}
+.linkRow,.reviewLink{margin-top:auto}.primary,.reviewLink,.textLink,.edition a{min-height:44px;font-weight:700}
+.primary,.reviewLink{padding:.4rem .8rem;border-radius:8px}.front .primary{background:var(--folio-on-navy);color:var(--folio-navy)}.front .reviewLink{background:var(--folio-button);color:var(--folio-on-navy)}
+.textLink,.edition a{font-size:.8rem}.front .textLink:hover,.front .edition a:hover{text-decoration:underline}.edition{border-block-end:1px solid var(--rule);column-gap:1rem;row-gap:0;padding:.45rem 0;color:var(--muted);font-size:.76rem}
+.edition strong{color:var(--ink)}.edition a{margin-inline-start:auto;color:var(--goldink)}
+@media(max-width:720px){.spread{grid-template-columns:1fr}.edition{padding:.5rem 0}.edition a{margin-inline-start:0}.front .spread h2{font-size:1.35rem}}

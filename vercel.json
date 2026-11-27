@@ -16,7 +16,8 @@
       "codex/consultation-list-recovery-20261103": false,
       "codex/relay-health-codal-reasons-20261104": false,
       "codex/assembled-native-ci-20261104": false,
-      "codex/liara-control-plane-receipt-20261104": false
+      "codex/liara-control-plane-receipt-20261104": false,
+      "codex/private-dashboard-release-20261126": false
     }
   },
   "crons": [
