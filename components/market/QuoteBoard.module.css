@@ -99,8 +99,6 @@
 @media(min-width:571px){.detail{order:1}}
 @keyframes quote-pulse{0%,60%{color:var(--pulse)}100%{color:inherit}}
 
-.demoControl{font:inherit;font-size:11px;color:var(--navy-ink);border:1px solid var(--line);border-radius:6px;padding:5px 8px;cursor:pointer}
-.demoControl[aria-pressed=true],.sampleTag{color:var(--gold-ink);background:var(--surface-2)}
 .digit{display:inline-block;overflow:hidden;vertical-align:bottom;animation:digit-tone .85s ease-out}
 .digit[data-direction=up]{--ink:var(--success);--offset:45%}
 .digit[data-direction=down]{--ink:var(--danger);--offset:-45%}
