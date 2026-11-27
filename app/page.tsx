@@ -1,5 +1,5 @@
 import Navbar from "@/components/layout/Navbar";
-import QuoteBoard from "@/components/market/QuoteBoard";
+import HomeMarketBoard from "@/components/public-design/HomeMarketBoard";
 import { buildQuoteBubbles } from "@/lib/quote-board";
 import Method from "@/components/landing/Method";
 import TwoProducts from "@/components/landing/TwoProducts";
@@ -11,13 +11,10 @@ import PublicHomeMedia from "@/components/public-design/PublicHomeMedia";
 import { createClient } from "@/lib/supabase/server";
 import { readPublicMedia } from "@/lib/media/public-read.server";
 import { latestPublicArticle } from "@/lib/media/public-media";
-import PublicMarketProvenance from "@/components/public-design/PublicMarketProvenance";
-import MarketKpiRow from "@/components/market/MarketKpiRow";
 
 import { readIranMarket } from "@/lib/market-bounded";
-import { buildMarketHeadline } from "@/lib/core/marketHeadline";
+import { homeMarketSummary } from "@/lib/public-design/home-market-summary";
 import { readSiteAppearance } from "@/lib/appearance/site-layout-server";
-import { publicMetricLabels } from "@/lib/public-design/metrics";
 import s from "@/components/public-design/PublicDesign.module.css";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -46,12 +43,6 @@ export default async function LandingPage({
     readPublicMedia(),
     readSiteAppearance(supabase, sp),
   ]);
-  const headline = buildMarketHeadline({
-    indices: market.data?.indices ?? null,
-    stocks: market.data?.stocks ?? [],
-    gold: market.data?.gold ?? [],
-    currency: market.data?.currency ?? [],
-  });
   return (
     <PublicDesignFrame
       appearance={appearance}
@@ -66,22 +57,11 @@ export default async function LandingPage({
           <h2>نمای عمومی بازار</h2>
           <a href="/market">مشاهدهٔ کامل بازار</a>
         </header>
-        <div className={s.marketRibbon}>
-          <MarketKpiRow
-            metrics={publicMetricLabels(headline.metrics, market.data !== null)}
-          />
-        </div>
-        <PublicMarketProvenance
-          ir={market.data}
-          availability={market.availability}
-        />
-        <div className={s.homeMarketTools}>
-          <QuoteBoard initial={market.data ? {
+        <HomeMarketBoard initial={homeMarketSummary(market.data, market.availability)} quotes={market.data ? {
             ir: { gold: market.data.gold, currency: market.data.currency },
             quoteBubbles: buildQuoteBubbles(market.data.gold, market.data.currency, market.availability.readAt),
             availability: { iran: market.availability },
           } : null} />
-        </div>
       </section>
       <div className={s.legacySections}>
         <TwoProducts />
