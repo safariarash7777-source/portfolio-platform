@@ -133,6 +133,7 @@ export const engineStatus = {
 
 /* ── وضعیت پایدار در Supabase ──────────────────────────────────────────────── */
 const STATE_KEY = "codal_engine_state";
+const ISSUER_RATE_LIMIT_HOLD_MS = 60 * 60 * 1000;
 let state = null; // { watermark: {key, links}, backfillCursor, fails: {url: n} }
 
 async function loadState() {
@@ -185,6 +186,9 @@ async function loadState() {
   state = payload;
   state.watermark ??= null;
   state.backfillCursor ??= 0;
+  if (!Number.isSafeInteger(state.issuerBackfillHoldUntil) || state.issuerBackfillHoldUntil < 0) {
+    state.issuerBackfillHoldUntil = 0;
+  }
   state.fails ??= {};
   // Older payloads have no diagnostics; unknown/malformed fields never reach
   // debug output or the next persisted diagnostic object.
@@ -378,6 +382,11 @@ function providerRefusalReason(error) {
   if (error?.status === 429) return "provider_rate_limited";
   if (error?.status === 403) return "provider_forbidden";
   return null;
+}
+
+function holdIssuerBackfill() {
+  state.issuerBackfillHoldUntil = Math.max(state.issuerBackfillHoldUntil, Date.now() + ISSUER_RATE_LIMIT_HOLD_MS);
+  engineStatus.backfill.holdUntil = state.issuerBackfillHoldUntil;
 }
 
 /** یک صفحه با یک تلاش مجدد — BrsApi گاه اتصال را گذرا قطع می‌کند. */
@@ -668,11 +677,8 @@ async function backfillSome({ monthlyOnly = false, loadCompanies = allCompanySym
     processedSymbols++;
     st.symbols.push(sym);
     try {
-      const [fs, monthly] = monthlyOnly ? [[], await fetchAnnouncementsPage({ l18: sym, category: 3 })]
-        : await Promise.all([
-          fetchAnnouncementsPage({ l18: sym, category: 1 }),
-          fetchAnnouncementsPage({ l18: sym, category: 3 }),
-        ]);
+      const fs = monthlyOnly ? [] : await fetchAnnouncementsPage({ l18: sym, category: 1 });
+      const monthly = await fetchAnnouncementsPage({ l18: sym, category: 3 });
       const known = await existingUrlsFor(sym);
       let dl = 0;
       for (const a of [...fs, ...monthly]) {
@@ -706,8 +712,9 @@ async function backfillSome({ monthlyOnly = false, loadCompanies = allCompanySym
       }
       console.log(`codal-engine backfill ${sym}: inserted=${st.inserted} parseFailed=${st.parseFailed}`);
     } catch (e) {
-      if (isBrsLocalDeferral(e)) {
-        noteDeferral(e, "issuer_backfill");
+      if (e?.status === 429 || isBrsLocalDeferral(e)) {
+        if (e?.status === 429) holdIssuerBackfill();
+        else noteDeferral(e, "issuer_backfill");
         state.backfillCursor = cursorBefore;
         st.cursor = cursorBefore;
         throw e;
@@ -807,7 +814,8 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
   const recentMonthlyCursorBefore = state.recentMonthlyRecoveryCursor ?? null;
   const officialMonthlyPageBefore = state.officialMonthlyNextPage;
   const interimCursorBefore = state.interimRecoveryCursor ?? null;
-  Object.assign(engineStatus.backfill, { inserted: 0, downloaded: 0, parseFailed: 0, symbols: [], skippedCovered: 0 });
+  Object.assign(engineStatus.backfill, { inserted: 0, downloaded: 0, parseFailed: 0, symbols: [], skippedCovered: 0,
+    cursor: state.backfillCursor, holdUntil: state.issuerBackfillHoldUntil > Date.now() ? state.issuerBackfillHoldUntil : null });
   Object.assign(engineStatus.storedRecovery, recoveryCounts());
   const monthlyBounds=monthlyOnly&&prioritizeRecentMonthly ? recentMonthlyBounds(engineStatus.lastRun) : null;
   Object.assign(engineStatus.recentMonthlyRecovery,recoveryCounts(),{active:monthlyBounds!==null,readFailed:false});
@@ -845,6 +853,7 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
     if (sourceHeld) codalAccess.check();
   } catch (e) {
     engineStatus.feed.complete = false;
+    if (e?.status === 429) holdIssuerBackfill();
     feedDeferred = isBrsLocalDeferral(e);
     if (feedDeferred) engineStatus.feed.incompleteReason = 'local_deferred';
     else engineStatus.feed.incompleteReason ??= "feed_failure";
@@ -902,7 +911,9 @@ export async function runEngineCycle({ allowBackground = true, monthlyOnly = fal
       }
       await recoverStoredReports({monthlyOnly,limit:limit-engineStatus.recentMonthlyRecovery.downloaded,attempted,knownBySymbol});
       if (interimRemaining > 0) await recoverStoredReports({monthlyOnly:false,interimWindow,limit:interimRemaining});
-      if (allowBackground && !feedDeferred) await backfillSome({monthlyOnly,loadCompanies});
+      if (allowBackground && !feedDeferred && state.issuerBackfillHoldUntil <= Date.now()) {
+        await backfillSome({monthlyOnly,loadCompanies});
+      }
     }
   } catch (e) {
     engineStatus.lastError = [engineStatus.lastError, `backfill: ${e?.message ?? e}`].filter(Boolean).join("; ");

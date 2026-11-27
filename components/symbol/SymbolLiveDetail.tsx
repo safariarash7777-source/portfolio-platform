@@ -183,15 +183,20 @@ export default function SymbolLiveDetail({
       ? Math.min(100, Math.max(0, ((last - low52) / (high52 - low52)) * 100)) : null;
 
   const assembly = parseAssembly(data);
-  const updated = str(data.date_update) ?? str(data.date);
+  const quoteDate = str(data.date);
+  const quoteTime = str(data.time);
+  const tradeDate = str(data.date_update);
 
   return (
     <div className="space-y-4">
       {showMarket && <QuoteCard quote={quote} />}
-      {(stale || updated) && (
+      {(showMarket || stale) && (
         <p className="text-xs text-muted-foreground">
           {stale ? "آخرین اسنپ‌شات موجود؛ تازگی دریافت تأیید نشده است" : "اسنپ‌شات با دریافت تازه"}
-          {updated ? ` — به‌روزرسانی: ${updated}` : ""}
+          {showMarket && <><br />قیمت ثبت‌شدهٔ BRSAPI: {last !== null ? `${fmtNum(last)} تومان` : "—"}
+            {" · "}تاریخ اطلاعات قیمت: {quoteDate ? toPersianDigits(quoteDate) : "نامشخص"}
+            {quoteTime && <> · ساعت {toPersianDigits(quoteTime)}</>}
+            {tradeDate && <> · آخرین روز معامله: {toPersianDigits(tradeDate)}</>}</>}
         </p>
       )}
 
@@ -273,7 +278,7 @@ export default function SymbolLiveDetail({
         </div>
 
         <div className="card p-4">
-          <h3 className="text-sm font-bold">جریان حقیقی/حقوقی امروز</h3>
+          <h3 className="text-sm font-bold">جریان حقیقی/حقوقی در گزارش</h3>
           {hasFlow ? (
             <div className="mt-3 space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3">
