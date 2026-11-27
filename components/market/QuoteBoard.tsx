@@ -83,7 +83,7 @@ export default function QuoteBoard({ initial = null, scope = "all", preview = fa
       busy=true;
       try{
         const withTrends = Date.now() >= nextTrendRead;
-        const res=await fetch("/api/market?quoteTrends="+Number(withTrends)+(onSummary?"&headline=1":"")+(scope==="domestic"?"&quoteScope=domestic":""),{signal:controller.signal,cache:"no-store"});
+        const res=await fetch("/api/market?quoteTrends="+Number(withTrends)+(onSummary?"&headline=1":"")+(scope==="domestic"?"&quoteScope=domestic":"&quoteScope=board"),{signal:controller.signal,cache:"no-store"});
         if(!res.ok)throw new Error("quote request failed");
         const next=await res.json() as QuoteBoardFeed & { headline?: HomeMarketSummary };
         if(!alive)return;

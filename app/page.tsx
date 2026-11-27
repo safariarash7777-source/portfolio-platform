@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Navbar from "@/components/layout/Navbar";
 import HomeMarketBoard from "@/components/public-design/HomeMarketBoard";
 import { buildQuoteBubbles } from "@/lib/quote-board";
@@ -31,18 +32,22 @@ export const revalidate = 0;
  * FinalCTA (+ PortfolioPreviewCardِ مرده). دلیلِ هر کدام در
  * `docs/P2-PUBLIC-REBASELINE-AUDIT.md`.
  */
-export default async function LandingPage({
+type HomeProps = { searchParams?: Promise<Record<string, string | string[] | undefined>> };
+
+export default function LandingPage(props: HomeProps) {
+  return <Suspense fallback={<><Navbar prefetch={false} /><main className="dos dos-home" aria-busy="true"><header className="dos-heading"><div><h1>آرش صفری</h1><p>تحلیلگر و مشاور سرمایه‌گذاری</p></div></header></main></>}>
+    <HomeContent {...props} />
+  </Suspense>;
+}
+
+async function HomeContent({
   searchParams,
-}: {
-  searchParams?: Promise<Record<string, string | string[] | undefined>>;
-}) {
+}: HomeProps) {
   const sp = searchParams ? await searchParams : {};
   const supabase = await createClient();
-  const [market, media, appearance] = await Promise.all([
-    readIranMarket(),
-    readPublicMedia(),
-    readSiteAppearance(supabase, sp),
-  ]);
+  const marketRead = readIranMarket();
+  const mediaRead = readPublicMedia();
+  const appearance = await readSiteAppearance(supabase, sp);
   return (
     <PublicDesignFrame
       appearance={appearance}
@@ -50,9 +55,33 @@ export default async function LandingPage({
       navigation={<Navbar />}
       footer={<Footer />}
     >
-      <PublicHome analysis={latestPublicArticle(media.items)} mediaState={media.state} />
-      <PublicHomeMedia read={{ ...media, items: media.items.slice(0, 4) }} />
-      <section className={s.homeMarket} id="market-glance">
+      <Suspense fallback={<header className="dos-heading"><div><h1>آرش صفری</h1><p>تحلیلگر و مشاور سرمایه‌گذاری</p></div></header>}>
+        <HomeMedia read={mediaRead} />
+      </Suspense>
+      <Suspense fallback={<section className={s.homeMarket} aria-busy="true"><h2>نمای عمومی بازار</h2></section>}>
+        <HomeMarket read={marketRead} />
+      </Suspense>
+      <div className={s.legacySections}>
+        <TwoProducts />
+        <Method />
+        <Suspense fallback={null}><TrackRecordStrip /></Suspense>
+      </div>
+    </PublicDesignFrame>
+  );
+}
+
+async function HomeMedia({ read }: { read: ReturnType<typeof readPublicMedia> }) {
+  const media = await read;
+  return <>
+    <PublicHome analysis={latestPublicArticle(media.items)} mediaState={media.state} />
+    <PublicHomeMedia read={{ ...media, items: media.items.slice(0, 4) }} />
+  </>;
+}
+
+async function HomeMarket({ read }: { read: ReturnType<typeof readIranMarket> }) {
+  const market = await read;
+  return (
+    <section className={s.homeMarket} id="market-glance">
         <header>
           <h2>نمای عمومی بازار</h2>
           <a href="/market">مشاهدهٔ کامل بازار</a>
@@ -63,11 +92,5 @@ export default async function LandingPage({
             availability: { iran: market.availability },
           } : null} />
       </section>
-      <div className={s.legacySections}>
-        <TwoProducts />
-        <Method />
-        <TrackRecordStrip />
-      </div>
-    </PublicDesignFrame>
   );
 }
