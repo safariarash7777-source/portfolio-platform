@@ -7,7 +7,8 @@ import Reveal from "./Reveal";
 import { hasRealPrice } from "@/lib/market-price";
 import { hasRealChange } from "@/lib/market-ticker-select";
 import type { SourceAvailability } from "@/lib/market-bounded";
-import { computeMarketTabFreshness } from "@/lib/market-freshness";
+import { browserPollEnvironment, startVisiblePoll } from "@/lib/visible-poll";
+import { receiptLabel, computeMarketTabFreshness } from "@/lib/market-freshness";
 import {
   formatToman, formatUsd, formatSignedPercent, describeDelta, deltaColor,
 } from "@/lib/format";
@@ -54,7 +55,6 @@ interface DisplayRow {
   change: number | null;
 }
 
-const REFRESH_MS = 5 * 60 * 1000;
 const TICK_MS = 30 * 1000; // فقط ساعتِ نمایش؛ درخواستِ تازه نمی‌زند
 const SHOW = 8;
 
@@ -96,24 +96,21 @@ export default function LiveMarket() {
   const [now, setNow] = useState<number>(() => Date.now());
 
   useEffect(() => {
-    let alive = true;
-    const load = async () => {
+    return startVisiblePoll(async (signal) => {
       try {
-        const res = await fetch("/api/market");
+        const res = await fetch("/api/market", { signal, cache: "no-store" });
+        if (!res.ok) throw new Error("Market read failed");
         const json = (await res.json()) as MarketPayload;
-        if (!alive) return;
+        if (signal.aborted) return;
         const any =
           (json?.crypto?.length ?? 0) + (json?.goldGlobal?.length ?? 0) +
           (json?.ir ? json.ir.gold.length + json.ir.currency.length + json.ir.funds.length + json.ir.stocks.length : 0);
         if (any > 0) { setData(json); setFailed(false); }
         else setFailed(true);
       } catch {
-        if (alive) setFailed(true);
+        if (!signal.aborted) setFailed(true);
       }
-    };
-    load();
-    const t = setInterval(load, REFRESH_MS);
-    return () => { alive = false; clearInterval(t); };
+    }, browserPollEnvironment(), 60_000, true);
   }, []);
 
   // بدونِ این، «۲ دقیقه پیش» تا refreshِ بعدی ثابت می‌ماند و گذارِ تازه→کهنه
@@ -217,6 +214,7 @@ export default function LiveMarket() {
                   : !data
                     ? "در حال دریافت…"
                     : freshness.label}
+                {isStale && !failed && <small>{receiptLabel(family?.receivedAt, now)}</small>}
               </span>
             </div>
 
