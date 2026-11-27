@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Activity, ArrowDownRight, ArrowUpLeft, Bitcoin, ChevronDown, ChevronLeft, ChevronRight, CircleDollarSign, Coins, Gem, RefreshCw, Search, Wallet } from "lucide-react";
 import { acceptsQuoteTick, quoteDirection, quoteGroups, QUOTE_ORDER, type QuoteBoardFeed, type QuoteGroup, type Quote } from "@/lib/quote-board";
 import type { TrendPoint } from "@/lib/core/trend";
@@ -12,7 +12,7 @@ const icons = { USD:Wallet, IR_GOLD_18K:Gem, IR_COIN_EMAMI:Coins, bitcoin:Bitcoi
 const f = (v: number, precision = 0) => new Intl.NumberFormat("fa-IR", {maximumFractionDigits: precision}).format(v);
 const signed = (v: number, p = 0) => (v > 0 ? "+" : v < 0 ? "−" : "") + f(Math.abs(v),p);
 const fmt = (v: number, q: Quote) => f(v, q.unit === "usd" ? 2 : 0);
-const REFRESH = 5 * 60 * 1000;
+const REFRESH = 30_000;
 const PAGE = 8;
 type Motion = Record<string,{direction:"up"|"down"; seq:number}>;
 
@@ -42,6 +42,7 @@ export default function QuoteBoard({ initial = null, scope = "all", preview = fa
   const [btcHistory,setBtcHistory] = useState<TrendPoint[]>([]);
   const [simulated,setSimulated] = useState(false);
   const last = useRef<QuoteBoardFeed|null>(initial), seq = useRef(0);
+  const [checkedAt,setCheckedAt] = useState<number|null>(null);
   const master = useId();
   const accept = useCallback((next:QuoteBoardFeed,demo = false)=>{
     const previous = new Map(quoteGroups(last.current).flatMap(g=>g.rows.map(q=>[q.id,q] as const)));
@@ -58,17 +59,22 @@ export default function QuoteBoard({ initial = null, scope = "all", preview = fa
   },[]);
   useEffect(()=>{
     if(preview) return;
-    let alive=true, busy=false;
+    let alive=true, busy=false, nextTrendRead=0;
     const controller=new AbortController();
     const pull=async()=>{
-      if(busy || document.visibilityState==="hidden")return;
+      if(busy || !navigator.onLine || document.visibilityState==="hidden")return;
       busy=true;
       try{
-        const res=await fetch("/api/market?quoteTrends=1"+(scope==="domestic"?"&quoteScope=domestic":""),{signal:controller.signal,cache:"no-store"});
+        const withTrends = Date.now() >= nextTrendRead;
+        const res=await fetch("/api/market?quoteTrends="+Number(withTrends)+(scope==="domestic"?"&quoteScope=domestic":""),{signal:controller.signal,cache:"no-store"});
         if(!res.ok)throw new Error("quote request failed");
         const next=await res.json() as QuoteBoardFeed;
         if(!alive)return;
-        if(quoteGroups(next).some(g=>g.rows.length))accept(next);
+        if(quoteGroups(next).some(g=>g.rows.length)){
+          if(withTrends) nextTrendRead=Date.now()+300_000;
+          else next.quoteTrends=last.current?.quoteTrends;
+          accept(next); setCheckedAt(Date.now());
+        }
         else setStatus("failed");
       }catch{if(alive)setStatus("failed");}
       finally{busy=false;}
@@ -119,8 +125,8 @@ export default function QuoteBoard({ initial = null, scope = "all", preview = fa
     if(id!=="IR_GOLD_18K" && id!=="IR_COIN_EMAMI")return null;
     const b=feed?.quoteBubbles?.[id];
     return <div className={s.bubble}>
-      <span><i aria-hidden/> حباب {b?.quality==="stored" && <small>· بر پایهٔ دادهٔ ذخیره‌شده</small>}</span>
-      {b ? <span className={s.bubbleValue} title={b.basis==="world-spot"?"نسبت به ارزش طلای ۱۸ با اونس و دلار آزاد":"نسبت به ارزش طلای خالص سکه با طلای ۱۸ داخلی"}><bdi dir="ltr">{signed(b.amount)}</bdi> <small>تومان</small> <strong><bdi dir="ltr">{signed(b.percent,2)}٪</bdi></strong></span>
+      <span><i aria-hidden/> حباب {b && <strong dir="ltr">{signed(b.percent,2)}٪</strong>} {b?.quality==="stored" && <small>· بر پایهٔ دادهٔ ذخیره‌شده</small>}</span>
+      {b ? <span className={s.bubbleValue} title={b.basis==="world-spot"?"نسبت به ارزش طلای ۱۸ با اونس و دلار آزاد":"نسبت به ارزش طلای خالص سکه با طلای ۱۸ داخلی"}><bdi dir="ltr">{signed(b.amount)}</bdi> <small>تومان</small></span>
         : <small>ورودی هم‌زمان در دسترس نیست</small>}
     </div>;
   }
@@ -134,6 +140,7 @@ export default function QuoteBoard({ initial = null, scope = "all", preview = fa
       <div><div className={s.kicker}><Activity size={16}/> میز بازار</div><h2 id={master+"-heading"}>نمای قیمت‌ها</h2><p>قیمت، جهت تغییر و روند دارایی‌های بازار</p></div>
       <div className={s.signals}>{preview && <span className={s.demo}>پیش‌نمایش طراحی</span>}
       <span className={s.status} role="status"><i aria-hidden/>{simulated?"تغییر نمونه · نه دادهٔ بازار":issue}</span>
+      {checkedAt && <small>آخرین بررسی تابلو <time>{new Date(checkedAt).toLocaleTimeString("fa-IR",{timeZone:"Asia/Tehran"})}</time></small>}
       {preview && <button type="button" className={s.replay} onClick={demonstrate}><RefreshCw size={14}/>{simulated?"بازنشانی نمونه":"نمایش تغییر قیمت"}</button>}</div>
     </header>
     <div className={s.feature} data-testid="quote-feature">
@@ -143,11 +150,10 @@ export default function QuoteBoard({ initial = null, scope = "all", preview = fa
         const historyDirection = points.length > 1 ? quoteDirection(points[0].price,points.at(-1)!.price) : null;
         const expanded=open===q.id;
         const min=points.length ? Math.min(...points.map(p=>p.price)):null, max=points.length ? Math.max(...points.map(p=>p.price)):null;
-        return <article key={q.id} className={s.card} data-expanded={expanded} data-asset={q.id}>
+        return <Fragment key={q.id}><article className={s.card} data-expanded={expanded} data-asset={q.id}>
           <div className={s.cardHead}><span className={s.icon}><I size={21}/></span><div className={s.asset}><h3>{names[q.id]??q.faName}</h3><span>{unitNames[q.id]}</span></div>{delta(q)}</div>
           <div className={s.price}><span key={m?.seq??0} className={m?s.flash:undefined} data-tick={m?.direction}>
             <bdi data-testid="quote-number">{fmt(q.price,q)}</bdi>
-            {m && <span className={s.tickArrow} aria-hidden>{m.direction==="up"?<ArrowUpLeft size={19}/>:<ArrowDownRight size={19}/>}</span>}
           </span><small>{q.unit==="usd"?"دلار":"تومان"}</small></div>
           <div className={s.meta}>{q.change == null || !Number.isFinite(q.change) ? <span>مقدار تغییر: —</span> : <span>مقدار تغییر: <bdi>{signed(q.change,2)}</bdi></span>}</div>
           {points.length > 1 ? <button className={s.chartButton} type="button" aria-expanded={expanded} aria-controls={id} onClick={()=>setOpen(expanded ? null:q.id)}>
@@ -155,19 +161,20 @@ export default function QuoteBoard({ initial = null, scope = "all", preview = fa
             <span className={s.chartCaption}>روند روزانه<ChevronDown size={15}/></span>
           </button> : <div className={s.chartButton} data-unavailable><Spark points={points}/><span className={s.chartCaption}>روند روزانه</span></div>}
           {bubble(q.id)}
+        </article>
           <div id={id} className={s.detail} hidden={!expanded}>
-            <div><strong>روند روزانه</strong>{points.length>1 && <span> · {f(points.length)} نقطهٔ ثبت‌شده</span>}</div>
+            <div><strong>{names[q.id]??q.faName} · روند روزانه</strong>{points.length>1 && <span> · {f(points.length)} نقطهٔ ثبت‌شده</span>}</div>
             <Spark points={points} large/>
             {min!=null && max!=null && <div className={s.range}><span>کمترین در نمودار <bdi>{fmt(min,q)}</bdi></span><span>بیشترین در نمودار <bdi>{fmt(max,q)}</bdi></span></div>}
           </div>
-        </article>;
+        </Fragment>;
       })}
     </div>
     <div className={s.table}>
       <div className={s.tableHead}><div><h3>همهٔ قیمت‌ها</h3><p>دارایی‌ها را بر اساس بازار مرور کنید.</p></div><label className={s.search}><Search size={17}/><input aria-label="جست‌وجوی دارایی" placeholder="جست‌وجوی دارایی…" value={query} onChange={e=>{setQuery(e.target.value);setPage(0);}}/></label></div>
       <div className={s.groups} aria-label="گروه دارایی‌ها">{groups.map(g=><button key={g.id} type="button" aria-pressed={g.id===group} onClick={()=>{setGroup(g.id);setPage(0);setQuery("");}}>{g.label}<span>{f(g.rows.length)}</span></button>)}</div>
       <div className={s.tableLabel}><span>دارایی</span><span>قیمت</span><span>تغییر</span></div>
-      <ul className={s.rows}>{found.slice(shownPage*PAGE,(shownPage+1)*PAGE).map(q=><li key={q.id}><span>{group==="stocks"||group==="funds" ? q.id : names[q.id]??q.faName.replace(/[0-9]/g,d=>"۰۱۲۳۴۵۶۷۸۹"[Number(d)])}</span><span><bdi>{fmt(q.price,q)}</bdi> <small>{q.unit==="usd"?"دلار":"تومان"}</small></span>{delta(q)}</li>)}
+      <ul className={s.rows}>{found.slice(shownPage*PAGE,(shownPage+1)*PAGE).map(q=><li key={q.id}><span>{group==="stocks"||group==="funds" ? q.id : names[q.id]??q.faName.replace(/[0-9]/g,d=>"۰۱۲۳۴۵۶۷۸۹"[Number(d)])}</span><span><bdi key={motion[q.id]?.seq??0} className={motion[q.id]?s.flash:undefined} data-tick={motion[q.id]?.direction}>{fmt(q.price,q)}</bdi> <small>{q.unit==="usd"?"دلار":"تومان"}</small></span>{delta(q)}</li>)}
       {!found.length && <li className={s.empty}>{query?"دارایی مطابق جست‌وجو پیدا نشد.":status==="loading"?"در حال دریافت…":"قیمتی در این گروه در دسترس نیست."}</li>}</ul>
       {lastPage>0 && <div className={s.pages}><span>{f(shownPage*PAGE+1)} تا {f(Math.min((shownPage+1)*PAGE,found.length))} از {f(found.length)}</span><button type="button" aria-label="صفحهٔ قبل" disabled={!shownPage} onClick={()=>setPage(shownPage-1)}><ChevronRight size={18}/></button><button type="button" aria-label="صفحهٔ بعد" disabled={shownPage===lastPage} onClick={()=>setPage(shownPage+1)}><ChevronLeft size={18}/></button></div>}
     </div>
