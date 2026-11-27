@@ -1,0 +1,81 @@
+{
+  "schema": "pr385-preview-http-readback.v1",
+  "observedAtUtc": "2026-11-04T01:51:38.428Z",
+  "pr": "https://github.com/safariarash7777-source/portfolio-platform/pull/385",
+  "ci": "https://github.com/safariarash7777-source/portfolio-platform/actions/runs/41755671173",
+  "deploymentId": "dpl_CHscypUk9ywxHeSf35fNK4RDXzQY",
+  "deploymentState": "READY",
+  "target": null,
+  "head": "f07e0543c46cea88822dc0d400080b5bb94bef91",
+  "tree": "8e43eab0bd66705b5455713ea15dd5c1d9c5f81a",
+  "actualCiCheckout": "c154ebd43a2bfcf2852b74e63c97e1560d540b87",
+  "routes": [
+    {
+      "path": "/dashboard",
+      "url": "https://portfolio-platform-er6bqf4fc-safariarash7777-4463s-projects.vercel.app/dashboard",
+      "httpStatus": 307,
+      "location": "https://portfolio-platform-er6bqf4fc-safariarash7777-4463s-projects.vercel.app/login",
+      "next": "/dashboard",
+      "sameOrigin": true,
+      "authenticated": false,
+      "bodyBytes": 15,
+      "vercelProtectionPage": false
+    },
+    {
+      "path": "/dashboard/consultation/requests",
+      "url": "https://portfolio-platform-er6bqf4fc-safariarash7777-4463s-projects.vercel.app/dashboard/consultation/requests",
+      "httpStatus": 307,
+      "location": "https://portfolio-platform-er6bqf4fc-safariarash7777-4463s-projects.vercel.app/login",
+      "next": "/dashboard/consultation/requests",
+      "sameOrigin": true,
+      "authenticated": false,
+      "bodyBytes": 15,
+      "vercelProtectionPage": false
+    },
+    {
+      "path": "/admin/consultation/requests",
+      "url": "https://portfolio-platform-er6bqf4fc-safariarash7777-4463s-projects.vercel.app/admin/consultation/requests",
+      "httpStatus": 307,
+      "location": "https://portfolio-platform-er6bqf4fc-safariarash7777-4463s-projects.vercel.app/login",
+      "next": "/admin/consultation/requests",
+      "sameOrigin": true,
+      "authenticated": false,
+      "bodyBytes": 15,
+      "vercelProtectionPage": false
+    }
+  ],
+  "loginRead": {
+    "path": "/login",
+    "httpStatus": 200,
+    "contentType": "text/html; charset=utf-8",
+    "hasLoginText": true,
+    "bodyBytes": 15352,
+    "authenticated": false
+  },
+  "transport": "Anonymous GET with manual redirects; no session cookies or credentials",
+  "mcpFetch": "INVALID_ARGUMENT project/deployment access; local Vercel CLI not available; anonymous HTTP read succeeded without protection changes",
+  "createPOSTCount": 1,
+  "rebuild": false,
+  "environmentChanges": false,
+  "production": false,
+  "destinationDB": false,
+  "rightsGrant": false,
+  "newNative": false,
+  "capsuleChanged": false,
+  "authenticatedMemberJourney": "NOT_TESTED",
+  "authenticatedAdvisorJourney": "NOT_TESTED",
+  "fullFlow": "NOT_ACCEPTED",
+  "arashAcceptance": "UNOBSERVED",
+  "productBlockers": [
+    "Experimental request page copy remains staged; actual service-right provider disconnected",
+    "Known Windows CRLF test harness limitation in this candidate, separately corrected on rootbae9 for future source/native candidate"
+  ],
+  "nextSourceGate": "Before any new capsule/native: preserve rootbae9 test-only correction by normal merge and verify exact reviewed source/CI; no new native authorized",
+  "costs": {
+    "newPurchase": false,
+    "ciUsageCost": null,
+    "previewUsageCost": null,
+    "providerModelExecutions": 0,
+    "financialDataProviderCalls": 0
+  }
+}

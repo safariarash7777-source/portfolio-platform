@@ -1,0 +1,138 @@
+{
+  "schemaVersion": "table-scope-review-proposal/1",
+  "status": "blocked_pending_financial_review",
+  "executable": false,
+  "targetFeedId": 19270,
+  "targetKind": "ن-۱۰",
+  "parserSourceHead": "5b5974405a952fe782419a23ca03134c7247cd7e",
+  "decision": {
+    "exactUrl": "https://codal.ir/Reports/Decision.aspx?LetterSerial=qV4MKXMUUbQQQaQQQ9cOOObOOO8qmo3wRg%3d%3d&rt=0&let=6&ct=0&ft=-1",
+    "hostname": "codal.ir",
+    "sha256": "1a4904c496c09cf091c12ea14f40cc58c0777726d02761dd450487c0e857b1a2",
+    "byteLength": 123299,
+    "fetchedAtUtc": "2026-11-04T01:10:15.990997+00:00",
+    "httpStatus": 200,
+    "tlsVerified": true,
+    "redirectsFollowed": 0
+  },
+  "excel": {
+    "exactUrl": "https://excel.codal.ir/service/Excel/GetAll/qV4MKXMUUbQQQaQQQ9cOOObOOO8qmo3wRg%3d%3d/0",
+    "hostname": "excel.codal.ir",
+    "sha256": "11349a3f2603ffee7949334e726dae7e6e33b9867e9828b67af3c638a6adda9d",
+    "byteLength": 645426,
+    "fetchedAtUtc": "2026-11-04T01:02:27.826103+00:00",
+    "httpStatus": 200,
+    "tlsVerified": true,
+    "redirectsFollowed": 0
+  },
+  "identity": {
+    "sameExactManifestRecord": true,
+    "letterSerialComparison": "percent-decode-once-only-no-custom-plus-rewrite",
+    "selectedSheetCode": 1,
+    "payloadSheetPath": "$.sheets[0]",
+    "payloadTablePath": "$.sheets[0].tables[0]",
+    "tableCode": 904,
+    "metaTableId": 3220,
+    "tableSheetCode": 1,
+    "alias": "IncomeStatement",
+    "excelContextIndex": 0,
+    "excelContextUtf8Span": {
+      "start": 1746,
+      "end": 24699,
+      "endExclusive": true
+    }
+  },
+  "scopeObservation": {
+    "path": "$.isConsolidated",
+    "rawValue": false,
+    "location": "datasource-root",
+    "jsonLiteralUtf8Span": {
+      "start": 22777,
+      "end": 120710,
+      "endExclusive": true
+    },
+    "tableLocalFlagObserved": false,
+    "ownershipConclusion": "requires_review_of_explicit_parent_to_child_semantics"
+  },
+  "financialDimensions": {
+    "metadataPeriodMonths": 6,
+    "sourcePeriodEnd": "1405-06-31",
+    "tableUnitText": "کليه مبالغ به ميليون ريال است",
+    "unitObservation": "same-explicit-table-text",
+    "currentPeriodGuard": "unresolved"
+  },
+  "valueCoverage": {
+    "comparedBodyCells": 168,
+    "initiallyEqualDisplayCells": 109,
+    "parenthesesEqualByExistingParser": 22,
+    "hiddenUnmappedCells": 33,
+    "blankVersusZeroCells": [
+      "E8",
+      "E17",
+      "E20",
+      "E26"
+    ],
+    "excelBlankValues": [
+      null,
+      null,
+      null,
+      null
+    ],
+    "fullTableEquality": false
+  },
+  "checks": [
+    {
+      "id": "exact_urls_serial_hashes",
+      "outcome": "observed",
+      "evidencePaths": [
+        "../p07-public-codal-followup-20261104/decision-field-evidence.json"
+      ],
+      "rejectCode": null
+    },
+    {
+      "id": "explicit_scope_field_parent_ownership",
+      "outcome": "unresolved",
+      "evidencePaths": [
+        "../p07-public-codal-followup-20261104/table-binding-evidence.json"
+      ],
+      "rejectCode": "unowned_scope_field"
+    },
+    {
+      "id": "full_table_values",
+      "outcome": "rejected",
+      "evidencePaths": [
+        "raw-cell-evidence.json"
+      ],
+      "rejectCode": "blank_zero_mismatch"
+    },
+    {
+      "id": "hidden_value_mapping",
+      "outcome": "unresolved",
+      "evidencePaths": [
+        "../p07-public-codal-followup-20261104/display-differences.json"
+      ],
+      "rejectCode": "hidden_cell_unmapped"
+    },
+    {
+      "id": "current_local_period_guard",
+      "outcome": "unresolved",
+      "evidencePaths": [
+        "raw-cell-evidence.json"
+      ],
+      "rejectCode": "period_local_evidence_missing"
+    }
+  ],
+  "allowedUse": "financial-review-of-this-single-table-only",
+  "forbiddenUse": [
+    "financial-admission",
+    "scope-override",
+    "other-excel-contexts",
+    "fill-blank-with-zero",
+    "scope-from-word-absence",
+    "execute-page-scripts"
+  ],
+  "currentAdmission": {
+    "data": null,
+    "reason": "scope_unknown"
+  }
+}

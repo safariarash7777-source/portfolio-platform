@@ -1,0 +1,30 @@
+{
+  "observedAtUtc": "2026-11-04T01:50:47Z",
+  "pr": 385,
+  "head": "f07e0543c46cea88822dc0d400080b5bb94bef91",
+  "tree": "8e43eab0bd66705b5455713ea15dd5c1d9c5f81a",
+  "ciRun": 41755671173,
+  "actualCiCheckout": "c154ebd43a2bfcf2852b74e63c97e1560d540b87",
+  "parents": [
+    "5eda274f1424fe6696a8246079500356802dcb7f",
+    "f07e0543c46cea88822dc0d400080b5bb94bef91"
+  ],
+  "coreJob": 126331072189,
+  "dbJob": 126331071847,
+  "rootIndependentlyReadFullCoreAndDbLogs": true,
+  "nonzeroTestFailureLines": [],
+  "coreLogChars": 1404031,
+  "dbLogChars": 3424054,
+  "requiredJobs": "5 SUCCESS",
+  "optionalNative": "SKIPPED, not acceptance",
+  "deploymentIndependentReadback": {
+    "id": "dpl_CHscypUk9ywxHeSf35fNK4RDXzQY",
+    "state": "READY",
+    "target": null,
+    "sha": "f07e0543c46cea88822dc0d400080b5bb94bef91"
+  },
+  "authenticatedJourney": "NOT_TESTED",
+  "fullFlow": "NOT_ACCEPTED",
+  "primaryMigration": "NOT_APPLIED",
+  "realServiceRight": "NOT_CONNECTED"
+}

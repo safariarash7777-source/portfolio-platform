@@ -62,6 +62,16 @@ test('arbitrary private evidence is never forwarded by the projection', () => {
   assert.ok(!JSON.stringify(validate(value)).includes('SYNTHETIC_PRIVATE'));
 });
 
+test('a complete internally consistent old-app receipt is not acceptance of the f07 child', () => {
+  const value = synthetic(), old = '4dcf3713c3ad2507ed1a5bfee42a52b3c17cfb8a';
+  value.native.sha = old;
+  value.native.readerSha = old;
+  value.native.browserReceipt.readerSha = old;
+  value.cleanup.sha = old;
+  value.observed[0].sha = old;
+  assert.throws(() => validate(value));
+});
+
 for (const [name, mutate] of [
   ['old source', v => { v.native.sha = '7b1f5c01c91812be9ee4aa82efb1d5ccdaff8ccc'; }],
   ['wrong allocation', v => { v.native.allocationId = owner; }],

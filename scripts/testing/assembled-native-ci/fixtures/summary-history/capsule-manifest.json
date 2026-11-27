@@ -1,0 +1,187 @@
+{
+  "app": "e0b930927563d7f9f6d79e848917c4ba0d77ed6f",
+  "controller": "7122a56519d7ae3f34202bb0f9575573143dc80e",
+  "parentCapsuleSha256": "f41acf251bd63dc8f7a938b4f4f4308073c44c3bd9085b4f6978dfacad1d7486",
+  "capsuleSha256": "c3bbd84d308774e2775f7fa267b652e90036e52be9794450275bd52aae5b1e90",
+  "driverSha256": "9d58d2714bca03aea2808bbf5fa413a0508b1e788344e2395bc5bdbf4a5a5b8d",
+  "phaseBaseSha256": "817f95289fe3f588f8cf27f960462f697c66eb6d226d2b5f6831966f1798cd99",
+  "phaseCandidateSha256": "1ab7b3262f9fd05c25dd7bc80b7e45858d7b1beb9911a96cc0ff11c2eb3f263d",
+  "fixtureSha256": "aea6e94f487aa1a00188ac9ae7999f2c1622770b35edeb26f53822542279f861",
+  "sourceModules": 14,
+  "runtimeFiles": {
+    "typescript/lib/typescript.js": {
+      "package": "typescript",
+      "relative": "lib/typescript.js",
+      "sha256": "3ae902c92cc44dace175c0e69e13a4b0899f6983c6121d76b9ab8dd5795e7675",
+      "bytes": 9112572
+    },
+    "typescript/package.json": {
+      "package": "typescript",
+      "relative": "package.json",
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6",
+      "bytes": 3620
+    },
+    "react/package.json": {
+      "package": "react",
+      "relative": "package.json",
+      "sha256": "d4e68a5c96babb20cad1daafea8b78822eae45b341552cf5418d06a5304fa64c",
+      "bytes": 999
+    },
+    "react/index.js": {
+      "package": "react",
+      "relative": "index.js",
+      "sha256": "a216c390bf956cbb906c66d29fdb2e2ad6999464a5ca83e476533a6f25ad0ef3",
+      "bytes": 190
+    },
+    "react/jsx-runtime.js": {
+      "package": "react",
+      "relative": "jsx-runtime.js",
+      "sha256": "28170e60f2ff0bc045bc7d175f5849e86f68dd02d76d7255369420718b30295a",
+      "bytes": 214
+    },
+    "react/cjs/react.development.js": {
+      "package": "react",
+      "relative": "cjs/react.development.js",
+      "sha256": "1ff3a1d9861a87984329584fa1172aea920855d79eb57dae0d1cebe54093d7e3",
+      "bytes": 87593
+    },
+    "react/cjs/react.production.min.js": {
+      "package": "react",
+      "relative": "cjs/react.production.min.js",
+      "sha256": "4b35e378f469c4f492c7514bb106b5833746dbbae80496bd4aa9acc6e9ac4b42",
+      "bytes": 6930
+    },
+    "react/cjs/react-jsx-runtime.development.js": {
+      "package": "react",
+      "relative": "cjs/react-jsx-runtime.development.js",
+      "sha256": "581f93fa33c32b3aa7ea35b85b80258922517de046f5447236047dcc2845d9ff",
+      "bytes": 42700
+    },
+    "react/cjs/react-jsx-runtime.production.min.js": {
+      "package": "react",
+      "relative": "cjs/react-jsx-runtime.production.min.js",
+      "sha256": "76e3364c46895ed2c4a8d5cc332e5e4ef31d6f732d35b1e56826dc5895245452",
+      "bytes": 859
+    },
+    "react-dom/package.json": {
+      "package": "react-dom",
+      "relative": "package.json",
+      "sha256": "d2f29e31bd48b833e48cd7bbf41f192e8ee4ff8da249fdbe10d4ac4114b8b12e",
+      "bytes": 1353
+    },
+    "react-dom/server.node.js": {
+      "package": "react-dom",
+      "relative": "server.node.js",
+      "sha256": "a0f7a56527b73f95ac283578815fad4a4e5e849f451267fb7a0d7b347453727c",
+      "bytes": 646
+    },
+    "react-dom/cjs/react-dom-server-legacy.node.development.js": {
+      "package": "react-dom",
+      "relative": "cjs/react-dom-server-legacy.node.development.js",
+      "sha256": "a1ece181be0c98e5449cfd6c89f27f4d0b8ace7745566fb09ece37d79f1084d4",
+      "bytes": 246340
+    },
+    "react-dom/cjs/react-dom-server-legacy.node.production.min.js": {
+      "package": "react-dom",
+      "relative": "cjs/react-dom-server-legacy.node.production.min.js",
+      "sha256": "570b36574af19640e243c8296257f3bad0fb41d84cc7f273bf752ccdf86b5b60",
+      "bytes": 38796
+    },
+    "react-dom/cjs/react-dom-server.node.development.js": {
+      "package": "react-dom",
+      "relative": "cjs/react-dom-server.node.development.js",
+      "sha256": "6979be97ff88b4959a02c7af65a83f37084e1dd91cb59f95d9a6e8c3e039fbb6",
+      "bytes": 244692
+    },
+    "react-dom/cjs/react-dom-server.node.production.min.js": {
+      "package": "react-dom",
+      "relative": "cjs/react-dom-server.node.production.min.js",
+      "sha256": "967e9ceae29baf904e504b102061ca072015678e4e07121f212d5da23a1400af",
+      "bytes": 39058
+    }
+  },
+  "changedMembers": [
+    "overlay/scripts/testing/consultation-tickets/assembled-overlay.json",
+    "overlay/scripts/testing/consultation-tickets/composition-member-phase.mjs"
+  ],
+  "members": {
+    "REVIEW.fa.md": {
+      "bytes": 5535,
+      "sha256": "3e3349b057f7ceff51d9a3a5a1ac872d3f33b89379f9af50b1d10e71ff152021"
+    },
+    "apply-overlay.py": {
+      "bytes": 3859,
+      "sha256": "ebde745afe38a5c6a0a4e40c04106d5a854f49f1974793f1b53356cb3ee4d647"
+    },
+    "overlay/scripts/testing/consultation-tickets/assembled-auth-gateway.mjs": {
+      "bytes": 5337,
+      "sha256": "656a4b32f06048eb96bbe9fd21b08babcd7d15b44642012bc478886db207a74e"
+    },
+    "overlay/scripts/testing/consultation-tickets/assembled-auth-runtime.mjs": {
+      "bytes": 48797,
+      "sha256": "469d60128fad6a71fe432fbd5f674bfa032c56b9ff6a8b0e2ef7523b3b5d1ff3"
+    },
+    "overlay/scripts/testing/consultation-tickets/assembled-member-scenario.mjs": {
+      "bytes": 10520,
+      "sha256": "0d6897bea239d69505f1816b91d9610e59616640cf7a2b9aeab2a3cd10801c89"
+    },
+    "overlay/scripts/testing/consultation-tickets/assembled-native-profile.mjs": {
+      "bytes": 11764,
+      "sha256": "0fd4af0ce0c2ffc06d6ffa64c6725f7ff30b412442097ab0f90682c790d465fc"
+    },
+    "overlay/scripts/testing/consultation-tickets/assembled-native-source.json": {
+      "bytes": 9951,
+      "sha256": "f9bcbfd29a118e02304544124ef41ef4c43bb837eef9956b9cefad7312b74047"
+    },
+    "overlay/scripts/testing/consultation-tickets/assembled-native.mjs": {
+      "bytes": 7318,
+      "sha256": "288cb64b9a1c7f0769a0cd55cbbb0560005f41b9a61143cfc9a5c3eac17041e7"
+    },
+    "overlay/scripts/testing/consultation-tickets/assembled-observer-policy.mjs": {
+      "bytes": 1490,
+      "sha256": "e53d57345d73792f6531408a5f197e6e515d87a7caf91bb0cb4d1ad88f3ac251"
+    },
+    "overlay/scripts/testing/consultation-tickets/assembled-overlay-gate.mjs": {
+      "bytes": 4041,
+      "sha256": "39dc9ebb4446660c6f5078d7b75ef92d2523b355ed7e375f9d7b1ed7301fa846"
+    },
+    "overlay/scripts/testing/consultation-tickets/assembled-overlay.json": {
+      "bytes": 3825,
+      "sha256": "9d58d2714bca03aea2808bbf5fa413a0508b1e788344e2395bc5bdbf4a5a5b8d"
+    },
+    "overlay/scripts/testing/consultation-tickets/composition-browser-case.mjs": {
+      "bytes": 30513,
+      "sha256": "070de1c277547ce4c20abb9266eaa9cb5f882de639fede0eb1280678c03c3678"
+    },
+    "overlay/scripts/testing/consultation-tickets/composition-contract.mjs": {
+      "bytes": 10909,
+      "sha256": "76c4d052b12efbccdd1b65430148941797cadf4326fc3a1da3f1859df64afcb3"
+    },
+    "overlay/scripts/testing/consultation-tickets/composition-contract.test.mjs": {
+      "bytes": 13267,
+      "sha256": "6a1dbe179d7b1b9a6f8acb596e4657d2cfe7d1bbf901edd66aa550cf3a6a0e41"
+    },
+    "overlay/scripts/testing/consultation-tickets/composition-member-phase.mjs": {
+      "bytes": 14373,
+      "sha256": "1ab7b3262f9fd05c25dd7bc80b7e45858d7b1beb9911a96cc0ff11c2eb3f263d"
+    },
+    "overlay/scripts/testing/consultation-tickets/composition-transport.mjs": {
+      "bytes": 3044,
+      "sha256": "7cebc7a24d3e128db4d75d2cb836c38a7da89d7da2ebaa200e17da9b895f6df0"
+    },
+    "overlay/scripts/testing/consultation-tickets/composition-transport.test.mjs": {
+      "bytes": 4852,
+      "sha256": "fff6be9cccbdef3d954a7a37a30ea01d2808c72e2a83dd162c9ca35e820689c5"
+    }
+  },
+  "newFixedCodes": [
+    "p03_composition_feedback_session_article_not_unique",
+    "p03_composition_feedback_history_summary_not_unique"
+  ],
+  "sourceLines": {
+    "phase105": "history intended by phase106 visible feedback assertions",
+    "SessionCard": "e0 lines25,31,32,43"
+  },
+  "oldLine": "   const card=page.locator('article[aria-label=\"جمع‌بندی نسخهٔ ۱\"]');await card.locator('details summary').click();",
+  "newLine": "   const card=page.locator('article[aria-label=\"جمع‌بندی نسخهٔ ۱\"]');check(await card.count()===1,'feedback_session_article_not_unique');const feedbackHistory=card.locator('summary').filter({hasText:'سابقهٔ مشاهده و اقدام‌ها ('});check(await feedbackHistory.count()===1,'feedback_history_summary_not_unique');await feedbackHistory.click();"
+}

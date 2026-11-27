@@ -1,0 +1,25 @@
+{
+  "sourceFix": "4e01bfe2613a71a76f720982f62d5a09352a8ccb",
+  "rootIntegration": "bae9b67823ecdbe04ad685298279ca81b6d05512",
+  "changedFile": "scripts/ops/liara-binding-discovery-runner.test.mjs",
+  "scope": "two import-removal regexes, test only",
+  "actualWorkingBytes": {
+    "runner": {
+      "CRLF": 87,
+      "LF": 87
+    },
+    "test": {
+      "CRLF": 73,
+      "LF": 73
+    }
+  },
+  "command": "node --test scripts/ops/liara-binding-discovery-runner.test.mjs",
+  "pass": 8,
+  "fail": 0,
+  "skip": 0,
+  "cancel": 0,
+  "runtimeChanged": false,
+  "protocolCrLfAcceptanceProven": false,
+  "nativeWebSocketProven": false,
+  "inPreviewF07": false
+}
