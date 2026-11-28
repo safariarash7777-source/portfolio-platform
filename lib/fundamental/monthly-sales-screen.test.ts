@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { jalaliYmdToGregorian } from "../core/jalali";
-import { monthlySalesScreen, salesHistory, type SalesFiling } from "./monthly-sales-screen";
+import { monthlySalesScreen, salesHistory, type SalesFiling, type SalesNotice } from "./monthly-sales-screen";
 
 const stocks=[{id:"الف",industryId:27},{id:"ب",industryId:57},{id:"ج",industryId:13}];
 function filing(period:string,id:number,amount:number):SalesFiling {
@@ -9,7 +9,7 @@ function filing(period:string,id:number,amount:number):SalesFiling {
  return {id,symbol:"الف",title:"گزارش دوره ۱ ماهه منتهی به "+dt,source_url:"https://codal.ir/Reports/Decision.aspx?LetterSerial="+id+"&let=58&rt=0",storedPeriod:jalaliYmdToGregorian(dt)!,reportPeriod:dt,reportSymbol:"الف",unit:"میلیون ریال",amount,measure:null,months:"1",parser:"2",publicationDate:"1405/08/05",publicationTime:"11:00:00",captured_at:"2026-11-01T01:00:00Z"};
 }
 const now=filing("1405-07",1,150), prior=filing("1404-07",2,100);
-function run(rows:SalesFiling[], notices:{symbol:string;title:string;link:string}[] = []) {
+function run(rows:SalesFiling[], notices:SalesNotice[] = []) {
  return monthlySalesScreen("1405-07",50,stocks,rows,notices,"now",null);
 }
 test("compares selected single-month sales and enumerates eligible issuers missing all filings",()=>{
@@ -80,4 +80,18 @@ test("outside population applies source and same-month rules independently, incl
  const board=run(rows,notices);
  assert.equal(board.coverage.outsideRoster,2); assert.equal(board.coverage.universe,3);
  assert.equal(board.rows.some(r=>outside.rows.some(x=>x.symbol===r.symbol)),false);
+});
+
+test("a portfolio notice is distinguished from pending product sales and cannot shadow a verified filing",()=>{
+ const portfolio={symbol:"الف",title:now.title,link:"https://codal.ir/Reports/Decision.aspx?LetterSerial=99&let=31",report_code:"ن-۳۱"};
+ const missing=run([prior],[portfolio]).rows.find(x=>x.symbol==="الف")!;
+ assert.match(missing.reason!,/ن-۳۱/);assert.equal(missing.growth,null);
+ assert.equal(run([prior,now],[portfolio]).coverage.calculable,1);
+ const unresolved={...portfolio,report_code:null};
+ assert.equal(run([prior,now],[unresolved]).coverage.calculable,0);
+});
+test("an internally consistent off-calendar closing has a distinct reason",()=>{
+ const dt="1405-07-10";
+ const row={...now,title:"گزارش دوره ۱ ماهه منتهی به "+dt,reportPeriod:dt,storedPeriod:jalaliYmdToGregorian(dt)!};
+ assert.match(run([row,prior]).rows.find(x=>x.symbol==="الف")!.reason!,/1405-07-10/);
 });
